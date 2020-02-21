@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <LangVersion>8.0</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Pathfinder.Core\Pathfinder.Core.csproj" />
+    <ProjectReference Include="..\Pathfinder.Infrastructure\Pathfinder.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
