@@ -13,13 +13,13 @@ namespace Pathfinder.Infrastructure.Data
     {
         private const String adminUser = "Admin";
         private const String adminPassword = "Secret123$";
-        public static async void  EnsurePopulated(IApplicationBuilder app)
+        public static async void  EnsurePopulated(IServiceProvider serviceProvider)
         {
-            UserManager<IdentityUser> userManager = app.ApplicationServices.GetRequiredService<UserManager<IdentityUser>>();
-            IdentityUser user = await userManager.FindByNameAsync(adminUser);
+            UserManager<ApplicationUser> userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            ApplicationUser user = await userManager.FindByNameAsync(adminUser);
             if (user == null)
             {
-                user = new IdentityUser(adminUser);
+                user = new ApplicationUser(adminUser);
                 await userManager.CreateAsync(user, adminPassword);
             }
         }

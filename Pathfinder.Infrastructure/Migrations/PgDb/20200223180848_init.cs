@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
-namespace Pathfinder.Infrastructure.Migrations
+namespace Pathfinder.Infrastructure.Migrations.PgDb
 {
-    public partial class Init : Migration
+    public partial class init : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -54,7 +54,7 @@ namespace Pathfinder.Infrastructure.Migrations
                     Id = table.Column<int>(nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(nullable: true),
-                    ShortNAme = table.Column<string>(nullable: true)
+                    ShortName = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {

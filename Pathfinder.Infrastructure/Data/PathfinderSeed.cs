@@ -4,14 +4,16 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
 using Pathfinder.Core.Entities;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Builder;
 
 namespace Pathfinder.Infrastructure.Data
 {
     public class PathfinderSeed
     {
-        public static async Task SeedAsync(PgDbContext dbContext)
+        public static async Task SeedAsync(IServiceProvider app)
         {
-
+            PgDbContext dbContext = app.GetRequiredService<PgDbContext>();
             if (!dbContext.ProductList.Any())
             {
                 dbContext.ProductList.AddRange(GetPreconfiguredProduct());

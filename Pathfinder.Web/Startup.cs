@@ -6,8 +6,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Pathfinder.Infrastructure.Data;
+using Microsoft.OpenApi.Models;
+using Pathfinder.Application.Interfaces;
+using Pathfinder.Application.Services;
 using Pathfinder.Core.Entities;
+using Pathfinder.Infrastructure.Data;
+using System;
 
 namespace Pathfinder.Web
 {
@@ -26,6 +30,9 @@ namespace Pathfinder.Web
             services.AddDbContext<PgDbContext>(options => options.UseNpgsql(Configuration["Data:WebDB:ConnectionString"]));
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(Configuration["Data:WebDB:ConnectionString"]));
+
+         //   services.AddScoped<IProductService, ProductService>();
+         //   services.AddScoped<ICategoryService, CategoryService>();
             services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
@@ -35,16 +42,21 @@ namespace Pathfinder.Web
             services.AddAuthentication()
                 .AddIdentityServerJwt();
             services.AddControllersWithViews();
+            services.AddSwaggerGen(c => 
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Pathfinde API", Version = "v1" });
+            });
             services.AddRazorPages();
             // In production, the Angular files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {
                 configuration.RootPath = "ClientApp/dist";
             });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
         {
             if (env.IsDevelopment())
             {
@@ -64,9 +76,13 @@ namespace Pathfinder.Web
             {
                 app.UseSpaStaticFiles();
             }
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Pathfinder API V1");
+            });
 
             app.UseRouting();
-
             app.UseAuthentication();
             app.UseIdentityServer();
             app.UseAuthorization();
@@ -77,6 +93,7 @@ namespace Pathfinder.Web
                     pattern: "{controller}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
             });
+           
 
             app.UseSpa(spa =>
             {
@@ -90,6 +107,8 @@ namespace Pathfinder.Web
                     spa.UseAngularCliServer(npmScript: "start");
                 }
             });
+            IdentitySeedData.EnsurePopulated(serviceProvider);
+            PathfinderSeed.SeedAsync(serviceProvider).Wait();
         }
     }
 }
