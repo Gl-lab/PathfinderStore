@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Pathfinder.Infrastructure.Data;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Pathfinder.Web
 {
