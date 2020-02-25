@@ -11,7 +11,13 @@ using Pathfinder.Application.Interfaces;
 using Pathfinder.Application.Services;
 using Pathfinder.Core.Entities;
 using Pathfinder.Infrastructure.Data;
+using Pathfinder.Core.Repositories;
+using Pathfinder.Core.Repositories.Base;
+using Pathfinder.Infrastructure.Repository;
+using Pathfinder.Infrastructure.Repository.Base;
 using System;
+using AutoMapper;
+using Pathfinder.Application.Mapper;
 
 namespace Pathfinder.Web
 {
@@ -31,9 +37,8 @@ namespace Pathfinder.Web
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(Configuration["Data:WebDB:ConnectionString"]));
 
-         //   services.AddScoped<IProductService, ProductService>();
-         //   services.AddScoped<ICategoryService, CategoryService>();
-            services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+           
+         /*   services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
             services.AddIdentityServer()
@@ -41,6 +46,7 @@ namespace Pathfinder.Web
 
             services.AddAuthentication()
                 .AddIdentityServerJwt();
+                */
             services.AddControllersWithViews();
             services.AddSwaggerGen(c => 
             {
@@ -52,7 +58,12 @@ namespace Pathfinder.Web
             {
                 configuration.RootPath = "ClientApp/dist";
             });
-
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddTransient<IProductService, ProductService>();
+            services.AddTransient<ICategoryService, CategoryService>();
+            services.AddAutoMapper(typeof(CategoryProfile),typeof(ProductProfile));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -83,9 +94,10 @@ namespace Pathfinder.Web
             });
 
             app.UseRouting();
-            app.UseAuthentication();
+           /* app.UseAuthentication();
             app.UseIdentityServer();
             app.UseAuthorization();
+            */
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
@@ -97,9 +109,7 @@ namespace Pathfinder.Web
 
             app.UseSpa(spa =>
             {
-                // To learn more about options for serving an Angular SPA from ASP.NET Core,
-                // see https://go.microsoft.com/fwlink/?linkid=864501
-
+                
                 spa.Options.SourcePath = "ClientApp";
 
                 if (env.IsDevelopment())
@@ -107,7 +117,7 @@ namespace Pathfinder.Web
                     spa.UseAngularCliServer(npmScript: "start");
                 }
             });
-            IdentitySeedData.EnsurePopulated(serviceProvider);
+            //IdentitySeedData.EnsurePopulated(serviceProvider);
             PathfinderSeed.SeedAsync(serviceProvider).Wait();
         }
     }

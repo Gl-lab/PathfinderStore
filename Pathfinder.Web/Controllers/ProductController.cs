@@ -22,6 +22,7 @@ namespace Pathfinder.Web.Controllers
             this.productService = productService;
         }
 
+        [Produces("application/json")]
         [Route("[action]")]
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<ProductModel>), (int)HttpStatusCode.OK)]
@@ -32,7 +33,7 @@ namespace Pathfinder.Web.Controllers
         }
 
         [Route("[action]")]
-        [HttpPost]
+        [HttpGet]
         [ProducesResponseType(typeof(IPagedList<ProductModel>), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<IPagedList<ProductModel>>> SearchProducts(PageSearchArgs arg)
         {
@@ -41,7 +42,7 @@ namespace Pathfinder.Web.Controllers
         }
 
         [Route("[action]")]
-        [HttpPost]
+        [HttpGet]
         [ProducesResponseType(typeof(ProductModel), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<ProductModel>> GetProductById(int id)
         {
@@ -50,7 +51,7 @@ namespace Pathfinder.Web.Controllers
         }
 
         [Route("[action]")]
-        [HttpPost]
+        [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<ProductModel>), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<IEnumerable<ProductModel>>> GetProductsByName(string name)
         {
@@ -59,7 +60,7 @@ namespace Pathfinder.Web.Controllers
         }
 
         [Route("[action]")]
-        [HttpPost]
+        [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<ProductModel>), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<IEnumerable<ProductModel>>> GetProductsByCategoryId(int categoryId)
         {
@@ -78,7 +79,7 @@ namespace Pathfinder.Web.Controllers
         }
 
         [Route("[action]")]
-        [HttpPost]
+        [HttpPut]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public async Task<ActionResult> UpdateProduct(ProductModel product)
@@ -88,7 +89,7 @@ namespace Pathfinder.Web.Controllers
         }
 
         [Route("[action]")]
-        [HttpPost]
+        [HttpDelete]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public async Task<ActionResult> DeleteProductById(ProductModel product)
