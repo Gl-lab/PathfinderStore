@@ -17,13 +17,13 @@ namespace Pathfinder.Application.Services
     public class CategoryService : ICategoryService
     {
         private readonly ICategoryRepository categoryRepository;
-        private readonly IAppLogger<CategoryService> logger;
+       // private readonly IAppLogger<CategoryService> logger;
         private IMapper mapper;
 
-        public CategoryService(ICategoryRepository categoryRepository, IAppLogger<CategoryService> logger, IMapper mapper)
+        public CategoryService(ICategoryRepository categoryRepository/*, IAppLogger<CategoryService> logger*/, IMapper mapper)
         {
             this.categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
-            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+         //   this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 

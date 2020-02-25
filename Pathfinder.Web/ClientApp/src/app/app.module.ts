@@ -1,40 +1,38 @@
 import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
-import { RouterModule } from '@angular/router';
 
 import { AppComponent } from './app.component';
-import { NavMenuComponent } from './nav-menu/nav-menu.component';
-import { HomeComponent } from './home/home.component';
-import { CounterComponent } from './counter/counter.component';
-import { FetchDataComponent } from './fetch-data/fetch-data.component';
-import { ApiAuthorizationModule } from 'src/api-authorization/api-authorization.module';
-import { AuthorizeGuard } from 'src/api-authorization/authorize.guard';
-import { AuthorizeInterceptor } from 'src/api-authorization/authorize.interceptor';
+import { AppRoutingModule } from './app-routing.module';
+
+import { CoreModule } from './core/core.module';
+import { SharedModule } from './shared/shared.module';
+
+import { P404Component } from './views/error/404.component';
+import { P500Component } from './views/error/500.component';
+//import { LoginComponent } from './views/login/login.component';
+//import { RegisterComponent } from './views/register/register.component';
+//import { DashboardComponent } from './views/dashboard/dashboard.component';
+import { AboutComponent } from './views/about/about.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    NavMenuComponent,
-    HomeComponent,
-    CounterComponent,
-    FetchDataComponent
+    P404Component,
+    P500Component,
+   // LoginComponent,
+   // RegisterComponent,
+  // DashboardComponent,
+    AboutComponent,
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
-    HttpClientModule,
-    FormsModule,
-    ApiAuthorizationModule,
-    RouterModule.forRoot([
-      { path: '', component: HomeComponent, pathMatch: 'full' },
-      { path: 'counter', component: CounterComponent },
-      { path: 'fetch-data', component: FetchDataComponent, canActivate: [AuthorizeGuard] },
-    ])
+    BrowserAnimationsModule,
+    AppRoutingModule,     // Main routes for application
+    CoreModule,           // Singleton objects (services, components that are loaded only once, etc.)
+    SharedModule,         // Shared (multi-instance) objects
   ],
-  providers: [
-    { provide: HTTP_INTERCEPTORS, useClass: AuthorizeInterceptor, multi: true }
-  ],
+  providers: [],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

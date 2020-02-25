@@ -1,6 +1,12 @@
-<body>
-  <app-nav-menu></app-nav-menu>
-  <div class="container">
-    <router-outlet></router-outlet>
-  </div>
-</body>
+<router-outlet></router-outlet>
+<ngx-ui-loader [fgsColor]="spinnerService.config.fgsColor" [fgsPosition]="spinnerService.config.fgsPosition"
+  [fgsSize]="spinnerService.config.fgsSize" [fgsType]="spinnerService.config.fgsType"
+  [bgsColor]="spinnerService.config.bgsColor" [bgsOpacity]="spinnerService.config.bgsOpacity"
+  [bgsPosition]="spinnerService.config.bgsPosition" [bgsSize]="spinnerService.config.bgsSize"
+  [bgsType]="spinnerService.config.bgsType" [gap]="spinnerService.config.gap"
+  [logoPosition]="spinnerService.config.logoPosition" [logoSize]="spinnerService.config.logoSize"
+  [logoUrl]="spinnerService.config.logoUrl" [overlayColor]="spinnerService.config.overlayColor"
+  [pbColor]="spinnerService.config.pbColor" [pbDirection]="spinnerService.config.pbDirection"
+  [pbThickness]="spinnerService.config.pbThickness" [hasProgressBar]="spinnerService.config.hasProgressBar"
+  [text]="spinnerService.config.text" [textColor]="spinnerService.config.textColor"
+  [textPosition]="spinnerService.config.textPosition"></ngx-ui-loader>

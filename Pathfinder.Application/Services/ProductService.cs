@@ -16,13 +16,13 @@ namespace Pathfinder.Application.Services
     public class ProductService : IProductService
     {
         private readonly IProductRepository productRepository;
-        private readonly IAppLogger<ProductService> logger;
+        //private readonly IAppLogger<ProductService> logger;
         private readonly IMapper mapper;
 
-        public ProductService(IProductRepository productRepository, IAppLogger<ProductService> logger, IMapper mapper)
+        public ProductService(IProductRepository productRepository,/* IAppLogger<ProductService> logger,*/ IMapper mapper)
         {
             this.productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
-            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+          //  this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
@@ -38,8 +38,6 @@ namespace Pathfinder.Application.Services
         public async Task<IPagedList<ProductModel>> SearchProducts(PageSearchArgs args)
         {
             var productPagedList = await productRepository.SearchProductsAsync(args);
-
-            //TODO: PagedList<TSource> will be mapped to PagedList<TDestination>;
             var productModels = mapper.Map<List<ProductModel>>(productPagedList.Items);
 
             var productModelPagedList = new PagedList<ProductModel>(
@@ -89,7 +87,7 @@ namespace Pathfinder.Application.Services
             var newProduct = mapper.Map<Product>(product);
             newProduct = await productRepository.SaveAsync(newProduct);
 
-            logger.LogInformation("Entity successfully added - AspnetRunAppService");
+           // logger.LogInformation("Entity successfully added - AspnetRunAppService");
 
             var newProductModel = mapper.Map<ProductModel>(newProduct);
             return newProductModel;
@@ -110,7 +108,7 @@ namespace Pathfinder.Application.Services
 
             await productRepository.SaveAsync(existingProduct);
 
-            logger.LogInformation("Entity successfully updated - AspnetRunAppService");
+            //logger.LogInformation("Entity successfully updated - AspnetRunAppService");
         }
 
         public async Task DeleteProductById(int productId)
@@ -123,7 +121,7 @@ namespace Pathfinder.Application.Services
 
             await productRepository.DeleteAsync(existingProduct);
 
-            logger.LogInformation("Entity successfully deleted - AspnetRunAppService");
+            //logger.LogInformation("Entity successfully deleted - AspnetRunAppService");
         }
     }
 }
