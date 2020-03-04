@@ -38,9 +38,9 @@ namespace Pathfinder.Web
                 options.UseNpgsql(Configuration["Data:WebDB:ConnectionString"]));
 
            
-         /*   services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+           services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
-
+            /*
             services.AddIdentityServer()
                 .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
 
@@ -52,12 +52,13 @@ namespace Pathfinder.Web
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Pathfinde API", Version = "v1" });
             });
+            services.AddControllersWithViews();
             services.AddRazorPages();
-            // In production, the Angular files will be served from this directory
-            services.AddSpaStaticFiles(configuration =>
-            {
-                configuration.RootPath = "ClientApp/dist";
-            });
+
+            /* services.AddSpaStaticFiles(configuration =>
+             {
+                 configuration.RootPath = "ClientApp/dist";
+             });*/
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
@@ -66,7 +67,6 @@ namespace Pathfinder.Web
             services.AddAutoMapper(typeof(CategoryProfile),typeof(ProductProfile));
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
         {
             if (env.IsDevelopment())
@@ -77,16 +77,15 @@ namespace Pathfinder.Web
             else
             {
                 app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-            if (!env.IsDevelopment())
+           /* if (!env.IsDevelopment())
             {
                 app.UseSpaStaticFiles();
-            }
+            }*/
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
@@ -102,12 +101,12 @@ namespace Pathfinder.Web
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller}/{action=Index}/{id?}");
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
             });
            
 
-            app.UseSpa(spa =>
+           /* app.UseSpa(spa =>
             {
                 
                 spa.Options.SourcePath = "ClientApp";
@@ -116,7 +115,7 @@ namespace Pathfinder.Web
                 {
                     spa.UseAngularCliServer(npmScript: "start");
                 }
-            });
+            });*/
             //IdentitySeedData.EnsurePopulated(serviceProvider);
             PathfinderSeed.SeedAsync(serviceProvider).Wait();
         }
