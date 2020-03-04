@@ -1,0 +1,66 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+<div id = "app">
+    <table>
+        <tr>
+            <td>Name</td>
+            <td>Price</td>
+        </tr>
+        <tr v-for="row in test.items">
+            <td>{{row.name}}</td>
+            <td>{{row.price}}</td>
+        </tr>
+
+    </table>
+   <button @@click="prevpage()">Назад</button> 
+   <button @@click="nextpage()">Дальше</button>
+</div>
+<script>
+
+    //var page = new PageInfo(1,5);
+
+    var demo = new Vue({
+        el: '#app',
+        data: {
+            test: null,
+            a: 123,
+            pageinfo: {
+                "pageIndex": 1,
+                "pageSize": 5,
+                "pagingStrategy": 0,
+                "sortingOptions": [
+                    {
+                    "field": "string",
+                    "direction": 0,
+                    "priority": 0
+                    }
+                ],
+                "filteringOptions": [
+                    {
+                    "field": "string",
+                    "operator": 0,
+                    "value": {}
+                    }
+                ]
+            }
+        },
+        methods: {
+            nextpage: function(){this.pageinfo.pageIndex++;this.loadData()},
+            prevpage: function(){this.pageinfo.pageIndex--;this.loadData()},
+            loadData: function(){axios
+                                    .post('https://localhost:5001/api/Product/SearchProducts',this.pageinfo)
+                                    .then(response => (this.test = response.data));
+                                }
+        }
+        ,
+        mounted() {
+            this.loadData();
+        }
+    });
+    
+</script>
+

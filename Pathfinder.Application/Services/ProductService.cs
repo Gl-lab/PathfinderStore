@@ -103,7 +103,7 @@ namespace Pathfinder.Application.Services
 
             existingProduct.Name = product.Name;
             existingProduct.Description = product.Description;
-            existingProduct.Price = product.UnitPrice;
+            existingProduct.Price = product.Price;
             existingProduct.CategoryId = product.CategoryId;
 
             await productRepository.SaveAsync(existingProduct);
