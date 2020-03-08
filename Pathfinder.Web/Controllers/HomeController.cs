@@ -12,5 +12,9 @@ namespace Pathfinder.Web.Controllers
         {
             return View();
         }
+        public IActionResult Create()
+        {
+            return View();
+        }
     }
 }

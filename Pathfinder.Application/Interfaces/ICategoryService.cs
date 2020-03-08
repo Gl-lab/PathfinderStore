@@ -8,7 +8,7 @@ namespace Pathfinder.Application.Interfaces
     public interface ICategoryService
     {
         Task<IEnumerable<CategoryModel>> GetCategoryList();
-
+        Task<CategoryModel> GetById(int id);
         Task<IPagedList<CategoryModel>> SearchCategories(PageSearchArgs args);
     }
 }
