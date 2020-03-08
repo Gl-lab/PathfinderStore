@@ -27,21 +27,23 @@ namespace Pathfinder.Application.Services
             this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
+        public async Task<CategoryModel> GetById(int id)
+        {
+            var category = await categoryRepository.GetByIdAsync(id);
+            var result = mapper.Map<CategoryModel>(category);
+            return result;
+        }
         public async Task<IEnumerable<CategoryModel>> GetCategoryList()
         {
             var categoryList = await categoryRepository.ListAllAsync();
-
             var categoryModels = mapper.Map<IEnumerable<CategoryModel>>(categoryList);
-
             return categoryModels;
         }
 
         public async Task<IPagedList<CategoryModel>> SearchCategories(PageSearchArgs args)
         {
             var categoryPagedList = await categoryRepository.SearchCategoriesAsync(args);
-
             var categoryModels = mapper.Map<List<CategoryModel>>(categoryPagedList.Items);
-
             var categoryModelPagedList = new PagedList<CategoryModel>(
                 categoryPagedList.PageIndex,
                 categoryPagedList.PageSize,

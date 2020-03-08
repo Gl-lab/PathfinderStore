@@ -13,17 +13,17 @@ namespace Pathfinder.Web.Controllers.API
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductController : ControllerBase
+    public class ProductsController : ControllerBase
     {
         private readonly IProductService productService;
 
-        public ProductController(IProductService productService)
+        public ProductsController(IProductService productService)
         {
             this.productService = productService;
         }
 
         [Produces("application/json")]
-        [Route("[action]")]
+        [Route("")]
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<ProductModel>), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<IEnumerable<ProductModel>>> GetProducts()
@@ -41,7 +41,7 @@ namespace Pathfinder.Web.Controllers.API
             return Ok(productPagedList);
         }
 
-        [Route("[action]")]
+        [Route("{id}")]
         [HttpGet]
         [ProducesResponseType(typeof(ProductModel), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<ProductModel>> GetProductById(int id)
