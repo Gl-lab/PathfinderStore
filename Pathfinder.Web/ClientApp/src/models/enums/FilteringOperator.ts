@@ -1,0 +1,19 @@
+enum FilteringOperator
+{
+    Contains,
+    Not_Contains,
+    LT,
+    LE,
+    GT,
+    GE,
+    NE,
+    EQ,
+    StartsWith,
+    EndsWith,
+    RangeInclusive,
+    RangeExclusive,
+    IN,
+    NOT_IN,
+    IN_CONTAINS,
+    NOT_IN_CONTAINS
+}

@@ -9,7 +9,7 @@ using Pathfinder.Application.Interfaces;
 using Pathfinder.Application.Models;
 using System.Net;
 
-namespace Pathfinder.Web.Controllers.API
+namespace Pathfinder.Web.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
