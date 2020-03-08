@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.SpaServices.AngularCli;
+using Microsoft.AspNetCore.SpaServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +18,7 @@ using Pathfinder.Infrastructure.Repository.Base;
 using System;
 using AutoMapper;
 using Pathfinder.Application.Mapper;
+using VueCliMiddleware;
 
 namespace Pathfinder.Web
 {
@@ -38,8 +39,9 @@ namespace Pathfinder.Web
                 options.UseNpgsql(Configuration["Data:WebDB:ConnectionString"]));
 
            
-           services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+           /*services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
+                */
             /*
             services.AddIdentityServer()
                 .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
@@ -47,18 +49,17 @@ namespace Pathfinder.Web
             services.AddAuthentication()
                 .AddIdentityServerJwt();
                 */
-            services.AddControllersWithViews();
+            services.AddControllers();
             services.AddSwaggerGen(c => 
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Pathfinde API", Version = "v1" });
             });
-            services.AddControllersWithViews();
-            services.AddRazorPages();
+            //services.AddRazorPages();
 
-            /* services.AddSpaStaticFiles(configuration =>
-             {
+            services.AddSpaStaticFiles(configuration =>
+            {
                  configuration.RootPath = "ClientApp/dist";
-             });*/
+            });
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
@@ -74,14 +75,9 @@ namespace Pathfinder.Web
                 app.UseDeveloperExceptionPage();
                 app.UseDatabaseErrorPage();
             }
-            else
-            {
-                app.UseExceptionHandler("/Error");
-                app.UseHsts();
-            }
 
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
+            app.UseSpaStaticFiles();
            /* if (!env.IsDevelopment())
             {
                 app.UseSpaStaticFiles();
@@ -99,23 +95,22 @@ namespace Pathfinder.Web
             */
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllerRoute(
-                    name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
-                endpoints.MapRazorPages();
+                endpoints.MapControllers();
             });
-           
 
-           /* app.UseSpa(spa =>
+            app.UseSpa(spa =>
             {
-                
-                spa.Options.SourcePath = "ClientApp";
+                if (env.IsDevelopment())
+                    spa.Options.SourcePath = "ClientApp";
+                else
+                    spa.Options.SourcePath = "dist";
 
                 if (env.IsDevelopment())
                 {
-                    spa.UseAngularCliServer(npmScript: "start");
+                    spa.UseVueCli(npmScript: "serve");
                 }
-            });*/
+
+            });
             //IdentitySeedData.EnsurePopulated(serviceProvider);
             PathfinderSeed.SeedAsync(serviceProvider).Wait();
         }
