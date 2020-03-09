@@ -1,8 +1,9 @@
+
 <template>
-  <div class="home">
+  <div class="container">
     <img alt="Vue logo" src="../assets/logo.png">
     <h1>Welcome to Your Vue.js App</h1>
-    <table>
+    <table class="table table-bordered table-dark">
       <thead>
         <tr>
           <th v-for="(item, index) in productsCols" v-bind:key="index"> 
@@ -20,6 +21,8 @@
     </table>
     <button class="btn btn-primary" @click="prevPage()" :disabled = "hasPreviousPage">Назад</button> 
     <button class="btn btn-primary" @click="nextPage()" :disabled = "hasNextPage">Дальше</button>
+    <category-combo-box/>
+    <cb/>
   </div>
   
 </template>
@@ -28,7 +31,13 @@
 import { Component, Vue} from 'vue-property-decorator';
 import { IProduct } from '../models/IProduct';
 import { IPageArgs } from '../models/IPageArgs'; 
+import { SortingDirection } from '../models/enums/SortingDirection';
+import { PagingStrategy } from '../models/enums/PagingStrategy';
+import { FilteringOperator } from '../models/enums/FilteringOperator';
 import axios from 'axios';
+import 'bootstrap/dist/css/bootstrap.css'
+import CategoryComboBox from './comboBox/CategoryComboBox.vue';
+
 
 @Component({
   filters: {
@@ -36,17 +45,18 @@ import axios from 'axios';
       if (!value) { return ''; }
       value = value.toString();
       return value.charAt(0).toUpperCase() + value.slice(1);
-    },
+    }
   },
+  components: {['cb'] :CategoryComboBox},
 })
 export default class Product extends Vue {
     private pageInfo: IPageArgs  = {
         pageIndex: 1, 
         pageSize: 5, 
-        pagingsStrategy: 0, 
+        pagingsStrategy: PagingStrategy.WithCount, 
         sortingOptions: [{ 
             field: "string",
-            direction: 0,
+            direction: SortingDirection.ASC,
             priority: 0 
         }],
         filteringOptions: [{
@@ -55,14 +65,14 @@ export default class Product extends Vue {
             value: {}
         }]
     };
-    private hasPreviousPage: boolean;
-    private hasNextPage: boolean;
+    private hasPreviousPage: boolean = false;
+    private hasNextPage: boolean = false;
     private products: IProduct[] = [{ name: 'No data.' } as IProduct];
     private productsCols: any[] = [
         { name: 'Name',         label: 'Наименование',  field: (row: IProduct) => row.name },
         { name: 'Description',  label: 'Описание',      field: (row: IProduct) => row.description },
         { name: 'Price',        label: 'Цена',          field: (row: IProduct) => row.price },
-        { name: 'Category',     label: 'Категория',     field: (row: IProduct) => row.categoryId },
+        { name: 'Category',     label: 'Категория',     field: (row: IProduct) => row.category.name },
     ];
  
     public async loadData(){
@@ -85,9 +95,9 @@ export default class Product extends Vue {
 
     public async mounted() {
         try {
-        this.loadData();
+          this.loadData();
         } catch {
-        this.products = [{ name: 'No data.' } as IProduct];
+          this.products = [{ name: 'No data.' } as IProduct];
         }
     }
 }
