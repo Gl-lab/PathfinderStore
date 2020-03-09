@@ -1,4 +1,4 @@
-enum FilteringOperator
+export enum FilteringOperator
 {
     Contains,
     Not_Contains,
