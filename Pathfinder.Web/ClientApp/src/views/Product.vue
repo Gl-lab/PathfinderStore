@@ -1,13 +1,12 @@
 
 <template>
   <div class="container">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <h1>Welcome to Your Vue.js App</h1>
+    <router-link to="/create">Добавить продукт</router-link> 
     <table class="table table-bordered table-dark">
       <thead>
         <tr>
           <th v-for="(item, index) in productsCols" v-bind:key="index"> 
-            {{ item.label | capitalize }}
+            {{ item.label }}
           </th>
         </tr>
       </thead>
@@ -21,34 +20,22 @@
     </table>
     <button class="btn btn-primary" @click="prevPage()" :disabled = "hasPreviousPage">Назад</button> 
     <button class="btn btn-primary" @click="nextPage()" :disabled = "hasNextPage">Дальше</button>
-    <category-combo-box/>
-    <cb/>
   </div>
   
 </template>
 
 <script lang="ts">
 import { Component, Vue} from 'vue-property-decorator';
-import { IProduct } from '../models/IProduct';
-import { IPageArgs } from '../models/IPageArgs'; 
+import { IProduct } from '../models/Interfaces/IProduct';
+import { IPageArgs } from '../models/Interfaces/IPageArgs'; 
 import { SortingDirection } from '../models/enums/SortingDirection';
 import { PagingStrategy } from '../models/enums/PagingStrategy';
 import { FilteringOperator } from '../models/enums/FilteringOperator';
+import { Category } from '../models/Category'
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.css'
-import CategoryComboBox from './comboBox/CategoryComboBox.vue';
 
-
-@Component({
-  filters: {
-    capitalize: (value: string) => {
-      if (!value) { return ''; }
-      value = value.toString();
-      return value.charAt(0).toUpperCase() + value.slice(1);
-    }
-  },
-  components: {['cb'] :CategoryComboBox},
-})
+@Component
 export default class Product extends Vue {
     private pageInfo: IPageArgs  = {
         pageIndex: 1, 
@@ -67,7 +54,7 @@ export default class Product extends Vue {
     };
     private hasPreviousPage: boolean = false;
     private hasNextPage: boolean = false;
-    private products: IProduct[] = [{ name: 'No data.' } as IProduct];
+    private products: IProduct[] = [{ name: 'No data.', category: new Category(0,'','') } as IProduct];
     private productsCols: any[] = [
         { name: 'Name',         label: 'Наименование',  field: (row: IProduct) => row.name },
         { name: 'Description',  label: 'Описание',      field: (row: IProduct) => row.description },

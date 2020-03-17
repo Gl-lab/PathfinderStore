@@ -4,7 +4,7 @@
       <router-link to="/">Домашняя</router-link> |
       <router-link to="/product">Товары</router-link> |
       <router-link to="/cb">Тест</router-link> |
-      <router-link to="/about">About</router-link> |
+      <router-link to="/about">About</router-link> 
     </div>
     <router-view/>
   </div>
