@@ -1,4 +1,4 @@
-import { FilteringOperator } from './enums/FilteringOperator';
+import { FilteringOperator } from '../enums/FilteringOperator';
 export interface IFilteringOptions{
     field: string,
     operator: FilteringOperator,
