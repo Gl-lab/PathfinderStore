@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 import Home from './views/Home.vue';
-import CategoryComboBox from './views/comboBox/CategoryComboBox.vue'
+import VuetifyProduct from './views/VuetifyProduct.vue';
 
 
 Vue.use(Router);
@@ -21,9 +21,9 @@ export default new Router({
       component: () => import(/* webpackChunkName: "about" */ './views/Product.vue'),
     },
     {
-      path: '/cb',
-      name: 'category-combo-box',
-      component: CategoryComboBox,
+      path: '/vuetifyproduct',
+      name: 'VuetifyProduct',
+      component: VuetifyProduct,
     },
     {
       path: '/about',
