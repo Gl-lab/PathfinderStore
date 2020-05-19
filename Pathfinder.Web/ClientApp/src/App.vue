@@ -1,12 +1,61 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Домашняя</router-link> |
-      <router-link to="/product">Товары</router-link> |
-      <router-link to="/cb">Тест</router-link> |
-      <router-link to="/about">About</router-link> 
-    </div>
-    <router-view/>
+  <v-app>
+
+      <v-navigation-drawer
+      app
+      clipped
+      >
+        
+  
+        <v-list>
+          <v-list-item :to="{path: '/'}">
+            <v-list-item-action>
+              <v-icon>mdi-widgets</v-icon>
+            </v-list-item-action>
+            <v-list-item-content>
+              <v-list-item-title>
+                Домашняя
+              </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item :to="{path: '/product'}">
+          <v-list-item-action>
+              <v-icon>mdi-home</v-icon>
+            </v-list-item-action>
+            <v-list-item-content>
+              <v-list-item-title>
+                Товары
+              </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item :to="{path: '/about'}">
+          <v-list-item-action>
+              <v-icon>mdi-heart</v-icon>
+            </v-list-item-action>
+            <v-list-item-content>
+              <v-list-item-title>
+                About
+              </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+      </v-navigation-drawer>
+    <v-app-bar 
+      app
+      clipped-left
+    >
+      <v-toolbar-title>App Bar</v-toolbar-title>
+    </v-app-bar>
+    <v-content>
+      <v-container fluid>
+        <v-fade-transition mode="out-in">
+          <router-view></router-view>
+        </v-fade-transition>
+      </v-container>
+    </v-content>   
+
+  </v-app>
   </div>
 </template>
 

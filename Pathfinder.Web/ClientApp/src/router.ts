@@ -33,7 +33,7 @@ export default new Router({
     {
       path: '/create',
       name: 'create',
-      component: () => import(/* webpackChunkName: "about" */ './views/Froms/CreateProductForm.vue'),
+      component: () => import(/* webpackChunkName: "about" */ './views/CreateProductForm.vue'),
     },
 
   ],

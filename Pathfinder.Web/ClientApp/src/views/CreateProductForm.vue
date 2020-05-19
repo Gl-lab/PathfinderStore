@@ -25,9 +25,9 @@
 <script lang="ts">
 import { Component, Vue} from 'vue-property-decorator';
 import axios from 'axios';
-import { IProduct } from '../../models/Interfaces/IProduct';
-import CategoryComboBox from '../comboBox/CategoryComboBox.vue';
-import { Product } from '../../models/Product';
+import { IProduct } from '../models/Interfaces/IProduct';
+import CategoryComboBox from '../components/comboBox/CategoryComboBox.vue';
+import { Product } from '../models/Product';
  
 @Component({
     components: {

@@ -1,26 +1,28 @@
 
 <template>
-  <div class="container">
-    <router-link to="/create">Добавить продукт</router-link> 
-    <table class="table table-bordered table-dark">
-      <thead>
-        <tr>
-          <th v-for="(item, index) in productsCols" v-bind:key="index"> 
-            {{ item.label }}
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(item, index) in products" v-bind:key="index">
-          <td v-for="(col, index) in productsCols" v-bind:key="index">
-            {{ col.field(item) }}
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <button class="btn btn-primary" @click="prevPage()" :disabled = "hasPreviousPage">Назад</button> 
-    <button class="btn btn-primary" @click="nextPage()" :disabled = "hasNextPage">Дальше</button>
-  </div>
+  <v-content>
+    <v-container fluid>
+      <v-btn><router-link to="/create">Добавить продукт</router-link> </v-btn>
+      <table class="table table-bordered table-dark">
+        <thead>
+          <tr>
+            <th v-for="(item, index) in productsCols" v-bind:key="index"> 
+              {{ item.label }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(item, index) in products" v-bind:key="index">
+            <td v-for="(col, index) in productsCols" v-bind:key="index">
+              {{ col.field(item) }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <v-btn @click="prevPage()" :disabled = "hasPreviousPage">Назад</v-btn> 
+      <v-btn @click="nextPage()" :disabled = "hasNextPage">Дальше</v-btn>
+    </v-container>
+  </v-content>
   
 </template>
 
