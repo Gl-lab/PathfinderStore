@@ -1,5 +1,4 @@
-export enum FilteringOperator
-{
+export enum FilteringOperator {
     Contains,
     Not_Contains,
     LT,
@@ -15,5 +14,5 @@ export enum FilteringOperator
     IN,
     NOT_IN,
     IN_CONTAINS,
-    NOT_IN_CONTAINS
+    NOT_IN_CONTAINS,
 }
