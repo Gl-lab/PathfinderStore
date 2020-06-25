@@ -65,7 +65,7 @@ namespace Pathfinder.Web
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddTransient<IProductService, ProductService>();
             services.AddTransient<ICategoryService, CategoryService>();
-            services.AddAutoMapper(typeof(CategoryProfile),typeof(ProductProfile));
+            services.AddAutoMapper(typeof(AutoMapperProfile));
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
