@@ -19,6 +19,10 @@ using System;
 using AutoMapper;
 using Pathfinder.Application.Mapper;
 using VueCliMiddleware;
+using Pathfinder.Web.fromNucleus.Extensions;
+using Microsoft.AspNetCore.Http;
+using Pathfinder.Application.Interfaces.Auth;
+
 
 namespace Pathfinder.Web
 {
@@ -36,9 +40,12 @@ namespace Pathfinder.Web
         {
             services.AddDbContext<PgDbContext>(options => options.UseNpgsql(Configuration["Data:WebDB:ConnectionString"]));
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseNpgsql(Configuration["Data:WebDB:ConnectionString"]));
+                options.UseNpgsql(Configuration["Data:WebDB:ConnectionString"]).UseLazyLoadingProxies());
 
-           
+            services.ConfigureAuthentication();
+            services.ConfigureJwtTokenAuth(Configuration);
+            services.ConfigureCors(Configuration);
+            services.ConfigureDependencyInjection();
            /*services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
                 */
@@ -53,6 +60,13 @@ namespace Pathfinder.Web
             services.AddSwaggerGen(c => 
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Pathfinde API", Version = "v1" });
+                c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+                {
+                    Description = "Standard Authorization header using the Bearer scheme. Example: \"bearer {token}\"",
+                    In = ParameterLocation.Header,
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey
+                });
             });
             //services.AddRazorPages();
 
@@ -65,7 +79,11 @@ namespace Pathfinder.Web
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddTransient<IProductService, ProductService>();
             services.AddTransient<ICategoryService, CategoryService>();
+            services.AddTransient<IPermissionService, PermissionService>();
+            services.AddTransient<IRoleService, RoleService>();
+            services.AddTransient<IUserService, UserService>();
             services.AddAutoMapper(typeof(AutoMapperProfile));
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
@@ -74,6 +92,10 @@ namespace Pathfinder.Web
             {
                 app.UseDeveloperExceptionPage();
                 app.UseDatabaseErrorPage();
+            }
+            else
+            {
+                app.UseHsts();
             }
 
             app.UseHttpsRedirection();
@@ -87,12 +109,10 @@ namespace Pathfinder.Web
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Pathfinder API V1");
             });
-
+            app.UseCors(Configuration["App:CorsOriginPolicyName"]);
             app.UseRouting();
-           /* app.UseAuthentication();
-            app.UseIdentityServer();
-            app.UseAuthorization();
-            */
+            app.UseAuthentication();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

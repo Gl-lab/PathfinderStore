@@ -26,7 +26,7 @@ namespace Nucleus.Web.Api.Controller.Account
         private readonly UserManager<User> _userManager;
         private readonly JwtTokenConfiguration _jwtTokenConfiguration;
         private readonly IConfiguration _configuration;
-        private readonly SmtpClient _smtpClient;
+        //private readonly SmtpClient _smtpClient;
         readonly ILogger<AccountController> _logger;
 
 
@@ -34,12 +34,12 @@ namespace Nucleus.Web.Api.Controller.Account
             UserManager<User> userManager,
             IOptions<JwtTokenConfiguration> jwtTokenConfiguration,
             IConfiguration configuration,
-            SmtpClient smtpClient,
+            //SmtpClient smtpClient,
             ILogger<AccountController> logger)
         {
             _userManager = userManager;
             _configuration = configuration;
-            _smtpClient = smtpClient;
+            //_smtpClient = smtpClient;
             _logger = logger;
             _jwtTokenConfiguration = jwtTokenConfiguration.Value;
         }
@@ -142,7 +142,7 @@ namespace Nucleus.Web.Api.Controller.Account
             );
             message.IsBodyHtml = true;
 #if !DEBUG
-            await _smtpClient.SendMailAsync(message);
+            //await _smtpClient.SendMailAsync(message);
 #endif
             _logger.LogInformation(Environment.NewLine + Environment.NewLine +
                                    "******************* Reset Password Link *******************" +
