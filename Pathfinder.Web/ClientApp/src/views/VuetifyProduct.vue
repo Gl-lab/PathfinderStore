@@ -1,5 +1,8 @@
 <template>
   <div>
+    <v-btn>
+      <router-link to="/create">Добавить продукт</router-link> 
+    </v-btn>
     <v-data-table
       :headers="headers"
       :items="products"

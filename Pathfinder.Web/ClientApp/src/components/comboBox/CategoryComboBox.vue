@@ -1,10 +1,12 @@
 <template>
-    <div class="container">
-        <select v-model="categoryName" @change="respond">
-            <option v-for="option in categories" :key="option.id">
-                {{ option.name }}
-            </option>
-        </select>
+    <div>
+        <v-combobox
+          v-model="select"
+          label="Категория"
+          :items="categories"
+          item-text="name"
+          @input="respond"
+        ></v-combobox>
     </div>
 </template>
 
@@ -23,7 +25,7 @@ export default class CategoryComboBox extends Vue {
   @Prop({ required: true })
     public response!: ICategory;
   private categories: ICategory[] = [new Category(0, 'No data.', '')];
-  private categoryName: string = '';
+  private select: ICategory = null;
   public async mounted() {
     try {
       this.loadData();
@@ -33,14 +35,13 @@ export default class CategoryComboBox extends Vue {
   }
 
   private respond() {
-    this.$sync<Category>('response', this.categories.find((item) => item.name === this.categoryName) as Category);
+    this.$sync<Category>('response', this.select);
   }
 
   private loadData() {
     axios.get('api/Categories').then((response) => {
       this.categories = response.data;
-      this.categoryName = response.data[0].name;
-    }).then(() => this.respond());
+    });
   }
 }
 </script>
