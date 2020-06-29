@@ -1,23 +1,35 @@
 <template>
-    <div class="container">
-        <div class="col-sm-2"> 
-            <label> Наименование </label>
-            <input  type="text" v-model="product.name"/>
-        </div>
-        <div class="col-sm-2"> 
-            <label> Описание </label>
-            <textarea v-model="product.description"></textarea>
-        </div>
-        <div class="col-sm-2"> 
-            <label> Цена </label>
-            <input type="number" v-model.number="product.price"/>
-        </div>
+    <div>
+      <v-col cols="12" sm="6">
+        <v-text-field
+          v-model="product.name"
+          label="Наименование"
+          required
+        ></v-text-field>
+      </v-col>
+      <v-col cols="12" sm="6">
+        <v-textarea
+          v-model="product.description"
+          label="Описание"
+          required
+          filled
+          auto-grow
+        ></v-textarea>
+      </v-col>
+      <v-col cols="12" sm="6">
+        <v-text-field
+            v-model="product.price"
+            label="Цена"
+            min="0"
+            step="1"
+            type="number"
+          ></v-text-field>
+      </v-col>
+      <v-col cols="12" sm="6">
+        <cb :response.sync="product.category"/>
+      </v-col>
         <div class="col-sm-2">
-            <label> Категория </label>
-            <cb :response.sync="product.category"/>
-        </div>
-        <div class="col-sm-2">
-           <button class="btn btn-primary" @click="createProduct">Создать</button>
+           <v-btn class="mr-4" @click="createProduct">Создать</v-btn>
         </div>
         <div class="danger">{{errorText}}</div>
     </div>

@@ -2,7 +2,7 @@ import { IProduct } from './Interfaces/IProduct';
 import { ICategory } from './Interfaces/ICategory';
 import { Category } from './Category';
 export class Product implements IProduct {
-  public id?: number;
+  public id: number;
   public name: string;
   public description: string;
   public price: number;
@@ -14,7 +14,7 @@ export class Product implements IProduct {
     this.description = '';
     this.categoryId = 0;
     this.price = 0;
-    this.category = undefined;
+    this.category = new Category(0, '', '');
   }
 
   public copyModel(target: Product) {
