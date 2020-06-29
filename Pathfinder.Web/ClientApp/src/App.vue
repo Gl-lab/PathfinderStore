@@ -48,6 +48,7 @@
       <v-container fluid>
         <v-fade-transition mode="out-in">
           <router-view></router-view>
+          
         </v-fade-transition>
       </v-container>
     </v-content>   
@@ -56,10 +57,4 @@
   </div>
 </template>
 
-<script lang="ts">
-import { Component, Vue} from 'vue-property-decorator';
-@Component
-export default class App extends Vue {
-
-}
-</script>
+<script src="./App.ts"></script>
