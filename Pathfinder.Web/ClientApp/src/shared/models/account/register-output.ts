@@ -1,0 +1,3 @@
+interface IRegisterOutput {
+  resultMessage: string;
+}

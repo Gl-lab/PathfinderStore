@@ -7,7 +7,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue} from 'vue-property-decorator';
+import { Component, Vue } from 'vue-property-decorator';
 
 import axios from 'axios';
 
@@ -21,6 +21,6 @@ import axios from 'axios';
   },
 })
 export default class Home extends Vue {
-  
+
 }
 </script>

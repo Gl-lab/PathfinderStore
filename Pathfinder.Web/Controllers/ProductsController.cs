@@ -8,6 +8,8 @@ using Pathfinder.Core.Paging;
 using Pathfinder.Application.Interfaces;
 using Pathfinder.Application.Models;
 using System.Net;
+using Microsoft.AspNetCore.Authorization;
+using Pathfinder.Core.Entities.Auth.Permissions;
 
 namespace Pathfinder.Web.Controllers
 {
@@ -72,6 +74,7 @@ namespace Pathfinder.Web.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(ProductModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Authorize(Policy = DefaultPermissions.PermissionNameForAdministration)]
         public async Task<ActionResult<ProductModel>> CreateProduct(ProductModel product)
         {
             var Result = await productService.CreateProduct(product);
@@ -82,6 +85,7 @@ namespace Pathfinder.Web.Controllers
         [HttpPut]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Authorize(Policy = DefaultPermissions.PermissionNameForAdministration)]
         public async Task<ActionResult> UpdateProduct(ProductModel product)
         {
             await productService.UpdateProduct(product);
@@ -92,6 +96,7 @@ namespace Pathfinder.Web.Controllers
         [HttpDelete]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Authorize(Policy = DefaultPermissions.PermissionNameForAdministration)]
         public async Task<ActionResult> DeleteProductById(ProductModel product)
         {
             await productService.DeleteProductById(product.Id);
