@@ -15,7 +15,7 @@ export default class ResetPasswordComponent extends NucleusComponentBase {
       this.nucleusService.post<IResetPasswordOutput>('/api/resetPassword', this.resetPasswordInput)
                 .then((response) => {
                   if (!response.isError) {
-                    this.resultMessage = this.$t('PasswordResetSuccessful').toString();
+                    this.resultMessage = 'PasswordResetSuccessful';
                     this.isPasswordReset = true;
                   } else {
                     this.errors = response.errors;

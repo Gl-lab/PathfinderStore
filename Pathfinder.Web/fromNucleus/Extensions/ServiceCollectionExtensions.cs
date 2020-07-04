@@ -42,6 +42,15 @@ namespace Pathfinder.Web.fromNucleus.Extensions
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
+            services.Configure<IdentityOptions>(options =>
+                {
+                    // Password settings.
+                    options.Password.RequireLowercase = false;
+                    options.Password.RequireNonAlphanumeric = false;
+                    options.Password.RequireUppercase = false;
+                    options.Password.RequiredUniqueChars = 2;
+                });
+
             services.AddAuthorization(options =>
             {
                 foreach (var permission in DefaultPermissions.All())

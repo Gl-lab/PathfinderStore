@@ -14,7 +14,7 @@ export default class ForgotPasswordComponent extends NucleusComponentBase {
       this.nucleusService.post<IForgotPasswordOutput>('/api/forgotPassword', this.forgotPasswordInput)
                 .then((response) => {
                   if (!response.isError) {
-                    this.resultMessage = this.$t('EMailSentSuccessfully').toString();
+                    this.resultMessage = 'EMailSentSuccessfully';
                     this.isEmailSent = true;
                   } else {
                     this.errors = response.errors;
