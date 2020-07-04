@@ -19,7 +19,6 @@ const router = new Router({
     },
     {
       path: '/vuetifyproduct',
-      meta: { requiresAuth: true },
       name: 'VuetifyProduct',
       component: VuetifyProduct,
     },
@@ -30,6 +29,7 @@ const router = new Router({
     },
     {
       path: '/create',
+      meta: { requiresAuth: true },
       name: 'create',
       component: () => import('./views/CreateProductForm.vue'),
     },
@@ -39,8 +39,8 @@ const router = new Router({
       children: [
           { path: 'login', component: require('@/account/views/login/login.vue').default },
           { path: 'register', component: require('@/account/views/register/register.vue').default },
-          { path: 'forgot-password', component: require('@/account/views/manage/forgot-password.vue').default },
-          { path: 'reset-password', component: require('@/account/views/manage/reset-password.vue').default },
+          // { path: 'forgot-password', component: require('@/account/views/manage/forgot-password.vue').default },
+          // { path: 'reset-password', component: require('@/account/views/manage/reset-password.vue').default },
       ],
     },
 
@@ -49,7 +49,7 @@ const router = new Router({
 
 router.beforeEach((to: any, from: any, next: any) => {
   if (to.matched.some((record: any) => record.meta.requiresAuth)) {
-    if (!AuthStore.isSignedIn()) {
+    if (localStorage.getItem('token') == null) {
       next({
         path: '/account/login',
         query: { redirect: to.fullPath },

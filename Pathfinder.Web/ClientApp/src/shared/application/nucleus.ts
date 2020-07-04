@@ -10,8 +10,7 @@ const nucleus = {
   auth: {
     grantedPermissions: [] as IPermissionDto[],
     isGranted(permissionName: string) {
-        // tslint:disable-next-line: triple-equals
-      return this.grantedPermissions.filter((p) => p.name == permissionName).length > 0;
+      return this.grantedPermissions.filter((p) => p.name === permissionName).length > 0;
     },
     removeProps() {
       this.grantedPermissions = [];

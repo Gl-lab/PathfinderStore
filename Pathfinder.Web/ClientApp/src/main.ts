@@ -5,28 +5,22 @@ import vuetify from './plugins/vuetify';
 import '@babel/polyfill';
 import 'roboto-fontface/css/roboto/roboto-fontface.css';
 import '@mdi/font/css/materialdesignicons.css';
-import VueI18n from 'vue-i18n';
-import LanguageStore from '@/stores/language-store';
+import VueAxios from 'vue-axios';
+import axios from 'axios';
 
-Vue.use(VueI18n);
 Vue.config.productionTip = false;
-
-const locales = {
-  en: require('@/assets/localizations/en.json'),
-};
-
-const i18n = new VueI18n({
-  locale: LanguageStore.getLanguage().languageCode,
-  fallbackLocale: 'en',
-  messages: locales,
-});
+Vue.use(VueAxios, axios);
 
 Vue.prototype.$sync = function(key: string, value: any) {
   this.$emit(`update:${key}`, value);
 };
 
+const token = localStorage.getItem('token');
+if (token != null) {
+  Vue.prototype.$http.defaults.headers.common.Authorization = `Bearer ${token}`;
+}
+
 new Vue({
-  i18n,
   router,
   vuetify,
   render: (h) => h(App),

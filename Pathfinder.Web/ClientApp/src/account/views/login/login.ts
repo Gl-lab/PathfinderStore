@@ -1,23 +1,24 @@
-import { Component } from 'vue-property-decorator';
-import NucleusComponentBase from '@/shared/application/nucleus-component-base';
+import { Vue, Component } from 'vue-property-decorator';
 
 @Component
-export default class LoginComponent extends NucleusComponentBase {
+export default class LoginComponent extends Vue {
   public refs = this.$refs as any;
   public loginInput = {} as ILoginInput;
   public errors: INameValueDto[] = [];
+  public isHaveError: boolean = false;
 
   public onSubmit() {
     if (this.refs.form.validate()) {
-      this.nucleusService.post<ILoginOutput>('/api/login', this.loginInput)
-                .then((response) => {
-                  if (!response.isError) {
-                    this.authStore.setToken(response.content.token);
-                    this.$router.push({ path: '/admin/home' });
-                  } else {
-                    this.errors = response.errors;
-                  }
-                });
+      this.$http.post('/api/login', this.loginInput)
+        .then((response) => {
+          localStorage.setItem('token', response.data.token);
+          this.$router.push('/');
+          this.isHaveError = false;
+        }).catch((errors) => {
+          this.errors = errors.response.data;
+          this.isHaveError = true;
+        });
     }
   }
+  protected requiredError = (v: any) => !!v || 'RequiredField';
 }

@@ -54,7 +54,7 @@ namespace Pathfinder.Core.Entities.Auth.Users
 
         private const string AdminUserName = "admin";
         private const string AdminUserEmail = "admin@mail.com";
-        private const string PasswordHashFor123Qwe = "AM4OLBpptxBYmM79lGOX9egzZk3vIQU3d/gFCJzaBjAPXzYIK3tQ2N7X4fcrHtElTw=="; //123qwe
+        private const string PasswordHashFor123Qwe = "AQAAAAEAACcQAAAAEPZ85aLX3oCrOfmyD5aQWLzR2F53RxX0ko4ManWsiPXnbeKcL3YMOIKANLWsukGMzw=="; //123qwe
         private const string MemberUserName = "memberuser";
         private const string MemberUserEmail = "memberuser@mail.com";
         private const string TestAdminUserName = "testadmin";
