@@ -13,6 +13,5 @@ namespace Pathfinder.Application.Mapper
             CreateMap<Product, ProductModel>()
                 .ReverseMap();
         }
-
     }
 }

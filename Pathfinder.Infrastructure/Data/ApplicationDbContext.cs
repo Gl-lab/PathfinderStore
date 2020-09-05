@@ -67,6 +67,5 @@ namespace Pathfinder.Infrastructure.Data
             modelBuilder.Entity<RoleClaim>().ToTable("RoleClaim");
             modelBuilder.Entity<UserToken>().ToTable("UserToken");
         }
-
     }
 }

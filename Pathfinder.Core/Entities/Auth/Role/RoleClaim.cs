@@ -5,6 +5,5 @@ namespace Pathfinder.Core.Entities.Auth.Roles
 {
     public class RoleClaim : IdentityRoleClaim<Guid>
     {
-
     }
 }

@@ -11,7 +11,7 @@ namespace Pathfinder.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     [Migration("20200625181753_identity")]
-    partial class identity
+    partial class Identity
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

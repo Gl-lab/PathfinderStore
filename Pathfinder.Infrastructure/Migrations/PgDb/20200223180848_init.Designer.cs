@@ -11,7 +11,7 @@ namespace Pathfinder.Infrastructure.Migrations.PgDb
 {
     [DbContext(typeof(PgDbContext))]
     [Migration("20200223180848_init")]
-    partial class init
+    partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

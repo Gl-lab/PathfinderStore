@@ -16,7 +16,7 @@ namespace Pathfinder.Infrastructure.Data
         public static async void  EnsurePopulated(IServiceProvider serviceProvider)
         {
             UserManager<ApplicationUser> userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-            ApplicationUser user = await userManager.FindByNameAsync(adminUser);
+            ApplicationUser user = await userManager.FindByNameAsync(adminUser).ConfigureAwait(false);
             if (user == null)
             {
                 user = new ApplicationUser(adminUser);

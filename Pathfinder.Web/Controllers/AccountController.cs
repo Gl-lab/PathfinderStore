@@ -16,19 +16,18 @@ using Pathfinder.Application.Models.Auth.Account;
 using Pathfinder.Application.Models.Auth;
 using Pathfinder.Core.Entities.Auth.Permissions;
 using Pathfinder.Core.Entities.Auth.Users;
-using Pathfinder.Web.fromNucleus.Authentication;
-using Pathfinder.Web.fromNucleus.Controllers;
+using Pathfinder.Web.Authentication;
+using Pathfinder.Web.Controllers.Base;
 
-namespace Nucleus.Web.Api.Controller.Account
+namespace Pathfinder.Web.Controllers
 {
     public class AccountController : BaseController
     {
-        private readonly UserManager<User> _userManager;
-        private readonly JwtTokenConfiguration _jwtTokenConfiguration;
-        private readonly IConfiguration _configuration;
+        private readonly UserManager<User> userManager;
+        private readonly JwtTokenConfiguration jwtTokenConfiguration;
+        private readonly IConfiguration configuration;
         //private readonly SmtpClient _smtpClient;
-        readonly ILogger<AccountController> _logger;
-
+        private readonly ILogger<AccountController> logger;
 
         public AccountController(
             UserManager<User> userManager,
@@ -37,17 +36,17 @@ namespace Nucleus.Web.Api.Controller.Account
             //SmtpClient smtpClient,
             ILogger<AccountController> logger)
         {
-            _userManager = userManager;
-            _configuration = configuration;
+            this.userManager = userManager;
+            this.configuration = configuration;
             //_smtpClient = smtpClient;
-            _logger = logger;
-            _jwtTokenConfiguration = jwtTokenConfiguration.Value;
+            this.logger = logger;
+            this.jwtTokenConfiguration = jwtTokenConfiguration.Value;
         }
 
         [HttpPost("/api/[action]")]
         public async Task<ActionResult<LoginOutput>> Login([FromBody]LoginInput input)
         {
-            var userToVerify = await CreateClaimsIdentityAsync(input.UserNameOrEmail, input.Password);
+            var userToVerify = await CreateClaimsIdentityAsync(input.UserNameOrEmail, input.Password).ConfigureAwait(false);
             if (userToVerify == null)
             {
                 return BadRequest(new List<NameValueDto>
@@ -58,12 +57,12 @@ namespace Nucleus.Web.Api.Controller.Account
 
             var token = new JwtSecurityToken
             (
-                issuer: _jwtTokenConfiguration.Issuer,
-                audience: _jwtTokenConfiguration.Audience,
+                issuer: jwtTokenConfiguration.Issuer,
+                audience: jwtTokenConfiguration.Audience,
                 claims: userToVerify.Claims,
-                expires: _jwtTokenConfiguration.EndDate,
-                notBefore: _jwtTokenConfiguration.StartDate,
-                signingCredentials: _jwtTokenConfiguration.SigningCredentials
+                notBefore: jwtTokenConfiguration.StartDate,
+                expires: jwtTokenConfiguration.EndDate,
+                signingCredentials: jwtTokenConfiguration.SigningCredentials
             );
 
             return Ok(new LoginOutput { Token = new JwtSecurityTokenHandler().WriteToken(token) });
@@ -72,7 +71,7 @@ namespace Nucleus.Web.Api.Controller.Account
         [HttpPost("/api/[action]")]
         public async Task<ActionResult> Register([FromBody]RegisterInput input)
         {
-            var user = await _userManager.FindByEmailAsync(input.Email);
+            var user = await userManager.FindByEmailAsync(input.Email).ConfigureAwait(false);
             if (user != null)
             {
                 return BadRequest(new List<NameValueDto>
@@ -88,7 +87,7 @@ namespace Nucleus.Web.Api.Controller.Account
                 EmailConfirmed = true
             };
 
-            var result = await _userManager.CreateAsync(applicationUser, input.Password);
+            var result = await userManager.CreateAsync(applicationUser, input.Password).ConfigureAwait(false);
 
             if (!result.Succeeded)
             {
@@ -110,8 +109,8 @@ namespace Nucleus.Web.Api.Controller.Account
                 });
             }
 
-            var user = await _userManager.FindByNameAsync(User.Identity.Name);
-            var result = await _userManager.ChangePasswordAsync(user, input.CurrentPassword, input.NewPassword);
+            var user = await userManager.FindByNameAsync(User.Identity.Name).ConfigureAwait(false);
+            var result = await userManager.ChangePasswordAsync(user, input.CurrentPassword, input.NewPassword).ConfigureAwait(false);
             if (!result.Succeeded)
             {
                 return BadRequest(result.Errors.Select(e => new NameValueDto(e.Code, e.Description)).ToList());
@@ -123,7 +122,7 @@ namespace Nucleus.Web.Api.Controller.Account
         [HttpPost("/api/[action]")]
         public async Task<ActionResult<ForgotPasswordOutput>> ForgotPassword([FromBody] ForgotPasswordInput input)
         {
-            var user = await FindUserByUserNameOrEmail(input.UserNameOrEmail);
+            var user = await FindUserByUserNameOrEmail(input.UserNameOrEmail).ConfigureAwait(false);
             if (user == null)
             {
                 return NotFound(new List<NameValueDto>
@@ -132,19 +131,21 @@ namespace Nucleus.Web.Api.Controller.Account
                 });
             }
 
-            var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var callbackUrl = _configuration["App:ClientUrl"] + "/account/reset-password?token=" + resetToken;
+            var resetToken = await userManager.GeneratePasswordResetTokenAsync(user).ConfigureAwait(false);
+            var callbackUrl = configuration["App:ClientUrl"] + "/account/reset-password?token=" + resetToken;
             var message = new MailMessage(
-                from: _configuration["Email:Smtp:Username"],
+                from: configuration["Email:Smtp:Username"],
                 to: "alirizaadiyahsi@gmail.com",
                 subject: "Reset your password",
                 body: $"Please confirm your account by clicking this link: <a href='{callbackUrl}'>link</a>"
-            );
-            message.IsBodyHtml = true;
+            )
+            {
+                IsBodyHtml = true
+            };
 #if !DEBUG
             //await _smtpClient.SendMailAsync(message);
 #endif
-            _logger.LogInformation(Environment.NewLine + Environment.NewLine +
+            logger.LogInformation(Environment.NewLine + Environment.NewLine +
                                    "******************* Reset Password Link *******************" +
                                    Environment.NewLine + Environment.NewLine +
                                    callbackUrl +
@@ -157,7 +158,7 @@ namespace Nucleus.Web.Api.Controller.Account
         [HttpPost("/api/[action]")]
         public async Task<ActionResult> ResetPassword([FromBody] ResetPasswordInput input)
         {
-            var user = await FindUserByUserNameOrEmail(input.UserNameOrEmail);
+            var user = await FindUserByUserNameOrEmail(input.UserNameOrEmail).ConfigureAwait(false);
             if (user == null)
             {
                 return NotFound(new List<NameValueDto>
@@ -166,7 +167,7 @@ namespace Nucleus.Web.Api.Controller.Account
                 });
             }
 
-            var result = await _userManager.ResetPasswordAsync(user, input.Token, input.Password);
+            var result = await userManager.ResetPasswordAsync(user, input.Token, input.Password).ConfigureAwait(false);
             if (!result.Succeeded)
             {
                 return BadRequest(result.Errors.Select(e => new NameValueDto(e.Code, e.Description)).ToList());
@@ -182,14 +183,14 @@ namespace Nucleus.Web.Api.Controller.Account
                 return null;
             }
 
-            var userToVerify = await FindUserByUserNameOrEmail(userNameOrEmail);
+            var userToVerify = await FindUserByUserNameOrEmail(userNameOrEmail).ConfigureAwait(false);
 
             if (userToVerify == null)
             {
                 return null;
             }
 
-            if (await _userManager.CheckPasswordAsync(userToVerify, password))
+            if (await userManager.CheckPasswordAsync(userToVerify, password).ConfigureAwait(false))
             {
                 return new ClaimsIdentity(new GenericIdentity(userNameOrEmail, "Token"), new[]
                 {
@@ -204,8 +205,8 @@ namespace Nucleus.Web.Api.Controller.Account
 
         private async Task<User> FindUserByUserNameOrEmail(string userNameOrEmail)
         {
-            return await _userManager.FindByNameAsync(userNameOrEmail) ??
-                   await _userManager.FindByEmailAsync(userNameOrEmail);
+            return await userManager.FindByNameAsync(userNameOrEmail).ConfigureAwait(false) ??
+                   await userManager.FindByEmailAsync(userNameOrEmail).ConfigureAwait(false);
         }
     }
 }

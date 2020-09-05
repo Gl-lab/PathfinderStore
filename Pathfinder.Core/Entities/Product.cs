@@ -15,6 +15,5 @@ namespace Pathfinder.Core.Entities
         // n-1 relationships
         public int CategoryId { get; set; }
         public virtual Category Category { get; set; }
-     
     }
 }

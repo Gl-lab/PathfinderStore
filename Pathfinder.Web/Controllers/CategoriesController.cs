@@ -28,7 +28,7 @@ namespace Pathfinder.Web.Controllers
         [ProducesResponseType(typeof(IEnumerable<CategoryModel>), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<IEnumerable<CategoryModel>>> Categories()
         {
-            var categories = await CategoryService.GetCategoryList ();
+            var categories = await CategoryService.GetCategoryList ().ConfigureAwait(false);
             return Ok(categories);
         }
 
@@ -37,7 +37,7 @@ namespace Pathfinder.Web.Controllers
         [ProducesResponseType(typeof(IPagedList<CategoryModel>), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<IPagedList<CategoryModel>>> SearchCategories(PageSearchArgs arg)
         {
-            var categoryPagedList = await CategoryService.SearchCategories(arg);
+            var categoryPagedList = await CategoryService.SearchCategories(arg).ConfigureAwait(false);
             return Ok(categoryPagedList);
         }
 
@@ -46,10 +46,8 @@ namespace Pathfinder.Web.Controllers
         [ProducesResponseType(typeof(CategoryModel), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<CategoryModel>> GetCategoryById(int id)
         {
-            var product = await CategoryService.GetById(id);
+            var product = await CategoryService.GetById(id).ConfigureAwait(false);
             return Ok(product);
         }
-
-        
     }
 }

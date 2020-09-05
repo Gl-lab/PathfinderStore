@@ -16,7 +16,7 @@ namespace Pathfinder.Application.Interfaces.Auth
         Task<IdentityResult> AddUserAsync(CreateOrUpdateUserInput input);
 
         Task<IdentityResult> EditUserAsync(CreateOrUpdateUserInput input);
-        
+
         Task<IdentityResult> RemoveUserAsync(Guid id);
     }
 }

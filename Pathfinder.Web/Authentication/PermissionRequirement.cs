@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Pathfinder.Core.Entities.Auth.Permissions;
 
-namespace Pathfinder.Web.fromNucleus.Authentication
+namespace Pathfinder.Web.Authentication
 {
     public class PermissionRequirement : IAuthorizationRequirement
     {

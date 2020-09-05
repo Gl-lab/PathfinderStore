@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Pathfinder.Application.Models.Auth.Roles;
 using Pathfinder.Application.Models.Auth.Permissions;
 
-
 namespace Pathfinder.Application.Models.Auth.Roles
 {
     public class GetRoleForCreateOrUpdateOutput

@@ -23,7 +23,6 @@ using Pathfinder.Web.fromNucleus.Extensions;
 using Microsoft.AspNetCore.Http;
 using Pathfinder.Application.Interfaces.Auth;
 
-
 namespace Pathfinder.Web
 {
     public class Startup
@@ -57,7 +56,7 @@ namespace Pathfinder.Web
                 .AddIdentityServerJwt();
                 */
             services.AddControllers();
-            services.AddSwaggerGen(c => 
+            services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Pathfinde API", Version = "v1" });
                 c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
@@ -70,10 +69,7 @@ namespace Pathfinder.Web
             });
             //services.AddRazorPages();
 
-            services.AddSpaStaticFiles(configuration =>
-            {
-                 configuration.RootPath = "ClientApp/dist";
-            });
+            services.AddSpaStaticFiles(configuration => configuration.RootPath = "ClientApp/dist");
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
@@ -105,18 +101,12 @@ namespace Pathfinder.Web
                 app.UseSpaStaticFiles();
             }*/
             app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Pathfinder API V1");
-            });
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Pathfinder API V1"));
             app.UseCors(Configuration["App:CorsOriginPolicyName"]);
             app.UseRouting();
             app.UseAuthentication();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
+            app.UseEndpoints(endpoints => endpoints.MapControllers());
 
             app.UseSpa(spa =>
             {
@@ -129,7 +119,6 @@ namespace Pathfinder.Web
                 {
                     spa.UseVueCli(npmScript: "serve");
                 }
-
             });
             //IdentitySeedData.EnsurePopulated(serviceProvider);
             PathfinderSeed.SeedAsync(serviceProvider).Wait();
