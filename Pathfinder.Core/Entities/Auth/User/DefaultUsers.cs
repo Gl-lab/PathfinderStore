@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Pathfinder.Core.Entities.Auth.Users
 {
-    public class DefaultUsers
+    public static class DefaultUsers
     {
         public static List<User> All()
         {

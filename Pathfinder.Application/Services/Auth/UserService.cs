@@ -18,34 +18,34 @@ namespace Pathfinder.Application.Services
 {
     public class UserService : IUserService
     {
-        private readonly UserManager<User> _userManager;
-        private readonly IMapper _mapper;
-        private readonly ApplicationDbContext _dbContext;
+        private readonly UserManager<User> userManager;
+        private readonly IMapper mapper;
+        private readonly ApplicationDbContext dbContext;
 
         public UserService(IMapper mapper,
             UserManager<User> userManager,
             ApplicationDbContext dbContext)
         {
-            _mapper = mapper;
-            _userManager = userManager;
-            _dbContext = dbContext;
+            this.mapper = mapper;
+            this.userManager = userManager;
+            this.dbContext = dbContext;
         }
 
         public async Task<IPagedList<UserListOutput>> GetUsersAsync(UserListInput input)
         {
-            var query = _userManager.Users.Where(
-                    predicate => predicate.UserName.Contains(input.FilteringOptions.First().Value as String) ||
-                                 predicate.Email.Contains(input.FilteringOptions.First().Value as String))
-                .OrderBy(input.SortingOptions?.Count > 0 ? "UserName" : input.SortingOptions.First().Field);
-            var usersCount = await query.CountAsync();
-            IEnumerable<UserListOutput> userListOutput = _mapper.Map<List<UserListOutput>>(query.ToArray());
+            var query = userManager.Users.Where(
+                    predicate => predicate.UserName.Contains(input.FilteringOptions[0].Value as String) ||
+                                 predicate.Email.Contains(input.FilteringOptions[0].Value as String))
+                .OrderBy(input.SortingOptions?.Count > 0 ? "UserName" : input.SortingOptions[0].Field);
+            var usersCount = await query.CountAsync().ConfigureAwait(false);
+            IEnumerable<UserListOutput> userListOutput = mapper.Map<List<UserListOutput>>(query.ToArray());
             int pageCount = usersCount/input.PageSize;
             return new PagedList<UserListOutput>(input.PageIndex, input.PageSize, usersCount, pageCount, userListOutput);
         }
 
         public async Task<GetUserForCreateOrUpdateOutput> GetUserForCreateOrUpdateAsync(Guid id)
         {
-            var allRoles = _mapper.Map<List<RoleModel>>(_dbContext.Roles).OrderBy(r => r.Name).ToList();
+            var allRoles = mapper.Map<List<RoleModel>>(dbContext.Roles).OrderBy(r => r.Name).ToList();
             var getUserForCreateOrUpdateOutput = new GetUserForCreateOrUpdateOutput
             {
                 AllRoles = allRoles
@@ -56,7 +56,7 @@ namespace Pathfinder.Application.Services
                 return getUserForCreateOrUpdateOutput;
             }
 
-            return await GetUserForCreateOrUpdateOutputAsync(id, allRoles);
+            return await GetUserForCreateOrUpdateOutputAsync(id, allRoles).ConfigureAwait(false);
         }
 
         public async Task<IdentityResult> AddUserAsync(CreateOrUpdateUserInput input)
@@ -68,7 +68,7 @@ namespace Pathfinder.Application.Services
                 Email = input.User.Email
             };
 
-            var createUserResult = await _userManager.CreateAsync(user, input.User.Password);
+            var createUserResult = await userManager.CreateAsync(user, input.User.Password).ConfigureAwait(false);
             if (createUserResult.Succeeded)
             {
                 GrantRolesToUser(input.GrantedRoleIds, user);
@@ -79,7 +79,7 @@ namespace Pathfinder.Application.Services
 
         public async Task<IdentityResult> EditUserAsync(CreateOrUpdateUserInput input)
         {
-            var user = await _userManager.FindByIdAsync(input.User.Id.ToString());
+            var user = await userManager.FindByIdAsync(input.User.Id.ToString()).ConfigureAwait(false);
             if (user.UserName == input.User.UserName && user.Id != input.User.Id)
             {
                 return IdentityResult.Failed(new IdentityError
@@ -91,19 +91,19 @@ namespace Pathfinder.Application.Services
 
             if (!string.IsNullOrEmpty(input.User.Password))
             {
-                var changePasswordResult = await ChangePassword(user, input.User.Password);
+                var changePasswordResult = await ChangePassword(user, input.User.Password).ConfigureAwait(false);
                 if (!changePasswordResult.Succeeded)
                 {
                     return changePasswordResult;
                 }
             }
 
-            return await UpdateUser(input, user);
+            return await UpdateUser(input, user).ConfigureAwait(false);
         }
 
         public async Task<IdentityResult> RemoveUserAsync(Guid id)
         {
-            var user = _userManager.Users.FirstOrDefault(u => u.Id == id);
+            var user = userManager.Users.FirstOrDefault(u => u.Id == id);
             if (user == null)
             {
                 return IdentityResult.Failed(new IdentityError
@@ -122,7 +122,7 @@ namespace Pathfinder.Application.Services
                 });
             }
 
-            var removeUserResult = await _userManager.DeleteAsync(user);
+            var removeUserResult = await userManager.DeleteAsync(user).ConfigureAwait(false);
             if (!removeUserResult.Succeeded)
             {
                 return removeUserResult;
@@ -137,7 +137,7 @@ namespace Pathfinder.Application.Services
         {
             foreach (var roleId in grantedRoleIds)
             {
-                _dbContext.UserRoles.Add(new UserRole
+                dbContext.UserRoles.Add(new UserRole
                 {
                     RoleId = roleId,
                     UserId = user.Id
@@ -147,10 +147,10 @@ namespace Pathfinder.Application.Services
 
         private async Task<IdentityResult> ChangePassword(User user, string password)
         {
-            var changePasswordResult = await _userManager.RemovePasswordAsync(user);
+            var changePasswordResult = await userManager.RemovePasswordAsync(user).ConfigureAwait(false);
             if (changePasswordResult.Succeeded)
             {
-                changePasswordResult = await _userManager.AddPasswordAsync(user, password);
+                changePasswordResult = await userManager.AddPasswordAsync(user, password).ConfigureAwait(false);
             }
 
             return changePasswordResult;
@@ -163,7 +163,7 @@ namespace Pathfinder.Application.Services
             user.UserRoles.Clear();
             user.SecurityStamp = Guid.NewGuid().ToString();
 
-            var updateUserResult = await _userManager.UpdateAsync(user);
+            var updateUserResult = await userManager.UpdateAsync(user).ConfigureAwait(false);
             if (updateUserResult.Succeeded)
             {
                 GrantRolesToUser(input.GrantedRoleIds, user);
@@ -174,8 +174,8 @@ namespace Pathfinder.Application.Services
 
         private async Task<GetUserForCreateOrUpdateOutput> GetUserForCreateOrUpdateOutputAsync(Guid id, List<RoleModel> allRoles)
         {
-            var user = await _userManager.FindByIdAsync(id.ToString());
-            var userDto = _mapper.Map<UserModel>(user);
+            var user = await userManager.FindByIdAsync(id.ToString()).ConfigureAwait(false);
+            var userDto = mapper.Map<UserModel>(user);
             var grantedRoles = user.UserRoles.Select(ur => ur.Role);
 
             return new GetUserForCreateOrUpdateOutput

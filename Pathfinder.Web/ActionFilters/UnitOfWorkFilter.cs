@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 using Pathfinder.Infrastructure.Data;
 
-namespace Pathfinder.Web.fromNucleus.ActionFilters
+namespace Pathfinder.Web.ActionFilters
 {
     public class UnitOfWorkActionFilter : ActionFilterAttribute
     {

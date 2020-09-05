@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Pathfinder.Core.Entities.Auth.Permissions
 {
-    public class DefaultPermissions
+    public static class DefaultPermissions
     {
         public static List<Permission> All()
         {

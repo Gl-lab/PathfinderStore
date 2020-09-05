@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Pathfinder.Infrastructure.Migrations
 {
-    public partial class identity : Migration
+    public partial class Identity : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -19,25 +19,9 @@ namespace Pathfinder.Infrastructure.Migrations
                     Name = table.Column<string>(nullable: true),
                     DisplayName = table.Column<string>(nullable: true)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Permission", x => x.Id);
-                });
+                constraints: table => table.PrimaryKey("PK_Permission", x => x.Id));
 
-            migrationBuilder.CreateTable(
-                name: "Role",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(nullable: false),
-                    Name = table.Column<string>(maxLength: 256, nullable: true),
-                    NormalizedName = table.Column<string>(maxLength: 256, nullable: true),
-                    ConcurrencyStamp = table.Column<string>(nullable: true),
-                    IsSystemDefault = table.Column<bool>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Role", x => x.Id);
-                });
+            _ = migrationBuilder.CreateTable(name: "Role", columns: table => new { Id = table.Column<Guid>(nullable: false), Name = table.Column<string>(maxLength: 256, nullable: true), NormalizedName = table.Column<string>(maxLength: 256, nullable: true), ConcurrencyStamp = table.Column<string>(nullable: true), IsSystemDefault = table.Column<bool>(nullable: false) }, constraints: table => table.PrimaryKey("PK_Role", x => x.Id));
 
             migrationBuilder.CreateTable(
                 name: "User",
@@ -59,10 +43,7 @@ namespace Pathfinder.Infrastructure.Migrations
                     LockoutEnabled = table.Column<bool>(nullable: false),
                     AccessFailedCount = table.Column<int>(nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_User", x => x.Id);
-                });
+                constraints: table => table.PrimaryKey("PK_User", x => x.Id));
 
             migrationBuilder.CreateTable(
                 name: "RoleClaim",

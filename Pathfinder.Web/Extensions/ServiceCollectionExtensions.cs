@@ -13,8 +13,8 @@ using Pathfinder.Core.Entities.Auth.Permissions;
 using Pathfinder.Core.Entities.Auth.Roles;
 using Pathfinder.Core.Entities.Auth.Users;
 using Pathfinder.Infrastructure.Data;
-using Pathfinder.Web.fromNucleus.ActionFilters;
-using Pathfinder.Web.fromNucleus.Authentication;
+using Pathfinder.Web.ActionFilters;
+using Pathfinder.Web.Authentication;
 
 namespace Pathfinder.Web.fromNucleus.Extensions
 {
@@ -133,7 +133,7 @@ namespace Pathfinder.Web.fromNucleus.Extensions
 
         public static void ConfigureSmtp(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddScoped(serviceProvider => new SmtpClient
+            services.AddScoped(_ => new SmtpClient
             {
                 Host = configuration["Email:Smtp:Host"],
                 Port = int.Parse(configuration["Email:Smtp:Port"]),

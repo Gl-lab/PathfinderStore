@@ -38,7 +38,7 @@ namespace Pathfinder.Infrastructure.Paging
                           );
 
             TotalCount = pagingArgs.PagingStrategy == PagingStrategy.NoCount
-                ? (PageIndex - 1) * PageSize + items.Count
+                ? ((PageIndex - 1) * PageSize) + items.Count
                 : TotalCount;
 
             TotalPages = TotalCount / PageSize;

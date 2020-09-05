@@ -4,7 +4,7 @@ namespace Pathfinder.Core.Entities.Base
     {
         public virtual TId Id { get; protected set; }
 
-        int? _requestedHashCode;
+        private int? _requestedHashCode;
 
         public bool IsTransient()
         {
@@ -35,18 +35,20 @@ namespace Pathfinder.Core.Entities.Base
             if (!IsTransient())
             {
                 if (!_requestedHashCode.HasValue)
-                    _requestedHashCode = Id.GetHashCode() ^ 31; 
+                    _requestedHashCode = Id.GetHashCode() ^ 31;
 
                 return _requestedHashCode.Value;
             }
             else
+            {
                 return base.GetHashCode();
+            }
         }
 
         public static bool operator ==(EntityBase<TId> left, EntityBase<TId> right)
         {
             if (Equals(left, null))
-                return Equals(right, null) ? true : false;
+                return Equals(right, null);
             else
                 return left.Equals(right);
         }

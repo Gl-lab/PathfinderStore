@@ -15,39 +15,38 @@ using Pathfinder.Infrastructure.Data;
 using Pathfinder.Core.Paging;
 using Pathfinder.Infrastructure.Paging;
 
-
 namespace  Pathfinder.Application.Services
 {
     public class RoleService : IRoleService
     {
-        private readonly ApplicationDbContext _dbContext;
-        private readonly RoleManager<Role> _roleManager;
-        private readonly IMapper _mapper;
+        private readonly ApplicationDbContext dbContext;
+        private readonly RoleManager<Role> roleManager;
+        private readonly IMapper mapper;
 
         public RoleService(ApplicationDbContext dbContext, RoleManager<Role> roleManager, IMapper mapper)
         {
-            _dbContext = dbContext;
-            _roleManager = roleManager;
-            _mapper = mapper;
+            this.dbContext = dbContext;
+            this.roleManager = roleManager;
+            this.mapper = mapper;
         }
 
         public async Task<IPagedList<RoleListOutput>> GetRolesAsync(RoleListInput input)
         {
             var a = input.FilteringOptions?.Count > 0;
-            var query = _roleManager.Roles.Where(
-                    
-                    predicate => predicate.Name.Contains(input.FilteringOptions.First().Value as String))
+            var query = roleManager.Roles.Where(
+
+                    predicate => predicate.Name.Contains(input.FilteringOptions[0].Value as string))
                 .OrderBy(string.IsNullOrEmpty(input.SortingOptions?.First().Field) ? "Name" : input.SortingOptions?.First().Field);
 
-            var rolesCount = await query.CountAsync();
-            IEnumerable<RoleListOutput> roleListOutput = _mapper.Map<List<RoleListOutput>>(await query.ToArrayAsync());
+            var rolesCount = await query.CountAsync().ConfigureAwait(false);
+            IEnumerable<RoleListOutput> roleListOutput = mapper.Map<List<RoleListOutput>>(await query.ToArrayAsync().ConfigureAwait(false));
             int pageCount = rolesCount/input.PageSize;
             return new PagedList<RoleListOutput>(input.PageIndex, input.PageSize, rolesCount, pageCount, roleListOutput);
         }
 
         public async Task<GetRoleForCreateOrUpdateOutput> GetRoleForCreateOrUpdateAsync(Guid id)
         {
-            var allPermissions = _mapper.Map<List<PermissionModel>>(_dbContext.Permissions).OrderBy(p => p.DisplayName).ToList();
+            var allPermissions = mapper.Map<List<PermissionModel>>(dbContext.Permissions).OrderBy(p => p.DisplayName).ToList();
             var getRoleForCreateOrUpdateOutput = new GetRoleForCreateOrUpdateOutput
             {
                 AllPermissions = allPermissions
@@ -58,7 +57,7 @@ namespace  Pathfinder.Application.Services
                 return getRoleForCreateOrUpdateOutput;
             }
 
-            return await GetRoleForCreateOrUpdateOutputAsync(id, allPermissions);
+            return await GetRoleForCreateOrUpdateOutputAsync(id, allPermissions).ConfigureAwait(false);
         }
 
         public async Task<IdentityResult> AddRoleAsync(CreateOrUpdateRoleInput input)
@@ -69,7 +68,7 @@ namespace  Pathfinder.Application.Services
                 Name = input.Role.Name
             };
 
-            var createRoleResult = await _roleManager.CreateAsync(role);
+            var createRoleResult = await roleManager.CreateAsync(role).ConfigureAwait(false);
             if (createRoleResult.Succeeded)
             {
                 GrantPermissionsToRole(input.GrantedPermissionIds, role);
@@ -80,7 +79,7 @@ namespace  Pathfinder.Application.Services
 
         public async Task<IdentityResult> EditRoleAsync(CreateOrUpdateRoleInput input)
         {
-            var role = await _roleManager.FindByIdAsync(input.Role.Id.ToString());
+            var role = await roleManager.FindByIdAsync(input.Role.Id.ToString()).ConfigureAwait(false);
             if (role.Name == input.Role.Name && role.Id != input.Role.Id)
             {
                 return IdentityResult.Failed(new IdentityError
@@ -92,7 +91,7 @@ namespace  Pathfinder.Application.Services
             role.Name = input.Role.Name;
             role.RolePermissions.Clear();
 
-            var updateRoleResult = await _roleManager.UpdateAsync(role);
+            var updateRoleResult = await roleManager.UpdateAsync(role).ConfigureAwait(false);
             if (updateRoleResult.Succeeded)
             {
                 GrantPermissionsToRole(input.GrantedPermissionIds, role);
@@ -103,7 +102,7 @@ namespace  Pathfinder.Application.Services
 
         public async Task<IdentityResult> RemoveRoleAsync(Guid id)
         {
-            var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == id);
+            var role = await roleManager.Roles.FirstOrDefaultAsync(r => r.Id == id).ConfigureAwait(false);
             if (role == null)
             {
                 return IdentityResult.Failed(new IdentityError()
@@ -122,7 +121,7 @@ namespace  Pathfinder.Application.Services
                 });
             }
 
-            var removeRoleResult = await _roleManager.DeleteAsync(role);
+            var removeRoleResult = await roleManager.DeleteAsync(role).ConfigureAwait(false);
             if (!removeRoleResult.Succeeded)
             {
                 return removeRoleResult;
@@ -138,7 +137,7 @@ namespace  Pathfinder.Application.Services
         {
             foreach (var permissionId in grantedPermissionIds)
             {
-                _dbContext.RolePermissions.Add(new RolePermission
+                dbContext.RolePermissions.Add(new RolePermission
                 {
                     PermissionId = permissionId,
                     RoleId = role.Id
@@ -148,8 +147,8 @@ namespace  Pathfinder.Application.Services
 
         private async Task<GetRoleForCreateOrUpdateOutput> GetRoleForCreateOrUpdateOutputAsync(Guid id, List<PermissionModel> allPermissions)
         {
-            var role = await _roleManager.FindByIdAsync(id.ToString());
-            var roleDto = _mapper.Map<RoleModel>(role);
+            var role = await roleManager.FindByIdAsync(id.ToString()).ConfigureAwait(false);
+            var roleDto = mapper.Map<RoleModel>(role);
             var grantedPermissions = role.RolePermissions.Select(rp => rp.Permission);
 
             return new GetRoleForCreateOrUpdateOutput

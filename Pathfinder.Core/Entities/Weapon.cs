@@ -15,6 +15,5 @@ namespace Pathfinder.Core.Entities
         public int CritRange { get; set; }
         public List<DamageType> DamageTypeList { get; set; } = new List<DamageType>();
         public WeaponType WeaponType { get; set; }
-
     }
 }

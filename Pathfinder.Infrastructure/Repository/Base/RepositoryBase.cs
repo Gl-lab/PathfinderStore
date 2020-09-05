@@ -25,22 +25,19 @@ namespace Pathfinder.Infrastructure.Repository.Base
         {
             get
             {
-                if (_entities == null)
-                    _entities = _context.Set<T>();
-
-                return _entities;
+                return _entities ??= _context.Set<T>();
             }
         }
 
         public async virtual Task<T> GetByIdAsync(TId id)
         {
-            return await Entities.FindAsync(id);
+            return await Entities.FindAsync(id).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<T>> AddRangeAsync(IEnumerable<T> entities)
         {
             Entities.AddRange(entities);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync().ConfigureAwait(false);
 
             return entities;
         }
@@ -56,7 +53,7 @@ namespace Pathfinder.Infrastructure.Repository.Base
                 _context.Entry(entity).State = EntityState.Modified;
             }
 
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync().ConfigureAwait(false);
 
             return entity;
         }
@@ -64,12 +61,12 @@ namespace Pathfinder.Infrastructure.Repository.Base
         public async Task DeleteAsync(T entity)
         {
             Entities.Remove(entity);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync().ConfigureAwait(false);
         }
 
         public async virtual Task<IReadOnlyList<T>> ListAllAsync()
         {
-            return await Entities.ToListAsync();
+            return await Entities.ToListAsync().ConfigureAwait(false);
         }
 
         public IQueryable<T> Table => Entities;
@@ -78,7 +75,7 @@ namespace Pathfinder.Infrastructure.Repository.Base
 
         public async Task<IReadOnlyList<T>> GetAsync(Expression<Func<T, bool>> predicate)
         {
-            return await Table.Where(predicate).ToListAsync();
+            return await Table.Where(predicate).ToListAsync().ConfigureAwait(false);
         }
 
         public async Task<IReadOnlyList<T>> GetAsync(Expression<Func<T, bool>> predicate = null,
@@ -100,10 +97,10 @@ namespace Pathfinder.Infrastructure.Repository.Base
 
             if (orderBy != null)
             {
-                return await orderBy(query).ToListAsync();
+                return await orderBy(query).ToListAsync().ConfigureAwait(false);
             }
 
-            return await query.ToListAsync();
+            return await query.ToListAsync().ConfigureAwait(false);
         }
 
         public async Task<IReadOnlyList<T>> GetAsync(Expression<Func<T, bool>> predicate = null,
@@ -125,10 +122,10 @@ namespace Pathfinder.Infrastructure.Repository.Base
 
             if (orderBy != null)
             {
-                return await orderBy(query).ToListAsync();
+                return await orderBy(query).ToListAsync().ConfigureAwait(false);
             }
 
-            return await query.ToListAsync();
+            return await query.ToListAsync().ConfigureAwait(false);
         }
     }
 }

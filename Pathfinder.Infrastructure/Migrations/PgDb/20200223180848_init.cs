@@ -3,7 +3,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Pathfinder.Infrastructure.Migrations.PgDb
 {
-    public partial class init : Migration
+    public partial class Init : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -15,10 +15,7 @@ namespace Pathfinder.Infrastructure.Migrations.PgDb
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(nullable: true)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Ammunition", x => x.Id);
-                });
+                constraints: table => table.PrimaryKey("PK_Ammunition", x => x.Id));
 
             migrationBuilder.CreateTable(
                 name: "CategoryList",
@@ -29,12 +26,9 @@ namespace Pathfinder.Infrastructure.Migrations.PgDb
                     Name = table.Column<string>(maxLength: 80, nullable: false),
                     Description = table.Column<string>(nullable: true)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_CategoryList", x => x.Id);
-                });
+                constraints: table => table.PrimaryKey("PK_CategoryList", x => x.Id));
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "DiceList",
                 columns: table => new
                 {
@@ -42,10 +36,7 @@ namespace Pathfinder.Infrastructure.Migrations.PgDb
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     D = table.Column<int>(nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DiceList", x => x.Id);
-                });
+                constraints: table => table.PrimaryKey("PK_DiceList", x => x.Id));
 
             migrationBuilder.CreateTable(
                 name: "WeaponTypeList",
@@ -56,10 +47,7 @@ namespace Pathfinder.Infrastructure.Migrations.PgDb
                     Name = table.Column<string>(nullable: true),
                     ShortName = table.Column<string>(nullable: true)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_WeaponTypeList", x => x.Id);
-                });
+                constraints: table => table.PrimaryKey("PK_WeaponTypeList", x => x.Id));
 
             migrationBuilder.CreateTable(
                 name: "ProductList",

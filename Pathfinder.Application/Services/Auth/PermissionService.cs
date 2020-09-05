@@ -17,37 +17,37 @@ namespace Pathfinder.Application.Services
 {
     public class PermissionService : IPermissionService
     {
-        private readonly UserManager<User> _userManager;
-        private readonly IMapper _mapper;
-        private readonly ApplicationDbContext _dbContext;
+        private readonly UserManager<User> userManager;
+        private readonly IMapper mapper;
+        private readonly ApplicationDbContext dbContext;
 
         public PermissionService(
             UserManager<User> userManager,
             IMapper mapper,
             ApplicationDbContext dbContext)
         {
-            _userManager = userManager;
-            _mapper = mapper;
-            _dbContext = dbContext;
+            this.userManager = userManager;
+            this.mapper = mapper;
+            this.dbContext = dbContext;
         }
 
         public async Task<IEnumerable<PermissionModel>> GetGrantedPermissionsAsync(string userNameOrEmail)
         {
-            var user = await _userManager.Users.FirstOrDefaultAsync(u =>
-                u.UserName == userNameOrEmail || u.Email == userNameOrEmail);
+            var user = await userManager.Users.FirstOrDefaultAsync(u =>
+                u.UserName == userNameOrEmail || u.Email == userNameOrEmail).ConfigureAwait(false);
 
             var grantedPermissions = user?.UserRoles
                 .Select(ur => ur.Role)
                 .SelectMany(r => r.RolePermissions)
                 .Select(rp => rp.Permission);
 
-            return _mapper.Map<IEnumerable<PermissionModel>>(grantedPermissions);
+            return mapper.Map<IEnumerable<PermissionModel>>(grantedPermissions);
         }
 
         public async Task<bool> IsUserGrantedToPermissionAsync(string userNameOrEmail, string permissionName)
         {
-            var user = await _userManager.Users.FirstOrDefaultAsync(u =>
-                u.UserName == userNameOrEmail || u.Email == userNameOrEmail);
+            var user = await userManager.Users.FirstOrDefaultAsync(u =>
+                u.UserName == userNameOrEmail || u.Email == userNameOrEmail).ConfigureAwait(false);
             if (user == null)
             {
                 return false;
@@ -63,22 +63,22 @@ namespace Pathfinder.Application.Services
 
         public void InitializePermissions(List<Permission> permissions)
         {
-            _dbContext.RolePermissions.RemoveRange(_dbContext.RolePermissions.Where(rp => rp.RoleId == DefaultRoles.Admin.Id));
-            _dbContext.SaveChanges();
+            dbContext.RolePermissions.RemoveRange(dbContext.RolePermissions.Where(rp => rp.RoleId == DefaultRoles.Admin.Id));
+            dbContext.SaveChanges();
 
-            _dbContext.Permissions.RemoveRange(_dbContext.Permissions);
-            _dbContext.SaveChanges();
+            dbContext.Permissions.RemoveRange(dbContext.Permissions);
+            dbContext.SaveChanges();
 
-            _dbContext.AddRange(permissions);
+            dbContext.AddRange(permissions);
             GrantAllPermissionsToAdminRole(permissions);
-            _dbContext.SaveChanges();
+            dbContext.SaveChanges();
         }
 
         private void GrantAllPermissionsToAdminRole(List<Permission> permissions)
         {
             foreach (var permission in permissions)
             {
-                _dbContext.RolePermissions.Add(new RolePermission
+                dbContext.RolePermissions.Add(new RolePermission
                 {
                     PermissionId = permission.Id,
                     RoleId = DefaultRoles.Admin.Id
