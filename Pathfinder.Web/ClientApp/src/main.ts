@@ -7,6 +7,7 @@ import 'roboto-fontface/css/roboto/roboto-fontface.css';
 import '@mdi/font/css/materialdesignicons.css';
 import VueAxios from 'vue-axios';
 import axios from 'axios';
+// import  from './stores'
 
 Vue.config.productionTip = false;
 Vue.use(VueAxios, axios);
@@ -16,7 +17,7 @@ Vue.prototype.$sync = function(key: string, value: any) {
 };
 
 const token = localStorage.getItem('token');
-if (token != null) {
+if (!!token) {
   Vue.prototype.$http.defaults.headers.common.Authorization = `Bearer ${token}`;
 }
 

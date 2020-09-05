@@ -8,23 +8,24 @@ using Pathfinder.Core.Entities.Auth.Permissions;
 using Pathfinder.Application.Interfaces.Auth;
 using Pathfinder.Application.Models.Auth;
 using Pathfinder.Application.Models.Auth.Users;
+using Pathfinder.Web.Controllers.Base;
 
-namespace Pathfinder.Web.fromNucleus.Controllers
+namespace Pathfinder.Web.Controllers
 {
     public class UsersController : AdminController
     {
-        private readonly IUserService _userAppService;
+        private readonly IUserService userAppService;
 
         public UsersController(IUserService userAppService)
         {
-            _userAppService = userAppService;
+            this.userAppService = userAppService;
         }
 
         [HttpGet]
         [Authorize(Policy = DefaultPermissions.PermissionNameForUserRead)]
         public async Task<ActionResult<IPagedList<UserListOutput>>> GetUsers([FromQuery]UserListInput input)
         {
-            return Ok(await _userAppService.GetUsersAsync(input));
+            return Ok(await userAppService.GetUsersAsync(input).ConfigureAwait(false));
         }
 
         [HttpGet("{id}")]
@@ -32,7 +33,7 @@ namespace Pathfinder.Web.fromNucleus.Controllers
         [Authorize(Policy = DefaultPermissions.PermissionNameForUserUpdate)]
         public async Task<ActionResult<GetUserForCreateOrUpdateOutput>> GetUsers(Guid id)
         {
-            var getUserForCreateOrUpdateOutput = await _userAppService.GetUserForCreateOrUpdateAsync(id);
+            var getUserForCreateOrUpdateOutput = await userAppService.GetUserForCreateOrUpdateAsync(id).ConfigureAwait(false);
 
             return Ok(getUserForCreateOrUpdateOutput);
         }
@@ -41,7 +42,7 @@ namespace Pathfinder.Web.fromNucleus.Controllers
         [Authorize(Policy = DefaultPermissions.PermissionNameForUserCreate)]
         public async Task<ActionResult> PostUsers([FromBody]CreateOrUpdateUserInput input)
         {
-            var identityResult = await _userAppService.AddUserAsync(input);
+            var identityResult = await userAppService.AddUserAsync(input).ConfigureAwait(false);
 
             if (identityResult.Succeeded)
             {
@@ -55,7 +56,7 @@ namespace Pathfinder.Web.fromNucleus.Controllers
         [Authorize(Policy = DefaultPermissions.PermissionNameForUserCreate)]
         public async Task<ActionResult> PutUsers([FromBody]CreateOrUpdateUserInput input)
         {
-            var identityResult = await _userAppService.EditUserAsync(input);
+            var identityResult = await userAppService.EditUserAsync(input).ConfigureAwait(false);
 
             if (identityResult.Succeeded)
             {
@@ -69,7 +70,7 @@ namespace Pathfinder.Web.fromNucleus.Controllers
         [Authorize(Policy = DefaultPermissions.PermissionNameForUserDelete)]
         public async Task<ActionResult> DeleteUsers(Guid id)
         {
-            var identityResult = await _userAppService.RemoveUserAsync(id);
+            var identityResult = await userAppService.RemoveUserAsync(id).ConfigureAwait(false);
 
             if (identityResult.Succeeded)
             {

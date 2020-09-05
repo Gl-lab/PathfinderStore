@@ -1,7 +1,7 @@
 <template>
   <div>
-    <v-btn>
-      <router-link to="/create">Добавить продукт</router-link> 
+    <v-btn href="/create">
+      Добавить продукт
     </v-btn>
     <v-data-table
       :headers="headers"
@@ -45,7 +45,7 @@ export default class VuetifyProduct extends Vue {
   private headers = [{ text: 'Наименование', value: 'name' },
                      { text: 'Описание', value: 'description' },
                      { text: 'Цена', value: 'price' },
-                     { text: 'Категория', value: 'categoryId' },
+                     { text: 'Категория', value: 'category.name' },
   ];
   private options: DataOptions = { page: this.pageInfo.pageIndex,
     itemsPerPage: this.pageInfo.pageSize,
