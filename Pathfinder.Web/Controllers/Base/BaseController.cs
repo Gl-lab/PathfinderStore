@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace Pathfinder.Web.fromNucleus.Controllers
+namespace Pathfinder.Web.Controllers.Base
 {
     [ApiController]
     [Route("api/[controller]")]

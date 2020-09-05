@@ -5,7 +5,7 @@ using Pathfinder.Core.Entities.Auth.Users;
 
 namespace Pathfinder.Infrastructure.Data
 {
-    public class SeedData
+    public static class SeedData
     {
         #region BuildData
         public static User[] BuildApplicationUsers()

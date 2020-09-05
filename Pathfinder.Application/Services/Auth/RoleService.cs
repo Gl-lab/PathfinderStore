@@ -40,7 +40,7 @@ namespace  Pathfinder.Application.Services
                 .OrderBy(string.IsNullOrEmpty(input.SortingOptions?.First().Field) ? "Name" : input.SortingOptions?.First().Field);
 
             var rolesCount = await query.CountAsync();
-            IEnumerable<RoleListOutput> roleListOutput = _mapper.Map<List<RoleListOutput>>(query.ToArray());
+            IEnumerable<RoleListOutput> roleListOutput = _mapper.Map<List<RoleListOutput>>(await query.ToArrayAsync());
             int pageCount = rolesCount/input.PageSize;
             return new PagedList<RoleListOutput>(input.PageIndex, input.PageSize, rolesCount, pageCount, roleListOutput);
         }
@@ -103,7 +103,7 @@ namespace  Pathfinder.Application.Services
 
         public async Task<IdentityResult> RemoveRoleAsync(Guid id)
         {
-            var role = _roleManager.Roles.FirstOrDefault(r => r.Id == id);
+            var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == id);
             if (role == null)
             {
                 return IdentityResult.Failed(new IdentityError()

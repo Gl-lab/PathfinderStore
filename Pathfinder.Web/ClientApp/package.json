@@ -8,30 +8,32 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@babel/polyfill": "^7.10.1",
-    "@mdi/font": "^5.3.45",
-    "aggregate-error": "^3.0.1",
+    "@babel/polyfill": "^7.10.4",
+    "@mdi/font": "^5.5.55",
+    "aggregate-error": "^3.1.0",
     "axios": "^0.19.2",
     "core-js": "^3.6.5",
     "roboto-fontface": "*",
-    "sweetalert2": "^9.10.0",
-    "vue": "^2.6.11",
+    "sweetalert2": "^9.17.1",
+    "vue": "^2.6.12",
     "vue-axios": "^2.1.5",
-    "vue-class-component": "^7.2.3",
-    "vue-i18n": "^8.18.2",
-    "vue-property-decorator": "^8.4.2",
-    "vue-router": "^3.3.2",
-    "vuetify": "^2.2.31"
+    "vue-class-component": "^7.2.5",
+    "vue-i18n": "^8.21.0",
+    "vue-property-decorator": "^8.5.1",
+    "vue-router": "^3.4.3",
+    "vuetify": "^2.3.10",
+    "vuex": "^3.5.1",
+    "vuex-class": "^0.3.2"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "^4.4.1",
-    "@vue/cli-plugin-typescript": "^4.4.1",
-    "@vue/cli-service": "^4.4.1",
-    "typescript": "^3.9.3",
-    "vue-cli-plugin-vuetify": "~2.0.5",
-    "vue-loader": "^15.9.2",
-    "vue-template-compiler": "^2.6.11",
+    "@vue/cli-plugin-babel": "^4.5.4",
+    "@vue/cli-plugin-typescript": "^4.5.4",
+    "@vue/cli-service": "^4.5.4",
+    "query-string": "^6.13.1",
     "tslint-config-standard": "^9.0.0",
-    "query-string": "^6.13.1"
+    "typescript": "^3.9.7",
+    "vue-cli-plugin-vuetify": "^2.0.7",
+    "vue-loader": "^15.9.3",
+    "vue-template-compiler": "^2.6.12"
   }
 }

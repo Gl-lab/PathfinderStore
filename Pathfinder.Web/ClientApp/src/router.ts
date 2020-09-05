@@ -3,7 +3,7 @@ import Router from 'vue-router';
 import Home from './views/Home.vue';
 import VuetifyProduct from './views/VuetifyProduct.vue';
 import accountLayout from '@/account/account-layout.vue';
-import AuthStore from '@/stores/auth-store';
+// import AuthStore from '@/stores/auth/auth-store';
 
 
 Vue.use(Router);
@@ -39,8 +39,6 @@ const router = new Router({
       children: [
           { path: 'login', component: require('@/account/views/login/login.vue').default },
           { path: 'register', component: require('@/account/views/register/register.vue').default },
-          // { path: 'forgot-password', component: require('@/account/views/manage/forgot-password.vue').default },
-          // { path: 'reset-password', component: require('@/account/views/manage/reset-password.vue').default },
       ],
     },
 
@@ -56,7 +54,7 @@ router.beforeEach((to: any, from: any, next: any) => {
       });
     }
   }
-  next(); // make sure to always call next()!
+  next();
 });
 
 export default router;

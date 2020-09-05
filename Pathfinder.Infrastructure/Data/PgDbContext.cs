@@ -26,14 +26,14 @@ namespace Pathfinder.Infrastructure.Data
 
         public async Task BeginTransactionAsync()
         {
-            _currentTransaction = _currentTransaction ?? await Database.BeginTransactionAsync();
+            _currentTransaction ??= await Database.BeginTransactionAsync().ConfigureAwait(false);
         }
 
         public async Task CommitTransactionAsync()
         {
             try
             {
-                await SaveChangesAsync();
+                await SaveChangesAsync().ConfigureAwait(false);
                 _currentTransaction?.Commit();
             }
             catch

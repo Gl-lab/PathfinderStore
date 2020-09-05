@@ -37,6 +37,11 @@
             </v-list-item-content>
           </v-list-item>
         </v-list>
+        <template v-slot:append>
+          <div class="pa-2">
+            <v-btn click="logout" block>Выйти</v-btn>
+          </div>
+        </template>
       </v-navigation-drawer>
     <v-app-bar 
       app

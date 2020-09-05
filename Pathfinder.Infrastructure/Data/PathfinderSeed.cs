@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Builder;
 
 namespace Pathfinder.Infrastructure.Data
 {
-    public class PathfinderSeed
+    public static class PathfinderSeed
     {
         public static async Task SeedAsync(IServiceProvider app)
         {
@@ -17,24 +17,23 @@ namespace Pathfinder.Infrastructure.Data
             if (!dbContext.ProductList.Any())
             {
                 dbContext.ProductList.AddRange(GetPreconfiguredProduct());
-                await dbContext.SaveChangesAsync();
+                await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
             if (!dbContext.DiceList.Any())
             {
                 dbContext.DiceList.AddRange(GetPreconfiguredDice());
-                await dbContext.SaveChangesAsync();
+                await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
             if (!dbContext.DamageTypeList.Any())
             {
                 dbContext.DamageTypeList.AddRange(GetPreconfiguredDamageTypeList());
-                await dbContext.SaveChangesAsync();
+                await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
             if (!dbContext.WeaponTypeList.Any())
             {
                 dbContext.WeaponTypeList.AddRange(GetPreconfiguredWeaponTypeList());
-                await dbContext.SaveChangesAsync();
+                await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
-            
         }
 
         private static IEnumerable<WeaponType> GetPreconfiguredWeaponTypeList()

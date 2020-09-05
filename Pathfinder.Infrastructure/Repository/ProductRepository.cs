@@ -23,13 +23,14 @@ namespace Pathfinder.Infrastructure.Repository
         public override async Task<Product> GetByIdAsync(int id)
         {
             //TODO: should be refactored
-            var products = await GetAsync(p => p.Id == id, null, new List<Expression<Func<Product, object>>> { p => p.Category });
+            var products = await GetAsync(p => p.Id == id, null, new List<Expression<Func<Product, object>>> { p => p.Category }).ConfigureAwait(false);
             return products.FirstOrDefault();
         }
 
         public async Task<IEnumerable<Product>> GetProductListAsync()
         {
-            return await ListAllAsync();
+            return await ListAllAsync()
+                .ConfigureAwait(false);
         }
 
         public Task<IPagedList<Product>> SearchProductsAsync(PageSearchArgs args)
@@ -96,21 +97,23 @@ namespace Pathfinder.Infrastructure.Repository
 
         public async Task<IEnumerable<Product>> GetProductByNameAsync(string productName)
         {
-            return await TableNoTracking.Where(p => p.Name.ToLower().Contains(productName.ToLower()))
+            return await TableNoTracking.Where(p => p.Name.Contains(productName, StringComparison.OrdinalIgnoreCase))
                                         .Include(p => p.Category)
-                                        .ToListAsync();
+                                        .ToListAsync().ConfigureAwait(false);
         }
 
         public async Task<Product> GetProductByIdWithCategoryAsync(int productId)
         {
-            return await GetByIdAsync(productId);
+            return await GetByIdAsync(productId)
+                .ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<Product>> GetProductByCategoryAsync(int categoryId)
         {
             return await TableNoTracking
                 .Where(x => x.CategoryId == categoryId)
-                .ToListAsync();
+                .ToListAsync()
+                .ConfigureAwait(false);
         }
     }
 }

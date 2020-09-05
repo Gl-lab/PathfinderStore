@@ -9,7 +9,7 @@ using Pathfinder.Core.Entities;
 
 namespace Pathfinder.Infrastructure.Data
 {
-    public class IdentitySeedData
+    public static class IdentitySeedData
     {
         private const String adminUser = "Admin";
         private const String adminPassword = "Secret123$";
@@ -20,7 +20,7 @@ namespace Pathfinder.Infrastructure.Data
             if (user == null)
             {
                 user = new ApplicationUser(adminUser);
-                await userManager.CreateAsync(user, adminPassword);
+                await userManager.CreateAsync(user, adminPassword).ConfigureAwait(false);
             }
         }
     }

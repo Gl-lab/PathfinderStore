@@ -30,7 +30,9 @@ namespace Pathfinder.Web.Controllers
         [ProducesResponseType(typeof(IEnumerable<ProductModel>), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<IEnumerable<ProductModel>>> GetProducts()
         {
-            var products = await productService.GetProductList();
+            var products = await productService
+                                .GetProductList()
+                                .ConfigureAwait(false);
             return Ok(products);
         }
 
@@ -39,7 +41,9 @@ namespace Pathfinder.Web.Controllers
         [ProducesResponseType(typeof(IPagedList<ProductModel>), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<IPagedList<ProductModel>>> SearchProducts(PageSearchArgs arg)
         {
-            var productPagedList = await productService.SearchProducts(arg);
+            var productPagedList = await productService
+                                    .SearchProducts(arg)
+                                    .ConfigureAwait(false);
             return Ok(productPagedList);
         }
 
@@ -48,7 +52,9 @@ namespace Pathfinder.Web.Controllers
         [ProducesResponseType(typeof(ProductModel), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<ProductModel>> GetProductById(int id)
         {
-            var product = await productService.GetProductById(id);
+            var product = await productService
+                            .GetProductById(id)
+                            .ConfigureAwait(false);
             return Ok(product);
         }
 
@@ -57,7 +63,9 @@ namespace Pathfinder.Web.Controllers
         [ProducesResponseType(typeof(IEnumerable<ProductModel>), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<IEnumerable<ProductModel>>> GetProductsByName(string name)
         {
-            var products = await productService.GetProductsByName(name);
+            var products = await productService
+                                .GetProductsByName(name)
+                                .ConfigureAwait(false);
             return Ok(products);
         }
 
@@ -66,7 +74,9 @@ namespace Pathfinder.Web.Controllers
         [ProducesResponseType(typeof(IEnumerable<ProductModel>), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<IEnumerable<ProductModel>>> GetProductsByCategoryId(int categoryId)
         {
-            var products = await productService.GetProductsByCategoryId(categoryId);
+            var products = await productService
+                                .GetProductsByCategoryId(categoryId)
+                                .ConfigureAwait(false);
             return Ok(products);
         }
 
@@ -77,7 +87,9 @@ namespace Pathfinder.Web.Controllers
         [Authorize(Policy = DefaultPermissions.PermissionNameForAdministration)]
         public async Task<ActionResult<ProductModel>> CreateProduct(ProductModel product)
         {
-            var Result = await productService.CreateProduct(product);
+            var Result = await productService
+                            .CreateProduct(product)
+                            .ConfigureAwait(false);
             return Ok(Result);
         }
 
@@ -88,7 +100,9 @@ namespace Pathfinder.Web.Controllers
         [Authorize(Policy = DefaultPermissions.PermissionNameForAdministration)]
         public async Task<ActionResult> UpdateProduct(ProductModel product)
         {
-            await productService.UpdateProduct(product);
+            await productService
+                .UpdateProduct(product)
+                .ConfigureAwait(false);
             return Ok();
         }
 
@@ -99,7 +113,9 @@ namespace Pathfinder.Web.Controllers
         [Authorize(Policy = DefaultPermissions.PermissionNameForAdministration)]
         public async Task<ActionResult> DeleteProductById(ProductModel product)
         {
-            await productService.DeleteProductById(product.Id);
+            await productService
+                .DeleteProductById(product.Id)
+                .ConfigureAwait(false);
             return Ok();
         }
     }
