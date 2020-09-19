@@ -1,5 +1,5 @@
 ﻿<template>
-    <v-content>
+    <v-main>
        <v-container fluid fill-height>
             <v-layout align-center>
                 <v-flex xs8 sm4 md8>
@@ -8,7 +8,7 @@
             </v-layout>
        </v-container>
 
-    </v-content>
+    </v-main>
 </template>
 
 <script src="./account-layout.ts"></script>

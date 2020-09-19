@@ -8,5 +8,4 @@ const namespace: string = 'AuthStore';
 export default class AppComponent extends ComponentBase {
     @Action('logout', { namespace })
     public logout: any;
-
 }
