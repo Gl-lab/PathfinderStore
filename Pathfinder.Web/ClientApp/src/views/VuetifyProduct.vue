@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-btn href="/create">
+    <v-btn color="primary" text to="/create">
       Добавить продукт
     </v-btn>
     <v-data-table
@@ -9,78 +9,78 @@
       :items-per-page="pageInfo.pageSize"
       :server-items-length="totalServerCount"
       :loading="loading"
-      :options.sync="options"
+      @update:options="changeOptions"
       locale="ru-RU"
       class="elevation-1"
     ></v-data-table>
-</div>
+  </div>
 </template>
-<script lang="ts">
-import { Component, Vue, Watch } from 'vue-property-decorator';
-import { IProduct } from '../shared/models/Interfaces/IProduct';
-import { IPageArgs } from '../shared/models/Interfaces/IPageArgs';
-import { SortingDirection } from '../shared/models/enums/SortingDirection';
-import { PagingStrategy } from '../shared/models/enums/PagingStrategy';
-import { FilteringOperator } from '../shared/models/enums/FilteringOperator';
-import { Category } from '../shared/models/Category';
-import axios from 'axios';
-import { DataOptions } from 'vuetify';
-@Component
-export default class VuetifyProduct extends Vue {
-  private pageInfo: IPageArgs  = {
-    pageIndex: 1,
-    pageSize: 5,
-    pagingsStrategy: PagingStrategy.WithCount,
-    sortingOptions: [{
-      field: 'string',
-      direction: SortingDirection.ASC,
-      priority: 0,
-    }],
-    filteringOptions: [{
-      field: 'string',
-      operator: 0,
-      value: {},
-    }],
-  };
-  private headers = [{ text: 'Наименование', value: 'name' },
-                     { text: 'Описание', value: 'description' },
-                     { text: 'Цена', value: 'price' },
-                     { text: 'Категория', value: 'category.name' },
-  ];
-  private options: DataOptions = { page: this.pageInfo.pageIndex,
-    itemsPerPage: this.pageInfo.pageSize,
-    sortBy: [],
-    sortDesc: [],
-    groupBy: [],
-    groupDesc: [],
-    multiSort: false,
-    mustSort: false,
-  };
-  private loading: boolean = false;
-  private totalServerCount: number = 0;
-  private emptyProduct: IProduct = {
-    name: 'No data.',
-    category: new Category(0, '', ''),
-    price: 0, categoryId: 0,
-  } as IProduct;
-  private products: IProduct[] = [this.emptyProduct];
-  public async mounted() {
+<script>
+//import axios from 'axios';
+export default {
+  name: "VuetifyProduct",
+  data() {
+    return {
+      pageInfo: {
+        pageIndex: 1,
+        pageSize: 5,
+        pagingsStrategy: 0,
+        sortingOptions: [
+          {
+            field: "string",
+            direction: 0,
+            priority: 0
+          }
+        ],
+        filteringOptions: [
+          {
+            field: "string",
+            operator: 0,
+            value: {}
+          }
+        ]
+      },
+      headers: [
+        { text: "Наименование", value: "name" },
+        { text: "Описание", value: "description" },
+        { text: "Цена", value: "price" },
+        { text: "Категория", value: "category.name" }
+      ],
+      options: {
+        page: 1,
+        itemsPerPage: 5,
+        sortBy: [],
+        sortDesc: [],
+        groupBy: [],
+        groupDesc: [],
+        multiSort: false,
+        mustSort: false
+      },
+      loading: false,
+      totalServerCount: 0,
+      products: []
+    };
+  },
+  methods: {
+    loadData() {
+      this.loading = true;
+      this.axios
+        .post("api/Products/SearchProducts", this.pageInfo)
+        .then(response => {
+          this.products = response.data.items;
+          this.totalServerCount = response.data.totalCount;
+        })
+        .catch(() => (this.products = []))
+        .then(() => (this.loading = false));
+    },
+    changeOptions(newOption) {
+      this.pageInfo.pageIndex = newOption.page;
+      this.pageInfo.pageSize = newOption.itemsPerPage;
+      this.loadData();
+    }
+  },
+  mounted: function() {
     this.loadData();
   }
-  @Watch('options')
-  public optionsChanged() {
-    this.pageInfo.pageIndex = this.options.page;
-    this.pageInfo.pageSize = this.options.itemsPerPage;
-    this.loadData();
-  }
-  private async loadData() {
-    this.loading = true;
-    axios.post('api/Products/SearchProducts', this.pageInfo)
-      .then((response) => {
-        this.products = response.data.items;
-        this.totalServerCount = response.data.totalCount;
-      })
-      .catch(() => this.products = [this.emptyProduct]).then(() => this.loading = false);
-  }
-}
+};
 </script>

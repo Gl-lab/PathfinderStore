@@ -11,4 +11,4 @@
     </v-main>
 </template>
 
-<script src="./account-layout.ts"></script>
+<script></script>

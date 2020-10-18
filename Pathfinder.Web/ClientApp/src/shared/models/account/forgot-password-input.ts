@@ -1,3 +1,0 @@
-interface IForgotPasswordInput {
-  userNameOrEmail: string;
-}

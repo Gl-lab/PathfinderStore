@@ -1,4 +1,4 @@
-# clientapp
+# pathfinderstore
 
 ## Project setup
 ```

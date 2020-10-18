@@ -45,16 +45,15 @@ namespace Pathfinder.Web
             services.ConfigureJwtTokenAuth(Configuration);
             services.ConfigureCors(Configuration);
             services.ConfigureDependencyInjection();
-           /*services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<ApplicationDbContext>();
-                */
-            /*
-            services.AddIdentityServer()
-                .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
+            // services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            //     .AddEntityFrameworkStores<ApplicationDbContext>();
+                
+            // services.AddIdentityServer()
+            //     .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
 
-            services.AddAuthentication()
-                .AddIdentityServerJwt();
-                */
+            // services.AddAuthentication()
+            //     .AddIdentityServerJwt();
+                
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -103,9 +102,10 @@ namespace Pathfinder.Web
             app.UseSwagger();
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Pathfinder API V1"));
             app.UseCors(Configuration["App:CorsOriginPolicyName"]);
+            
             app.UseRouting();
             app.UseAuthentication();
-
+            app.UseAuthorization();
             app.UseEndpoints(endpoints => endpoints.MapControllers());
 
             app.UseSpa(spa =>
