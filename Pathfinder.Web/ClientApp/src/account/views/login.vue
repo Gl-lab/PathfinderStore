@@ -30,5 +30,27 @@
     </v-card>
 </template>
 
-<script src="./login.ts"></script>
-<style src="./login.css"></style>
+<script>
+  import { createNamespacedHelpers } from 'vuex';
+  const { mapActions } = createNamespacedHelpers('auth');
+  export default {
+    data() {
+      return {
+        loginInput: {},
+        errors: [],
+        isHaveError: false,
+        
+      }
+    },
+    methods: {
+      ...mapActions(['login']),
+      onSubmit() {
+        if (this.$refs.form.validate()) {
+          this.login(this.loginInput);
+          this.$router.push('/');
+        }
+      },
+      requiredError: (v) => !!v || 'RequiredField'
+    }
+  }
+</script>

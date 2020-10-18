@@ -1,47 +1,43 @@
 <template>
-    <div>
-        <v-combobox
-          v-model="select"
-          label="Категория"
-          :items="categories"
-          item-text="name"
-          @input="respond"
-        ></v-combobox>
-    </div>
+  <div>
+    <v-combobox
+      v-model="select"
+      label="Категория"
+      :items="categories"
+      item-text="name"
+      @input="respond"
+    ></v-combobox>
+  </div>
 </template>
 
-<script lang="ts">
-import Vue from 'vue';
-import Component from 'vue-class-component';
-import { Prop } from 'vue-property-decorator';
-import axios from 'axios';
-import { ICategory } from '../../shared/models/Interfaces/ICategory';
-import { Category } from '../../shared/models/Category';
-
-@Component
-
-export default class CategoryComboBox extends Vue {
-
-  @Prop({ required: true })
-    public response!: ICategory;
-  private categories: ICategory[] = [new Category(0, 'No data.', '')];
-  private select: ICategory = null;
-  public async mounted() {
+<script>
+export default {
+  name: "CategoryComboBox",
+  props:{
+    model: {},
+  },
+  data() {
+    return {
+       categories: [{id: 0, name: 'No data.', description: ''}],
+       select: null,
+    }
+  },
+  mounted: function(){
     try {
       this.loadData();
     } catch {
-      this.categories = [new Category(0, 'No data.', '')];
+      this.categories = [];
     }
-  }
-
-  private respond() {
-    this.$sync<Category>('response', this.select);
-  }
-
-  private loadData() {
-    axios.get('api/Categories').then((response) => {
-      this.categories = response.data;
-    });
+  },
+  methods: {
+    loadData() {
+      this.axios.get('api/Categories').then((response) => {
+        this.categories = response.data;
+      });
+    },
+    respond() {
+      this.$emit('response', this.select);
+    }
   }
 }
 </script>

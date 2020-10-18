@@ -51,4 +51,40 @@
     </div>
 </template>
 
-<script src="./register.ts"></script>
+<script>
+  export default {
+    data() {
+      return {
+        registerInput: {},
+        errors: [],
+        resultMessage: "",
+        registerComplete: false,
+        isHaveError: false,
+      }
+    },
+    methods: { 
+      onSubmit() {
+        if (this.$refs.form.validate()) {
+          this.axios.post('/api/register', this.registerInput)
+                    .then(() => {
+                        this.resultMessage = 'AccountCreationSuccessful';
+                        this.registerComplete = true;
+                    }).catch((err) => {
+                      this.errors = err.response.data;
+                      this.isHaveError = true;
+                    })
+        }
+      },
+      passwordMatchError(password, passwordRepeat) {
+        return (password == passwordRepeat)
+                ? ''
+                : 'Несовпадение паролей';
+      },
+      requiredError: (v) => !!v || 'RequiredField'
+    }
+  }
+</script>
+
+
+
+       

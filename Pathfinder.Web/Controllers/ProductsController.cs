@@ -84,7 +84,8 @@ namespace Pathfinder.Web.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(ProductModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        [Authorize(Policy = DefaultPermissions.PermissionNameForAdministration)]
+        //[Authorize(Policy = DefaultPermissions.PermissionNameForAdministration)]
+        [Authorize]
         public async Task<ActionResult<ProductModel>> CreateProduct(ProductModel product)
         {
             var Result = await productService
