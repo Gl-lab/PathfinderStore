@@ -19,11 +19,11 @@ namespace  Pathfinder.Application.Services
 {
     public class RoleService : IRoleService
     {
-        private readonly ApplicationDbContext dbContext;
+        private readonly PgDbContext dbContext;
         private readonly RoleManager<Role> roleManager;
         private readonly IMapper mapper;
 
-        public RoleService(ApplicationDbContext dbContext, RoleManager<Role> roleManager, IMapper mapper)
+        public RoleService(PgDbContext dbContext, RoleManager<Role> roleManager, IMapper mapper)
         {
             this.dbContext = dbContext;
             this.roleManager = roleManager;

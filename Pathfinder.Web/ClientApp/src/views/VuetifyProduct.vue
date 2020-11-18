@@ -43,7 +43,7 @@ export default {
       headers: [
         { text: "Наименование", value: "name" },
         { text: "Описание", value: "description" },
-        { text: "Цена", value: "price" },
+        { text: "Цена, мм", value: "price" },
         { text: "Категория", value: "category.name" }
       ],
       options: {

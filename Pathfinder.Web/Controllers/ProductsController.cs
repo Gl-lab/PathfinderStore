@@ -17,9 +17,9 @@ namespace Pathfinder.Web.Controllers
     [ApiController]
     public class ProductsController : ControllerBase
     {
-        private readonly IProductService productService;
+        private readonly IArticleService productService;
 
-        public ProductsController(IProductService productService)
+        public ProductsController(IArticleService productService)
         {
             this.productService = productService;
         }
@@ -27,69 +27,69 @@ namespace Pathfinder.Web.Controllers
         [Produces("application/json")]
         [Route("")]
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<ProductModel>), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<IEnumerable<ProductModel>>> GetProducts()
+        [ProducesResponseType(typeof(IEnumerable<ArticleModel>), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<IEnumerable<ArticleModel>>> GetProducts()
         {
             var products = await productService
-                                .GetProductList()
+                                .GetArticleList()
                                 .ConfigureAwait(false);
             return Ok(products);
         }
 
         [Route("[action]")]
         [HttpPost]
-        [ProducesResponseType(typeof(IPagedList<ProductModel>), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<IPagedList<ProductModel>>> SearchProducts(PageSearchArgs arg)
+        [ProducesResponseType(typeof(IPagedList<ArticleModel>), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<IPagedList<ArticleModel>>> SearchProducts(PageSearchArgs arg)
         {
             var productPagedList = await productService
-                                    .SearchProducts(arg)
+                                    .SearchArticles(arg)
                                     .ConfigureAwait(false);
             return Ok(productPagedList);
         }
 
         [Route("{id}")]
         [HttpGet]
-        [ProducesResponseType(typeof(ProductModel), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<ProductModel>> GetProductById(int id)
+        [ProducesResponseType(typeof(ArticleModel), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<ArticleModel>> GetProductById(int id)
         {
             var product = await productService
-                            .GetProductById(id)
+                            .GetArticleById(id)
                             .ConfigureAwait(false);
             return Ok(product);
         }
 
         [Route("[action]")]
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<ProductModel>), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<IEnumerable<ProductModel>>> GetProductsByName(string name)
+        [ProducesResponseType(typeof(IEnumerable<ArticleModel>), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<IEnumerable<ArticleModel>>> GetProductsByName(string name)
         {
             var products = await productService
-                                .GetProductsByName(name)
+                                .GetArticlesByName(name)
                                 .ConfigureAwait(false);
             return Ok(products);
         }
 
         [Route("[action]")]
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<ProductModel>), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<IEnumerable<ProductModel>>> GetProductsByCategoryId(int categoryId)
+        [ProducesResponseType(typeof(IEnumerable<ArticleModel>), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<IEnumerable<ArticleModel>>> GetProductsByCategoryId(int categoryId)
         {
             var products = await productService
-                                .GetProductsByCategoryId(categoryId)
+                                .GetArticlesByCategoryId(categoryId)
                                 .ConfigureAwait(false);
             return Ok(products);
         }
 
         [Route("[action]")]
         [HttpPost]
-        [ProducesResponseType(typeof(ProductModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ArticleModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         //[Authorize(Policy = DefaultPermissions.PermissionNameForAdministration)]
         [Authorize]
-        public async Task<ActionResult<ProductModel>> CreateProduct(ProductModel product)
+        public async Task<ActionResult<ArticleModel>> CreateProduct(ArticleModel product)
         {
             var Result = await productService
-                            .CreateProduct(product)
+                            .CreateArticle(product)
                             .ConfigureAwait(false);
             return Ok(Result);
         }
@@ -99,10 +99,10 @@ namespace Pathfinder.Web.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Authorize(Policy = DefaultPermissions.PermissionNameForAdministration)]
-        public async Task<ActionResult> UpdateProduct(ProductModel product)
+        public async Task<ActionResult> UpdateProduct(ArticleModel product)
         {
             await productService
-                .UpdateProduct(product)
+                .UpdateArticle(product)
                 .ConfigureAwait(false);
             return Ok();
         }
@@ -112,10 +112,10 @@ namespace Pathfinder.Web.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Authorize(Policy = DefaultPermissions.PermissionNameForAdministration)]
-        public async Task<ActionResult> DeleteProductById(ProductModel product)
+        public async Task<ActionResult> DeleteProductById(ArticleModel product)
         {
             await productService
-                .DeleteProductById(product.Id)
+                .DeleteArticleById(product.Id)
                 .ConfigureAwait(false);
             return Ok();
         }

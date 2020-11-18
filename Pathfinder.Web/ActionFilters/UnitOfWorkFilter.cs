@@ -8,9 +8,9 @@ namespace Pathfinder.Web.ActionFilters
 {
     public class UnitOfWorkActionFilter : ActionFilterAttribute
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly PgDbContext _dbContext;
 
-        public UnitOfWorkActionFilter(ApplicationDbContext dbContext)
+        public UnitOfWorkActionFilter(PgDbContext dbContext)
         {
             _dbContext = dbContext;
         }

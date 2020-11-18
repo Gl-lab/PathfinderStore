@@ -29,7 +29,9 @@ namespace Pathfinder.Application.Services
 
         public async Task<CategoryModel> GetById(int id)
         {
-            var category = await categoryRepository.GetByIdAsync(id).ConfigureAwait(false);
+            var category = await categoryRepository
+                .GetByIdAsync(id)
+                .ConfigureAwait(false);
             var result = mapper.Map<CategoryModel>(category);
             return result;
         }

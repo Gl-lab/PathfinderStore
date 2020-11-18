@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Pathfinder.Core.Entities;
+using Pathfinder.Core.Entities.Product;
 using Pathfinder.Core.Paging;
 using Pathfinder.Core.Repositories;
 using Pathfinder.Infrastructure.Data;

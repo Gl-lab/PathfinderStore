@@ -19,12 +19,12 @@ namespace Pathfinder.Application.Services
     {
         private readonly UserManager<User> userManager;
         private readonly IMapper mapper;
-        private readonly ApplicationDbContext dbContext;
+        private readonly PgDbContext dbContext;
 
         public PermissionService(
             UserManager<User> userManager,
             IMapper mapper,
-            ApplicationDbContext dbContext)
+            PgDbContext dbContext)
         {
             this.userManager = userManager;
             this.mapper = mapper;

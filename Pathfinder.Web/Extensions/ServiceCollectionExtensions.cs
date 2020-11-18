@@ -39,7 +39,7 @@ namespace Pathfinder.Web.fromNucleus.Extensions
         public static void ConfigureAuthentication(this IServiceCollection services)
         {
             services.AddIdentity<User, Role>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddEntityFrameworkStores<PgDbContext>()
                 .AddDefaultTokenProviders();
 
             services.Configure<IdentityOptions>(options =>
@@ -66,7 +66,7 @@ namespace Pathfinder.Web.fromNucleus.Extensions
             var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
             if (!String.IsNullOrEmpty(connectionString))
             {
-                services.AddDbContext<ApplicationDbContext>(options =>
+                services.AddDbContext<PgDbContext>(options =>
                    options.UseNpgsql(
                        connectionString
                    )
@@ -75,7 +75,7 @@ namespace Pathfinder.Web.fromNucleus.Extensions
             }
             else
             {
-                services.AddDbContext<ApplicationDbContext>(options =>
+                services.AddDbContext<PgDbContext>(options =>
                    options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
                    .UseLazyLoadingProxies()
                 );

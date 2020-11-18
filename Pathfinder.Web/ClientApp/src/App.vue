@@ -73,7 +73,6 @@ export default {
     }
   },
   created: function () {
-    console.log(123)
     const text = 'Bearer '+this.getToken
     this.$http.defaults.headers.common['Authorization'] = text;
     this.$http.interceptors.response.use(undefined, function (err) {

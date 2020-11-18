@@ -5,15 +5,15 @@ using System.Threading.Tasks;
 
 namespace Pathfinder.Application.Interfaces
 {
-    public interface IProductService
+    public interface IArticleService
     {
-        Task<IEnumerable<ProductModel>> GetProductList();
-        Task<IPagedList<ProductModel>> SearchProducts(PageSearchArgs args);
-        Task<ProductModel> GetProductById(int productId);
-        Task<IEnumerable<ProductModel>> GetProductsByName(string name);
-        Task<IEnumerable<ProductModel>> GetProductsByCategoryId(int categoryId);
-        Task<ProductModel> CreateProduct(ProductModel product);
-        Task UpdateProduct(ProductModel product);
-        Task DeleteProductById(int productId);
+        Task<IEnumerable<ArticleModel>> GetArticleList();
+        Task<IPagedList<ArticleModel>> SearchArticles(PageSearchArgs args);
+        Task<ArticleModel> GetArticleById(int ArticleId);
+        Task<IEnumerable<ArticleModel>> GetArticlesByName(string name);
+        Task<IEnumerable<ArticleModel>> GetArticlesByCategoryId(int categoryId);
+        Task<ArticleModel> CreateArticle(ArticleModel Article);
+        Task UpdateArticle(ArticleModel Article);
+        Task DeleteArticleById(int ArticleId);
     }
 }

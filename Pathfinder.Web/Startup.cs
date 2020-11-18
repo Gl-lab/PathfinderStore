@@ -36,8 +36,8 @@ namespace Pathfinder.Web
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<PgDbContext>(options => options.UseNpgsql(Configuration["Data:WebDB:ConnectionString"]));
-            services.AddDbContext<ApplicationDbContext>(options =>
+            //services.AddDbContext<>(options => options.UseNpgsql(Configuration["Data:WebDB:ConnectionString"]));
+            services.AddDbContext<PgDbContext>(options =>
                 options.UseNpgsql(Configuration["Data:WebDB:ConnectionString"]).UseLazyLoadingProxies());
 
             services.ConfigureAuthentication();
@@ -60,9 +60,9 @@ namespace Pathfinder.Web
 
             services.AddSpaStaticFiles(configuration => configuration.RootPath = "ClientApp/dist");
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-            services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IArticleRepository, ArticleRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
-            services.AddTransient<IProductService, ProductService>();
+            services.AddTransient<IArticleService, ArticleService>();
             services.AddTransient<ICategoryService, CategoryService>();
             services.AddTransient<IPermissionService, PermissionService>();
             services.AddTransient<IRoleService, RoleService>();
@@ -76,7 +76,6 @@ namespace Pathfinder.Web
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage();
             }
             else
             {
