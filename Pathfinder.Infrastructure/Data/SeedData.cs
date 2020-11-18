@@ -50,12 +50,13 @@ namespace Pathfinder.Infrastructure.Data
         public static RolePermission[] BuildRolePermissions()
         {
             //grant all permissions to admin role
-            var rolePermissions = DefaultPermissions.All().Select(p =>
-                new RolePermission
+            var rolePermissions = DefaultPermissions
+                .All()
+                .ConvertAll(p => new RolePermission
                 {
                     PermissionId = p.Id,
                     RoleId = DefaultRoles.Admin.Id
-                }).ToList();
+                });
 
             //grant member access permission to member role
             rolePermissions.Add(new RolePermission

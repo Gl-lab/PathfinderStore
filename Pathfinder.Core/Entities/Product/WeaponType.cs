@@ -1,5 +1,5 @@
 using Pathfinder.Core.Entities.Base;
-namespace Pathfinder.Core.Entities
+namespace Pathfinder.Core.Entities.Product
 {
     public class WeaponType : Entity
     {

@@ -3,7 +3,7 @@ using System;
 
 namespace Pathfinder.Application.Models
 {
-    public class ProductModel : BaseModel
+    public class ArticleModel : BaseModel
     {
         public string Name { get; set; }
         public string Description { get; set; }

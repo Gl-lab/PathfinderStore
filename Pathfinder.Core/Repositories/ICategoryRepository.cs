@@ -1,4 +1,4 @@
-﻿using Pathfinder.Core.Entities;
+﻿using Pathfinder.Core.Entities.Product;
 using Pathfinder.Core.Paging;
 using Pathfinder.Core.Repositories.Base;
 using System.Threading.Tasks;

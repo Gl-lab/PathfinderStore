@@ -1,7 +1,7 @@
 ﻿using Pathfinder.Core.Entities.Base;
 using System.ComponentModel.DataAnnotations;
 
-namespace Pathfinder.Core.Entities
+namespace Pathfinder.Core.Entities.Product
 {
     public class Category : Entity
     {

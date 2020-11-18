@@ -1,6 +1,7 @@
 using AutoMapper;
 using Pathfinder.Application.Models;
 using Pathfinder.Core.Entities;
+using Pathfinder.Core.Entities.Product;
 
 namespace Pathfinder.Application.Mapper
 {
@@ -10,7 +11,7 @@ namespace Pathfinder.Application.Mapper
         {
             CreateMap<Category, CategoryModel>()
                 .ReverseMap();
-            CreateMap<Product, ProductModel>()
+            CreateMap<Article, ArticleModel>()
                 .ReverseMap();
         }
     }
