@@ -40,12 +40,18 @@ namespace Pathfinder.Infrastructure.Data
                 dbContext.RaceSize.AddRange(GetRaceSizes());
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
+
             if (!dbContext.Race.Any())
             {
                 dbContext.Race.AddRange(GetRaces(dbContext));
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
-             if (!dbContext.Items.Any())
+           
+            if (!dbContext.Account.Any())
+            {
+                dbContext.Account.AddRange(GetAccounts(dbContext));
+            }
+            if (!dbContext.Items.Any())
             {
                 dbContext.Items.AddRange(GetItems(dbContext));
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
@@ -132,7 +138,7 @@ namespace Pathfinder.Infrastructure.Data
                 {
                     Name = "Имя",
                     Surname = "Фамилия",
-                    UserId = new Guid("C41A7761-6645-4E2C-B99D-F9E767B9AC77"),
+                    UserId = 1,//new Guid("C41A7761-6645-4E2C-B99D-F9E767B9AC77"),
                     Characters = GetCharacters(dbContext)
                 }
             };
@@ -256,8 +262,8 @@ namespace Pathfinder.Infrastructure.Data
 
         private static IEnumerable<Article> GetPreconfiguredArticles()
         {
-            Category FirstCategory = new Category { Name = "Оружие", Description = "" };
-            Category SecondCategory = new Category { Name = "Доспех", Description = "" };
+            Category FirstCategory = new() { Name = "Оружие", Description = "" };
+            Category SecondCategory = new() { Name = "Доспех", Description = "" };
             return new List<Article>()
             {
                 new Article()

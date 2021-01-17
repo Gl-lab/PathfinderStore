@@ -17,7 +17,7 @@ using Pathfinder.Core.Entities.Shop;
 
 namespace Pathfinder.Infrastructure.Data
 {
-    public class PgDbContext: IdentityDbContext<User, Role, Guid, UserClaim, UserRole, UserLogin, RoleClaim, UserToken>
+    public class PgDbContext: IdentityDbContext<User, Role, int, UserClaim, UserRole, UserLogin, RoleClaim, UserToken>
     {
         public PgDbContext(DbContextOptions<PgDbContext> options) : base(options) { }
         public DbSet<Article> ArticleList { get; set; }

@@ -1,5 +1,5 @@
-import axios from 'axios'
-import { appConst } from '../../settings'
+import axios from "axios";
+import { appConst } from "../../settings";
 
 const Auth = {
   namespaced: true,
@@ -8,8 +8,8 @@ const Auth = {
   },
   getters: {
     isAuthorized: state => {
-      if (!state.token){
-        const temp = localStorage.getItem('AuthStore');
+      if (!state.token) {
+        const temp = localStorage.getItem("AuthStore");
         if (temp) {
           state = JSON.parse(temp);
         }
@@ -17,43 +17,42 @@ const Auth = {
       return !!state.token;
     },
     getToken: state => {
-      if (!state.token){
-        const temp = localStorage.getItem('AuthStore');
+      if (!state.token) {
+        const temp = localStorage.getItem("AuthStore");
         if (temp) {
           state = JSON.parse(temp);
         }
       }
       return state.token;
-    },
+    }
   },
   actions: {
-    login (context, user) {
-      axios.post(
-            appConst.webApiUrl + '/api/login',
-            user,
-          )
-          .then((response) => {
-            const token = response.data.token;
-            axios.defaults.headers.common['Authorization'] = 'Bearer '+token;
-            context.commit('setToken', token);
-          }, () => {
-            context.commit('removeToken');
-          });
+    login(context, user) {
+      axios.post(appConst.webApiUrl + "/api/login", user).then(
+        response => {
+          const token = response.data.token;
+          axios.defaults.headers.common["Authorization"] = "Bearer " + token;
+          context.commit("setToken", token);
+        },
+        () => {
+          context.commit("removeToken");
+        }
+      );
     },
     logout(context) {
-      delete axios.defaults.headers.common['Authorization'];
-      context.commit('removeToken');
-    },
+      delete axios.defaults.headers.common["Authorization"];
+      context.commit("removeToken");
+    }
   },
   mutations: {
     setToken(state, token) {
       state.token = token;
-      localStorage.setItem('AuthStore', JSON.stringify(state));
+      localStorage.setItem("AuthStore", JSON.stringify(state));
     },
     removeToken(state) {
       state.token = undefined;
-      localStorage.removeItem('AuthStore');
-    },
+      localStorage.removeItem("AuthStore");
+    }
   }
-}
-export default Auth
+};
+export default Auth;

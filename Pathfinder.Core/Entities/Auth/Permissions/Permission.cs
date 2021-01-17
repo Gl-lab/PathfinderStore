@@ -7,12 +7,12 @@ namespace Pathfinder.Core.Entities.Auth.Permissions
 {
     public class Permission
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
         public DateTime CreationDate { get; set; }
 
         public DateTime ModificationDate { get; set; }
 
-        public Guid CreatorId { get; set; }
+        public int CreatorId { get; set; }
 
         public string Name { get; set; }
 

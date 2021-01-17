@@ -44,7 +44,7 @@ namespace Pathfinder.Application.Services
 
         public async Task<IPagedList<CategoryModel>> SearchCategories(PageSearchArgs args)
         {
-            var categoryPagedList = await categoryRepository.SearchCategoriesAsync(args).ConfigureAwait(false);
+            var categoryPagedList = await categoryRepository.SearchAsync(args).ConfigureAwait(false);
             var categoryModels = mapper.Map<List<CategoryModel>>(categoryPagedList.Items);
             var categoryModelPagedList = new PagedList<CategoryModel>(
                 categoryPagedList.PageIndex,

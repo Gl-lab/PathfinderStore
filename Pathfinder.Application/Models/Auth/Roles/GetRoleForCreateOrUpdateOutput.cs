@@ -11,6 +11,6 @@ namespace Pathfinder.Application.Models.Auth.Roles
 
         public List<PermissionModel> AllPermissions { get; set; } = new List<PermissionModel>();
 
-        public List<Guid> GrantedPermissionIds { get; set; } = new List<Guid>();
+        public List<int> GrantedPermissionIds { get; set; } = new List<int>();
     }
 }

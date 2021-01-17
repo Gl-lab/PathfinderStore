@@ -40,17 +40,15 @@ namespace Pathfinder.Application.Services
 
         public async Task<IPagedList<ArticleModel>> SearchArticles(PageSearchArgs args)
         {
-            var productPagedList = await productRepository.SearchArticlesAsync(args).ConfigureAwait(false);
+            var productPagedList = await productRepository.SearchAsync(args).ConfigureAwait(false);
             var productModels = mapper.Map<List<ArticleModel>>(productPagedList.Items);
 
-            var productModelPagedList = new PagedList<ArticleModel>(
+            return new PagedList<ArticleModel>(
                 productPagedList.PageIndex,
                 productPagedList.PageSize,
                 productPagedList.TotalCount,
                 productPagedList.TotalPages,
                 productModels);
-
-            return productModelPagedList;
         }
 
         public async Task<ArticleModel> GetArticleById(int productId)
@@ -64,14 +62,14 @@ namespace Pathfinder.Application.Services
 
         public async Task<IEnumerable<ArticleModel>> GetArticlesByName(string name)
         {
-            var productList = await productRepository.GetArticleByNameAsync(name).ConfigureAwait(false);
+            var productList = await productRepository.GetListByNameAsync(name).ConfigureAwait(false);
             var productModels = mapper.Map<IEnumerable<ArticleModel>>(productList);
             return productModels;
         }
 
         public async Task<IEnumerable<ArticleModel>> GetArticlesByCategoryId(int categoryId)
         {
-            var productList = await productRepository.GetArticleByCategoryAsync(categoryId).ConfigureAwait(false);
+            var productList = await productRepository.GetListByCategoryAsync(categoryId).ConfigureAwait(false);
 
             return mapper.Map<IEnumerable<ArticleModel>>(productList);
         }

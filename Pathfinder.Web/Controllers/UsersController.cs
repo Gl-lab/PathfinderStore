@@ -31,7 +31,7 @@ namespace Pathfinder.Web.Controllers
         [HttpGet("{id}")]
         [Authorize(Policy = DefaultPermissions.PermissionNameForUserCreate)]
         [Authorize(Policy = DefaultPermissions.PermissionNameForUserUpdate)]
-        public async Task<ActionResult<GetUserForCreateOrUpdateOutput>> GetUsers(Guid id)
+        public async Task<ActionResult<GetUserForCreateOrUpdateOutput>> GetUsers(int id)
         {
             var getUserForCreateOrUpdateOutput = await userAppService.GetUserForCreateOrUpdateAsync(id).ConfigureAwait(false);
 
@@ -68,7 +68,7 @@ namespace Pathfinder.Web.Controllers
 
         [HttpDelete]
         [Authorize(Policy = DefaultPermissions.PermissionNameForUserDelete)]
-        public async Task<ActionResult> DeleteUsers(Guid id)
+        public async Task<ActionResult> DeleteUsers(int id)
         {
             var identityResult = await userAppService.RemoveUserAsync(id).ConfigureAwait(false);
 

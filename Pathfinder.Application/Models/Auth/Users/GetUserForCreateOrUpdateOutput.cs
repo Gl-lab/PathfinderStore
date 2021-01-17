@@ -10,6 +10,6 @@ namespace Pathfinder.Application.Models.Auth.Users
 
         public List<RoleModel> AllRoles { get; set; } = new List<RoleModel>();
 
-        public List<Guid> GrantedRoleIds { get; set; } = new List<Guid>();
+        public List<int> GrantedRoleIds { get; set; } = new List<int>();
     }
 }

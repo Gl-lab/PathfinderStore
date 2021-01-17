@@ -10,10 +10,7 @@ namespace Pathfinder.Web.ActionFilters
     {
         private readonly PgDbContext _dbContext;
 
-        public UnitOfWorkActionFilter(PgDbContext dbContext)
-        {
-            _dbContext = dbContext;
-        }
+        public UnitOfWorkActionFilter(PgDbContext dbContext) => _dbContext = dbContext;
 
         public override void OnActionExecuted(ActionExecutedContext context)
         {

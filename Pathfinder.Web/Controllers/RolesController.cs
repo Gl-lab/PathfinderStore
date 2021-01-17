@@ -33,7 +33,7 @@ namespace Pathfinder.Web.Controllers
         [HttpGet("{id}")]
         [Authorize(Policy = DefaultPermissions.PermissionNameForRoleCreate)]
         [Authorize(Policy = DefaultPermissions.PermissionNameForRoleUpdate)]
-        public async Task<ActionResult<GetRoleForCreateOrUpdateOutput>> GetRoles(Guid id)
+        public async Task<ActionResult<GetRoleForCreateOrUpdateOutput>> GetRoles(int id)
         {
             var getRoleForCreateOrUpdateOutput = await roleAppService
                                                     .GetRoleForCreateOrUpdateAsync(id)
@@ -76,7 +76,7 @@ namespace Pathfinder.Web.Controllers
 
         [HttpDelete]
         [Authorize(Policy = DefaultPermissions.PermissionNameForRoleDelete)]
-        public async Task<ActionResult> DeleteRoles(Guid id)
+        public async Task<ActionResult> DeleteRoles(int id)
         {
             var identityResult = await roleAppService
                                     .RemoveRoleAsync(id)

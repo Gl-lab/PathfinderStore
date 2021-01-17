@@ -13,16 +13,16 @@
 <script>
 export default {
   name: "CategoryComboBox",
-  props:{
-    model: {},
+  props: {
+    model: {}
   },
   data() {
     return {
-       categories: [{id: 0, name: 'No data.', description: ''}],
-       select: null,
-    }
+      categories: [{ id: 0, name: "No data.", description: "" }],
+      select: null
+    };
   },
-  mounted: function(){
+  mounted: function() {
     try {
       this.loadData();
     } catch {
@@ -31,13 +31,13 @@ export default {
   },
   methods: {
     loadData() {
-      this.axios.get('api/Categories').then((response) => {
+      this.axios.get("api/Categories").then(response => {
         this.categories = response.data;
       });
     },
     respond() {
-      this.$emit('response', this.select);
+      this.$emit("response", this.select);
     }
   }
-}
+};
 </script>

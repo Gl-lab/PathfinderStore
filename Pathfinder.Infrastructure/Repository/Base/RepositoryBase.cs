@@ -14,10 +14,10 @@ namespace Pathfinder.Infrastructure.Repository.Base
     {
         public RepositoryBase(PgDbContext context)
         {
-            _context = context;
+            this.context = context;
         }
 
-        private readonly DbContext _context;
+        protected readonly DbContext context;
 
         private DbSet<T> _entities;
 
@@ -25,7 +25,7 @@ namespace Pathfinder.Infrastructure.Repository.Base
         {
             get
             {
-                return _entities ??= _context.Set<T>();
+                return _entities ??= context.Set<T>();
             }
         }
 
@@ -37,7 +37,7 @@ namespace Pathfinder.Infrastructure.Repository.Base
         public async Task<IEnumerable<T>> AddRangeAsync(IEnumerable<T> entities)
         {
             Entities.AddRange(entities);
-            await _context.SaveChangesAsync().ConfigureAwait(false);
+            await context.SaveChangesAsync().ConfigureAwait(false);
 
             return entities;
         }
@@ -50,10 +50,10 @@ namespace Pathfinder.Infrastructure.Repository.Base
             }
             else
             {
-                _context.Entry(entity).State = EntityState.Modified;
+                context.Entry(entity).State = EntityState.Modified;
             }
 
-            await _context.SaveChangesAsync().ConfigureAwait(false);
+            await context.SaveChangesAsync().ConfigureAwait(false);
 
             return entity;
         }
@@ -61,7 +61,7 @@ namespace Pathfinder.Infrastructure.Repository.Base
         public async Task DeleteAsync(T entity)
         {
             Entities.Remove(entity);
-            await _context.SaveChangesAsync().ConfigureAwait(false);
+            await context.SaveChangesAsync().ConfigureAwait(false);
         }
 
         public async virtual Task<IReadOnlyList<T>> ListAllAsync()
