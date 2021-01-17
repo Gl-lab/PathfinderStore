@@ -58,25 +58,25 @@
 </template>
 
 <script>
-import { createNamespacedHelpers } from 'vuex';
-const { mapActions, mapGetters } = createNamespacedHelpers('auth');
+import { createNamespacedHelpers } from "vuex";
+const { mapActions, mapGetters } = createNamespacedHelpers("auth");
 
 export default {
   name: "Home",
   computed: {
-    ...mapGetters(['getToken','isAuthorized'])
+    ...mapGetters(["getToken", "isAuthorized"])
   },
   methods: {
-    ...mapActions(['logout']),
-    login(){
-      this.$router.push('/account/login');
+    ...mapActions(["logout"]),
+    login() {
+      this.$router.push("/account/login");
     }
   },
-  created: function () {
-    const text = 'Bearer '+this.getToken
-    this.$http.defaults.headers.common['Authorization'] = text;
-    this.$http.interceptors.response.use(undefined, function (err) {
-      return new Promise(function () {
+  created: function() {
+    const text = "Bearer " + this.getToken;
+    this.$http.defaults.headers.common["Authorization"] = text;
+    this.$http.interceptors.response.use(undefined, function(err) {
+      return new Promise(function() {
         if (err.status === 401 && err.config && !err.config.__isRetryRequest) {
           this.logout();
         }

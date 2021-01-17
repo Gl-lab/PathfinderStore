@@ -10,12 +10,12 @@ namespace Pathfinder.Application.Interfaces.Auth
     {
         Task<IPagedList<RoleListOutput>> GetRolesAsync(RoleListInput input);
 
-        Task<GetRoleForCreateOrUpdateOutput> GetRoleForCreateOrUpdateAsync(Guid id);
+        Task<GetRoleForCreateOrUpdateOutput> GetRoleForCreateOrUpdateAsync(int id);
 
         Task<IdentityResult> AddRoleAsync(CreateOrUpdateRoleInput input);
 
         Task<IdentityResult> EditRoleAsync(CreateOrUpdateRoleInput input);
 
-        Task<IdentityResult> RemoveRoleAsync(Guid id);
+        Task<IdentityResult> RemoveRoleAsync(int id);
     }
 }

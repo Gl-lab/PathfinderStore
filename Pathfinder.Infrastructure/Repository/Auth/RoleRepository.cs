@@ -17,7 +17,7 @@ namespace Pathfinder.Infrastructure.Repository.Auth
             this.dbContext = dbContext;
         }
 
-        public async Task<ICollection<Role>> GetRolesListAsync()
+        public async Task<ICollection<Role>> GetListAsync()
         {
             return await dbContext
                 .Roles

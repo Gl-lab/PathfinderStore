@@ -5,7 +5,7 @@ using Pathfinder.Core.Entities.Auth.Users;
 
 namespace Pathfinder.Core.Entities.Auth.Roles
 {
-    public class Role : IdentityRole<Guid>
+    public class Role : IdentityRole<int>
     {
         public bool IsSystemDefault { get; set; } = false;
 

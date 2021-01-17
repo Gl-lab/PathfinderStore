@@ -1,11 +1,10 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.SpaServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Pathfinder.Application.Interfaces;
 using Pathfinder.Application.Services;
@@ -22,6 +21,11 @@ using VueCliMiddleware;
 using Pathfinder.Web.fromNucleus.Extensions;
 using Microsoft.AspNetCore.Http;
 using Pathfinder.Application.Interfaces.Auth;
+using Microsoft.AspNetCore.Hosting;
+using Autofac;
+using System.Reflection;
+using Pathfinder.Core.Repositories.Auth;
+using Pathfinder.Infrastructure.Repository.Auth;
 
 namespace Pathfinder.Web
 {
@@ -32,13 +36,15 @@ namespace Pathfinder.Web
             Configuration = configuration;
         }
 
-        public IConfiguration Configuration { get; }
+        private IConfiguration Configuration { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
             //services.AddDbContext<>(options => options.UseNpgsql(Configuration["Data:WebDB:ConnectionString"]));
             services.AddDbContext<PgDbContext>(options =>
-                options.UseNpgsql(Configuration["Data:WebDB:ConnectionString"]).UseLazyLoadingProxies());
+                options
+                    .UseNpgsql(Configuration["Data:WebDB:ConnectionString"])
+                    .UseLazyLoadingProxies());
 
             services.ConfigureAuthentication();
             services.ConfigureJwtTokenAuth(Configuration);
@@ -62,11 +68,17 @@ namespace Pathfinder.Web
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IArticleRepository, ArticleRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
-            services.AddTransient<IArticleService, ArticleService>();
-            services.AddTransient<ICategoryService, CategoryService>();
-            services.AddTransient<IPermissionService, PermissionService>();
-            services.AddTransient<IRoleService, RoleService>();
-            services.AddTransient<IUserService, UserService>();
+            services.AddScoped<IArticleService, ArticleService>();
+            services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<IPermissionService, PermissionService>();
+            services.AddScoped<IRoleService, RoleService>();
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IRoleRepository, RoleRepository>();
+            services.AddScoped<IUserRoleRepository, UserRoleRepository>();
+            services.AddScoped<ICharacterRepository, CharacterRepository>();
+            services.AddScoped<ICharacterService, CharacterService>();
+            services.AddScoped<IAccountService, AccountService>();
+            services.AddScoped<IAccountRepository, AccountRepository>();
             services.AddAutoMapper(typeof(AutoMapperProfile));
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         }

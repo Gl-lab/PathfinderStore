@@ -19,7 +19,7 @@ namespace Pathfinder.Infrastructure.Repository
         {
         }
 
-        public Task<IPagedList<Category>> SearchCategoriesAsync(PageSearchArgs args)
+        public Task<IPagedList<Category>> SearchAsync(PageSearchArgs args)
         {
             var query = Table;
 

@@ -31,7 +31,7 @@ export default {
       this.axios
         .get("api/GameAccount", this.pageInfo)
         .then(response => {
-          this.list = response.data.items.characters;
+          this.list = response.data.characters;
         })
         .catch(() => (this.list = []))
         .then(() => (this.loading = false));

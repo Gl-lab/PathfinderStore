@@ -7,6 +7,6 @@ namespace Pathfinder.Core.Repositories
 {
     public interface ICategoryRepository : IRepository<Category>
     {
-        Task<IPagedList<Category>> SearchCategoriesAsync(PageSearchArgs args);
+        Task<IPagedList<Category>> SearchAsync(PageSearchArgs args);
     }
 }

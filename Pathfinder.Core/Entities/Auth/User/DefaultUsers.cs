@@ -16,9 +16,9 @@ namespace Pathfinder.Core.Entities.Auth.Users
             };
         }
 
-        public static readonly User Admin = new User
+        public static readonly User Admin = new()
         {
-            Id = new Guid("C41A7761-6645-4E2C-B99D-F9E767B9AC77"),
+            Id = 1,//new Guid("C41A7761-6645-4E2C-B99D-F9E767B9AC77"),
             UserName = AdminUserName,
             Email = AdminUserEmail,
             EmailConfirmed = true,
@@ -28,9 +28,9 @@ namespace Pathfinder.Core.Entities.Auth.Users
             PasswordHash = PasswordHashFor123Qwe
         };
 
-        public static readonly User Member = new User
+        public static readonly User Member = new()
         {
-            Id = new Guid("065E903E-6F7B-42B8-B807-0C4197F9D1BC"),
+            Id = 2,//new Guid("065E903E-6F7B-42B8-B807-0C4197F9D1BC"),
             UserName = MemberUserName,
             Email = MemberUserEmail,
             EmailConfirmed = true,
@@ -40,9 +40,9 @@ namespace Pathfinder.Core.Entities.Auth.Users
             PasswordHash = PasswordHashFor123Qwe
         };
 
-        public static readonly User TestAdmin = new User
+        public static readonly User TestAdmin = new()
         {
-            Id = new Guid("4B6D9E45-626D-489A-A8CF-D32D36583AF4"),
+            Id = 3,//new Guid("4B6D9E45-626D-489A-A8CF-D32D36583AF4"),
             UserName = TestAdminUserName,
             Email = TestAdminUserEmail,
             EmailConfirmed = true,
@@ -54,7 +54,7 @@ namespace Pathfinder.Core.Entities.Auth.Users
 
         private const string AdminUserName = "admin";
         private const string AdminUserEmail = "admin@mail.com";
-        private const string PasswordHashFor123Qwe = "AQAAAAEAACcQAAAAEPZ85aLX3oCrOfmyD5aQWLzR2F53RxX0ko4ManWsiPXnbeKcL3YMOIKANLWsukGMzw=="; //123qwe
+        private const string PasswordHashFor123Qwe = "AQAAAAEAACcQAAAAEAHRoWnmspHpR/emTnFR7GuIwD1sTn/fM6O9lpdMAuagdruryhnmESp8lU2hNnEamQ=="; //123qwe
         private const string MemberUserName = "memberuser";
         private const string MemberUserEmail = "memberuser@mail.com";
         private const string TestAdminUserName = "testadmin";

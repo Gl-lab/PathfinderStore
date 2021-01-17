@@ -8,10 +8,10 @@ namespace Pathfinder.Core.Repositories
 {
     public interface IArticleRepository : IRepository<Article>
     {
-        Task<IEnumerable<Article>> GetArticleListAsync();
-        Task<IPagedList<Article>> SearchArticlesAsync(PageSearchArgs args);
-        Task<IEnumerable<Article>> GetArticleByNameAsync(string productName);
-        Task<Article> GetArticleByIdWithCategoryAsync(int productId);
-        Task<IEnumerable<Article>> GetArticleByCategoryAsync(int categoryId);
+        Task<IEnumerable<Article>> GetListAsync();
+        Task<IPagedList<Article>> SearchAsync(PageSearchArgs args);
+        Task<IEnumerable<Article>> GetListByNameAsync(string productName);
+        Task<Article> GetByIdWithCategoryAsync(int productId);
+        Task<IEnumerable<Article>> GetListByCategoryAsync(int categoryId);
     }
 }

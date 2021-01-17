@@ -4,7 +4,7 @@ using Pathfinder.Core.Entities.Auth.Roles;
 
 namespace Pathfinder.Core.Entities.Auth.Users
 {
-    public class UserRole : IdentityUserRole<Guid>
+    public class UserRole : IdentityUserRole<int>
     {
         public virtual User User { get; set; }
 

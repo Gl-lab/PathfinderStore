@@ -26,13 +26,13 @@ namespace Pathfinder.Infrastructure.Repository
             return await TableNoTracking.Include(e => e.Category).FirstOrDefaultAsync().ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<Article>> GetArticleListAsync()
+        public async Task<IEnumerable<Article>> GetListAsync()
         {
             return await ListAllAsync()
                 .ConfigureAwait(false);
         }
 
-        public Task<IPagedList<Article>> SearchArticlesAsync(PageSearchArgs args)
+        public Task<IPagedList<Article>> SearchAsync(PageSearchArgs args)
         {
             var query = Table.Include(p => p.Category);
 
@@ -94,20 +94,20 @@ namespace Pathfinder.Infrastructure.Repository
             return Task.FromResult<IPagedList<Article>>(productPagedList);
         }
 
-        public async Task<IEnumerable<Article>> GetArticleByNameAsync(string productName)
+        public async Task<IEnumerable<Article>> GetListByNameAsync(string productName)
         {
             return await TableNoTracking.Where(p => p.Name.Contains(productName, StringComparison.OrdinalIgnoreCase))
                                         .Include(p => p.Category)
                                         .ToListAsync().ConfigureAwait(false);
         }
 
-        public async Task<Article> GetArticleByIdWithCategoryAsync(int productId)
+        public async Task<Article> GetByIdWithCategoryAsync(int productId)
         {
             return await GetByIdAsync(productId)
                 .ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<Article>> GetArticleByCategoryAsync(int categoryId)
+        public async Task<IEnumerable<Article>> GetListByCategoryAsync(int categoryId)
         {
             return await TableNoTracking
                 .Where(x => x.CategoryId == categoryId)

@@ -2,8 +2,8 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 import Home from "../views/Home.vue";
 import VuetifyProduct from "../views/VuetifyProduct.vue";
-import accountLayout from '@/account/account-layout.vue';
-import store from '@/store'
+import accountLayout from "@/account/account-layout.vue";
+import store from "@/store";
 
 Vue.use(VueRouter);
 
@@ -19,10 +19,10 @@ const routes = [
     component: () => import("../views/About.vue")
   },
   {
-    path: '/create',
+    path: "/create",
     meta: { requiresAuth: true },
-    name: 'create',
-    component: () => import('../views/CreateProductForm.vue'),
+    name: "create",
+    component: () => import("../views/CreateProductForm.vue")
   },
   {
     path: "/vuetifyproduct",
@@ -30,12 +30,18 @@ const routes = [
     component: VuetifyProduct
   },
   {
-    path: '/account',
+    path: "/account",
     component: accountLayout,
     children: [
-        { path: 'login', component: require('@/account/views/login.vue').default },
-        { path: 'register', component: require('@/account/views/register.vue').default },
-    ],
+      {
+        path: "login",
+        component: require("@/account/views/login.vue").default
+      },
+      {
+        path: "register",
+        component: require("@/account/views/register.vue").default
+      }
+    ]
   }
 ];
 
@@ -46,11 +52,11 @@ const router = new VueRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  if (to.matched.some((record) => record.meta.requiresAuth)) {
-    if (!store.getters['auth/isAuthorized']) {
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (!store.getters["auth/isAuthorized"]) {
       next({
-        path: '/account/login',
-        query: { redirect: to.fullPath },
+        path: "/account/login",
+        query: { redirect: to.fullPath }
       });
     }
   }

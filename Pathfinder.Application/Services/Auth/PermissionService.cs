@@ -61,20 +61,20 @@ namespace Pathfinder.Application.Services
             return grantedPermissions.Any(p => p.Name == permissionName);
         }
 
-        public void InitializePermissions(List<Permission> permissions)
+        public async Task InitializePermissions(List<Permission> permissions)
         {
             dbContext.RolePermissions.RemoveRange(dbContext.RolePermissions.Where(rp => rp.RoleId == DefaultRoles.Admin.Id));
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
 
             dbContext.Permissions.RemoveRange(dbContext.Permissions);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
 
-            dbContext.AddRange(permissions);
+            await dbContext.AddRangeAsync(permissions).ConfigureAwait(false);
             GrantAllPermissionsToAdminRole(permissions);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
-        private void GrantAllPermissionsToAdminRole(List<Permission> permissions)
+        private void GrantAllPermissionsToAdminRole(IEnumerable<Permission> permissions)
         {
             foreach (var permission in permissions)
             {

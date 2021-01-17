@@ -11,6 +11,6 @@ namespace Pathfinder.Application.Interfaces.Auth
 
         Task<bool> IsUserGrantedToPermissionAsync(string userNameOrEmail, string permissionName);
 
-        void InitializePermissions(List<Permission> permissions);
+        Task InitializePermissions(List<Permission> permissions);
     }
 }
