@@ -14,18 +14,24 @@ using Pathfinder.Application.Interfaces.Auth;
 using Pathfinder.Infrastructure.Data;
 using Pathfinder.Core.Paging;
 using Pathfinder.Infrastructure.Paging;
+using Pathfinder.Core.Repositories.Auth;
 
 namespace  Pathfinder.Application.Services
 {
     public class RoleService : IRoleService
     {
-        private readonly PgDbContext dbContext;
+        private readonly IPermissionsRepository permissionsRepository;
+        private readonly IRolePermissionsRepository rolePermissionsRepository;
         private readonly RoleManager<Role> roleManager;
         private readonly IMapper mapper;
 
-        public RoleService(PgDbContext dbContext, RoleManager<Role> roleManager, IMapper mapper)
+        public RoleService(IPermissionsRepository permissionsRepository, 
+            IRolePermissionsRepository rolePermissionsRepository, 
+            RoleManager<Role> roleManager, 
+            IMapper mapper)
         {
-            this.dbContext = dbContext;
+            this.rolePermissionsRepository = rolePermissionsRepository;
+            this.permissionsRepository = permissionsRepository;
             this.roleManager = roleManager;
             this.mapper = mapper;
         }
@@ -46,7 +52,10 @@ namespace  Pathfinder.Application.Services
 
         public async Task<GetRoleForCreateOrUpdateOutput> GetRoleForCreateOrUpdateAsync(int id)
         {
-            var allPermissions = mapper.Map<List<PermissionModel>>(dbContext.Permissions).OrderBy(p => p.DisplayName).ToList();
+            var allPermissions = mapper
+                .Map<List<PermissionModel>>(await permissionsRepository.GetListAsync().ConfigureAwait(false))
+                .OrderBy(p => p.DisplayName)
+                .ToList();
             var getRoleForCreateOrUpdateOutput = new GetRoleForCreateOrUpdateOutput
             {
                 AllPermissions = allPermissions
@@ -135,14 +144,13 @@ namespace  Pathfinder.Application.Services
 
         private void GrantPermissionsToRole(IEnumerable<int> grantedPermissionIds, Role role)
         {
-            foreach (var permissionId in grantedPermissionIds)
-            {
-                dbContext.RolePermissions.Add(new RolePermission
+            rolePermissionsRepository
+                .AddRangeAsync(grantedPermissionIds.Select(permissionId =>
+                new RolePermission
                 {
                     PermissionId = permissionId,
-                    RoleId = role.Id
-                });
-            }
+                        RoleId = role.Id
+                }));
         }
 
         private async Task<GetRoleForCreateOrUpdateOutput> GetRoleForCreateOrUpdateOutputAsync(int id, List<PermissionModel> allPermissions)

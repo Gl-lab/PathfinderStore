@@ -8,9 +8,6 @@ namespace Pathfinder.Application.Interfaces.Auth
     public interface IPermissionService
     {
         Task<IEnumerable<PermissionModel>> GetGrantedPermissionsAsync(string userNameOrEmail);
-
         Task<bool> IsUserGrantedToPermissionAsync(string userNameOrEmail, string permissionName);
-
-        Task InitializePermissions(List<Permission> permissions);
     }
 }
