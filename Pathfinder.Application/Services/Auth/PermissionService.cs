@@ -19,16 +19,13 @@ namespace Pathfinder.Application.Services
     {
         private readonly UserManager<User> userManager;
         private readonly IMapper mapper;
-        private readonly PgDbContext dbContext;
 
         public PermissionService(
             UserManager<User> userManager,
-            IMapper mapper,
-            PgDbContext dbContext)
+            IMapper mapper)
         {
             this.userManager = userManager;
             this.mapper = mapper;
-            this.dbContext = dbContext;
         }
 
         public async Task<IEnumerable<PermissionModel>> GetGrantedPermissionsAsync(string userNameOrEmail)
@@ -59,31 +56,6 @@ namespace Pathfinder.Application.Services
                 .Select(rp => rp.Permission);
 
             return grantedPermissions.Any(p => p.Name == permissionName);
-        }
-
-        public async Task InitializePermissions(List<Permission> permissions)
-        {
-            dbContext.RolePermissions.RemoveRange(dbContext.RolePermissions.Where(rp => rp.RoleId == DefaultRoles.Admin.Id));
-            await dbContext.SaveChangesAsync().ConfigureAwait(false);
-
-            dbContext.Permissions.RemoveRange(dbContext.Permissions);
-            await dbContext.SaveChangesAsync().ConfigureAwait(false);
-
-            await dbContext.AddRangeAsync(permissions).ConfigureAwait(false);
-            GrantAllPermissionsToAdminRole(permissions);
-            await dbContext.SaveChangesAsync().ConfigureAwait(false);
-        }
-
-        private void GrantAllPermissionsToAdminRole(IEnumerable<Permission> permissions)
-        {
-            foreach (var permission in permissions)
-            {
-                dbContext.RolePermissions.Add(new RolePermission
-                {
-                    PermissionId = permission.Id,
-                    RoleId = DefaultRoles.Admin.Id
-                });
-            }
         }
     }
 }

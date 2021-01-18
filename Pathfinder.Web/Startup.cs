@@ -79,6 +79,8 @@ namespace Pathfinder.Web
             services.AddScoped<ICharacterService, CharacterService>();
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IAccountRepository, AccountRepository>();
+            services.AddScoped<IPermissionsRepository, PermissionsRepository>();
+            services.AddScoped<IRolePermissionsRepository, RolePermissionsRepository>();
             services.AddAutoMapper(typeof(AutoMapperProfile));
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         }
