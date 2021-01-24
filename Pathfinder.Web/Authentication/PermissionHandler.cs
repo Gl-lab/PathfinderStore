@@ -35,7 +35,6 @@ namespace Pathfinder.Web.Authentication
                                     .ConfigureAwait(false);
             if (hasPermission)
             {
-                //var user = await userManager.GetUserAsync(context.User).ConfigureAwait(false);
                 await userService.SetCurrentUserByLogin(context.User.Identity.Name).ConfigureAwait(false);
                 context.Succeed(requirement);
             }

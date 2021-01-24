@@ -25,7 +25,6 @@ namespace Pathfinder.Web.Controllers
         }
 
         [Produces("application/json")]
-        [Route("")]
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<ArticleModel>), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<IEnumerable<ArticleModel>>> GetProducts()

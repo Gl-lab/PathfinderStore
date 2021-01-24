@@ -9,10 +9,12 @@ namespace Pathfinder.Application.Interfaces
 {
     public interface ICharacterService
     {
-        Task<CharacterDto> GetCurrentCharacter(User user);
-        Task<ICollection<CharacterDto>> GetCharactersByUserId(User user);
-        Task SetCurrentCharacter(User user, int characterId);
-        Task<CharacterDto> CreateCharacter(User user, CharacterDto newCharacter);
-        Task DeleteCharacter(User user, CharacterDto character);
+         Task<CharacterDto> GetCurrentCharacterAsync();
+        Task<ICollection<CharacterDto>> GetCharactersByUserAsync(User user);
+        Task<ICollection<CharacterDto>> GetCharactersByCurrentUserAsync();
+        Task SetCurrentCharacterAsync(int characterId);
+        Task SetCurrentCharacterAsync(CharacterDto character);
+        Task CreateCharacterAsync(CharacterDto newCharacter);
+        Task DeleteCharacterAsync(CharacterDto character);
     }
 }

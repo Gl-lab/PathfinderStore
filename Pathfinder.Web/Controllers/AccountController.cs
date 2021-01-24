@@ -33,12 +33,10 @@ namespace Pathfinder.Web.Controllers
             UserManager<User> userManager,
             IOptions<JwtTokenConfiguration> jwtTokenConfiguration,
             IConfiguration configuration,
-            //SmtpClient smtpClient,
             ILogger<AccountController> logger)
         {
             this.userManager = userManager;
             this.configuration = configuration;
-            //_smtpClient = smtpClient;
             this.logger = logger;
             this.jwtTokenConfiguration = jwtTokenConfiguration.Value;
         }
