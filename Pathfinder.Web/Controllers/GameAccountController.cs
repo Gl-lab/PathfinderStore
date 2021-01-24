@@ -20,19 +20,16 @@ namespace Pathfinder.Web.Controllers
     public class GameAccountController: AuthorizedController
     {
         private readonly IAccountService accountService;
-        private readonly UserManager<User> userManager;
-
-        public GameAccountController(IAccountService accountService, UserManager<User> userManager)
+ 
+        public GameAccountController(IAccountService accountService)
         {
             this.accountService = accountService;
-            this.userManager = userManager;
         }
 
         [HttpGet]
         public async Task<ActionResult<AccountDto>> Get()
         {
-            //var user = await userManager.GetUserAsync(HttpContext.User).ConfigureAwait(false);
-            var result = await accountService.Get().ConfigureAwait(false);
+            var result = await accountService.GetCurrentAccountAsync().ConfigureAwait(false);
             return Ok(result);
         }
     }

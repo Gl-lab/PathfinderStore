@@ -9,7 +9,7 @@ namespace Pathfinder.Application.Interfaces
 {
     public interface IAccountService
     {
-        Task<AccountDto> Update(AccountDto newAccount);
-        Task<AccountDto> Get();
+        Task UpdateAsync(AccountDto newAccount);
+        Task<AccountDto> GetCurrentAccountAsync();
     }
 }

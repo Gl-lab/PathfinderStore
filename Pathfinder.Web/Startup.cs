@@ -76,7 +76,6 @@ namespace Pathfinder.Web
             services.AddScoped<IRoleRepository, RoleRepository>();
             services.AddScoped<IUserRoleRepository, UserRoleRepository>();
             services.AddScoped<ICharacterRepository, CharacterRepository>();
-            services.AddScoped<ICharacterService, CharacterService>();
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IAccountRepository, AccountRepository>();
             services.AddScoped<IPermissionsRepository, PermissionsRepository>();
