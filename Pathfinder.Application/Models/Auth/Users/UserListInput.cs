@@ -1,4 +1,4 @@
-using Pathfinder.Core.Paging;
+using Pathfinder.Utils.Paging;
 
 namespace Pathfinder.Application.Models.Auth.Users
 {

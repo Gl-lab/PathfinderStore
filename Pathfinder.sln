@@ -11,6 +11,18 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pathfinder.Application", "P
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pathfinder.Web", "Pathfinder.Web\Pathfinder.Web.csproj", "{8736D30A-2867-4409-AB74-B4A8A6B5EC0A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1 Core", "1 Core", "{DDEA6AE3-7767-4005-9F48-B6F4CD5F694A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2 Application", "2 Application", "{62A57799-2B23-483C-BFE4-3C56EC802E3A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3 Infrastructure", "3 Infrastructure", "{6D91A811-1D16-4476-B8E1-08FB5BD01F29}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "4 Web", "4 Web", "{2071E733-B53E-4316-B010-7E7347CA5AF5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "0 Utils", "0 Utils", "{834CE87E-6066-4986-AFDB-F75921D69D91}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pathfinder.Utils", "Pathfinder.Utils\Pathfinder.Utils.csproj", "{A3E7C563-8EC2-441D-B463-6AE3D3CFD2F8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,11 +45,22 @@ Global
 		{8736D30A-2867-4409-AB74-B4A8A6B5EC0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8736D30A-2867-4409-AB74-B4A8A6B5EC0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8736D30A-2867-4409-AB74-B4A8A6B5EC0A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3E7C563-8EC2-441D-B463-6AE3D3CFD2F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3E7C563-8EC2-441D-B463-6AE3D3CFD2F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3E7C563-8EC2-441D-B463-6AE3D3CFD2F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3E7C563-8EC2-441D-B463-6AE3D3CFD2F8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FCA7C5BD-9B91-45F0-95F4-F4ADC931E23A}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F6E3B6DA-128D-4112-9CA7-EC5F30D9021E} = {62A57799-2B23-483C-BFE4-3C56EC802E3A}
+		{B9615CDE-4EEB-4A3F-A17A-AD1749D135F9} = {DDEA6AE3-7767-4005-9F48-B6F4CD5F694A}
+		{C8B1908E-8C89-4586-B005-CE5782D85318} = {6D91A811-1D16-4476-B8E1-08FB5BD01F29}
+		{8736D30A-2867-4409-AB74-B4A8A6B5EC0A} = {2071E733-B53E-4316-B010-7E7347CA5AF5}
+		{A3E7C563-8EC2-441D-B463-6AE3D3CFD2F8} = {834CE87E-6066-4986-AFDB-F75921D69D91}
 	EndGlobalSection
 EndGlobal

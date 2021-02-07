@@ -1,10 +1,10 @@
-﻿using Pathfinder.Infrastructure.Data;
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Pathfinder.Infrastructure.Data;
 
 namespace Pathfinder.Infrastructure.Behaviors
 {

@@ -1,5 +1,5 @@
 ﻿using Pathfinder.Application.Models;
-using Pathfinder.Core.Paging;
+using Pathfinder.Utils.Paging;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

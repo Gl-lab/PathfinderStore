@@ -2,13 +2,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Pathfinder.Application.Interfaces;
-using Pathfinder.Application.Mapper;
 using Pathfinder.Application.Models;
-using Pathfinder.Core.Entities;
-using Pathfinder.Core.Interfaces;
-using Pathfinder.Core.Paging;
 using Pathfinder.Core.Repositories;
-using Pathfinder.Infrastructure.Paging;
+using Pathfinder.Utils.Paging;
 using AutoMapper;
 using Pathfinder.Core.Entities.Product;
 

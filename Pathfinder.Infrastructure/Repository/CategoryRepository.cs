@@ -2,13 +2,11 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Pathfinder.Core.Entities;
 using Pathfinder.Core.Entities.Product;
-using Pathfinder.Core.Paging;
 using Pathfinder.Core.Repositories;
 using Pathfinder.Infrastructure.Data;
-using Pathfinder.Infrastructure.Paging;
 using Pathfinder.Infrastructure.Repository.Base;
+using Pathfinder.Utils.Paging;
 
 namespace Pathfinder.Infrastructure.Repository
 {

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Pathfinder.Application.Models.Auth.Users;
 using Pathfinder.Core.Entities.Auth.Permissions;
 using Pathfinder.Core.Entities.Auth.Users;
-using Pathfinder.Core.Paging;
+using Pathfinder.Utils.Paging;
 
 namespace Pathfinder.Application.Interfaces.Auth
 {

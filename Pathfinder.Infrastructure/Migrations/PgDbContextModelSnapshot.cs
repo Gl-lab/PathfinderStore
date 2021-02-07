@@ -9,7 +9,7 @@ using Pathfinder.Infrastructure.Data;
 namespace Pathfinder.Infrastructure.Migrations
 {
     [DbContext(typeof(PgDbContext))]
-    partial class PgDbContextModelSnapshot : ModelSnapshot
+    internal partial class PgDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {

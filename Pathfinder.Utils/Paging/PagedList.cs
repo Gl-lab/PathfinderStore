@@ -1,10 +1,9 @@
-﻿using Pathfinder.Core.Paging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace Pathfinder.Infrastructure.Paging
+namespace Pathfinder.Utils.Paging
 {
     public class PagedList<T> : IPagedList<T>
     {

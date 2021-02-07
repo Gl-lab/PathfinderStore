@@ -1,31 +1,25 @@
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
-using Microsoft.AspNetCore.SpaServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Pathfinder.Application.Interfaces;
 using Pathfinder.Application.Services;
-using Pathfinder.Core.Entities;
 using Pathfinder.Infrastructure.Data;
 using Pathfinder.Core.Repositories;
 using Pathfinder.Core.Repositories.Base;
-using Pathfinder.Infrastructure.Repository;
-using Pathfinder.Infrastructure.Repository.Base;
 using System;
-using AutoMapper;
 using Pathfinder.Application.Mapper;
 using VueCliMiddleware;
 using Pathfinder.Web.fromNucleus.Extensions;
 using Microsoft.AspNetCore.Http;
 using Pathfinder.Application.Interfaces.Auth;
 using Microsoft.AspNetCore.Hosting;
-using Autofac;
-using System.Reflection;
 using Pathfinder.Core.Repositories.Auth;
+using Pathfinder.Infrastructure.Repository;
 using Pathfinder.Infrastructure.Repository.Auth;
+using Pathfinder.Infrastructure.Repository.Base;
 
 namespace Pathfinder.Web
 {

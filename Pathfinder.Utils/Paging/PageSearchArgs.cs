@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Pathfinder.Core.Paging
+namespace Pathfinder.Utils.Paging
 {
     public class PageSearchArgs
     {

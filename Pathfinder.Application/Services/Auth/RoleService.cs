@@ -11,9 +11,7 @@ using Pathfinder.Application.Models.Auth.Roles;
 using Pathfinder.Application.Models.Auth.Permissions;
 using Pathfinder.Core.Entities.Auth.Roles;
 using Pathfinder.Application.Interfaces.Auth;
-using Pathfinder.Infrastructure.Data;
-using Pathfinder.Core.Paging;
-using Pathfinder.Infrastructure.Paging;
+using Pathfinder.Utils.Paging;
 using Pathfinder.Core.Repositories.Auth;
 
 namespace  Pathfinder.Application.Services
