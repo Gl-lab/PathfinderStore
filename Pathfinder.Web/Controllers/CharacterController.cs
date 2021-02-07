@@ -30,9 +30,9 @@ namespace Pathfinder.Web.Controllers
         }
 
         [HttpDelete]
-        public async Task<ActionResult> DeleteCharacter(CharacterDto newCharacter)
+        public async Task<ActionResult> DeleteCharacter(int deletedCharacterId)
         {
-            await characterService.DeleteCharacterAsync(newCharacter).ConfigureAwait(false);
+            await characterService.DeleteCharacterAsync(deletedCharacterId).ConfigureAwait(false);
             return Ok();
         }
     }

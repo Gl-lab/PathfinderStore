@@ -19,6 +19,7 @@ namespace Pathfinder.Application
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAccountService, AccountService>();
+            services.AddScoped<ICharacterService, AccountService>();
             services.AddAutoMapper(typeof(AutoMapperProfile));
         }
     }
