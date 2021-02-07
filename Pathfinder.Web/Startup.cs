@@ -4,22 +4,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
-using Pathfinder.Application.Interfaces;
-using Pathfinder.Application.Services;
 using Pathfinder.Infrastructure.Data;
-using Pathfinder.Core.Repositories;
-using Pathfinder.Core.Repositories.Base;
 using System;
-using Pathfinder.Application.Mapper;
 using VueCliMiddleware;
 using Pathfinder.Web.fromNucleus.Extensions;
 using Microsoft.AspNetCore.Http;
-using Pathfinder.Application.Interfaces.Auth;
 using Microsoft.AspNetCore.Hosting;
-using Pathfinder.Core.Repositories.Auth;
-using Pathfinder.Infrastructure.Repository;
-using Pathfinder.Infrastructure.Repository.Auth;
-using Pathfinder.Infrastructure.Repository.Base;
+using Pathfinder.Application;
 
 namespace Pathfinder.Web
 {
@@ -59,22 +50,9 @@ namespace Pathfinder.Web
             });
 
             services.AddSpaStaticFiles(configuration => configuration.RootPath = "ClientApp/dist");
-            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-            services.AddScoped<IArticleRepository, ArticleRepository>();
-            services.AddScoped<ICategoryRepository, CategoryRepository>();
-            services.AddScoped<IArticleService, ArticleService>();
-            services.AddScoped<ICategoryService, CategoryService>();
-            services.AddScoped<IPermissionService, PermissionService>();
-            services.AddScoped<IRoleService, RoleService>();
-            services.AddScoped<IUserService, UserService>();
-            services.AddScoped<IRoleRepository, RoleRepository>();
-            services.AddScoped<IUserRoleRepository, UserRoleRepository>();
-            services.AddScoped<ICharacterRepository, CharacterRepository>();
-            services.AddScoped<IAccountService, AccountService>();
-            services.AddScoped<IAccountRepository, AccountRepository>();
-            services.AddScoped<IPermissionsRepository, PermissionsRepository>();
-            services.AddScoped<IRolePermissionsRepository, RolePermissionsRepository>();
-            services.AddAutoMapper(typeof(AutoMapperProfile));
+
+            services.AddApplicationServices();
+            services.AddInfrastructureServices();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         }
 

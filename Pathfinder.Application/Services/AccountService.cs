@@ -28,6 +28,7 @@ namespace Pathfinder.Application.Services
 
         public async Task CreateCharacterAsync(CharacterDto newCharacter)
         {
+            if (newCharacter == null) throw new ArgumentNullException(nameof(newCharacter));
             var account = await CurrentAccountAsync().ConfigureAwait(false);
             if (account.Characters.Any(e => e.Name == newCharacter.Name))
             {
@@ -39,6 +40,7 @@ namespace Pathfinder.Application.Services
 
         public async Task DeleteCharacterAsync(CharacterDto character)
         {
+            if (character == null) throw new ArgumentNullException(nameof(character));
             var account = await CurrentAccountAsync().ConfigureAwait(false);
             if (account.Characters.All(e => e.Id != character.Id))
             {
@@ -83,6 +85,7 @@ namespace Pathfinder.Application.Services
 
         public async Task SetCurrentCharacterAsync(CharacterDto character)
         {
+            if (character == null) throw new ArgumentNullException(nameof(character));
             var account = await CurrentAccountAsync().ConfigureAwait(false);
             var accountCharacter = account.Characters.FirstOrDefault(e => e.Id == character.Id);
             account.CurrentCharacter = accountCharacter ?? throw new Exception("The user does not have a character with the specified ID");
