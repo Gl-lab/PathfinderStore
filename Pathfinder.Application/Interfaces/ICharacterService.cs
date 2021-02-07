@@ -13,6 +13,6 @@ namespace Pathfinder.Application.Interfaces
         Task SetCurrentCharacterAsync(int characterId);
         Task SetCurrentCharacterAsync(CharacterDto character);
         Task CreateCharacterAsync(CharacterDto newCharacter);
-        Task DeleteCharacterAsync(CharacterDto character);
+        Task DeleteCharacterAsync(int deletedCharacterId);
     }
 }

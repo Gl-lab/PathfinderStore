@@ -38,11 +38,11 @@ namespace Pathfinder.Application.Services
             await accountRepository.SaveAsync(account).ConfigureAwait(false);
         }
 
-        public async Task DeleteCharacterAsync(CharacterDto character)
+        public async Task DeleteCharacterAsync(int deletedCharacterId)
         {
-            if (character == null) throw new ArgumentNullException(nameof(character));
             var account = await CurrentAccountAsync().ConfigureAwait(false);
-            if (account.Characters.All(e => e.Id != character.Id))
+            var character = account.Characters.FirstOrDefault(e => e.Id != deletedCharacterId);
+            if (character == null)
             {
                 throw new ApplicationException("Герой отсутствует");
             }
