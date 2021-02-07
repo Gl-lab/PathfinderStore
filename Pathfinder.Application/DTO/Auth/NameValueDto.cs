@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace Pathfinder.Application.Models.Auth
+namespace Pathfinder.Application.DTO.Auth
 {
     public class NameValueDto
     {
@@ -10,8 +10,8 @@ namespace Pathfinder.Application.Models.Auth
             Value = value;
         }
 
-        public string Name { get; set; }
-        public string Value { get; set; }
+        public string Name { get; }
+        public string Value { get; }
 
         public override string ToString()
         {

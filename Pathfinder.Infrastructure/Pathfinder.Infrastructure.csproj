@@ -22,8 +22,4 @@
     <ProjectReference Include="..\Pathfinder.Core\Pathfinder.Core.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Paging" />
-  </ItemGroup>
-
 </Project>

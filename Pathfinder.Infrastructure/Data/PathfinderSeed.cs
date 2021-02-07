@@ -74,8 +74,8 @@ namespace Pathfinder.Infrastructure.Data
         }
         private static IEnumerable<Race> GetRaces(PgDbContext dbContext)
         {
-            RaceSize small = dbContext.RaceSize.Where(e => e.Name == "Небольшой").First();
-            RaceSize middle = dbContext.RaceSize.Where(e => e.Name == "Средний").First();
+            var small = dbContext.RaceSize.Where(e => e.Name == "Небольшой").First();
+            var middle = dbContext.RaceSize.Where(e => e.Name == "Средний").First();
             return new List<Race>
             {
                 new Race
@@ -138,7 +138,7 @@ namespace Pathfinder.Infrastructure.Data
                 {
                     Name = "Имя",
                     Surname = "Фамилия",
-                    UserId = 1,//new Guid("C41A7761-6645-4E2C-B99D-F9E767B9AC77"),
+                    UserId = 1,
                     Characters = GetCharacters(dbContext)
                 }
             };

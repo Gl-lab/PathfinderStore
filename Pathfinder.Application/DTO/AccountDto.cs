@@ -1,11 +1,10 @@
-using Pathfinder.Application.Models.Auth.Users;
-using Pathfinder.Application.Models.Base;
-using System;
+using Pathfinder.Application.DTO.Auth.Users;
 using System.Collections.Generic;
+using Pathfinder.Application.DTO.Base;
 
 namespace Pathfinder.Application.DTO
 {
-    public class AccountDto : BaseModel
+    public class AccountDto : BaseDto
     {
         public string Name { get; set; }
         public string Surname { get; set; }
@@ -13,6 +12,6 @@ namespace Pathfinder.Application.DTO
         public virtual ICollection<CharacterDto> Characters { get; set; }
         public virtual CharacterDto CurrentCharacter { get; set; }
 
-        public virtual UserModel User { get; set; }
+        public virtual UserDto User { get; set; }
     }
 }

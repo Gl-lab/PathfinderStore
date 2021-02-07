@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Pathfinder.Application.Interfaces;
-using Pathfinder.Application.Models;
+using Pathfinder.Application.DTO;
 using Pathfinder.Core.Repositories;
 using Pathfinder.Utils.Paging;
 using AutoMapper;
@@ -23,23 +23,23 @@ namespace Pathfinder.Application.Services
             this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        public async Task<IEnumerable<ArticleModel>> GetArticleList()
+        public async Task<IEnumerable<ArticleDto>> GetArticleList()
         {
             var productList = await productRepository
                 .ListAllAsync()
                 .ConfigureAwait(false);
 
-            var productModels = mapper.Map<IEnumerable<ArticleModel>>(productList);
+            var productModels = mapper.Map<IEnumerable<ArticleDto>>(productList);
 
             return productModels;
         }
 
-        public async Task<IPagedList<ArticleModel>> SearchArticles(PageSearchArgs args)
+        public async Task<IPagedList<ArticleDto>> SearchArticles(PageSearchArgs args)
         {
             var productPagedList = await productRepository.SearchAsync(args).ConfigureAwait(false);
-            var productModels = mapper.Map<List<ArticleModel>>(productPagedList.Items);
+            var productModels = mapper.Map<List<ArticleDto>>(productPagedList.Items);
 
-            return new PagedList<ArticleModel>(
+            return new PagedList<ArticleDto>(
                 productPagedList.PageIndex,
                 productPagedList.PageSize,
                 productPagedList.TotalCount,
@@ -47,30 +47,30 @@ namespace Pathfinder.Application.Services
                 productModels);
         }
 
-        public async Task<ArticleModel> GetArticleById(int productId)
+        public async Task<ArticleDto> GetArticleById(int productId)
         {
             var product = await productRepository.GetByIdAsync(productId).ConfigureAwait(false);
 
-            var productModel = mapper.Map<ArticleModel>(product);
+            var productModel = mapper.Map<ArticleDto>(product);
 
             return productModel;
         }
 
-        public async Task<IEnumerable<ArticleModel>> GetArticlesByName(string name)
+        public async Task<IEnumerable<ArticleDto>> GetArticlesByName(string name)
         {
             var productList = await productRepository.GetListByNameAsync(name).ConfigureAwait(false);
-            var productModels = mapper.Map<IEnumerable<ArticleModel>>(productList);
+            var productModels = mapper.Map<IEnumerable<ArticleDto>>(productList);
             return productModels;
         }
 
-        public async Task<IEnumerable<ArticleModel>> GetArticlesByCategoryId(int categoryId)
+        public async Task<IEnumerable<ArticleDto>> GetArticlesByCategoryId(int categoryId)
         {
             var productList = await productRepository.GetListByCategoryAsync(categoryId).ConfigureAwait(false);
 
-            return mapper.Map<IEnumerable<ArticleModel>>(productList);
+            return mapper.Map<IEnumerable<ArticleDto>>(productList);
         }
 
-        public async Task<ArticleModel> CreateArticle(ArticleModel product)
+        public async Task<ArticleDto> CreateArticle(ArticleDto product)
         {
             var existingArticle = await productRepository.GetByIdAsync(product.Id).ConfigureAwait(false);
             if (existingArticle != null)
@@ -83,11 +83,11 @@ namespace Pathfinder.Application.Services
 
            // logger.LogInformation("Entity successfully added - AspnetRunAppService");
 
-            var newArticleModel = mapper.Map<ArticleModel>(newArticle);
+            var newArticleModel = mapper.Map<ArticleDto>(newArticle);
             return newArticleModel;
         }
 
-        public async Task UpdateArticle(ArticleModel product)
+        public async Task UpdateArticle(ArticleDto product)
         {
             var existingArticle = await productRepository.GetByIdAsync(product.Id).ConfigureAwait(false);
             if (existingArticle == null)

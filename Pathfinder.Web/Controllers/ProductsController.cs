@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Pathfinder.Utils.Paging;
 using Pathfinder.Application.Interfaces;
-using Pathfinder.Application.Models;
+using Pathfinder.Application.DTO;
 using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Pathfinder.Core.Entities.Auth.Permissions;
@@ -23,8 +23,8 @@ namespace Pathfinder.Web.Controllers
 
         [Produces("application/json")]
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<ArticleModel>), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<IEnumerable<ArticleModel>>> GetProducts()
+        [ProducesResponseType(typeof(IEnumerable<ArticleDto>), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<IEnumerable<ArticleDto>>> GetProducts()
         {
             var products = await productService
                                 .GetArticleList()
@@ -34,8 +34,8 @@ namespace Pathfinder.Web.Controllers
 
         [Route("[action]")]
         [HttpPost]
-        [ProducesResponseType(typeof(IPagedList<ArticleModel>), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<IPagedList<ArticleModel>>> SearchProducts(PageSearchArgs arg)
+        [ProducesResponseType(typeof(IPagedList<ArticleDto>), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<IPagedList<ArticleDto>>> SearchProducts(PageSearchArgs arg)
         {
             var productPagedList = await productService
                                     .SearchArticles(arg)
@@ -45,8 +45,8 @@ namespace Pathfinder.Web.Controllers
 
         [Route("{id}")]
         [HttpGet]
-        [ProducesResponseType(typeof(ArticleModel), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<ArticleModel>> GetProductById(int id)
+        [ProducesResponseType(typeof(ArticleDto), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<ArticleDto>> GetProductById(int id)
         {
             var product = await productService
                             .GetArticleById(id)
@@ -56,8 +56,8 @@ namespace Pathfinder.Web.Controllers
 
         [Route("[action]")]
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<ArticleModel>), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<IEnumerable<ArticleModel>>> GetProductsByName(string name)
+        [ProducesResponseType(typeof(IEnumerable<ArticleDto>), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<IEnumerable<ArticleDto>>> GetProductsByName(string name)
         {
             var products = await productService
                                 .GetArticlesByName(name)
@@ -67,8 +67,8 @@ namespace Pathfinder.Web.Controllers
 
         [Route("[action]")]
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<ArticleModel>), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<IEnumerable<ArticleModel>>> GetProductsByCategoryId(int categoryId)
+        [ProducesResponseType(typeof(IEnumerable<ArticleDto>), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<IEnumerable<ArticleDto>>> GetProductsByCategoryId(int categoryId)
         {
             var products = await productService
                                 .GetArticlesByCategoryId(categoryId)
@@ -78,11 +78,11 @@ namespace Pathfinder.Web.Controllers
 
         [Route("[action]")]
         [HttpPost]
-        [ProducesResponseType(typeof(ArticleModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ArticleDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         //[Authorize(Policy = DefaultPermissions.PermissionNameForAdministration)]
         [Authorize]
-        public async Task<ActionResult<ArticleModel>> CreateProduct(ArticleModel product)
+        public async Task<ActionResult<ArticleDto>> CreateProduct(ArticleDto product)
         {
             var Result = await productService
                             .CreateArticle(product)
@@ -95,7 +95,7 @@ namespace Pathfinder.Web.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Authorize(Policy = DefaultPermissions.PermissionNameForAdministration)]
-        public async Task<ActionResult> UpdateProduct(ArticleModel product)
+        public async Task<ActionResult> UpdateProduct(ArticleDto product)
         {
             await productService
                 .UpdateArticle(product)
@@ -108,7 +108,7 @@ namespace Pathfinder.Web.Controllers
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Authorize(Policy = DefaultPermissions.PermissionNameForAdministration)]
-        public async Task<ActionResult> DeleteProductById(ArticleModel product)
+        public async Task<ActionResult> DeleteProductById(ArticleDto product)
         {
             await productService
                 .DeleteArticleById(product.Id)

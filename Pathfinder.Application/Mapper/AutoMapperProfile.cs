@@ -1,11 +1,10 @@
 using AutoMapper;
-using Pathfinder.Application.Models;
 using Pathfinder.Core.Entities;
 using Pathfinder.Core.Entities.Account;
 using Pathfinder.Core.Entities.Product;
 using Pathfinder.Application.DTO;
 using Pathfinder.Core.Entities.Auth.Users;
-using Pathfinder.Application.Models.Auth.Users;
+using Pathfinder.Application.DTO.Auth.Users;
 
 namespace Pathfinder.Application.Mapper
 {
@@ -13,15 +12,15 @@ namespace Pathfinder.Application.Mapper
     {
         public AutoMapperProfile()
         {
-            CreateMap<Category, CategoryModel>()
+            CreateMap<Category, CategoryDto>()
                 .ReverseMap();
-            CreateMap<Article, ArticleModel>()
+            CreateMap<Article, ArticleDto>()
                 .ReverseMap();
             CreateMap<Character, CharacterDto>()
                 .ReverseMap();
             CreateMap<Account, AccountDto>()
                 .ReverseMap();
-            CreateMap<User, UserModel>()
+            CreateMap<User, UserDto>()
                 .ReverseMap();
         }
     }

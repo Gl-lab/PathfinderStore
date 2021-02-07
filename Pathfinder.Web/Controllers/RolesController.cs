@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Pathfinder.Application.Interfaces.Auth;
-using Pathfinder.Application.Models.Auth.Roles;
+using Pathfinder.Application.DTO.Auth.Roles;
 using Pathfinder.Core.Entities.Auth.Permissions;
 using Pathfinder.Utils.Paging;
-using Pathfinder.Application.Models.Auth;
+using Pathfinder.Application.DTO.Auth;
 using Pathfinder.Web.Controllers.Base;
 
 namespace Pathfinder.Web.Controllers

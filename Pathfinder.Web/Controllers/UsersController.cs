@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Pathfinder.Utils.Paging;
 using Pathfinder.Core.Entities.Auth.Permissions;
 using Pathfinder.Application.Interfaces.Auth;
-using Pathfinder.Application.Models.Auth;
-using Pathfinder.Application.Models.Auth.Users;
+using Pathfinder.Application.DTO.Auth;
+using Pathfinder.Application.DTO.Auth.Users;
 using Pathfinder.Web.Controllers.Base;
 
 namespace Pathfinder.Web.Controllers
