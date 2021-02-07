@@ -1,13 +1,10 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Pathfinder.Core.Paging;
 using Pathfinder.Application.Interfaces;
 using Pathfinder.Application.Models;
 using System.Net;
+using Pathfinder.Utils.Paging;
 
 namespace Pathfinder.Web.Controllers
 {

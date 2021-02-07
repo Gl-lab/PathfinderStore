@@ -2,16 +2,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Pathfinder.Application.Models.Auth.Permissions;
-using Pathfinder.Core.Entities.Auth.Roles;
-using Pathfinder.Core.Entities.Auth.Permissions;
 using Pathfinder.Core.Entities.Auth.Users;
 using Pathfinder.Application.Interfaces.Auth;
-using Pathfinder.Infrastructure.Data;
-using Pathfinder.Infrastructure.Paging;
+
 
 namespace Pathfinder.Application.Services
 {

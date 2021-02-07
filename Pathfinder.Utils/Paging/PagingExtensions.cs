@@ -1,10 +1,9 @@
-﻿using Pathfinder.Core.Paging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace Pathfinder.Infrastructure.Paging
+namespace Pathfinder.Utils.Paging
 {
     public static class PagingExtensions
     {
@@ -16,15 +15,15 @@ namespace Pathfinder.Infrastructure.Paging
             orderByList = orderByList.OrderBy(ob => ob.Item1.Priority).ToList();
 
             IOrderedQueryable<T> orderedQuery = null;
-            foreach (var orderBy in orderByList)
+            foreach (var (item1, item2) in orderByList)
             {
                 if (orderedQuery == null)
                 {
-                    orderedQuery = orderBy.Item1.Direction == SortingOption.SortingDirection.ASC ? query.OrderBy(orderBy.Item2) : query.OrderByDescending(orderBy.Item2);
+                    orderedQuery = item1.Direction == SortingOption.SortingDirection.ASC ? query.OrderBy(item2) : query.OrderByDescending(item2);
                 }
                 else
                 {
-                    orderedQuery = orderBy.Item1.Direction == SortingOption.SortingDirection.ASC ? orderedQuery.ThenBy(orderBy.Item2) : orderedQuery.ThenByDescending(orderBy.Item2);
+                    orderedQuery = item1.Direction == SortingOption.SortingDirection.ASC ? orderedQuery.ThenBy(item2) : orderedQuery.ThenByDescending(item2);
                 }
             }
 
@@ -33,15 +32,7 @@ namespace Pathfinder.Infrastructure.Paging
 
         public static IQueryable<T> Where<T>(this IQueryable<T> query, List<Tuple<FilteringOption, Expression<Func<T, bool>>>> filterList)
         {
-            if (filterList == null)
-                return query;
-
-            foreach (var filter in filterList)
-            {
-                query = query.Where(filter.Item2);
-            }
-
-            return query;
+            return filterList == null ? query : filterList.Aggregate(query, (current, filter) => current.Where(filter.Item2));
         }
     }
 }

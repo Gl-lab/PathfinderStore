@@ -1,4 +1,4 @@
-﻿namespace Pathfinder.Core.Paging
+﻿namespace Pathfinder.Utils.Paging
 {
     public class FilteringOption
     {

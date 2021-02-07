@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Pathfinder.Core.Paging;
+using Pathfinder.Utils.Paging;
 using Pathfinder.Core.Entities.Auth.Permissions;
 using Pathfinder.Application.Interfaces.Auth;
 using Pathfinder.Application.Models.Auth;
