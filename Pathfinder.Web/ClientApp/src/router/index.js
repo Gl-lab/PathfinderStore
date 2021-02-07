@@ -11,11 +11,25 @@ const routes = [
   {
     path: "/",
     name: "Home",
+    meta: {
+      mainMenu: {
+        mainMenu: true,
+        icon: "mdi-home",
+        title: "Домашняя"
+      }
+    },
     component: Home
   },
   {
     path: "/about",
     name: "About",
+    meta: {
+      mainMenu: {
+        mainMenu: true,
+        icon: "mdi-microsoft-xbox",
+        title: "About"
+      }
+    },
     component: () => import("../views/About.vue")
   },
   {
@@ -27,6 +41,13 @@ const routes = [
   {
     path: "/vuetifyproduct",
     name: "VuetifyProduct",
+    meta: {
+      mainMenu: {
+        mainMenu: true,
+        icon: "mdi-widgets",
+        title: "Товары"
+      }
+    },
     component: VuetifyProduct
   },
   {

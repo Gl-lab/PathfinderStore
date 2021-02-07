@@ -3,33 +3,19 @@
     <v-app>
       <v-navigation-drawer app clipped>
         <v-list>
-          <v-list-item :to="{ path: '/' }">
+          <v-list-item
+            v-for="route in $router.options.routes.filter(
+              item => item.meta && item.meta.mainMenu
+            )"
+            :key="route.name"
+            :to="{ path: route.path }"
+          >
             <v-list-item-action>
-              <v-icon>mdi-widgets</v-icon>
+              <v-icon>{{ route.meta.mainMenu.icon }}</v-icon>
             </v-list-item-action>
             <v-list-item-content>
               <v-list-item-title>
-                Домашняя
-              </v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-          <v-list-item :to="{ path: '/vuetifyproduct' }">
-            <v-list-item-action>
-              <v-icon>mdi-home</v-icon>
-            </v-list-item-action>
-            <v-list-item-content>
-              <v-list-item-title>
-                Товары
-              </v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-          <v-list-item :to="{ path: '/about' }">
-            <v-list-item-action>
-              <v-icon>mdi-heart</v-icon>
-            </v-list-item-action>
-            <v-list-item-content>
-              <v-list-item-title>
-                About
+                {{ route.meta.mainMenu.title }}
               </v-list-item-title>
             </v-list-item-content>
           </v-list-item>
@@ -44,7 +30,11 @@
         </template>
       </v-navigation-drawer>
       <v-app-bar app clipped-left>
-        <v-toolbar-title>App Bar</v-toolbar-title>
+        <v-avatar class="mr-5" color="primary white--text" size="50">
+          <div v-if="isLoadedAccount">
+            {{ getUserName }}
+          </div>
+        </v-avatar>
       </v-app-bar>
       <v-main>
         <v-container fluid>
@@ -64,10 +54,15 @@ const { mapActions, mapGetters } = createNamespacedHelpers("auth");
 export default {
   name: "Home",
   computed: {
-    ...mapGetters(["getToken", "isAuthorized"])
+    ...mapGetters([
+      "getToken",
+      "isAuthorized",
+      "isLoadedAccount",
+      "getUserName"
+    ])
   },
   methods: {
-    ...mapActions(["logout"]),
+    ...mapActions(["logout", "loadAccount"]),
     login() {
       this.$router.push("/account/login");
     }
@@ -83,6 +78,7 @@ export default {
         throw err;
       });
     });
+    if (this.isAuthorized) this.loadAccount();
   }
 };
 </script>

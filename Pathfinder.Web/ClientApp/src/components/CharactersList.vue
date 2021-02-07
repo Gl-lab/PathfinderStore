@@ -43,12 +43,18 @@
       <v-icon small @click="deleteItem(item)">
         mdi-delete
       </v-icon>
+      <v-icon v-if="item.isCurrentCharacter"> mdi-star </v-icon>
+      <v-icon v-else @click="setCurrentCharacter(item)">
+        mdi-star-plus-outline
+      </v-icon>
     </template>
   </v-data-table>
 </template>
 
 <script>
 import CharacterCreateForm from "@/character/CharacterCreateForm";
+import { createNamespacedHelpers } from "vuex";
+const { mapActions, mapGetters } = createNamespacedHelpers("auth");
 
 export default {
   components: {
@@ -70,50 +76,70 @@ export default {
           value: "name"
         },
         { text: "Баланс", value: "balance" },
-        { text: "Actions", value: "actions", sortable: false }
+        { text: "Actions", value: "actions", sortable: false, align: "end" }
       ]
     };
   },
   methods: {
+    ...mapGetters(["currentCharacter", "characterlist"]),
+    ...mapActions(["loadAccount"]),
     loadData() {
       this.loading = true;
+      this.loadAccount().then(() => {
+        this.copyCharacterList();
+        this.loading = false;
+      });
+      //this.list = this.characterlist()
+    },
+    copyCharacterList() {
+      let currentCharacterId = -1;
+      if (this.currentCharacter())
+        currentCharacterId = this.currentCharacter().id;
+      this.list = this.characterlist().map(item => {
+        return {
+          isCurrentCharacter: item.id == currentCharacterId,
+          ...item
+        };
+      });
+    },
+    setCurrentCharacter(character) {
+      console.log(character);
       this.axios
-        .get("api/GameAccount", this.pageInfo)
-        .then(response => {
-          this.list = response.data.characters;
-        })
-        .catch(() => (this.list = []))
-        .then(() => (this.loading = false));
+        .post("/api/Character/SetCurrentCharacter", character)
+        .then(() => {
+          this.loadData();
+        });
     },
     closeDialog() {
-      this.dialog = false;
       this.loadData();
+      this.dialog = false;
     },
     deleteItem(item) {
-      this.editedIndex = this.list.indexOf(item);
-      this.editedItem = item;
+      console.log(item);
+      this.editedIndex = item.id;
       this.dialogDelete = true;
     },
     closeDelete() {
       this.dialogDelete = false;
       this.$nextTick(() => {
         this.editedItem = null;
-        this.editedIndex = -1;
+        this.editedIndex = null;
       });
     },
     deleteItemConfirm() {
-      this.axios
-        .delete("/api/Character", {
-          params: { deletedCharacter: this.editedItem.id }
-        })
-        .then(() => {
-          this.list.splice(this.editedIndex, 1);
-          this.closeDelete();
-        });
+      if (this.editedIndex)
+        this.axios
+          .delete("/api/Character", {
+            params: { deletedCharacterId: this.editedIndex }
+          })
+          .then(() => {
+            this.loadData();
+            this.closeDelete();
+          });
     }
   },
   mounted: function() {
-    this.loadData();
+    this.copyCharacterList();
   }
 };
 </script>

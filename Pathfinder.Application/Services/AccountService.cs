@@ -41,12 +41,12 @@ namespace Pathfinder.Application.Services
         public async Task DeleteCharacterAsync(int deletedCharacterId)
         {
             var account = await CurrentAccountAsync().ConfigureAwait(false);
-            var character = account.Characters.FirstOrDefault(e => e.Id != deletedCharacterId);
+            var character = account.Characters.FirstOrDefault(e => e.Id == deletedCharacterId);
             if (character == null)
             {
                 throw new ApplicationException("Герой отсутствует");
             }
-            account.Characters.Remove(mapper.Map<Character>(character));
+            account.Characters.Remove(character);
             await accountRepository.SaveAsync(account).ConfigureAwait(false);
         }
 

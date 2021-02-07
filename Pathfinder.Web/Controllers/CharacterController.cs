@@ -35,5 +35,21 @@ namespace Pathfinder.Web.Controllers
             await characterService.DeleteCharacterAsync(deletedCharacterId).ConfigureAwait(false);
             return Ok();
         }
+        
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<ActionResult> SetCurrentCharacterById(int characterId)
+        {
+            await characterService.SetCurrentCharacterAsync(characterId).ConfigureAwait(false);
+            return Ok();
+        }
+        
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<ActionResult> SetCurrentCharacter(CharacterDto character)
+        {
+            await characterService.SetCurrentCharacterAsync(character).ConfigureAwait(false);
+            return Ok();
+        }
     }
 }
