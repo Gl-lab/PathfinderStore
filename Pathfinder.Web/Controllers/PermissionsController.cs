@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Pathfinder.Application.Models.Auth.Permissions;
+using Pathfinder.Application.DTO.Auth.Permissions;
 using Pathfinder.Application.Interfaces.Auth;
 using Pathfinder.Web.Controllers.Base;
 
@@ -19,7 +19,7 @@ namespace Pathfinder.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<PermissionModel>>> GetPermissions(string userNameOrEmail)
+        public async Task<ActionResult<IEnumerable<PermissionDto>>> GetPermissions(string userNameOrEmail)
         {
             return Ok(await permissionAppService
                         .GetGrantedPermissionsAsync(userNameOrEmail)

@@ -7,8 +7,8 @@ using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-using Pathfinder.Application.Models.Auth.Roles;
-using Pathfinder.Application.Models.Auth.Permissions;
+using Pathfinder.Application.DTO.Auth.Roles;
+using Pathfinder.Application.DTO.Auth.Permissions;
 using Pathfinder.Core.Entities.Auth.Roles;
 using Pathfinder.Application.Interfaces.Auth;
 using Pathfinder.Utils.Paging;
@@ -51,7 +51,7 @@ namespace  Pathfinder.Application.Services
         public async Task<GetRoleForCreateOrUpdateOutput> GetRoleForCreateOrUpdateAsync(int id)
         {
             var allPermissions = mapper
-                .Map<List<PermissionModel>>(await permissionsRepository.GetListAsync().ConfigureAwait(false))
+                .Map<List<PermissionDto>>(await permissionsRepository.GetListAsync().ConfigureAwait(false))
                 .OrderBy(p => p.DisplayName)
                 .ToList();
             var getRoleForCreateOrUpdateOutput = new GetRoleForCreateOrUpdateOutput
@@ -151,10 +151,10 @@ namespace  Pathfinder.Application.Services
                 }));
         }
 
-        private async Task<GetRoleForCreateOrUpdateOutput> GetRoleForCreateOrUpdateOutputAsync(int id, List<PermissionModel> allPermissions)
+        private async Task<GetRoleForCreateOrUpdateOutput> GetRoleForCreateOrUpdateOutputAsync(int id, List<PermissionDto> allPermissions)
         {
             var role = await roleManager.FindByIdAsync(id.ToString()).ConfigureAwait(false);
-            var roleDto = mapper.Map<RoleModel>(role);
+            var roleDto = mapper.Map<RoleDto>(role);
             var grantedPermissions = role.RolePermissions.Select(rp => rp.Permission);
 
             return new GetRoleForCreateOrUpdateOutput

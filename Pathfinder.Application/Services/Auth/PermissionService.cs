@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Pathfinder.Application.Models.Auth.Permissions;
+using Pathfinder.Application.DTO.Auth.Permissions;
 using Pathfinder.Core.Entities.Auth.Users;
 using Pathfinder.Application.Interfaces.Auth;
 
@@ -24,7 +24,7 @@ namespace Pathfinder.Application.Services
             this.mapper = mapper;
         }
 
-        public async Task<IEnumerable<PermissionModel>> GetGrantedPermissionsAsync(string userNameOrEmail)
+        public async Task<IEnumerable<PermissionDto>> GetGrantedPermissionsAsync(string userNameOrEmail)
         {
             var user = await userManager.Users.FirstOrDefaultAsync(u =>
                 u.UserName == userNameOrEmail || u.Email == userNameOrEmail).ConfigureAwait(false);
@@ -34,7 +34,7 @@ namespace Pathfinder.Application.Services
                 .SelectMany(r => r.RolePermissions)
                 .Select(rp => rp.Permission);
 
-            return mapper.Map<IEnumerable<PermissionModel>>(grantedPermissions);
+            return mapper.Map<IEnumerable<PermissionDto>>(grantedPermissions);
         }
 
         public async Task<bool> IsUserGrantedToPermissionAsync(string userNameOrEmail, string permissionName)

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Pathfinder.Application.Interfaces;
-using Pathfinder.Application.Models;
+using Pathfinder.Application.DTO;
 using Pathfinder.Core.Repositories;
 using Pathfinder.Utils.Paging;
 using AutoMapper;
@@ -22,26 +22,26 @@ namespace Pathfinder.Application.Services
             this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        public async Task<CategoryModel> GetById(int id)
+        public async Task<CategoryDto> GetById(int id)
         {
             var category = await categoryRepository
                 .GetByIdAsync(id)
                 .ConfigureAwait(false);
-            var result = mapper.Map<CategoryModel>(category);
+            var result = mapper.Map<CategoryDto>(category);
             return result;
         }
-        public async Task<IEnumerable<CategoryModel>> GetCategoryList()
+        public async Task<IEnumerable<CategoryDto>> GetCategoryList()
         {
             var categoryList = await categoryRepository.ListAllAsync().ConfigureAwait(false);
-            var categoryModels = mapper.Map<IEnumerable<CategoryModel>>(categoryList);
+            var categoryModels = mapper.Map<IEnumerable<CategoryDto>>(categoryList);
             return categoryModels;
         }
 
-        public async Task<IPagedList<CategoryModel>> SearchCategories(PageSearchArgs args)
+        public async Task<IPagedList<CategoryDto>> SearchCategories(PageSearchArgs args)
         {
             var categoryPagedList = await categoryRepository.SearchAsync(args).ConfigureAwait(false);
-            var categoryModels = mapper.Map<List<CategoryModel>>(categoryPagedList.Items);
-            var categoryModelPagedList = new PagedList<CategoryModel>(
+            var categoryModels = mapper.Map<List<CategoryDto>>(categoryPagedList.Items);
+            var categoryModelPagedList = new PagedList<CategoryDto>(
                 categoryPagedList.PageIndex,
                 categoryPagedList.PageSize,
                 categoryPagedList.TotalCount,

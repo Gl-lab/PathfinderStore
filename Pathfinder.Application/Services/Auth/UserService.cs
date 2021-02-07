@@ -6,8 +6,8 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Identity;
-using Pathfinder.Application.Models.Auth.Roles;
-using Pathfinder.Application.Models.Auth.Users;
+using Pathfinder.Application.DTO.Auth.Roles;
+using Pathfinder.Application.DTO.Auth.Users;
 using Pathfinder.Core.Entities.Auth.Users;
 using Pathfinder.Application.Interfaces.Auth;
 using Pathfinder.Utils.Paging;
@@ -48,7 +48,7 @@ namespace Pathfinder.Application.Services
 
         public async Task<GetUserForCreateOrUpdateOutput> GetUserForCreateOrUpdateAsync(int id)
         {
-            var allRoles = mapper.Map<List<RoleModel>>(await roleRepository.GetListAsync().ConfigureAwait(false));
+            var allRoles = mapper.Map<List<RoleDto>>(await roleRepository.GetListAsync().ConfigureAwait(false));
             var getUserForCreateOrUpdateOutput = new GetUserForCreateOrUpdateOutput
             {
                 AllRoles = allRoles
@@ -187,10 +187,10 @@ namespace Pathfinder.Application.Services
             return updateUserResult;
         }
 
-        private async Task<GetUserForCreateOrUpdateOutput> GetUserForCreateOrUpdateOutputAsync(int id, List<RoleModel> allRoles)
+        private async Task<GetUserForCreateOrUpdateOutput> GetUserForCreateOrUpdateOutputAsync(int id, List<RoleDto> allRoles)
         {
             var user = await userManager.FindByIdAsync(id.ToString()).ConfigureAwait(false);
-            var userDto = mapper.Map<UserModel>(user);
+            var userDto = mapper.Map<UserDto>(user);
             var grantedRoles = user.UserRoles.Select(ur => ur.Role);
 
             return new GetUserForCreateOrUpdateOutput

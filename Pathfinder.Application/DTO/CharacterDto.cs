@@ -1,9 +1,8 @@
-using Pathfinder.Application.Models.Base;
-using System;
+using Pathfinder.Application.DTO.Base;
 
 namespace Pathfinder.Application.DTO
 {
-    public class CharacterDto : BaseModel
+    public class CharacterDto : BaseDto
     {
         public string Name { get; set; }
         public int Balance { get; set; }

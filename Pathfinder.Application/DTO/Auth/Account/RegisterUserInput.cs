@@ -1,8 +1,6 @@
-using Pathfinder.Application.Models.Auth.Base;
-
-namespace Pathfinder.Application.Models.Auth.Users
+namespace Pathfinder.Application.DTO.Auth.Account
 {
-    public class UserModel : BaseAuthModel
+    public class RegisterInput
     {
         public string UserName { get; set; }
 

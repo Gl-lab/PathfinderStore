@@ -1,6 +1,6 @@
 using Pathfinder.Utils.Paging;
 
-namespace Pathfinder.Application.Models.Auth.Roles
+namespace Pathfinder.Application.DTO.Auth.Roles
 {
     public class RoleListInput : PageSearchArgs
     {

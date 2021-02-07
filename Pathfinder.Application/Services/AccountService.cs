@@ -34,7 +34,7 @@ namespace Pathfinder.Application.Services
                 throw new ApplicationException("Герой с таким именем уже существует");
             }
             account.Characters.Add(mapper.Map<Character>(newCharacter));
-            var result = await accountRepository.SaveAsync(account).ConfigureAwait(false);
+            await accountRepository.SaveAsync(account).ConfigureAwait(false);
         }
 
         public async Task DeleteCharacterAsync(CharacterDto character)
@@ -45,8 +45,7 @@ namespace Pathfinder.Application.Services
                 throw new ApplicationException("Герой отсутствует");
             }
             account.Characters.Remove(mapper.Map<Character>(character));
-            var result = await accountRepository.SaveAsync(account).ConfigureAwait(false);
-            return;
+            await accountRepository.SaveAsync(account).ConfigureAwait(false);
         }
 
         public async Task<ICollection<CharacterDto>> GetCharactersByCurrentUserAsync()

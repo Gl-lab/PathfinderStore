@@ -1,4 +1,4 @@
-namespace Pathfinder.Application.Models.Auth.Account
+namespace Pathfinder.Application.DTO.Auth.Account
 {
     public class ForgotPasswordInput
     {

@@ -1,4 +1,4 @@
-﻿using Pathfinder.Application.Models;
+﻿using Pathfinder.Application.DTO;
 using Pathfinder.Utils.Paging;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -7,13 +7,13 @@ namespace Pathfinder.Application.Interfaces
 {
     public interface IArticleService
     {
-        Task<IEnumerable<ArticleModel>> GetArticleList();
-        Task<IPagedList<ArticleModel>> SearchArticles(PageSearchArgs args);
-        Task<ArticleModel> GetArticleById(int ArticleId);
-        Task<IEnumerable<ArticleModel>> GetArticlesByName(string name);
-        Task<IEnumerable<ArticleModel>> GetArticlesByCategoryId(int categoryId);
-        Task<ArticleModel> CreateArticle(ArticleModel Article);
-        Task UpdateArticle(ArticleModel Article);
+        Task<IEnumerable<ArticleDto>> GetArticleList();
+        Task<IPagedList<ArticleDto>> SearchArticles(PageSearchArgs args);
+        Task<ArticleDto> GetArticleById(int ArticleId);
+        Task<IEnumerable<ArticleDto>> GetArticlesByName(string name);
+        Task<IEnumerable<ArticleDto>> GetArticlesByCategoryId(int categoryId);
+        Task<ArticleDto> CreateArticle(ArticleDto Article);
+        Task UpdateArticle(ArticleDto Article);
         Task DeleteArticleById(int ArticleId);
     }
 }
