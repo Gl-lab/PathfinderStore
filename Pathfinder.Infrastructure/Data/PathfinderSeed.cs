@@ -14,46 +14,46 @@ namespace Pathfinder.Infrastructure.Data
     {
         public static async Task SeedAsync(IServiceProvider app)
         {
-            PgDbContext dbContext = app.GetRequiredService<PgDbContext>();
+            var dbContext = app.GetRequiredService<PgDbContext>();
             if (!dbContext.ArticleList.Any())
             {
-                dbContext.ArticleList.AddRange(GetPreconfiguredArticles());
+                await dbContext.ArticleList.AddRangeAsync(GetPreconfiguredArticles());
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
             if (!dbContext.DiceList.Any())
             {
-                dbContext.DiceList.AddRange(GetPreconfiguredDice());
+                await dbContext.DiceList.AddRangeAsync(GetPreconfiguredDice());
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
             if (!dbContext.DamageTypeList.Any())
             {
-                dbContext.DamageTypeList.AddRange(GetPreconfiguredDamageTypeList());
+                await dbContext.DamageTypeList.AddRangeAsync(GetPreconfiguredDamageTypeList());
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
             if (!dbContext.WeaponTypeList.Any())
             {
-                dbContext.WeaponTypeList.AddRange(GetPreconfiguredWeaponTypeList());
+                await dbContext.WeaponTypeList.AddRangeAsync(GetPreconfiguredWeaponTypeList());
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
             if (!dbContext.RaceSize.Any())
             {
-                dbContext.RaceSize.AddRange(GetRaceSizes());
+                await dbContext.RaceSize.AddRangeAsync(GetRaceSizes());
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
 
             if (!dbContext.Race.Any())
             {
-                dbContext.Race.AddRange(GetRaces(dbContext));
+                await dbContext.Race.AddRangeAsync(GetRaces(dbContext));
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
            
             if (!dbContext.Account.Any())
             {
-                dbContext.Account.AddRange(GetAccounts(dbContext));
+                await dbContext.Account.AddRangeAsync(GetAccounts(dbContext));
             }
             if (!dbContext.Items.Any())
             {
-                dbContext.Items.AddRange(GetItems(dbContext));
+                await dbContext.Items.AddRangeAsync(GetItems(dbContext));
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
         }
@@ -64,63 +64,63 @@ namespace Pathfinder.Infrastructure.Data
             {
                 new RaceSize
                 {
+                    Id = RaceSizeType.Small,
                     Name = "Небольшой"
                 },
                 new RaceSize
                 {
+                    Id = RaceSizeType.Medium,
                     Name = "Средний"
                 }
             };
         }
         private static IEnumerable<Race> GetRaces(PgDbContext dbContext)
         {
-            var small = dbContext.RaceSize.Where(e => e.Name == "Небольшой").First();
-            var middle = dbContext.RaceSize.Where(e => e.Name == "Средний").First();
             return new List<Race>
             {
                 new Race
                 {
                     Name = "Гномы",
                     BaseSpeed = 20,
-                    Size = small
+                    SizeId = RaceSizeType.Small
                 },
                 new Race
                 {
                     Name = "Дварфы",
                     BaseSpeed = 20,
-                    Size = middle,
-                    HaveNigthVision = true
+                    SizeId = RaceSizeType.Medium,
+                    IsNightVision = true
                 },
                 new Race
                 {
                     Name = "Люди",
                     BaseSpeed = 30,
-                    Size = middle
+                    SizeId = RaceSizeType.Medium,
                 },
                 new Race
                 {
                     Name = "Полуорки",
                     BaseSpeed = 30,
-                    Size = middle,
-                    HaveNigthVision = true
+                    SizeId = RaceSizeType.Medium,
+                    IsNightVision = true
                 },
                 new Race
                 {
                     Name = "Полурослики",
                     BaseSpeed = 20,
-                    Size = small
+                    SizeId = RaceSizeType.Small,
                 },
                 new Race
                 {
                     Name = "Полуэльфы",
                     BaseSpeed = 30,
-                    Size = middle
+                    SizeId = RaceSizeType.Medium,
                 },
                 new Race
                 {
                     Name = "Эльфы",
                     BaseSpeed = 30,
-                    Size = middle
+                    SizeId = RaceSizeType.Medium,
                 }
             };
         }
@@ -159,57 +159,27 @@ namespace Pathfinder.Infrastructure.Data
                     {
                         Strength = new Characteristic
                         {
-                            CharacteristicInfo = new CharacteristicInfo
-                            {
-                                Name = "Сила",
-                                ShortName = "Сил"
-                            },
-                            Value = 20
+                          Value = 20
                         },
                         Dexterity = new Characteristic
                         {
-                            CharacteristicInfo = new CharacteristicInfo
-                            {
-                                Name = "Ловкость",
-                                ShortName = "Лов"
-                            },
                             Value = 20
                         },
                         Charisma = new Characteristic
                         {
-                            CharacteristicInfo = new CharacteristicInfo
-                            {
-                                Name = "Харизма",
-                                ShortName = "Хар"
-                            },
                             Value = 20
                         },
                         Constitution = new Characteristic
                         {
-                            CharacteristicInfo = new CharacteristicInfo
-                            {
-                                Name = "Выносливость",
-                                ShortName = "Вын"
-                            },
                             Value = 20
                         },
                         Intelligence  = new Characteristic
                         {
-                            CharacteristicInfo = new CharacteristicInfo
-                            {
-                                Name = "Интелект",
-                                ShortName = "Инт"
-                            },
                             Value = 20
                         },
                         Wisdom = new Characteristic
                         {
-                            CharacteristicInfo = new CharacteristicInfo
-                            {
-                                Name = "Мудрость",
-                                ShortName = "Муд"
-                            },
-                            Value = 20
+                           Value = 20
                         },
                     }
                 }

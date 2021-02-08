@@ -32,7 +32,7 @@ namespace Pathfinder.Infrastructure.Data
         public DbSet<Backpack> Backpack { get; set; }
         public DbSet<Character> Character { get; set; }
         public DbSet<Characteristic> Characteristic { get; set; }
-        public DbSet<CharacteristicInfo> CharacteristicInfo { get; set; }
+        public DbSet<CharacteristicType> CharacteristicInfo { get; set; }
         public DbSet<GroupCharacteristic> GroupCharacteristic { get; set; }
         public DbSet<Race> Race { get; set; }
         public DbSet<RaceSize> RaceSize { get; set; }

@@ -22,6 +22,8 @@ namespace Pathfinder.Application.Mapper
                 .ReverseMap();
             CreateMap<User, UserDto>()
                 .ReverseMap();
+            CreateMap<Race, RaceDto>();
+            CreateMap<RaceSize, RaceSizeDto>();
         }
     }
 }
