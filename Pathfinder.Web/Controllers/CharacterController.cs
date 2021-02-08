@@ -9,10 +9,13 @@ namespace Pathfinder.Web.Controllers
     public class CharacterController: AuthorizedController
     {
         private readonly ICharacterService characterService;
+        private readonly IRacesService racesService;
  
-        public CharacterController(ICharacterService characterService)
+        public CharacterController(ICharacterService characterService,
+            IRacesService racesService)
         {
             this.characterService = characterService;
+            this.racesService = racesService;
         }
 
         [HttpGet]
@@ -38,18 +41,19 @@ namespace Pathfinder.Web.Controllers
         
         [HttpPost]
         [Route("[action]")]
-        public async Task<ActionResult> SetCurrentCharacterById(int characterId)
-        {
-            await characterService.SetCurrentCharacterAsync(characterId).ConfigureAwait(false);
-            return Ok();
-        }
-        
-        [HttpPost]
-        [Route("[action]")]
         public async Task<ActionResult> SetCurrentCharacter(CharacterDto character)
         {
             await characterService.SetCurrentCharacterAsync(character).ConfigureAwait(false);
             return Ok();
+        }
+        
+        [HttpGet]
+        [Route("[action]")]
+        public async Task<ActionResult<RaceDto>> Races()
+        {
+            return Ok(await racesService
+                .RacesListAsync()
+                .ConfigureAwait(false));
         }
     }
 }

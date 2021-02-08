@@ -24,6 +24,7 @@ namespace Pathfinder.Application
             services.AddScoped<IAccountRepository, AccountRepository>();
             services.AddScoped<IPermissionsRepository, PermissionsRepository>();
             services.AddScoped<IRolePermissionsRepository, RolePermissionsRepository>();
+            services.AddTransient<IRacesRepository, RacesRepository>();
         }
     }
 
