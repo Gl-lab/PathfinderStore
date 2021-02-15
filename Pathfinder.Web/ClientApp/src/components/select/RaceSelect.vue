@@ -5,8 +5,9 @@
       label="Расса"
       :items="list"
       item-text="name"
-      :hint="`Размер ${select.size.name}`"
-      @input="response"
+      :hint="hintText"
+      return-object
+      @change="response"
     ></v-select>
   </div>
 </template>
@@ -34,6 +35,11 @@ export default {
     },
     response() {
       this.$emit("response", this.select);
+    }
+  },
+  computed: {
+    hintText: function() {
+      return this.select ? `Размер ${this.select.size.name}` : "";
     }
   }
 };

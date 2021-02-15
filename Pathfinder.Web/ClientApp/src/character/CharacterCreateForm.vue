@@ -1,10 +1,11 @@
 <template>
-  <v-card>
+  <v-card class="pa-5">
     <v-form v-model="valid" ref="form">
+      <race-select @response="selectRace"></race-select>
       <v-text-field
         v-model="newCharacter.name"
         :rules="nameRules"
-        label="Name"
+        label="Имя"
         required
       ></v-text-field>
       <v-btn
@@ -22,12 +23,16 @@
   </v-card>
 </template>
 <script>
+import RaceSelect from "@/components/select/RaceSelect.vue";
 export default {
+  components: {
+    RaceSelect
+  },
   name: "CharacterCreateForm",
   data() {
     return {
       valid: true,
-      newCharacter: { name: null, balance: 0 },
+      newCharacter: { name: null, balance: 0, raceId: null },
       resultCode: 0,
       nameRules: [
         v => !!v || "Name is required",
@@ -56,6 +61,9 @@ export default {
       } catch {
         this.errorText = "Неудачно";
       }
+    },
+    selectRace: function(race) {
+      this.newCharacter.raceId = race.id;
     }
   }
 };
