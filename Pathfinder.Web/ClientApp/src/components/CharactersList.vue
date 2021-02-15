@@ -13,7 +13,7 @@
         <v-dialog v-model="dialog" max-width="500px">
           <template v-slot:activator="{ on, attrs }">
             <v-btn color="primary" dark class="mb-2" v-bind="attrs" v-on="on">
-              New Item
+              Создать
             </v-btn>
           </template>
           <character-create-form
@@ -139,7 +139,7 @@ export default {
     }
   },
   mounted: function() {
-    this.copyCharacterList();
+    this.loadData();
   }
 };
 </script>

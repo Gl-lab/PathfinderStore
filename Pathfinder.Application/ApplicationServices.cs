@@ -2,8 +2,6 @@
 using Pathfinder.Application.Interfaces;
 using Pathfinder.Application.Interfaces.Auth;
 using Pathfinder.Application.Services;
-using AutoMapper;
-using Microsoft.Extensions.DependencyInjection;
 using Pathfinder.Application.Mapper;
 
 
