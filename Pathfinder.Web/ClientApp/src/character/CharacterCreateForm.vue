@@ -8,6 +8,7 @@
         label="Имя"
         required
       ></v-text-field>
+      <characteristics-form @update="setCharacteristics"></characteristics-form>
       <v-btn
         :disabled="!valid"
         color="success"
@@ -24,15 +25,23 @@
 </template>
 <script>
 import RaceSelect from "@/components/select/RaceSelect.vue";
+import CharacteristicsForm from "@/character/CharacteristicsForm.vue";
+
 export default {
   components: {
-    RaceSelect
+    RaceSelect,
+    CharacteristicsForm
   },
   name: "CharacterCreateForm",
   data() {
     return {
       valid: true,
-      newCharacter: { name: null, balance: 0, raceId: null },
+      newCharacter: {
+        name: null,
+        balance: 0,
+        raceId: null,
+        characteristics: null
+      },
       resultCode: 0,
       nameRules: [
         v => !!v || "Name is required",
@@ -64,6 +73,9 @@ export default {
     },
     selectRace: function(race) {
       this.newCharacter.raceId = race.id;
+    },
+    setCharacteristics: function(characteristics) {
+      this.newCharacter.characteristics = characteristics;
     }
   }
 };

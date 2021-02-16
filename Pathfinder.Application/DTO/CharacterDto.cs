@@ -9,6 +9,6 @@ namespace Pathfinder.Application.DTO
         public int RaceId { get; set; }
         // public virtual ICollection<Backpack> Items { get; set; } = new List<Backpack>();
         public virtual RaceDto Race { get; set; }
-        // public virtual GroupCharacteristic Characteristics { get; set; }
+        public virtual GroupCharacteristicDto Characteristics { get; set; }
     }
 }
