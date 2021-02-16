@@ -2,7 +2,7 @@
   <div>
     <v-select
       v-model="select"
-      label="Расса"
+      label="Раса"
       :items="list"
       item-text="name"
       :hint="hintText"
