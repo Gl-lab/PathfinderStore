@@ -8,7 +8,7 @@
 </template>
 <script>
 import { mapGetters } from "vuex";
-import CharactersList from "@/components/CharactersList";
+import CharactersList from "@/character/CharactersList";
 export default {
   name: "Home",
   data() {

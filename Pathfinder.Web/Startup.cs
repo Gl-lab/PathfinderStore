@@ -94,10 +94,7 @@ namespace Pathfinder.Web
 
             app.UseSpa(spa =>
             {
-                if (env.IsDevelopment())
-                    spa.Options.SourcePath = "ClientApp";
-                else
-                    spa.Options.SourcePath = "dist";
+                spa.Options.SourcePath = env.IsDevelopment() ? "ClientApp" : "dist";
 
                 if (env.IsDevelopment())
                 {
