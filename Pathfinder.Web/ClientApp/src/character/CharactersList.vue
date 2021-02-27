@@ -89,7 +89,6 @@ export default {
         this.copyCharacterList();
         this.loading = false;
       });
-      //this.list = this.characterlist()
     },
     copyCharacterList() {
       let currentCharacterId = -1;

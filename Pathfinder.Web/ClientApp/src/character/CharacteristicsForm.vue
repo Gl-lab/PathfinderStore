@@ -72,7 +72,7 @@
         <v-slider
           v-model="characteristics.charisma.value"
           thumb-label="always"
-          thumb-color="lime  darken-2"
+          thumb-color="yellow darken-2"
           :max="30"
           :min="0"
           @input="update"
@@ -86,12 +86,20 @@
 import Characteristics from "@/models/Characteristics.js";
 export default {
   props: {
-    model: {}
+    model: {
+      type: Object,
+      default: () => null
+    }
   },
   data() {
     return {
       characteristics: new Characteristics()
     };
+  },
+  mounted: function() {
+    if (this.model) {
+      this.characteristics = this.model;
+    }
   },
   methods: {
     update: function() {

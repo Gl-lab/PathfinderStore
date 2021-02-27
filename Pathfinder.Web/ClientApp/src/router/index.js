@@ -39,6 +39,18 @@ const routes = [
     component: () => import("../views/CreateProductForm.vue")
   },
   {
+    path: "/character",
+    meta: {
+      mainMenu: {
+        mainMenu: true,
+        icon: "mdi-folder-heart-outline",
+        title: "Персонаж"
+      }
+    },
+    name: "character",
+    component: () => import("@/character/CharacterInformation.vue")
+  },
+  {
     path: "/vuetifyproduct",
     name: "VuetifyProduct",
     meta: {
