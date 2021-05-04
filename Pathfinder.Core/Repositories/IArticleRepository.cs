@@ -12,6 +12,6 @@ namespace Pathfinder.Core.Repositories
         Task<IPagedList<Article>> SearchAsync(PageSearchArgs args);
         Task<IEnumerable<Article>> GetListByNameAsync(string productName);
         Task<Article> GetByIdWithCategoryAsync(int productId);
-        Task<IEnumerable<Article>> GetListByCategoryAsync(int categoryId);
+        Task<IEnumerable<Article>> GetListByCategoryAsync(CategoryType categoryType);
     }
 }

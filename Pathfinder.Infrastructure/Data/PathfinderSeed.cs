@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Pathfinder.Core.Entities.Product;
@@ -15,173 +16,209 @@ namespace Pathfinder.Infrastructure.Data
         public static async Task SeedAsync(IServiceProvider app)
         {
             var dbContext = app.GetRequiredService<PgDbContext>();
-            if (!dbContext.ArticleList.Any())
-            {
-                await dbContext.ArticleList.AddRangeAsync(GetPreconfiguredArticles());
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
-            }
-            if (!dbContext.DiceList.Any())
-            {
-                await dbContext.DiceList.AddRangeAsync(GetPreconfiguredDice());
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
-            }
-            if (!dbContext.DamageTypeList.Any())
-            {
-                await dbContext.DamageTypeList.AddRangeAsync(GetPreconfiguredDamageTypeList());
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
-            }
-            if (!dbContext.WeaponTypeList.Any())
-            {
-                await dbContext.WeaponTypeList.AddRangeAsync(GetPreconfiguredWeaponTypeList());
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
-            }
-            if (!dbContext.RaceSize.Any())
-            {
-                await dbContext.RaceSize.AddRangeAsync(GetRaceSizes());
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
-            }
 
-            if (!dbContext.Race.Any())
-            {
-                await dbContext.Race.AddRangeAsync(GetRaces(dbContext));
-                await dbContext.SaveChangesAsync().ConfigureAwait(false);
-            }
+            var damageTypeList = GetPreconfiguredDamageTypeList();
            
-            if (!dbContext.Account.Any())
+            Category weaponCategory = new() {CategoryType =  CategoryType.Weapon, Name = "Оружие", Description = "" };
+            Category armorCategory = new() {CategoryType =  CategoryType.Armor, Name = "Доспех", Description = "" };
+            var articles = GetPreconfiguredArticles(weaponCategory, armorCategory);
+            var sizes = GetSizes();
+            var items = GetItems(articles);
+            var races = GetRaces();
+            var weaponTypes = GetPreconfiguredWeaponTypeList();
+            var weapons = GetWeapons(articles, weaponTypes, damageTypeList);
+            var character = GetCharacter(races.First(), items.Take(5));
+            var accounts = GetAccounts(character);
+            var weaponItemProperty = GetWeaponItemProperties(items, weaponCategory);
+            
+
+            if (!dbContext.Size.Any())
             {
-                await dbContext.Account.AddRangeAsync(GetAccounts(dbContext));
-            }
-            if (!dbContext.Items.Any())
-            {
-                await dbContext.Items.AddRangeAsync(GetItems(dbContext));
+                await dbContext.CategoryList.AddAsync(weaponCategory);
+                await dbContext.CategoryList.AddAsync(armorCategory);
+                await dbContext.Size.AddRangeAsync(sizes);
+                await dbContext.WeaponProficiency.AddRangeAsync(GetWeaponProficiency());
+                await dbContext.DamageTypeList.AddRangeAsync(damageTypeList);
+                await dbContext.WeaponTypeList.AddRangeAsync(weaponTypes);
+                await dbContext.ArticleList.AddRangeAsync(articles);
+                await dbContext.Race.AddRangeAsync(races);
+                await dbContext.Account.AddRangeAsync(accounts);
+                await dbContext.Items.AddRangeAsync(items);
+                await dbContext.WeaponItemProperty.AddRangeAsync(weaponItemProperty);
+                await dbContext.WeaponList.AddRangeAsync(weapons);
+                
                 await dbContext.SaveChangesAsync().ConfigureAwait(false);
             }
         }
 
-        private static IEnumerable<RaceSize> GetRaceSizes()
+        private static IEnumerable<WeaponProficiency> GetWeaponProficiency()
         {
-            return new List<RaceSize>
+            return new List<WeaponProficiency>
             {
-                new RaceSize
+                new()
                 {
-                    Id = RaceSizeType.Small,
-                    Name = "Небольшой"
+                    Id = WeaponProficiencyType.Simple,
+                    Name = "Простое"
                 },
-                new RaceSize
+                new()
                 {
-                    Id = RaceSizeType.Medium,
-                    Name = "Средний"
+                    Id = WeaponProficiencyType.Martial,
+                    Name = "Боевое"
+                },
+                new()
+                {
+                    Id = WeaponProficiencyType.Exotic,
+                    Name = "Экзотическое"
                 }
             };
         }
-        private static IEnumerable<Race> GetRaces(PgDbContext dbContext)
+        
+        private static IEnumerable<Size> GetSizes()
+        {
+            return new List<Size>
+            {
+                new()
+                {
+                    Id = SizeType.Tiny,
+                    Name = "Крошечный"
+                },
+                new()
+                {
+                    Id = SizeType.Small,
+                    Name = "Небольшой"
+                },
+                new()
+                {
+                    Id = SizeType.Medium,
+                    Name = "Средний"
+                },
+                new()
+                {
+                    Id = SizeType.Large,
+                    Name = "Большой"
+                },
+                new()
+                {
+                    Id = SizeType.Huge,
+                    Name = "Огромный"
+                }
+            };
+        }
+        private static IEnumerable<Race> GetRaces()
         {
             return new List<Race>
             {
-                new Race
+                new()
                 {
-                    Name = "Гномы",
+                    Name = "Гном",
                     BaseSpeed = 20,
-                    SizeId = RaceSizeType.Small
+                    SizeId = SizeType.Small
                 },
-                new Race
+                new()
                 {
-                    Name = "Дварфы",
+                    Name = "Дварф",
                     BaseSpeed = 20,
-                    SizeId = RaceSizeType.Medium,
+                    SizeId = SizeType.Medium,
                     IsNightVision = true
                 },
-                new Race
+                new()
                 {
-                    Name = "Люди",
+                    Name = "Человек",
                     BaseSpeed = 30,
-                    SizeId = RaceSizeType.Medium,
+                    SizeId = SizeType.Medium,
                 },
-                new Race
+                new()
                 {
-                    Name = "Полуорки",
+                    Name = "Полуорк",
                     BaseSpeed = 30,
-                    SizeId = RaceSizeType.Medium,
+                    SizeId = SizeType.Medium,
                     IsNightVision = true
                 },
-                new Race
+                new()
                 {
-                    Name = "Полурослики",
+                    Name = "Полурослик",
                     BaseSpeed = 20,
-                    SizeId = RaceSizeType.Small,
+                    SizeId = SizeType.Small,
                 },
-                new Race
+                new()
                 {
-                    Name = "Полуэльфы",
+                    Name = "Полуэльф",
                     BaseSpeed = 30,
-                    SizeId = RaceSizeType.Medium,
+                    SizeId = SizeType.Medium,
                 },
-                new Race
+                new()
                 {
-                    Name = "Эльфы",
+                    Name = "Эльф",
                     BaseSpeed = 30,
-                    SizeId = RaceSizeType.Medium,
+                    SizeId = SizeType.Medium,
                 }
             };
         }
 
-        private static IEnumerable<Item> GetItems(PgDbContext dbContext)
+        private static IEnumerable<Item> GetItems(IEnumerable<Article> articles)
         {
-            return dbContext.ArticleList.Select(e => new Item{Article = e}).ToList();
+            return articles.Select(e => new Item{Article = e}).ToList();
         }
 
-        private static IEnumerable<Account> GetAccounts(PgDbContext dbContext)
+        private static IEnumerable<Account> GetAccounts(Character character)
         {
             return new List<Account>
             {
-                new Account
+                new()
                 {
                     Name = "Имя",
                     Surname = "Фамилия",
                     UserId = 1,
-                    Characters = GetCharacters(dbContext)
+                    Characters = new List<Character> { character },
+                    CurrentCharacter = null
                 }
             };
         }
 
-        private static ICollection<Character> GetCharacters(PgDbContext dbContext)
+        private static Character GetCharacter(Race race, IEnumerable<Item> items)
         {
-            var race =  dbContext.Race.First();
-            return new List<Character>
+            var backpackItems = new List<BackpackItem>();
+            backpackItems.AddRange(items.Select(item => new BackpackItem()
             {
-                new Character
+                Item = item,
+                Count = 1,
+                IsWearing = false
+            }));
+            
+            return new Character {
+                Name = "Билибой",
+                Backpack = new Backpack()
                 {
-                    Name = "Билибой",
-                    Balance = 1000,
-                    Items = null,
-                    Race = race,
-                    Characteristics = new GroupCharacteristic
+                    Wallet = new Wallet(1000), 
+                    Items = backpackItems
+                }, 
+                Race = race,
+                Characteristics = new GroupCharacteristic
+                {
+                    Strength = new Characteristic
                     {
-                        Strength = new Characteristic
-                        {
-                          Value = 20
-                        },
-                        Dexterity = new Characteristic
-                        {
-                            Value = 20
-                        },
-                        Charisma = new Characteristic
-                        {
-                            Value = 20
-                        },
-                        Constitution = new Characteristic
-                        {
-                            Value = 20
-                        },
-                        Intelligence  = new Characteristic
-                        {
-                            Value = 20
-                        },
-                        Wisdom = new Characteristic
-                        {
-                           Value = 20
-                        },
-                    }
+                      Value = 20
+                    },
+                    Dexterity = new Characteristic
+                    {
+                        Value = 20
+                    },
+                    Charisma = new Characteristic
+                    {
+                        Value = 20
+                    },
+                    Constitution = new Characteristic
+                    {
+                        Value = 20
+                    },
+                    Intelligence  = new Characteristic
+                    {
+                        Value = 20
+                    },
+                    Wisdom = new Characteristic
+                    {
+                       Value = 20
+                    },
                 }
             };
         }
@@ -190,113 +227,155 @@ namespace Pathfinder.Infrastructure.Data
         {
             return new List<WeaponType>
             {
-                new WeaponType { Name = "Безоружные атаки (Простое)", ShortName = "" }
-                ,new WeaponType { Name = "Легкое оружие ближнего боя (Простое)", ShortName = "" }
-                ,new WeaponType { Name = "Одноручное оружие ближнего боя (Простое)", ShortName = "" }
-                ,new WeaponType { Name = "Оружие дальнего боя (Простое)", ShortName = "" }
-                ,new WeaponType { Name = "Двуручное оружие ближнего боя (Простое)", ShortName = "" }
-                ,new WeaponType { Name = "Легкое оружие ближнего боя (Воинское)", ShortName = "" }
-                ,new WeaponType { Name = "Одноручное оружие ближнего боя (Воинское)", ShortName = "" }
-                ,new WeaponType { Name = "Двуручное оружие ближнего боя (Воинское)", ShortName = "" }
-                ,new WeaponType { Name = "Оружие дальнего боя (Воинское)", ShortName = "" }
-                ,new WeaponType { Name = "Легкое оружие ближнего боя (Экзотическое)", ShortName = "" }
-                ,new WeaponType { Name = "Одноручное оружие ближнего боя (Экзотическое)", ShortName = "" }
-                ,new WeaponType { Name = "Двуручное оружие ближнего боя (Экзотическое)", ShortName = "" }
-                ,new WeaponType { Name = "Оружие дальнего боя (Экзотическое)", ShortName = "" }
+                new() { Name = "Безоружные атаки", ShortName = "", WeaponProficiencyId = WeaponProficiencyType.Simple}
+                ,new() { Name = "Легкое оружие ближнего боя", ShortName = "", WeaponProficiencyId = WeaponProficiencyType.Simple }
+                ,new() { Name = "Одноручное оружие ближнего боя", ShortName = "", WeaponProficiencyId = WeaponProficiencyType.Simple }
+                ,new() { Name = "Оружие дальнего боя", ShortName = "", WeaponProficiencyId = WeaponProficiencyType.Simple }
+                ,new() { Name = "Двуручное оружие ближнего боя", ShortName = "", WeaponProficiencyId = WeaponProficiencyType.Simple }
+                ,new() { Name = "Легкое оружие ближнего боя", ShortName = "", WeaponProficiencyId = WeaponProficiencyType.Martial }
+                ,new() { Name = "Одноручное оружие ближнего боя", ShortName = "", WeaponProficiencyId = WeaponProficiencyType.Martial }
+                ,new() { Name = "Двуручное оружие ближнего боя", ShortName = "", WeaponProficiencyId = WeaponProficiencyType.Martial }
+                ,new() { Name = "Оружие дальнего боя", ShortName = "", WeaponProficiencyId = WeaponProficiencyType.Martial }
+                ,new() { Name = "Легкое оружие ближнего боя", ShortName = "", WeaponProficiencyId = WeaponProficiencyType.Exotic  }
+                ,new() { Name = "Одноручное оружие ближнего боя", ShortName = "", WeaponProficiencyId = WeaponProficiencyType.Exotic }
+                ,new() { Name = "Двуручное оружие ближнего боя", ShortName = "", WeaponProficiencyId = WeaponProficiencyType.Exotic }
+                ,new() { Name = "Оружие дальнего боя", ShortName = "", WeaponProficiencyId = WeaponProficiencyType.Exotic }
             };
         }
         private static IEnumerable<DamageType> GetPreconfiguredDamageTypeList()
         {
             return new List<DamageType>
             {
-                new DamageType { Name = "Колющее", ShortName = "К"}
-                ,new DamageType { Name = "Режущие", ShortName = "Р"}
-                ,new DamageType { Name = "Дробящее", ShortName = "Д"}
+                new() { Name = "Колющее", ShortName = "К"}
+                ,new() { Name = "Режущие", ShortName = "Р"}
+                ,new() { Name = "Дробящее", ShortName = "Д"}
             };
         }
-        private static IEnumerable<BaseDice> GetPreconfiguredDice()
+        private static IEnumerable<Article> GetPreconfiguredArticles(Category weaponCategory, Category armorCategory)
         {
-            return new List<BaseDice>()
+            return new List<Article>()
             {
-                 new BaseDice {D = 2}
-                ,new BaseDice {D = 3}
-                ,new BaseDice {D = 4}
-                ,new BaseDice {D = 6}
-                ,new BaseDice {D = 8}
-                ,new BaseDice {D = 10}
-                ,new BaseDice {D = 12}
-                ,new BaseDice {D = 20}
-                ,new BaseDice {D = 100}
+               new()
+                {
+                    Name = "Латная рукавица"
+                    ,Category = weaponCategory
+                    ,Price = 200
+                    ,Weight = 1
+                    ,Description = "Эта металлическая рукавица позволяет вам безоружными атаками наносить смертельный урон вместо несмертельного. В остальном же удар рукой в латной рукавице по-прежнему считается безоружным. В таблице указаны цена и вес одной рукавицы. Все виды средних и тяжелых доспехов (кроме нагрудников) идут в комплекте с латными рукавицами. Латные рукавицы нельзя сбить с рук маневром разоружения."
+                },
+                new()
+                {
+                    Name = "Кинжал"
+                    ,Category = weaponCategory
+                    ,Price = 200
+                    ,Weight = 1,
+                    Description = "Кинжал — это клинок около фута длиной. Вы получаете +2 к проверкам Ловкости рук при попытке спрятать кинжал на себе" 
+                },
+                new()
+                {
+                    Name = "Длинное копье"
+                    ,Category = weaponCategory
+                    ,Price = 500
+                    ,Weight = 9
+                },
+                new()
+                {
+                    Name = "Дубинка"
+                    ,Category = weaponCategory
+                    ,Price = 0
+                    ,Weight = 3
+                },
+                new()
+                {
+                    Name = "Стеганый доспех"
+                    ,Category = armorCategory
+                    ,Price = 10000
+                    ,Description = "Этот доспех, по сути, просто набивная одежда из нескольких слоев ткани, способная обеспечить лишь самую минимальную защиту."
+                },
+                new()
+                {
+                    Name = "Моргенштерн"
+                    ,Category = weaponCategory
+                    ,Price = 800
+                    ,Weight = 6,
+                    Description = "Тяжелый шипованный шар, насаженный на длинную крепкую рукоять."
+                },
+            };
+        }
+        
+        private static IEnumerable<Weapon> GetWeapons(IEnumerable<Article> items, 
+            IEnumerable<WeaponType> weaponTypes, 
+            IEnumerable<DamageType> damageTypes)
+        {
+            return new List<Weapon>
+            {
+                new()
+                {
+                    Article = items.First(e => e.Name == "Латная рукавица"),
+                    CritRange = 20,
+                    MultiplierCrit = 2,
+                    WeaponType = weaponTypes.First(e => e.Name == "Безоружные атаки"),
+                    SmallSizeDamage = new Dices() {Count = 1, D = Dice.D2},
+                    MediumSizeDamage = new Dices() {Count = 1, D = Dice.D3},
+                    DamageTypeList = damageTypes.Where(e => e.ShortName == "Д").ToList(),
+                    
+                },
+                new()
+                {
+                    Article = items.First(e => e.Name == "Кинжал"),
+                    CritRange = 19,
+                    MultiplierCrit = 2,
+                    WeaponType = weaponTypes.First(e => e.Name == "Легкое оружие ближнего боя"),
+                    SmallSizeDamage = new Dices() {Count = 1, D = Dice.D3},
+                    MediumSizeDamage = new Dices() {Count = 1, D = Dice.D4},
+                    DamageTypeList = damageTypes.Where(e => e.ShortName is "К" or "Р").ToList(),
+                    Range = 10
+                },
+                new()
+                {
+                    Article = items.First(e => e.Name == "Длинное копье"),
+                    CritRange = 20,
+                    MultiplierCrit = 3,
+                    WeaponType = weaponTypes.First(e => e.Name == "Двуручное оружие ближнего боя"),
+                    SmallSizeDamage = new Dices() {Count = 1, D = Dice.D6},
+                    MediumSizeDamage = new Dices() {Count = 1, D = Dice.D8},
+                    DamageTypeList = damageTypes.Where(e => e.ShortName == "П").ToList()
+                },
+                new()
+                {
+                    Article = items.First(e => e.Name == "Дубинка"),
+                    CritRange = 20,
+                    MultiplierCrit = 2,
+                    WeaponType = weaponTypes.First(e => e.Name == "Одноручное оружие ближнего боя"),
+                    SmallSizeDamage = new Dices() {Count = 1, D = Dice.D4},
+                    MediumSizeDamage = new Dices() {Count = 1, D = Dice.D6},
+                    DamageTypeList = damageTypes.Where(e => e.ShortName == "Д").ToList()
+                },
+                new()
+                {
+                    Article = items.First(e => e.Name == "Моргенштерн"),
+                    CritRange = 20,
+                    MultiplierCrit = 2,
+                    WeaponType = weaponTypes.First(e => e.Name == "Одноручное оружие ближнего боя"),
+                    SmallSizeDamage = new Dices() {Count = 1, D = Dice.D6},
+                    MediumSizeDamage = new Dices() {Count = 1, D = Dice.D8},
+                    DamageTypeList = damageTypes.Where(e => e.ShortName is "Д" or "П").ToList()
+                }
             };
         }
 
-        private static IEnumerable<Article> GetPreconfiguredArticles()
+        private static IEnumerable<WeaponItemProperty> GetWeaponItemProperties(IEnumerable<Item> items, Category weaponCategory)
         {
-            Category FirstCategory = new() { Name = "Оружие", Description = "" };
-            Category SecondCategory = new() { Name = "Доспех", Description = "" };
-            return new List<Article>()
+            var weaponList = items
+                .Where(i => i.Article.Category == weaponCategory)
+                .ToList();
+            return weaponList.Select(item => new WeaponItemProperty()
             {
-                new Article()
-                {
-                    Name = "Штык"
-                    ,Category = FirstCategory
-                    ,Price = 500
-                },
-                new Article()
-                {
-                    Name = "Абордажная пика"
-                    ,Category = FirstCategory
-                    ,Price = 800
-                },
-                new Article()
-                {
-                    Name = "Кумадэ"
-                    ,Category = FirstCategory
-                    ,Price = 500
-                },
-                new Article()
-                {
-                    Name = "Длинное копье"
-                    ,Category = FirstCategory
-                    ,Price = 500
-                },
-                new Article()
-                {
-                    Name = "Дубина с железным наконечником"
-                    ,Category = FirstCategory
-                    ,Price = 0
-                },
-                new Article()
-                {
-                    Name = "Стеганая ткань"
-                    ,Category = SecondCategory
-                    ,Price = 10000
-                },
-                new Article()
-                {
-                    Name = "Каменная дубина"
-                    ,Category = FirstCategory
-                    ,Price = 200
-                },
-                new Article()
-                {
-                    Name = "Тяжелая булава"
-                    ,Category = FirstCategory
-                    ,Price = 1200
-                },
-                new Article()
-                {
-                    Name = "Моргенштерн "
-                    ,Category = FirstCategory
-                    ,Price = 800
-                },
-                new Article()
-                {
-                    Name = "Короткое копье"
-                    ,Category = FirstCategory
-                    ,Price = 100
-                }
-            };
+                Item = item,
+                IsMasterful = false,
+                Size = SizeType.Medium,
+                AdditionalDamages = null
+            }).ToList();
         }
     }
 }

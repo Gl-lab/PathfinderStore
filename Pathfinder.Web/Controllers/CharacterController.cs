@@ -1,59 +1,104 @@
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Pathfinder.Application.Interfaces;
 using Pathfinder.Web.Controllers.Base;
 using Pathfinder.Application.DTO;
+using Pathfinder.Application.DTO.Items;
 
 namespace Pathfinder.Web.Controllers
 {
     public class CharacterController: AuthorizedController
     {
         private readonly ICharacterService characterService;
-        private readonly IRacesService racesService;
- 
-        public CharacterController(ICharacterService characterService,
-            IRacesService racesService)
+
+        public CharacterController(ICharacterService characterService)
         {
             this.characterService = characterService;
-            this.racesService = racesService;
         }
-
+        
         [HttpGet]
         public async Task<ActionResult<CharacterDto>> Get()
         {
-            await characterService.GetCurrentCharacterAsync().ConfigureAwait(false);
-            return Ok();
+            try
+            {
+                return Ok(await characterService.GetCharacterAsync().ConfigureAwait(false));
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
-        [HttpPost]
-        public async Task<ActionResult> CreateCharacter(CharacterDto newCharacter)
+        [HttpGet]
+        [Route("items")]
+        public async Task<ActionResult> Items()
         {
-            await characterService.CreateCharacterAsync(newCharacter).ConfigureAwait(false);
-            return Ok();
-        }
-
-        [HttpDelete]
-        public async Task<ActionResult> DeleteCharacter(int deletedCharacterId)
-        {
-            await characterService.DeleteCharacterAsync(deletedCharacterId).ConfigureAwait(false);
-            return Ok();
-        }
-        
-        [HttpPost]
-        [Route("[action]")]
-        public async Task<ActionResult> SetCurrentCharacter(CharacterDto character)
-        {
-            await characterService.SetCurrentCharacterAsync(character).ConfigureAwait(false);
             return Ok();
         }
         
         [HttpGet]
-        [Route("[action]")]
-        public async Task<ActionResult<RaceDto>> Races()
+        [Route("items/Weapons")]
+        public async Task<ActionResult<ICollection<WeaponItemDto>>> Weapons()
         {
-            return Ok(await racesService
-                .RacesListAsync()
-                .ConfigureAwait(false));
+            try
+            {
+                return Ok(await characterService.GetWeapons());
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+        
+        /*[HttpPut]
+        [Route("items/use")]
+        public async Task<ActionResult> ItemUse()
+        {
+            return Ok();
+        }*/
+        
+        [HttpDelete]
+        [Route("items/drop")]
+        public async Task<ActionResult> ItemDrop()
+        {
+            try
+            {
+                return Ok(await characterService.GetWeapons());
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+        
+        [HttpPut]
+        [Route("IncreaseBalance")]
+        public async Task<ActionResult> IncreaseBalance(int value)
+        {
+            try
+            {
+                return Ok(await characterService.IncreaseBalance(value));
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+        
+        [HttpPost]
+        [Route("DecreaseBalance")]
+        public async Task<ActionResult> DecreaseBalance(int value)
+        {
+            try
+            {
+                return Ok(await characterService.DecreaseBalance(value));
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
     }
 }

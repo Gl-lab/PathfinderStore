@@ -10,23 +10,23 @@ using Pathfinder.Infrastructure.Data;
 namespace Pathfinder.Infrastructure.Migrations
 {
     [DbContext(typeof(PgDbContext))]
-    [Migration("20210117150542_Init")]
+    [Migration("20210504052510_Init")]
     partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .UseIdentityByDefaultColumns()
                 .HasAnnotation("Relational:MaxIdentifierLength", 63)
-                .HasAnnotation("ProductVersion", "5.0.0");
+                .HasAnnotation("ProductVersion", "5.0.5")
+                .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
             modelBuilder.Entity("Pathfinder.Core.Entities.Account.Account", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<int?>("CurrentCharacterId")
                         .HasColumnType("integer");
@@ -54,15 +54,32 @@ namespace Pathfinder.Infrastructure.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<int?>("CharacterId")
+                    b.Property<int?>("WalletId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Count")
+                    b.HasKey("Id");
+
+                    b.HasIndex("WalletId");
+
+                    b.ToTable("Backpack");
+                });
+
+            modelBuilder.Entity("Pathfinder.Core.Entities.Account.BackpackItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<int?>("BackpackId")
                         .HasColumnType("integer");
 
-                    b.Property<bool>("IsWearable")
+                    b.Property<short>("Count")
+                        .HasColumnType("smallint");
+
+                    b.Property<bool>("IsWearing")
                         .HasColumnType("boolean");
 
                     b.Property<int?>("ItemId")
@@ -70,11 +87,11 @@ namespace Pathfinder.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CharacterId");
+                    b.HasIndex("BackpackId");
 
                     b.HasIndex("ItemId");
 
-                    b.ToTable("Backpack");
+                    b.ToTable("BackpackItem");
                 });
 
             modelBuilder.Entity("Pathfinder.Core.Entities.Account.Character", b =>
@@ -82,12 +99,12 @@ namespace Pathfinder.Infrastructure.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<int?>("AccountId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Balance")
+                    b.Property<int?>("BackpackId")
                         .HasColumnType("integer");
 
                     b.Property<int?>("CharacteristicsId")
@@ -96,12 +113,14 @@ namespace Pathfinder.Infrastructure.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
-                    b.Property<int?>("RaceId")
+                    b.Property<int>("RaceId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.HasIndex("AccountId");
+
+                    b.HasIndex("BackpackId");
 
                     b.HasIndex("CharacteristicsId");
 
@@ -115,27 +134,22 @@ namespace Pathfinder.Infrastructure.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
-
-                    b.Property<int?>("CharacteristicInfoId")
-                        .HasColumnType("integer");
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<int>("Value")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CharacteristicInfoId");
-
                     b.ToTable("Characteristic");
                 });
 
-            modelBuilder.Entity("Pathfinder.Core.Entities.Account.CharacteristicInfo", b =>
+            modelBuilder.Entity("Pathfinder.Core.Entities.Account.CharacteristicType", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
@@ -153,7 +167,7 @@ namespace Pathfinder.Infrastructure.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<int?>("CharismaId")
                         .HasColumnType("integer");
@@ -195,19 +209,19 @@ namespace Pathfinder.Infrastructure.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<int>("BaseSpeed")
                         .HasColumnType("integer");
 
-                    b.Property<bool>("HaveNigthVision")
+                    b.Property<bool>("IsNightVision")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
-                    b.Property<int?>("SizeId")
-                        .HasColumnType("integer");
+                    b.Property<byte>("SizeId")
+                        .HasColumnType("smallint");
 
                     b.HasKey("Id");
 
@@ -216,19 +230,32 @@ namespace Pathfinder.Infrastructure.Migrations
                     b.ToTable("Race");
                 });
 
-            modelBuilder.Entity("Pathfinder.Core.Entities.Account.RaceSize", b =>
+            modelBuilder.Entity("Pathfinder.Core.Entities.Account.Size", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                    b.Property<byte>("Id")
+                        .HasColumnType("smallint");
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.ToTable("RaceSize");
+                    b.ToTable("Size");
+                });
+
+            modelBuilder.Entity("Pathfinder.Core.Entities.Account.Wallet", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<int>("Balance")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Wallet");
                 });
 
             modelBuilder.Entity("Pathfinder.Core.Entities.Auth.Permissions.Permission", b =>
@@ -236,7 +263,7 @@ namespace Pathfinder.Infrastructure.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<DateTime>("CreationDate")
                         .HasColumnType("timestamp without time zone");
@@ -355,7 +382,7 @@ namespace Pathfinder.Infrastructure.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -384,7 +411,7 @@ namespace Pathfinder.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            ConcurrencyStamp = "513f9008-d351-465e-ac89-26ec57d0aa1f",
+                            ConcurrencyStamp = "0d1da455-7971-4c72-990d-83e78369f7f1",
                             IsSystemDefault = true,
                             Name = "Admin",
                             NormalizedName = "ADMIN"
@@ -392,7 +419,7 @@ namespace Pathfinder.Infrastructure.Migrations
                         new
                         {
                             Id = 2,
-                            ConcurrencyStamp = "81b847b9-b7fe-4529-979f-beefccbe7909",
+                            ConcurrencyStamp = "dd9bfd97-5ab7-48fb-84c3-c8b4bb849e22",
                             IsSystemDefault = true,
                             Name = "Member",
                             NormalizedName = "MEMBER"
@@ -404,7 +431,7 @@ namespace Pathfinder.Infrastructure.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("ClaimType")
                         .HasColumnType("text");
@@ -499,7 +526,7 @@ namespace Pathfinder.Infrastructure.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
@@ -564,7 +591,7 @@ namespace Pathfinder.Infrastructure.Migrations
                         {
                             Id = 1,
                             AccessFailedCount = 5,
-                            ConcurrencyStamp = "52d4c5b7-b959-4b76-9ed1-85bd4a03d0c6",
+                            ConcurrencyStamp = "55dfb6a0-3214-428a-af57-7a56c6dafd67",
                             Email = "admin@mail.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
@@ -579,7 +606,7 @@ namespace Pathfinder.Infrastructure.Migrations
                         {
                             Id = 2,
                             AccessFailedCount = 5,
-                            ConcurrencyStamp = "591ad155-1724-4f37-affa-aba758722e49",
+                            ConcurrencyStamp = "56a6cd0d-2d7b-4255-bd3d-a94280887f51",
                             Email = "memberuser@mail.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
@@ -594,7 +621,7 @@ namespace Pathfinder.Infrastructure.Migrations
                         {
                             Id = 3,
                             AccessFailedCount = 5,
-                            ConcurrencyStamp = "36483718-c8ba-4fe9-b644-6603de9db8db",
+                            ConcurrencyStamp = "cecf67d3-b3ee-4562-b4b5-6727002c5cbc",
                             Email = "testadmin@mail.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
@@ -612,7 +639,7 @@ namespace Pathfinder.Infrastructure.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("ClaimType")
                         .HasColumnType("text");
@@ -702,12 +729,39 @@ namespace Pathfinder.Infrastructure.Migrations
                     b.ToTable("UserToken");
                 });
 
+            modelBuilder.Entity("Pathfinder.Core.Entities.Product.AdditionalDamage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<int?>("DamageTypeId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("DicesId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("WeaponItemPropertyId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DamageTypeId");
+
+                    b.HasIndex("DicesId");
+
+                    b.HasIndex("WeaponItemPropertyId");
+
+                    b.ToTable("AdditionalDamage");
+                });
+
             modelBuilder.Entity("Pathfinder.Core.Entities.Product.Ammunition", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
@@ -722,10 +776,13 @@ namespace Pathfinder.Infrastructure.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("integer");
+                    b.Property<byte>("CategoryType")
+                        .HasColumnType("smallint");
+
+                    b.Property<byte?>("CategoryType1")
+                        .HasColumnType("smallint");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -746,32 +803,15 @@ namespace Pathfinder.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
+                    b.HasIndex("CategoryType1");
 
                     b.ToTable("ArticleList");
                 });
 
-            modelBuilder.Entity("Pathfinder.Core.Entities.Product.BaseDice", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
-
-                    b.Property<int>("D")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("BaseDice");
-                });
-
             modelBuilder.Entity("Pathfinder.Core.Entities.Product.Category", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                    b.Property<byte>("CategoryType")
+                        .HasColumnType("smallint");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -781,7 +821,7 @@ namespace Pathfinder.Infrastructure.Migrations
                         .HasMaxLength(80)
                         .HasColumnType("character varying(80)");
 
-                    b.HasKey("Id");
+                    b.HasKey("CategoryType");
 
                     b.ToTable("CategoryList");
                 });
@@ -791,7 +831,7 @@ namespace Pathfinder.Infrastructure.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
@@ -814,17 +854,15 @@ namespace Pathfinder.Infrastructure.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<int>("Count")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("DId")
+                    b.Property<int>("D")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("DId");
 
                     b.ToTable("Dices");
                 });
@@ -834,7 +872,7 @@ namespace Pathfinder.Infrastructure.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<int?>("ArticleId")
                         .HasColumnType("integer");
@@ -857,9 +895,9 @@ namespace Pathfinder.Infrastructure.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<int?>("ArticleId")
+                    b.Property<int>("ArticleId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
@@ -874,7 +912,7 @@ namespace Pathfinder.Infrastructure.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<int?>("AmmunitionId")
                         .HasColumnType("integer");
@@ -883,9 +921,6 @@ namespace Pathfinder.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("CritRange")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("LargeSizeDamageId")
                         .HasColumnType("integer");
 
                     b.Property<int?>("MediumSizeDamageId")
@@ -909,8 +944,6 @@ namespace Pathfinder.Infrastructure.Migrations
 
                     b.HasIndex("ArticleId");
 
-                    b.HasIndex("LargeSizeDamageId");
-
                     b.HasIndex("MediumSizeDamageId");
 
                     b.HasIndex("SmallSizeDamageId");
@@ -925,22 +958,37 @@ namespace Pathfinder.Infrastructure.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<bool>("IsMasterful")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("Size")
+                    b.Property<int>("ItemId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("WeaponId")
-                        .HasColumnType("integer");
+                    b.Property<byte>("Size")
+                        .HasColumnType("smallint");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("WeaponId");
+                    b.HasIndex("ItemId");
 
                     b.ToTable("WeaponItemProperty");
+                });
+
+            modelBuilder.Entity("Pathfinder.Core.Entities.Product.WeaponProficiency", b =>
+                {
+                    b.Property<byte>("Id")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("WeaponProficiency");
                 });
 
             modelBuilder.Entity("Pathfinder.Core.Entities.Product.WeaponType", b =>
@@ -948,7 +996,7 @@ namespace Pathfinder.Infrastructure.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
@@ -956,7 +1004,12 @@ namespace Pathfinder.Infrastructure.Migrations
                     b.Property<string>("ShortName")
                         .HasColumnType("text");
 
+                    b.Property<byte>("WeaponProficiencyId")
+                        .HasColumnType("smallint");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("WeaponProficiencyId");
 
                     b.ToTable("WeaponTypeList");
                 });
@@ -966,7 +1019,7 @@ namespace Pathfinder.Infrastructure.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
@@ -981,10 +1034,10 @@ namespace Pathfinder.Infrastructure.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .UseIdentityByDefaultColumn();
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<int>("Count")
-                        .HasColumnType("integer");
+                    b.Property<short>("Count")
+                        .HasColumnType("smallint");
 
                     b.Property<int?>("ItemId")
                         .HasColumnType("integer");
@@ -1020,15 +1073,22 @@ namespace Pathfinder.Infrastructure.Migrations
 
             modelBuilder.Entity("Pathfinder.Core.Entities.Account.Backpack", b =>
                 {
-                    b.HasOne("Pathfinder.Core.Entities.Account.Character", "Character")
+                    b.HasOne("Pathfinder.Core.Entities.Account.Wallet", "Wallet")
+                        .WithMany()
+                        .HasForeignKey("WalletId");
+
+                    b.Navigation("Wallet");
+                });
+
+            modelBuilder.Entity("Pathfinder.Core.Entities.Account.BackpackItem", b =>
+                {
+                    b.HasOne("Pathfinder.Core.Entities.Account.Backpack", null)
                         .WithMany("Items")
-                        .HasForeignKey("CharacterId");
+                        .HasForeignKey("BackpackId");
 
                     b.HasOne("Pathfinder.Core.Entities.Product.Item", "Item")
                         .WithMany()
                         .HasForeignKey("ItemId");
-
-                    b.Navigation("Character");
 
                     b.Navigation("Item");
                 });
@@ -1039,26 +1099,25 @@ namespace Pathfinder.Infrastructure.Migrations
                         .WithMany("Characters")
                         .HasForeignKey("AccountId");
 
+                    b.HasOne("Pathfinder.Core.Entities.Account.Backpack", "Backpack")
+                        .WithMany()
+                        .HasForeignKey("BackpackId");
+
                     b.HasOne("Pathfinder.Core.Entities.Account.GroupCharacteristic", "Characteristics")
                         .WithMany()
                         .HasForeignKey("CharacteristicsId");
 
                     b.HasOne("Pathfinder.Core.Entities.Account.Race", "Race")
                         .WithMany()
-                        .HasForeignKey("RaceId");
+                        .HasForeignKey("RaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Backpack");
 
                     b.Navigation("Characteristics");
 
                     b.Navigation("Race");
-                });
-
-            modelBuilder.Entity("Pathfinder.Core.Entities.Account.Characteristic", b =>
-                {
-                    b.HasOne("Pathfinder.Core.Entities.Account.CharacteristicInfo", "CharacteristicInfo")
-                        .WithMany()
-                        .HasForeignKey("CharacteristicInfoId");
-
-                    b.Navigation("CharacteristicInfo");
                 });
 
             modelBuilder.Entity("Pathfinder.Core.Entities.Account.GroupCharacteristic", b =>
@@ -1102,9 +1161,11 @@ namespace Pathfinder.Infrastructure.Migrations
 
             modelBuilder.Entity("Pathfinder.Core.Entities.Account.Race", b =>
                 {
-                    b.HasOne("Pathfinder.Core.Entities.Account.RaceSize", "Size")
+                    b.HasOne("Pathfinder.Core.Entities.Account.Size", "Size")
                         .WithMany()
-                        .HasForeignKey("SizeId");
+                        .HasForeignKey("SizeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Size");
                 });
@@ -1183,13 +1244,30 @@ namespace Pathfinder.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Pathfinder.Core.Entities.Product.AdditionalDamage", b =>
+                {
+                    b.HasOne("Pathfinder.Core.Entities.Product.DamageType", "DamageType")
+                        .WithMany()
+                        .HasForeignKey("DamageTypeId");
+
+                    b.HasOne("Pathfinder.Core.Entities.Product.Dices", "Dices")
+                        .WithMany()
+                        .HasForeignKey("DicesId");
+
+                    b.HasOne("Pathfinder.Core.Entities.Product.WeaponItemProperty", null)
+                        .WithMany("AdditionalDamages")
+                        .HasForeignKey("WeaponItemPropertyId");
+
+                    b.Navigation("DamageType");
+
+                    b.Navigation("Dices");
+                });
+
             modelBuilder.Entity("Pathfinder.Core.Entities.Product.Article", b =>
                 {
                     b.HasOne("Pathfinder.Core.Entities.Product.Category", "Category")
                         .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CategoryType1");
 
                     b.Navigation("Category");
                 });
@@ -1199,15 +1277,6 @@ namespace Pathfinder.Infrastructure.Migrations
                     b.HasOne("Pathfinder.Core.Entities.Product.Weapon", null)
                         .WithMany("DamageTypeList")
                         .HasForeignKey("WeaponId");
-                });
-
-            modelBuilder.Entity("Pathfinder.Core.Entities.Product.Dices", b =>
-                {
-                    b.HasOne("Pathfinder.Core.Entities.Product.BaseDice", "D")
-                        .WithMany()
-                        .HasForeignKey("DId");
-
-                    b.Navigation("D");
                 });
 
             modelBuilder.Entity("Pathfinder.Core.Entities.Product.Effect", b =>
@@ -1221,7 +1290,9 @@ namespace Pathfinder.Infrastructure.Migrations
                 {
                     b.HasOne("Pathfinder.Core.Entities.Product.Article", "Article")
                         .WithMany()
-                        .HasForeignKey("ArticleId");
+                        .HasForeignKey("ArticleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Article");
                 });
@@ -1237,10 +1308,6 @@ namespace Pathfinder.Infrastructure.Migrations
                         .HasForeignKey("ArticleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Pathfinder.Core.Entities.Product.Dices", "LargeSizeDamage")
-                        .WithMany()
-                        .HasForeignKey("LargeSizeDamageId");
 
                     b.HasOne("Pathfinder.Core.Entities.Product.Dices", "MediumSizeDamage")
                         .WithMany()
@@ -1258,8 +1325,6 @@ namespace Pathfinder.Infrastructure.Migrations
 
                     b.Navigation("Article");
 
-                    b.Navigation("LargeSizeDamage");
-
                     b.Navigation("MediumSizeDamage");
 
                     b.Navigation("SmallSizeDamage");
@@ -1269,11 +1334,24 @@ namespace Pathfinder.Infrastructure.Migrations
 
             modelBuilder.Entity("Pathfinder.Core.Entities.Product.WeaponItemProperty", b =>
                 {
-                    b.HasOne("Pathfinder.Core.Entities.Product.Item", "Weapon")
+                    b.HasOne("Pathfinder.Core.Entities.Product.Item", "Item")
                         .WithMany()
-                        .HasForeignKey("WeaponId");
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("Weapon");
+                    b.Navigation("Item");
+                });
+
+            modelBuilder.Entity("Pathfinder.Core.Entities.Product.WeaponType", b =>
+                {
+                    b.HasOne("Pathfinder.Core.Entities.Product.WeaponProficiency", "WeaponProficiency")
+                        .WithMany()
+                        .HasForeignKey("WeaponProficiencyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("WeaponProficiency");
                 });
 
             modelBuilder.Entity("Pathfinder.Core.Entities.Shop.ShopsProduct", b =>
@@ -1296,7 +1374,7 @@ namespace Pathfinder.Infrastructure.Migrations
                     b.Navigation("Characters");
                 });
 
-            modelBuilder.Entity("Pathfinder.Core.Entities.Account.Character", b =>
+            modelBuilder.Entity("Pathfinder.Core.Entities.Account.Backpack", b =>
                 {
                     b.Navigation("Items");
                 });
@@ -1326,6 +1404,11 @@ namespace Pathfinder.Infrastructure.Migrations
             modelBuilder.Entity("Pathfinder.Core.Entities.Product.Weapon", b =>
                 {
                     b.Navigation("DamageTypeList");
+                });
+
+            modelBuilder.Entity("Pathfinder.Core.Entities.Product.WeaponItemProperty", b =>
+                {
+                    b.Navigation("AdditionalDamages");
                 });
 #pragma warning restore 612, 618
         }

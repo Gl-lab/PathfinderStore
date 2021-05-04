@@ -12,8 +12,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Pathfinder.Application.DTO;
 using Pathfinder.Application.DTO.Auth.Account;
 using Pathfinder.Application.DTO.Auth;
+using Pathfinder.Application.Interfaces;
 using Pathfinder.Core.Entities.Auth.Permissions;
 using Pathfinder.Core.Entities.Auth.Users;
 using Pathfinder.Web.Authentication;
@@ -26,21 +28,31 @@ namespace Pathfinder.Web.Controllers
         private readonly UserManager<User> userManager;
         private readonly JwtTokenConfiguration jwtTokenConfiguration;
         private readonly IConfiguration configuration;
-        //private readonly SmtpClient _smtpClient;
         private readonly ILogger<AccountController> logger;
+        private readonly IAccountService accountService;
 
         public AccountController(
             UserManager<User> userManager,
             IOptions<JwtTokenConfiguration> jwtTokenConfiguration,
             IConfiguration configuration,
-            ILogger<AccountController> logger)
+            ILogger<AccountController> logger, 
+            IAccountService accountService)
         {
             this.userManager = userManager;
             this.configuration = configuration;
             this.logger = logger;
             this.jwtTokenConfiguration = jwtTokenConfiguration.Value;
+            this.accountService = accountService;
         }
 
+        [HttpGet]
+        [Authorize(Policy = DefaultPermissions.PermissionNameForMemberAccess)]
+        public async Task<ActionResult<AccountDto>> Get()
+        {
+            var result = await accountService.GetCurrentAccountAsync().ConfigureAwait(false);
+            return Ok(result);
+        }
+        
         [HttpPost("/api/[action]")]
         public async Task<ActionResult<LoginOutput>> Login([FromBody]LoginInput input)
         {
@@ -140,9 +152,7 @@ namespace Pathfinder.Web.Controllers
             {
                 IsBodyHtml = true
             };
-#if !DEBUG
-            //await _smtpClient.SendMailAsync(message);
-#endif
+
             logger.LogInformation(Environment.NewLine + Environment.NewLine +
                                    "******************* Reset Password Link *******************" +
                                    Environment.NewLine + Environment.NewLine +
@@ -205,6 +215,34 @@ namespace Pathfinder.Web.Controllers
         {
             return await userManager.FindByNameAsync(userNameOrEmail).ConfigureAwait(false) ??
                    await userManager.FindByEmailAsync(userNameOrEmail).ConfigureAwait(false);
+        }
+
+        [Authorize(Policy = DefaultPermissions.PermissionNameForMemberAccess)]
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<ActionResult> CreateCharacter(CharacterDto newCharacter)
+        {
+            await accountService.CreateCharacterAsync(newCharacter).ConfigureAwait(false);
+            return Ok();
+        }
+
+        [Authorize(Policy = DefaultPermissions.PermissionNameForMemberAccess)]
+        [HttpDelete]
+        [Route("[action]")]
+        public async Task<ActionResult> DeleteCharacter(int deletedCharacterId)
+        {
+            await accountService.DeleteCharacterAsync(deletedCharacterId).ConfigureAwait(false);
+            return Ok();
+        }
+        
+        [Authorize(Policy = DefaultPermissions.PermissionNameForMemberAccess)]
+        [HttpPost]
+        [Produces("application/json")]
+        [Route("[action]")]
+        public async Task<ActionResult> SetCurrentCharacter([FromForm]int characterId)
+        {
+            await accountService.SetCurrentCharacterAsync(characterId).ConfigureAwait(false);
+            return Ok();
         }
     }
 }

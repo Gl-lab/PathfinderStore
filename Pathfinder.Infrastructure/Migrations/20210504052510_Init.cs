@@ -22,30 +22,29 @@ namespace Pathfinder.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "BaseDice",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    D = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_BaseDice", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "CategoryList",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CategoryType = table.Column<byte>(type: "smallint", nullable: false),
                     Name = table.Column<string>(type: "character varying(80)", maxLength: 80, nullable: false),
                     Description = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CategoryList", x => x.Id);
+                    table.PrimaryKey("PK_CategoryList", x => x.CategoryType);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Characteristic",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Value = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Characteristic", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -63,6 +62,20 @@ namespace Pathfinder.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Dices",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Count = table.Column<int>(type: "integer", nullable: false),
+                    D = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Dices", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Permission",
                 columns: table => new
                 {
@@ -77,19 +90,6 @@ namespace Pathfinder.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Permission", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "RaceSize",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_RaceSize", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -122,6 +122,18 @@ namespace Pathfinder.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Size",
+                columns: table => new
+                {
+                    Id = table.Column<byte>(type: "smallint", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Size", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "User",
                 columns: table => new
                 {
@@ -148,37 +160,28 @@ namespace Pathfinder.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "WeaponTypeList",
+                name: "Wallet",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: true),
-                    ShortName = table.Column<string>(type: "text", nullable: true)
+                    Balance = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_WeaponTypeList", x => x.Id);
+                    table.PrimaryKey("PK_Wallet", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Dices",
+                name: "WeaponProficiency",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Count = table.Column<int>(type: "integer", nullable: false),
-                    DId = table.Column<int>(type: "integer", nullable: true)
+                    Id = table.Column<byte>(type: "smallint", nullable: false),
+                    Name = table.Column<string>(type: "character varying(80)", maxLength: 80, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Dices", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Dices_BaseDice_DId",
-                        column: x => x.DId,
-                        principalTable: "BaseDice",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                    table.PrimaryKey("PK_WeaponProficiency", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -192,57 +195,70 @@ namespace Pathfinder.Infrastructure.Migrations
                     ImageFile = table.Column<string>(type: "text", nullable: true),
                     Price = table.Column<decimal>(type: "numeric", nullable: true),
                     Weight = table.Column<decimal>(type: "numeric", nullable: true),
-                    CategoryId = table.Column<int>(type: "integer", nullable: false)
+                    CategoryType = table.Column<byte>(type: "smallint", nullable: false),
+                    CategoryType1 = table.Column<byte>(type: "smallint", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ArticleList", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ArticleList_CategoryList_CategoryId",
-                        column: x => x.CategoryId,
+                        name: "FK_ArticleList_CategoryList_CategoryType1",
+                        column: x => x.CategoryType1,
                         principalTable: "CategoryList",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Characteristic",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    CharacteristicInfoId = table.Column<int>(type: "integer", nullable: true),
-                    Value = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Characteristic", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Characteristic_CharacteristicInfo_CharacteristicInfoId",
-                        column: x => x.CharacteristicInfoId,
-                        principalTable: "CharacteristicInfo",
-                        principalColumn: "Id",
+                        principalColumn: "CategoryType",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Race",
+                name: "GroupCharacteristic",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: true),
-                    SizeId = table.Column<int>(type: "integer", nullable: true),
-                    BaseSpeed = table.Column<int>(type: "integer", nullable: false),
-                    HaveNigthVision = table.Column<bool>(type: "boolean", nullable: false)
+                    StrengthId = table.Column<int>(type: "integer", nullable: true),
+                    DexterityId = table.Column<int>(type: "integer", nullable: true),
+                    ConstitutionId = table.Column<int>(type: "integer", nullable: true),
+                    IntelligenceId = table.Column<int>(type: "integer", nullable: true),
+                    WisdomId = table.Column<int>(type: "integer", nullable: true),
+                    CharismaId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Race", x => x.Id);
+                    table.PrimaryKey("PK_GroupCharacteristic", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Race_RaceSize_SizeId",
-                        column: x => x.SizeId,
-                        principalTable: "RaceSize",
+                        name: "FK_GroupCharacteristic_Characteristic_CharismaId",
+                        column: x => x.CharismaId,
+                        principalTable: "Characteristic",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_GroupCharacteristic_Characteristic_ConstitutionId",
+                        column: x => x.ConstitutionId,
+                        principalTable: "Characteristic",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_GroupCharacteristic_Characteristic_DexterityId",
+                        column: x => x.DexterityId,
+                        principalTable: "Characteristic",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_GroupCharacteristic_Characteristic_IntelligenceId",
+                        column: x => x.IntelligenceId,
+                        principalTable: "Characteristic",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_GroupCharacteristic_Characteristic_StrengthId",
+                        column: x => x.StrengthId,
+                        principalTable: "Characteristic",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_GroupCharacteristic_Characteristic_WisdomId",
+                        column: x => x.WisdomId,
+                        principalTable: "Characteristic",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -288,6 +304,28 @@ namespace Pathfinder.Infrastructure.Migrations
                         name: "FK_RolePermission_Role_RoleId",
                         column: x => x.RoleId,
                         principalTable: "Role",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Race",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: true),
+                    SizeId = table.Column<byte>(type: "smallint", nullable: false),
+                    BaseSpeed = table.Column<int>(type: "integer", nullable: false),
+                    IsNightVision = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Race", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Race_Size_SizeId",
+                        column: x => x.SizeId,
+                        principalTable: "Size",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -378,6 +416,46 @@ namespace Pathfinder.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Backpack",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    WalletId = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Backpack", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Backpack_Wallet_WalletId",
+                        column: x => x.WalletId,
+                        principalTable: "Wallet",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WeaponTypeList",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: true),
+                    ShortName = table.Column<string>(type: "text", nullable: true),
+                    WeaponProficiencyId = table.Column<byte>(type: "smallint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WeaponTypeList", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WeaponTypeList_WeaponProficiency_WeaponProficiencyId",
+                        column: x => x.WeaponProficiencyId,
+                        principalTable: "WeaponProficiency",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Effect",
                 columns: table => new
                 {
@@ -404,7 +482,7 @@ namespace Pathfinder.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ArticleId = table.Column<int>(type: "integer", nullable: true)
+                    ArticleId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -414,7 +492,7 @@ namespace Pathfinder.Infrastructure.Migrations
                         column: x => x.ArticleId,
                         principalTable: "ArticleList",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -430,8 +508,7 @@ namespace Pathfinder.Infrastructure.Migrations
                     AmmunitionId = table.Column<int>(type: "integer", nullable: true),
                     WeaponTypeId = table.Column<int>(type: "integer", nullable: true),
                     SmallSizeDamageId = table.Column<int>(type: "integer", nullable: true),
-                    MediumSizeDamageId = table.Column<int>(type: "integer", nullable: true),
-                    LargeSizeDamageId = table.Column<int>(type: "integer", nullable: true)
+                    MediumSizeDamageId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -448,12 +525,6 @@ namespace Pathfinder.Infrastructure.Migrations
                         principalTable: "ArticleList",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_WeaponList_Dices_LargeSizeDamageId",
-                        column: x => x.LargeSizeDamageId,
-                        principalTable: "Dices",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_WeaponList_Dices_MediumSizeDamageId",
                         column: x => x.MediumSizeDamageId,
@@ -475,55 +546,29 @@ namespace Pathfinder.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "GroupCharacteristic",
+                name: "BackpackItem",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    StrengthId = table.Column<int>(type: "integer", nullable: true),
-                    DexterityId = table.Column<int>(type: "integer", nullable: true),
-                    ConstitutionId = table.Column<int>(type: "integer", nullable: true),
-                    IntelligenceId = table.Column<int>(type: "integer", nullable: true),
-                    WisdomId = table.Column<int>(type: "integer", nullable: true),
-                    CharismaId = table.Column<int>(type: "integer", nullable: true)
+                    ItemId = table.Column<int>(type: "integer", nullable: true),
+                    IsWearing = table.Column<bool>(type: "boolean", nullable: false),
+                    Count = table.Column<short>(type: "smallint", nullable: false),
+                    BackpackId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_GroupCharacteristic", x => x.Id);
+                    table.PrimaryKey("PK_BackpackItem", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_GroupCharacteristic_Characteristic_CharismaId",
-                        column: x => x.CharismaId,
-                        principalTable: "Characteristic",
+                        name: "FK_BackpackItem_Backpack_BackpackId",
+                        column: x => x.BackpackId,
+                        principalTable: "Backpack",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_GroupCharacteristic_Characteristic_ConstitutionId",
-                        column: x => x.ConstitutionId,
-                        principalTable: "Characteristic",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_GroupCharacteristic_Characteristic_DexterityId",
-                        column: x => x.DexterityId,
-                        principalTable: "Characteristic",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_GroupCharacteristic_Characteristic_IntelligenceId",
-                        column: x => x.IntelligenceId,
-                        principalTable: "Characteristic",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_GroupCharacteristic_Characteristic_StrengthId",
-                        column: x => x.StrengthId,
-                        principalTable: "Characteristic",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_GroupCharacteristic_Characteristic_WisdomId",
-                        column: x => x.WisdomId,
-                        principalTable: "Characteristic",
+                        name: "FK_BackpackItem_Items_ItemId",
+                        column: x => x.ItemId,
+                        principalTable: "Items",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -536,7 +581,7 @@ namespace Pathfinder.Infrastructure.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     ShopId = table.Column<int>(type: "integer", nullable: true),
                     ItemId = table.Column<int>(type: "integer", nullable: true),
-                    Count = table.Column<int>(type: "integer", nullable: false)
+                    Count = table.Column<short>(type: "smallint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -561,19 +606,19 @@ namespace Pathfinder.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    WeaponId = table.Column<int>(type: "integer", nullable: true),
+                    ItemId = table.Column<int>(type: "integer", nullable: false),
                     IsMasterful = table.Column<bool>(type: "boolean", nullable: false),
-                    Size = table.Column<int>(type: "integer", nullable: false)
+                    Size = table.Column<byte>(type: "smallint", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_WeaponItemProperty", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_WeaponItemProperty_Items_WeaponId",
-                        column: x => x.WeaponId,
+                        name: "FK_WeaponItemProperty_Items_ItemId",
+                        column: x => x.ItemId,
                         principalTable: "Items",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -598,20 +643,59 @@ namespace Pathfinder.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AdditionalDamage",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    DicesId = table.Column<int>(type: "integer", nullable: true),
+                    DamageTypeId = table.Column<int>(type: "integer", nullable: true),
+                    WeaponItemPropertyId = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AdditionalDamage", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AdditionalDamage_DamageTypeList_DamageTypeId",
+                        column: x => x.DamageTypeId,
+                        principalTable: "DamageTypeList",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_AdditionalDamage_Dices_DicesId",
+                        column: x => x.DicesId,
+                        principalTable: "Dices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_AdditionalDamage_WeaponItemProperty_WeaponItemPropertyId",
+                        column: x => x.WeaponItemPropertyId,
+                        principalTable: "WeaponItemProperty",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Character",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: true),
-                    Balance = table.Column<int>(type: "integer", nullable: false),
-                    RaceId = table.Column<int>(type: "integer", nullable: true),
+                    RaceId = table.Column<int>(type: "integer", nullable: false),
+                    BackpackId = table.Column<int>(type: "integer", nullable: true),
                     CharacteristicsId = table.Column<int>(type: "integer", nullable: true),
                     AccountId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Character", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Character_Backpack_BackpackId",
+                        column: x => x.BackpackId,
+                        principalTable: "Backpack",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Character_GroupCharacteristic_CharacteristicsId",
                         column: x => x.CharacteristicsId,
@@ -623,7 +707,7 @@ namespace Pathfinder.Infrastructure.Migrations
                         column: x => x.RaceId,
                         principalTable: "Race",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -654,34 +738,6 @@ namespace Pathfinder.Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "Backpack",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    CharacterId = table.Column<int>(type: "integer", nullable: true),
-                    ItemId = table.Column<int>(type: "integer", nullable: true),
-                    Count = table.Column<int>(type: "integer", nullable: false),
-                    IsWearable = table.Column<bool>(type: "boolean", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Backpack", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Backpack_Character_CharacterId",
-                        column: x => x.CharacterId,
-                        principalTable: "Character",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Backpack_Items_ItemId",
-                        column: x => x.ItemId,
-                        principalTable: "Items",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
             migrationBuilder.InsertData(
                 table: "Permission",
                 columns: new[] { "Id", "CreationDate", "CreatorId", "DisplayName", "ModificationDate", "Name" },
@@ -704,8 +760,8 @@ namespace Pathfinder.Infrastructure.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "IsSystemDefault", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { 1, "513f9008-d351-465e-ac89-26ec57d0aa1f", true, "Admin", "ADMIN" },
-                    { 2, "81b847b9-b7fe-4529-979f-beefccbe7909", true, "Member", "MEMBER" }
+                    { 1, "0d1da455-7971-4c72-990d-83e78369f7f1", true, "Admin", "ADMIN" },
+                    { 2, "dd9bfd97-5ab7-48fb-84c3-c8b4bb849e22", true, "Member", "MEMBER" }
                 });
 
             migrationBuilder.InsertData(
@@ -713,9 +769,9 @@ namespace Pathfinder.Infrastructure.Migrations
                 columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
                 values: new object[,]
                 {
-                    { 1, 5, "52d4c5b7-b959-4b76-9ed1-85bd4a03d0c6", "admin@mail.com", true, false, null, "ADMIN@MAIL.COM", "ADMIN", "AQAAAAEAACcQAAAAEAHRoWnmspHpR/emTnFR7GuIwD1sTn/fM6O9lpdMAuagdruryhnmESp8lU2hNnEamQ==", null, false, null, false, "admin" },
-                    { 2, 5, "591ad155-1724-4f37-affa-aba758722e49", "memberuser@mail.com", true, false, null, "MEMBERUSER@MAIL.COM", "MEMBERUSER", "AQAAAAEAACcQAAAAEAHRoWnmspHpR/emTnFR7GuIwD1sTn/fM6O9lpdMAuagdruryhnmESp8lU2hNnEamQ==", null, false, null, false, "memberuser" },
-                    { 3, 5, "36483718-c8ba-4fe9-b644-6603de9db8db", "testadmin@mail.com", true, false, null, "TESTADMIN@MAIL.COM", "TESTADMIN", "AQAAAAEAACcQAAAAEAHRoWnmspHpR/emTnFR7GuIwD1sTn/fM6O9lpdMAuagdruryhnmESp8lU2hNnEamQ==", null, false, null, false, "testadmin" }
+                    { 1, 5, "55dfb6a0-3214-428a-af57-7a56c6dafd67", "admin@mail.com", true, false, null, "ADMIN@MAIL.COM", "ADMIN", "AQAAAAEAACcQAAAAEAHRoWnmspHpR/emTnFR7GuIwD1sTn/fM6O9lpdMAuagdruryhnmESp8lU2hNnEamQ==", null, false, null, false, "admin" },
+                    { 2, 5, "56a6cd0d-2d7b-4255-bd3d-a94280887f51", "memberuser@mail.com", true, false, null, "MEMBERUSER@MAIL.COM", "MEMBERUSER", "AQAAAAEAACcQAAAAEAHRoWnmspHpR/emTnFR7GuIwD1sTn/fM6O9lpdMAuagdruryhnmESp8lU2hNnEamQ==", null, false, null, false, "memberuser" },
+                    { 3, 5, "cecf67d3-b3ee-4562-b4b5-6727002c5cbc", "testadmin@mail.com", true, false, null, "TESTADMIN@MAIL.COM", "TESTADMIN", "AQAAAAEAACcQAAAAEAHRoWnmspHpR/emTnFR7GuIwD1sTn/fM6O9lpdMAuagdruryhnmESp8lU2hNnEamQ==", null, false, null, false, "testadmin" }
                 });
 
             migrationBuilder.InsertData(
@@ -757,24 +813,49 @@ namespace Pathfinder.Infrastructure.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ArticleList_CategoryId",
+                name: "IX_AdditionalDamage_DamageTypeId",
+                table: "AdditionalDamage",
+                column: "DamageTypeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AdditionalDamage_DicesId",
+                table: "AdditionalDamage",
+                column: "DicesId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AdditionalDamage_WeaponItemPropertyId",
+                table: "AdditionalDamage",
+                column: "WeaponItemPropertyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ArticleList_CategoryType1",
                 table: "ArticleList",
-                column: "CategoryId");
+                column: "CategoryType1");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Backpack_CharacterId",
+                name: "IX_Backpack_WalletId",
                 table: "Backpack",
-                column: "CharacterId");
+                column: "WalletId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Backpack_ItemId",
-                table: "Backpack",
+                name: "IX_BackpackItem_BackpackId",
+                table: "BackpackItem",
+                column: "BackpackId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_BackpackItem_ItemId",
+                table: "BackpackItem",
                 column: "ItemId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Character_AccountId",
                 table: "Character",
                 column: "AccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Character_BackpackId",
+                table: "Character",
+                column: "BackpackId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Character_CharacteristicsId",
@@ -787,19 +868,9 @@ namespace Pathfinder.Infrastructure.Migrations
                 column: "RaceId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Characteristic_CharacteristicInfoId",
-                table: "Characteristic",
-                column: "CharacteristicInfoId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_DamageTypeList_WeaponId",
                 table: "DamageTypeList",
                 column: "WeaponId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Dices_DId",
-                table: "Dices",
-                column: "DId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Effect_ArticleId",
@@ -899,9 +970,9 @@ namespace Pathfinder.Infrastructure.Migrations
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_WeaponItemProperty_WeaponId",
+                name: "IX_WeaponItemProperty_ItemId",
                 table: "WeaponItemProperty",
-                column: "WeaponId");
+                column: "ItemId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_WeaponList_AmmunitionId",
@@ -912,11 +983,6 @@ namespace Pathfinder.Infrastructure.Migrations
                 name: "IX_WeaponList_ArticleId",
                 table: "WeaponList",
                 column: "ArticleId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_WeaponList_LargeSizeDamageId",
-                table: "WeaponList",
-                column: "LargeSizeDamageId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_WeaponList_MediumSizeDamageId",
@@ -932,6 +998,11 @@ namespace Pathfinder.Infrastructure.Migrations
                 name: "IX_WeaponList_WeaponTypeId",
                 table: "WeaponList",
                 column: "WeaponTypeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WeaponTypeList_WeaponProficiencyId",
+                table: "WeaponTypeList",
+                column: "WeaponProficiencyId");
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Character_Account_AccountId",
@@ -949,10 +1020,13 @@ namespace Pathfinder.Infrastructure.Migrations
                 table: "Account");
 
             migrationBuilder.DropTable(
-                name: "Backpack");
+                name: "AdditionalDamage");
 
             migrationBuilder.DropTable(
-                name: "DamageTypeList");
+                name: "BackpackItem");
+
+            migrationBuilder.DropTable(
+                name: "CharacteristicInfo");
 
             migrationBuilder.DropTable(
                 name: "Effect");
@@ -979,10 +1053,10 @@ namespace Pathfinder.Infrastructure.Migrations
                 name: "UserToken");
 
             migrationBuilder.DropTable(
-                name: "WeaponItemProperty");
+                name: "DamageTypeList");
 
             migrationBuilder.DropTable(
-                name: "WeaponList");
+                name: "WeaponItemProperty");
 
             migrationBuilder.DropTable(
                 name: "Permission");
@@ -992,6 +1066,9 @@ namespace Pathfinder.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Role");
+
+            migrationBuilder.DropTable(
+                name: "WeaponList");
 
             migrationBuilder.DropTable(
                 name: "Items");
@@ -1009,7 +1086,7 @@ namespace Pathfinder.Infrastructure.Migrations
                 name: "ArticleList");
 
             migrationBuilder.DropTable(
-                name: "BaseDice");
+                name: "WeaponProficiency");
 
             migrationBuilder.DropTable(
                 name: "CategoryList");
@@ -1021,6 +1098,9 @@ namespace Pathfinder.Infrastructure.Migrations
                 name: "Account");
 
             migrationBuilder.DropTable(
+                name: "Backpack");
+
+            migrationBuilder.DropTable(
                 name: "GroupCharacteristic");
 
             migrationBuilder.DropTable(
@@ -1030,13 +1110,13 @@ namespace Pathfinder.Infrastructure.Migrations
                 name: "User");
 
             migrationBuilder.DropTable(
+                name: "Wallet");
+
+            migrationBuilder.DropTable(
                 name: "Characteristic");
 
             migrationBuilder.DropTable(
-                name: "RaceSize");
-
-            migrationBuilder.DropTable(
-                name: "CharacteristicInfo");
+                name: "Size");
         }
     }
 }

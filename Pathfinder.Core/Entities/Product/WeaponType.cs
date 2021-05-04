@@ -5,5 +5,7 @@ namespace Pathfinder.Core.Entities.Product
     {
         public string Name { get; set; }
         public string ShortName { get; set; }
+        public WeaponProficiencyType WeaponProficiencyId { get; set; }
+        public virtual WeaponProficiency WeaponProficiency { get; set; }
     }
 }

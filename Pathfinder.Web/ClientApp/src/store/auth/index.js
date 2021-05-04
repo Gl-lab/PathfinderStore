@@ -60,7 +60,7 @@ const Auth = {
     },
     loadAccount(context) {
       if (context.getters.isAuthorized) {
-        return axios.get(appConst.webApiUrl + "/api/GameAccount").then(
+        return axios.get(appConst.webApiUrl + "/api/Account").then(
           response => {
             context.commit("setAccount", response.data);
           },

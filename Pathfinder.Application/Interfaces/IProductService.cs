@@ -2,6 +2,7 @@
 using Pathfinder.Utils.Paging;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Pathfinder.Core.Entities.Product;
 
 namespace Pathfinder.Application.Interfaces
 {
@@ -9,11 +10,11 @@ namespace Pathfinder.Application.Interfaces
     {
         Task<IEnumerable<ArticleDto>> GetArticleList();
         Task<IPagedList<ArticleDto>> SearchArticles(PageSearchArgs args);
-        Task<ArticleDto> GetArticleById(int ArticleId);
+        Task<ArticleDto> GetArticleById(int articleId);
         Task<IEnumerable<ArticleDto>> GetArticlesByName(string name);
-        Task<IEnumerable<ArticleDto>> GetArticlesByCategoryId(int categoryId);
-        Task<ArticleDto> CreateArticle(ArticleDto Article);
-        Task UpdateArticle(ArticleDto Article);
-        Task DeleteArticleById(int ArticleId);
+        Task<IEnumerable<ArticleDto>> GetArticlesByCategoryId(CategoryType categoryType);
+        Task<ArticleDto> CreateArticle(ArticleDto article);
+        Task UpdateArticle(ArticleDto article);
+        Task DeleteArticleById(int articleId);
     }
 }

@@ -63,9 +63,11 @@ namespace Pathfinder.Application.Services
             return productModels;
         }
 
-        public async Task<IEnumerable<ArticleDto>> GetArticlesByCategoryId(int categoryId)
+        public async Task<IEnumerable<ArticleDto>> GetArticlesByCategoryId(CategoryType categoryType)
         {
-            var productList = await productRepository.GetListByCategoryAsync(categoryId).ConfigureAwait(false);
+            var productList = await productRepository
+                .GetListByCategoryAsync(categoryType)
+                .ConfigureAwait(false);
 
             return mapper.Map<IEnumerable<ArticleDto>>(productList);
         }
@@ -98,7 +100,7 @@ namespace Pathfinder.Application.Services
             existingArticle.Name = product.Name;
             existingArticle.Description = product.Description;
             existingArticle.Price = product.Price;
-            existingArticle.CategoryId = product.CategoryId;
+            existingArticle.CategoryType = (CategoryType)product.CategoryType;
 
             await productRepository.SaveAsync(existingArticle).ConfigureAwait(false);
 

@@ -17,7 +17,7 @@ namespace Pathfinder.Application
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAccountService, AccountService>();
-            services.AddScoped<ICharacterService, AccountService>();
+            services.AddScoped<ICharacterService, CharacterService>();
             services.AddAutoMapper(typeof(AutoMapperProfile));
             services.AddTransient<IRacesService, RacesService>();
         }

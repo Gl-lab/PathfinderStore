@@ -2,7 +2,7 @@
   <div class="home">
     <h1>Все хорошо! Вы на главной</h1>
     <div v-if="isAuthorized">
-      <characters-list/>
+      <characters-list />
     </div>
   </div>
 </template>

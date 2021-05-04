@@ -106,10 +106,10 @@ namespace Pathfinder.Infrastructure.Repository
                 .ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<Article>> GetListByCategoryAsync(int categoryId)
+        public async Task<IEnumerable<Article>> GetListByCategoryAsync(CategoryType categoryType)
         {
             return await TableNoTracking
-                .Where(x => x.CategoryId == categoryId)
+                .Where(x => x.CategoryType == categoryType)
                 .ToListAsync()
                 .ConfigureAwait(false);
         }
