@@ -12,7 +12,7 @@ using Pathfinder.Core.Entities.Account;
 
 namespace Pathfinder.Application.Services
 {
-    public class AccountService: IAccountService, ICharacterService
+    public class AccountService: IAccountService
     {
         private readonly IMapper mapper;
         private readonly IAccountRepository accountRepository;
@@ -24,6 +24,12 @@ namespace Pathfinder.Application.Services
             this.accountRepository = accountRepository ?? throw new ArgumentNullException(nameof(accountRepository));
             this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
+        }
+
+        public async Task<AccountDto> GetCurrentAccountAsync()
+        {
+            var account = await CurrentAccountAsync().ConfigureAwait(false);
+            return mapper.Map<AccountDto>(account);
         }
 
         public async Task CreateCharacterAsync(CharacterDto newCharacter)
@@ -63,18 +69,6 @@ namespace Pathfinder.Application.Services
             return mapper.Map<ICollection<CharacterDto>>(account.Characters);
         }
 
-        public async Task<AccountDto> GetCurrentAccountAsync()
-        {
-           var account = await CurrentAccountAsync().ConfigureAwait(false);
-           return mapper.Map<AccountDto>(account);
-        }
-
-        public async Task<CharacterDto> GetCurrentCharacterAsync()
-        {
-           var account = await CurrentAccountAsync().ConfigureAwait(false);
-           return mapper.Map<CharacterDto>(account.CurrentCharacter);
-        }
-
         public async Task SetCurrentCharacterAsync(int characterId)
         {
             var account = await CurrentAccountAsync().ConfigureAwait(false);
@@ -91,7 +85,7 @@ namespace Pathfinder.Application.Services
             account.CurrentCharacter = accountCharacter ?? throw new Exception("The user does not have a character with the specified ID");
             await accountRepository.SaveAsync(account).ConfigureAwait(false);
         }
-
+       
         public async Task UpdateAsync(AccountDto newAccount)
         {
             var user = userService.GetCurrentUser()

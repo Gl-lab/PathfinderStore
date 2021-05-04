@@ -6,6 +6,7 @@ using Pathfinder.Application.DTO;
 using Pathfinder.Core.Repositories;
 using Pathfinder.Utils.Paging;
 using AutoMapper;
+using Pathfinder.Core.Entities.Product;
 
 namespace Pathfinder.Application.Services
 {
@@ -15,40 +16,25 @@ namespace Pathfinder.Application.Services
        // private readonly IAppLogger<CategoryService> logger;
         private readonly IMapper mapper;
 
-        public CategoryService(ICategoryRepository categoryRepository/*, IAppLogger<CategoryService> logger*/, IMapper mapper)
+        public CategoryService(ICategoryRepository categoryRepository, IMapper mapper)
         {
             this.categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
-         //   this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        public async Task<CategoryDto> GetById(int id)
+        public async Task<CategoryDto> Get(CategoryType categoryType)
         {
             var category = await categoryRepository
-                .GetByIdAsync(id)
+                .GetAsync(categoryType)
                 .ConfigureAwait(false);
             var result = mapper.Map<CategoryDto>(category);
             return result;
         }
         public async Task<IEnumerable<CategoryDto>> GetCategoryList()
         {
-            var categoryList = await categoryRepository.ListAllAsync().ConfigureAwait(false);
+            var categoryList = await categoryRepository.ListAsync().ConfigureAwait(false);
             var categoryModels = mapper.Map<IEnumerable<CategoryDto>>(categoryList);
             return categoryModels;
-        }
-
-        public async Task<IPagedList<CategoryDto>> SearchCategories(PageSearchArgs args)
-        {
-            var categoryPagedList = await categoryRepository.SearchAsync(args).ConfigureAwait(false);
-            var categoryModels = mapper.Map<List<CategoryDto>>(categoryPagedList.Items);
-            var categoryModelPagedList = new PagedList<CategoryDto>(
-                categoryPagedList.PageIndex,
-                categoryPagedList.PageSize,
-                categoryPagedList.TotalCount,
-                categoryPagedList.TotalPages,
-                categoryModels);
-
-            return categoryModelPagedList;
         }
     }
 }

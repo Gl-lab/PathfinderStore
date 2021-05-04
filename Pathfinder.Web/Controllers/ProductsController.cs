@@ -7,6 +7,7 @@ using Pathfinder.Application.DTO;
 using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Pathfinder.Core.Entities.Auth.Permissions;
+using Pathfinder.Core.Entities.Product;
 
 namespace Pathfinder.Web.Controllers
 {
@@ -43,7 +44,7 @@ namespace Pathfinder.Web.Controllers
             return Ok(productPagedList);
         }
 
-        [Route("{id}")]
+        [Route("{id:int}")]
         [HttpGet]
         [ProducesResponseType(typeof(ArticleDto), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<ArticleDto>> GetProductById(int id)
@@ -68,10 +69,10 @@ namespace Pathfinder.Web.Controllers
         [Route("[action]")]
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<ArticleDto>), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<IEnumerable<ArticleDto>>> GetProductsByCategoryId(int categoryId)
+        public async Task<ActionResult<IEnumerable<ArticleDto>>> GetProductsByCategoryId(byte categoryType)
         {
             var products = await productService
-                                .GetArticlesByCategoryId(categoryId)
+                                .GetArticlesByCategoryId((CategoryType)categoryType)
                                 .ConfigureAwait(false);
             return Ok(products);
         }
@@ -80,14 +81,13 @@ namespace Pathfinder.Web.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(ArticleDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        //[Authorize(Policy = DefaultPermissions.PermissionNameForAdministration)]
-        [Authorize]
+        [Authorize(Policy = DefaultPermissions.PermissionNameForAdministration)]
         public async Task<ActionResult<ArticleDto>> CreateProduct(ArticleDto product)
         {
-            var Result = await productService
+            var result = await productService
                             .CreateArticle(product)
                             .ConfigureAwait(false);
-            return Ok(Result);
+            return Ok(result);
         }
 
         [Route("[action]")]

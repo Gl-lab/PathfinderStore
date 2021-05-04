@@ -23,7 +23,6 @@ namespace Pathfinder.Infrastructure.Data
         public DbSet<Article> ArticleList { get; set; }
         public DbSet<Category> CategoryList { get; set; }
         public DbSet<DamageType> DamageTypeList { get; set; }
-        public DbSet<BaseDice> DiceList { get; set; }
         public DbSet<Weapon> WeaponList { get; set; }
         public DbSet<WeaponType> WeaponTypeList { get; set; }
         public DbSet<Permission> Permissions { get; set; }
@@ -35,12 +34,13 @@ namespace Pathfinder.Infrastructure.Data
         public DbSet<CharacteristicType> CharacteristicInfo { get; set; }
         public DbSet<GroupCharacteristic> GroupCharacteristic { get; set; }
         public DbSet<Race> Race { get; set; }
-        public DbSet<RaceSize> RaceSize { get; set; }
+        public DbSet<Size> Size { get; set; }
         public DbSet<Item> Items { get; set; }
-        public DbSet<BaseDice> BaseDice { get; set; }
         public DbSet<WeaponItemProperty> WeaponItemProperty { get; set; }
         public DbSet<Shop> Shops { get; set; }
         public DbSet<ShopsProduct> ShopsProducts { get; set; }
+        public DbSet<WeaponProficiency> WeaponProficiency { get; set; }
+        
 
         private IDbContextTransaction _currentTransaction;
         public IDbContextTransaction GetCurrentTransaction => _currentTransaction;
@@ -55,7 +55,7 @@ namespace Pathfinder.Infrastructure.Data
             try
             {
                 await SaveChangesAsync().ConfigureAwait(false);
-                _currentTransaction?.Commit();
+                await _currentTransaction?.CommitAsync();
             }
             catch
             {
@@ -136,6 +136,7 @@ namespace Pathfinder.Infrastructure.Data
             modelBuilder.Entity<UserClaim>().ToTable("UserClaim");
             modelBuilder.Entity<UserLogin>().ToTable("UserLogin");
             modelBuilder.Entity<RoleClaim>().ToTable("RoleClaim");
+            modelBuilder.Entity<UserToken>().ToTable("UserToken");
             modelBuilder.Entity<UserToken>().ToTable("UserToken");
         }
     }

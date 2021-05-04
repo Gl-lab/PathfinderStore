@@ -1,76 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Pathfinder.Core.Entities.Product;
 using Pathfinder.Core.Repositories;
 using Pathfinder.Infrastructure.Data;
-using Pathfinder.Infrastructure.Repository.Base;
-using Pathfinder.Utils.Paging;
 
 namespace Pathfinder.Infrastructure.Repository
 {
-    public class CategoryRepository : Repository<Category>, ICategoryRepository
+    public class CategoryRepository : ICategoryRepository
     {
+        private readonly PgDbContext dbContext;
         public CategoryRepository(PgDbContext dbContext)
-            : base(dbContext)
         {
+            this.dbContext = dbContext;
         }
 
-        public Task<IPagedList<Category>> SearchAsync(PageSearchArgs args)
+        public async Task<ICollection<Category>> ListAsync()
         {
-            var query = Table;
+            return await dbContext
+                .CategoryList
+                .ToListAsync()
+                .ConfigureAwait(false);
+        }
 
-            var orderByList = new List<Tuple<SortingOption, Expression<Func<Category, object>>>>();
-
-            if (args.SortingOptions != null)
-            {
-                foreach (var sortingOption in args.SortingOptions)
-                {
-                    switch (sortingOption.Field)
-                    {
-                        case "id":
-                            orderByList.Add(new Tuple<SortingOption, Expression<Func<Category, object>>>(sortingOption, c => c.Id));
-                            break;
-                        case "name":
-                            orderByList.Add(new Tuple<SortingOption, Expression<Func<Category, object>>>(sortingOption, c => c.Name));
-                            break;
-                        case "description":
-                            orderByList.Add(new Tuple<SortingOption, Expression<Func<Category, object>>>(sortingOption, c => c.Description));
-                            break;
-                    }
-                }
-            }
-
-            if (orderByList.Count == 0)
-            {
-                orderByList.Add(new Tuple<SortingOption, Expression<Func<Category, object>>>(new SortingOption { Direction = SortingOption.SortingDirection.ASC }, c => c.Id));
-            }
-
-            var filterList = new List<Tuple<FilteringOption, Expression<Func<Category, bool>>>>();
-
-            if (args.FilteringOptions != null)
-            {
-                foreach (var filteringOption in args.FilteringOptions)
-                {
-                    switch (filteringOption.Field)
-                    {
-                        case "id":
-                            filterList.Add(new Tuple<FilteringOption, Expression<Func<Category, bool>>>(filteringOption, c => c.Id == (int)filteringOption.Value));
-                            break;
-                        case "name":
-                            filterList.Add(new Tuple<FilteringOption, Expression<Func<Category, bool>>>(filteringOption, c => c.Name.Contains((string)filteringOption.Value)));
-                            break;
-                        case "description":
-                            filterList.Add(new Tuple<FilteringOption, Expression<Func<Category, bool>>>(filteringOption, c => c.Description.Contains((string)filteringOption.Value)));
-                            break;
-                    }
-                }
-            }
-
-            var categoryPagedList = new PagedList<Category>(query, new PagingArgs { PageIndex = args.PageIndex, PageSize = args.PageSize, PagingStrategy = args.PagingStrategy }, orderByList, filterList);
-
-            return Task.FromResult<IPagedList<Category>>(categoryPagedList);
+        public async Task<Category> GetAsync(CategoryType categoryType)
+        {
+            return await dbContext
+                .CategoryList
+                .FirstAsync(e => e.CategoryType == categoryType)
+                .ConfigureAwait(false);
         }
     }
 }

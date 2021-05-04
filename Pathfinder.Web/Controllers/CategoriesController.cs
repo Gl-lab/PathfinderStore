@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Pathfinder.Application.Interfaces;
 using Pathfinder.Application.DTO;
 using System.Net;
+using Pathfinder.Core.Entities.Product;
 using Pathfinder.Utils.Paging;
 
 namespace Pathfinder.Web.Controllers
@@ -12,38 +13,28 @@ namespace Pathfinder.Web.Controllers
     [ApiController]
     public class CategoriesController : ControllerBase
     {
-        private readonly ICategoryService CategoryService;
+        private readonly ICategoryService categoryService;
 
         public CategoriesController(ICategoryService categoryService)
         {
-            this.CategoryService = categoryService;
+            this.categoryService = categoryService;
         }
 
         [Produces("application/json")]
-        [Route("")]
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<CategoryDto>), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<IEnumerable<CategoryDto>>> Categories()
         {
-            var categories = await CategoryService.GetCategoryList ().ConfigureAwait(false);
+            var categories = await categoryService.GetCategoryList().ConfigureAwait(false);
             return Ok(categories);
         }
 
-        [Route("[action]")]
-        [HttpPost]
-        [ProducesResponseType(typeof(IPagedList<CategoryDto>), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<IPagedList<CategoryDto>>> SearchCategories(PageSearchArgs arg)
-        {
-            var categoryPagedList = await CategoryService.SearchCategories(arg).ConfigureAwait(false);
-            return Ok(categoryPagedList);
-        }
-
-        [Route("{id}")]
+        [Route("{categoryType}")]
         [HttpGet]
         [ProducesResponseType(typeof(CategoryDto), (int)HttpStatusCode.OK)]
-        public async Task<ActionResult<CategoryDto>> GetCategoryById(int id)
+        public async Task<ActionResult<CategoryDto>> GetCategoryById(byte categoryType)
         {
-            var product = await CategoryService.GetById(id).ConfigureAwait(false);
+            var product = await categoryService.Get((CategoryType)categoryType).ConfigureAwait(false);
             return Ok(product);
         }
     }

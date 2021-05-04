@@ -25,7 +25,6 @@ namespace Pathfinder.Web
 
         public void ConfigureServices(IServiceCollection services)
         {
-            //services.AddDbContext<>(options => options.UseNpgsql(Configuration["Data:WebDB:ConnectionString"]));
             services.AddDbContext<PgDbContext>(options =>
                 options
                     .UseNpgsql(Configuration["Data:WebDB:ConnectionString"])

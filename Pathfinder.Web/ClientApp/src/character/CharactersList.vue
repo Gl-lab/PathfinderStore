@@ -103,8 +103,9 @@ export default {
     },
     setCurrentCharacter(character) {
       console.log(character);
+
       this.axios
-        .post("/api/Character/SetCurrentCharacter", character)
+        .post("/api/Account/SetCurrentCharacter", "characterId=" + character.id)
         .then(() => {
           this.loadData();
         });
@@ -128,7 +129,7 @@ export default {
     deleteItemConfirm() {
       if (this.editedIndex)
         this.axios
-          .delete("/api/Character", {
+          .delete("/api/Account/DeleteCharacter", {
             params: { deletedCharacterId: this.editedIndex }
           })
           .then(() => {

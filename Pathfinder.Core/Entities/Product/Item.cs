@@ -6,6 +6,7 @@ namespace Pathfinder.Core.Entities.Product
 {
     public class Item: Entity
     {
+        public int ArticleId { get; set; }
         public virtual Article Article { get; set; }
     }
 }

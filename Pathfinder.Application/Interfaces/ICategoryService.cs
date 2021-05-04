@@ -2,13 +2,13 @@
 using Pathfinder.Utils.Paging;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Pathfinder.Core.Entities.Product;
 
 namespace Pathfinder.Application.Interfaces
 {
     public interface ICategoryService
     {
         Task<IEnumerable<CategoryDto>> GetCategoryList();
-        Task<CategoryDto> GetById(int id);
-        Task<IPagedList<CategoryDto>> SearchCategories(PageSearchArgs args);
+        Task<CategoryDto> Get(CategoryType categoryType);
     }
 }

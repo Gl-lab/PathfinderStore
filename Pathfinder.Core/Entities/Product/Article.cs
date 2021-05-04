@@ -13,7 +13,7 @@ namespace Pathfinder.Core.Entities.Product
         public decimal? Price { get; set; }
         public decimal? Weight { get; set; }
 
-        public int CategoryId { get; set; }
+        public CategoryType CategoryType { get; set; }
         public virtual Category Category { get; set; }
         public virtual ICollection<Effect> Effects { get; set; } = new List<Effect>();
     }

@@ -1,1 +1,4 @@
-﻿add-migration Init -Project Pathfinder.Infrastructure -Context PgDbContext
+﻿add-migration Init -Project Pathfinder.Infrastructure -Context PgDbContext -StartupProject Pathfinder.Web 
+update-database -Project Pathfinder.Infrastructure -StartupProject Pathfinder.Web 
+dotnet ef database update --project  Pathfinder.Web  --context PgDbContext
+dotnet ef migrations add Init4 --project Pathfinder.Infrastructure --context PgDbContext --startup-project Pathfinder.Web

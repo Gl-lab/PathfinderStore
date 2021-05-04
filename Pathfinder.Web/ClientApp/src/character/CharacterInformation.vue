@@ -36,6 +36,7 @@
       :model="currentCharacter.characteristics"
       class="pt-5 px-15"
     ></characteristics-form>
+    {{ items }}
   </v-card>
 </template>
 
@@ -46,6 +47,16 @@ const { mapGetters } = createNamespacedHelpers("auth");
 export default {
   components: {
     CharacteristicsForm
+  },
+  data() {
+    return {
+      snackbar: {
+        isActive: false,
+        text: null,
+        timeout: 2000
+      },
+      items: []
+    };
   },
   computed: {
     ...mapGetters(["currentCharacter"]),
@@ -58,6 +69,25 @@ export default {
     copper: function() {
       return Math.floor(this.currentCharacter.balance % 10);
     }
+  },
+  methods: {
+    loadWeapons: function() {
+      try {
+        this.axios
+          .get("/api/Character/items/Weapons")
+          .then(response => {
+            this.items = response.data;
+          })
+          .catch(error => {
+            console.log(error.message);
+          });
+      } catch {
+        console.log(1);
+      }
+    }
+  },
+  mounted() {
+    this.loadWeapons();
   }
 };
 </script>
