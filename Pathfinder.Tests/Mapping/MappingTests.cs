@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections;
-using AutoMapper;
-using Microsoft.Extensions.DependencyInjection;
-using Moq;
+﻿using AutoMapper;
 using Pathfinder.Application.DTO;
 using Pathfinder.Application.DTO.Items;
 using Pathfinder.Application.Mapper;
