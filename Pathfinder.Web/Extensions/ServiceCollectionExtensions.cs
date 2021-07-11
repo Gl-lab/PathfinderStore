@@ -63,23 +63,10 @@ namespace Pathfinder.Web.fromNucleus.Extensions
 
         public static void ConfigureDbContext(this IServiceCollection services, IConfiguration configuration)
         {
-            var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
-            if (!String.IsNullOrEmpty(connectionString))
-            {
-                services.AddDbContext<PgDbContext>(options =>
-                   options.UseNpgsql(
-                       connectionString
-                   )
-                   .UseLazyLoadingProxies()
-                );
-            }
-            else
-            {
-                services.AddDbContext<PgDbContext>(options =>
-                   options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
-                   .UseLazyLoadingProxies()
-                );
-            }
+            services.AddDbContext<PgDbContext>(options =>
+                options
+                    .UseNpgsql(configuration["Data:WebDB:ConnectionString"])
+                    .UseLazyLoadingProxies());
         }
 
         public static void ConfigureDependencyInjection(this IServiceCollection services)
@@ -128,17 +115,6 @@ namespace Pathfinder.Web.fromNucleus.Extensions
                     ValidAudience = _jwtTokenConfiguration.Audience,
                     IssuerSigningKey = _signingKey
                 };
-            });
-        }
-
-        public static void ConfigureSmtp(this IServiceCollection services, IConfiguration configuration)
-        {
-            services.AddScoped(_ => new SmtpClient
-            {
-                Host = configuration["Email:Smtp:Host"],
-                Port = int.Parse(configuration["Email:Smtp:Port"]),
-                Credentials = new NetworkCredential(configuration["Email:Smtp:Username"], configuration["Email:Smtp:Password"]),
-                EnableSsl = bool.Parse(configuration["Email:Smtp:EnableSsl"])
             });
         }
     }

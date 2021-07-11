@@ -5,7 +5,7 @@
     </v-toolbar>
     <v-card-text>
       <div v-for="error in errors" :key="error.name">
-        <v-alert :value="isHaveError" type="error">
+        <v-alert type="error">
           {{ error.name }}
         </v-alert>
       </div>
@@ -41,7 +41,9 @@
 
 <script>
 import { createNamespacedHelpers } from "vuex";
-const { mapActions } = createNamespacedHelpers("auth");
+import axios from "axios";
+import { appConst } from "@/settings";
+const { mapActions, mapMutations } = createNamespacedHelpers("auth");
 export default {
   data() {
     return {
@@ -51,11 +53,23 @@ export default {
     };
   },
   methods: {
-    ...mapActions(["login"]),
+    ...mapMutations(["removeToken", "setToken"]),
+    ...mapActions(["loadAccount"]),
     onSubmit() {
       if (this.$refs.form.validate()) {
-        this.login(this.loginInput);
-        this.$router.push("/");
+        axios.post(appConst.webApiUrl + "/api/login", this.loginInput).then(
+          response => {
+            const token = response.data.token;
+            axios.defaults.headers.common["Authorization"] = "Bearer " + token;
+            this.setToken(token);
+            this.loadAccount();
+            this.$router.push("/");
+          },
+          err => {
+            this.errors = err.response.data;
+            this.removeToken();
+          }
+        );
       }
     },
     requiredError: v => !!v || "RequiredField"

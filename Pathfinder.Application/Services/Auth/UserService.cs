@@ -1,19 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
 using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using System.Linq.Dynamic.Core;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Pathfinder.Application.DTO.Auth.Roles;
 using Pathfinder.Application.DTO.Auth.Users;
-using Pathfinder.Core.Entities.Auth.Users;
 using Pathfinder.Application.Interfaces.Auth;
-using Pathfinder.Utils.Paging;
+using Pathfinder.Core.Entities.Auth.Users;
 using Pathfinder.Core.Repositories.Auth;
+using Pathfinder.Utils.Paging;
 
-namespace Pathfinder.Application.Services
+namespace Pathfinder.Application.Services.Auth
 {
     public class UserService : IUserService
     {
@@ -144,7 +144,6 @@ namespace Pathfinder.Application.Services
         public async Task SetCurrentUserByLogin(string login)
         {
             currentUser = await userManager.FindByNameAsync(login).ConfigureAwait(false);
-            //currentUser = user;
         }
 
         public User GetCurrentUser()

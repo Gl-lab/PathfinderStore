@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
@@ -6,15 +5,14 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-
-using Pathfinder.Application.DTO.Auth.Roles;
 using Pathfinder.Application.DTO.Auth.Permissions;
-using Pathfinder.Core.Entities.Auth.Roles;
+using Pathfinder.Application.DTO.Auth.Roles;
 using Pathfinder.Application.Interfaces.Auth;
-using Pathfinder.Utils.Paging;
+using Pathfinder.Core.Entities.Auth.Roles;
 using Pathfinder.Core.Repositories.Auth;
+using Pathfinder.Utils.Paging;
 
-namespace  Pathfinder.Application.Services
+namespace  Pathfinder.Application.Services.Auth
 {
     public class RoleService : IRoleService
     {

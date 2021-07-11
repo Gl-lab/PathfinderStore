@@ -17,6 +17,7 @@ namespace Pathfinder.Tests.Core
                     Wallet = new Wallet(1000), 
                     Items = new List<BackpackItem>()
                 }, 
+                RaceId = 1,
                 Race = new Race
                 {
                     Name = "Эльф",
@@ -96,6 +97,47 @@ namespace Pathfinder.Tests.Core
             void Action() => character.Backpack.Wallet.DecreaseBalance(-100);
             var exception = Assert.Throws<CoreException>(Action);
             Assert.Equal("unacceptable value for DecreaseBalance", exception.Message);
+        }
+        
+        [Fact]
+        public void CharacterRenameToNullTest()
+        {
+            var character = GetCharacter();
+            void Action() => character.Rename(null);
+            Assert.Throws<ArgumentNullException>(Action);
+        }
+        
+        [Fact]
+        public void CharacterRenameToEmptyStringTest()
+        {
+            var character = GetCharacter();
+            character.Rename(string.Empty);
+            Assert.Equal("Билибой", character.Name);
+        }
+        
+        [Fact]
+        public void CharacterRenameTest()
+        {
+            var character = GetCharacter();
+            character.Rename("string");
+            Assert.Equal("string", character.Name);
+        }
+        
+        [Fact]
+        public void CharacterChangeRaceTest()
+        {
+            var character = GetCharacter();
+            character.ChangeRace(2);
+            Assert.Equal(2, character.RaceId);
+        }
+        
+        [Fact]
+        public void CharacterChangeRaceToZeroTest()
+        {
+            var character = GetCharacter();
+            void Action() => character.ChangeRace(-100);
+            var exception = Assert.Throws<CoreException>(Action);
+            Assert.Equal("A nonexistent race", exception.Message);
         }
     }
 }

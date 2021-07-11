@@ -3,6 +3,7 @@ using Pathfinder.Application.Interfaces;
 using Pathfinder.Application.Interfaces.Auth;
 using Pathfinder.Application.Services;
 using Pathfinder.Application.Mapper;
+using Pathfinder.Application.Services.Auth;
 
 
 namespace Pathfinder.Application

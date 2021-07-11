@@ -12,33 +12,33 @@
         </div>
         <v-form ref="form" @keyup.native.enter="onSubmit">
           <v-text-field
-              name="userName"
-              label="UserName"
-              type="text"
-              v-model="registerInput.userName"
-              :rules="[requiredError]"
+            name="userName"
+            label="UserName"
+            type="text"
+            v-model="registerInput.userName"
+            :rules="[requiredError]"
           ></v-text-field>
           <v-text-field
-              name="email"
-              label="EmailAddress"
-              type="text"
-              v-model="registerInput.email"
-              :rules="[requiredError, emailError]"
+            name="email"
+            label="EmailAddress"
+            type="text"
+            v-model="registerInput.email"
+            :rules="[requiredError]"
           ></v-text-field>
           <v-text-field
-              name="password"
-              label="Password"
-              type="password"
-              v-model="registerInput.password"
-              :rules="[requiredError]"
+            name="password"
+            label="Password"
+            type="password"
+            v-model="registerInput.password"
+            :rules="[requiredError]"
           ></v-text-field>
           <v-text-field
-              name="passwordRepeat"
-              label="PasswordRepeat"
-              v-model="registerInput.passwordRepeat"
-              type="password"
-              :rules="[requiredError]"
-              :error-messages="
+            name="passwordRepeat"
+            label="PasswordRepeat"
+            v-model="registerInput.passwordRepeat"
+            type="password"
+            :rules="[requiredError]"
+            :error-messages="
               passwordMatchError(
                 registerInput.password,
                 registerInput.passwordRepeat
@@ -87,19 +87,19 @@ export default {
     onSubmit() {
       if (this.$refs.form.validate()) {
         this.axios
-            .post("/api/register", this.registerInput)
-            .then(() => {
-              this.resultMessage = "AccountCreationSuccessful";
-              this.registerComplete = true;
-            })
-            .catch(err => {
-              this.errors = err.response.data;
-              this.isHaveError = true;
-            });
+          .post("/api/register", this.registerInput)
+          .then(() => {
+            this.resultMessage = "AccountCreationSuccessful";
+            this.registerComplete = true;
+          })
+          .catch(err => {
+            this.errors = err.response.data;
+            this.isHaveError = true;
+          });
       }
     },
     passwordMatchError(password, passwordRepeat) {
-      return password == passwordRepeat ? "" : "Несовпадение паролей";
+      return password === passwordRepeat ? "" : "Несовпадение паролей";
     },
     requiredError: v => !!v || "RequiredField"
   }

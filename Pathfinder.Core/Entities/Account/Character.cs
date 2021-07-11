@@ -22,7 +22,7 @@ namespace Pathfinder.Core.Entities.Account
 
         public void ChangeRace(int newRaceId)
         {
-            if (newRaceId == 0) throw new CoreException("A nonexistent race");
+            if (newRaceId <= 0) throw new CoreException("A nonexistent race");
             if (newRaceId != RaceId) RaceId = newRaceId;
         }
         

@@ -25,11 +25,8 @@ namespace Pathfinder.Web
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<PgDbContext>(options =>
-                options
-                    .UseNpgsql(Configuration["Data:WebDB:ConnectionString"])
-                    .UseLazyLoadingProxies());
 
+            services.ConfigureDbContext(Configuration);
             services.ConfigureAuthentication();
             services.ConfigureJwtTokenAuth(Configuration);
             services.ConfigureCors(Configuration);
