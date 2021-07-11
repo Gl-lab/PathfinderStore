@@ -5,11 +5,10 @@ using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Pathfinder.Application.DTO.Auth.Permissions;
-using Pathfinder.Core.Entities.Auth.Users;
 using Pathfinder.Application.Interfaces.Auth;
+using Pathfinder.Core.Entities.Auth.Users;
 
-
-namespace Pathfinder.Application.Services
+namespace Pathfinder.Application.Services.Auth
 {
     public class PermissionService : IPermissionService
     {

@@ -45,19 +45,6 @@ const Auth = {
     }
   },
   actions: {
-    login(context, user) {
-      axios.post(appConst.webApiUrl + "/api/login", user).then(
-        response => {
-          const token = response.data.token;
-          axios.defaults.headers.common["Authorization"] = "Bearer " + token;
-          context.commit("setToken", token);
-          context.dispath("loadAccount");
-        },
-        () => {
-          context.commit("removeToken");
-        }
-      );
-    },
     loadAccount(context) {
       if (context.getters.isAuthorized) {
         return axios.get(appConst.webApiUrl + "/api/Account").then(
