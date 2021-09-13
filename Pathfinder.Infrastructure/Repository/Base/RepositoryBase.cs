@@ -29,7 +29,17 @@ namespace Pathfinder.Infrastructure.Repository.Base
             }
         }
 
-        public async virtual Task<T> GetByIdAsync(TId id)
+        public void Add(T entity)
+        {
+            Entities.Add(entity);
+        }
+        
+        public void AddRange(IEnumerable<T> entities)
+        {
+            Entities.AddRange(entities);
+        }
+
+        public virtual async Task<T> GetByIdAsync(TId id)
         {
             return await Entities.FindAsync(id).ConfigureAwait(false);
         }

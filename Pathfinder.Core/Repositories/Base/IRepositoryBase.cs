@@ -21,6 +21,8 @@ namespace Pathfinder.Core.Repositories.Base
 
         Task<T> SaveAsync(T entity);
 
+        void Add(T entity);
+
         Task DeleteAsync(T entity);
 
         Task<IReadOnlyList<T>> GetAsync(Expression<Func<T, bool>> predicate);

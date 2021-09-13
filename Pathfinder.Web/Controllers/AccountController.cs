@@ -25,11 +25,11 @@ namespace Pathfinder.Web.Controllers
 {
     public class AccountController : BaseController
     {
-        private readonly UserManager<User> userManager;
-        private readonly JwtTokenConfiguration jwtTokenConfiguration;
-        private readonly IConfiguration configuration;
-        private readonly ILogger<AccountController> logger;
-        private readonly IAccountService accountService;
+        private readonly UserManager<User> _userManager;
+        private readonly JwtTokenConfiguration _jwtTokenConfiguration;
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<AccountController> _logger;
+        private readonly IAccountService _accountService;
 
         public AccountController(
             UserManager<User> userManager,
@@ -38,18 +38,18 @@ namespace Pathfinder.Web.Controllers
             ILogger<AccountController> logger, 
             IAccountService accountService)
         {
-            this.userManager = userManager;
-            this.configuration = configuration;
-            this.logger = logger;
-            this.jwtTokenConfiguration = jwtTokenConfiguration.Value;
-            this.accountService = accountService;
+            _userManager = userManager;
+            _configuration = configuration;
+            _logger = logger;
+            _jwtTokenConfiguration = jwtTokenConfiguration.Value;
+            _accountService = accountService;
         }
 
         [HttpGet]
         [Authorize(Policy = DefaultPermissions.PermissionNameForMemberAccess)]
         public async Task<ActionResult<AccountDto>> Get()
         {
-            var result = await accountService.GetCurrentAccountAsync().ConfigureAwait(false);
+            var result = await _accountService.GetCurrentAccountAsync().ConfigureAwait(false);
             return Ok(result);
         }
         
@@ -61,18 +61,18 @@ namespace Pathfinder.Web.Controllers
             {
                 return BadRequest(new List<NameValueDto>
                 {
-                    new NameValueDto("UserNameOrPasswordIncorrect", "The user name or password is incorrect!")
+                    new("UserNameOrPasswordIncorrect", "The user name or password is incorrect!")
                 });
             }
 
             var token = new JwtSecurityToken
             (
-                issuer: jwtTokenConfiguration.Issuer,
-                audience: jwtTokenConfiguration.Audience,
+                issuer: _jwtTokenConfiguration.Issuer,
+                audience: _jwtTokenConfiguration.Audience,
                 claims: userToVerify.Claims,
-                notBefore: jwtTokenConfiguration.StartDate,
-                expires: jwtTokenConfiguration.EndDate,
-                signingCredentials: jwtTokenConfiguration.SigningCredentials
+                notBefore: _jwtTokenConfiguration.StartDate,
+                expires: _jwtTokenConfiguration.EndDate,
+                signingCredentials: _jwtTokenConfiguration.SigningCredentials
             );
 
             return Ok(new LoginOutput { Token = new JwtSecurityTokenHandler().WriteToken(token) });
@@ -81,12 +81,12 @@ namespace Pathfinder.Web.Controllers
         [HttpPost("/api/[action]")]
         public async Task<ActionResult> Register([FromBody]RegisterInput input)
         {
-            var user = await userManager.FindByEmailAsync(input.Email).ConfigureAwait(false);
+            var user = await _userManager.FindByEmailAsync(input.Email).ConfigureAwait(false);
             if (user != null)
             {
                 return BadRequest(new List<NameValueDto>
                 {
-                    new NameValueDto("EmailAlreadyExist", "This email already exists!")
+                    new("EmailAlreadyExist", "This email already exists!")
                 });
             }
 
@@ -97,7 +97,7 @@ namespace Pathfinder.Web.Controllers
                 EmailConfirmed = true
             };
 
-            var result = await userManager.CreateAsync(applicationUser, input.Password).ConfigureAwait(false);
+            var result = await _userManager.CreateAsync(applicationUser, input.Password).ConfigureAwait(false);
 
             if (!result.Succeeded)
             {
@@ -115,12 +115,12 @@ namespace Pathfinder.Web.Controllers
             {
                 return BadRequest(new List<NameValueDto>
                 {
-                    new NameValueDto("PasswordsDoesNotMatch", "Passwords doesn't match!")
+                    new("PasswordsDoesNotMatch", "Passwords doesn't match!")
                 });
             }
 
-            var user = await userManager.FindByNameAsync(User.Identity.Name).ConfigureAwait(false);
-            var result = await userManager.ChangePasswordAsync(user, input.CurrentPassword, input.NewPassword).ConfigureAwait(false);
+            var user = await _userManager.FindByNameAsync(User.Identity.Name).ConfigureAwait(false);
+            var result = await _userManager.ChangePasswordAsync(user, input.CurrentPassword, input.NewPassword).ConfigureAwait(false);
             if (!result.Succeeded)
             {
                 return BadRequest(result.Errors.Select(e => new NameValueDto(e.Code, e.Description)).ToList());
@@ -137,14 +137,14 @@ namespace Pathfinder.Web.Controllers
             {
                 return NotFound(new List<NameValueDto>
                 {
-                    new NameValueDto("UserNotFound", "User is not found!")
+                    new("UserNotFound", "User is not found!")
                 });
             }
 
-            var resetToken = await userManager.GeneratePasswordResetTokenAsync(user).ConfigureAwait(false);
-            var callbackUrl = configuration["App:ClientUrl"] + "/account/reset-password?token=" + resetToken;
+            var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user).ConfigureAwait(false);
+            var callbackUrl = _configuration["App:ClientUrl"] + "/account/reset-password?token=" + resetToken;
             var message = new MailMessage(
-                from: configuration["Email:Smtp:Username"],
+                from: _configuration["Email:Smtp:Username"],
                 to: "alirizaadiyahsi@gmail.com",
                 subject: "Reset your password",
                 body: $"Please confirm your account by clicking this link: <a href='{callbackUrl}'>link</a>"
@@ -152,14 +152,6 @@ namespace Pathfinder.Web.Controllers
             {
                 IsBodyHtml = true
             };
-
-            logger.LogInformation(Environment.NewLine + Environment.NewLine +
-                                   "******************* Reset Password Link *******************" +
-                                   Environment.NewLine + Environment.NewLine +
-                                   callbackUrl +
-                                   Environment.NewLine + Environment.NewLine +
-                                   "***********************************************************" +
-                                   Environment.NewLine);
             return Ok(new ForgotPasswordOutput { ResetToken = resetToken });
         }
 
@@ -175,7 +167,7 @@ namespace Pathfinder.Web.Controllers
                 });
             }
 
-            var result = await userManager.ResetPasswordAsync(user, input.Token, input.Password).ConfigureAwait(false);
+            var result = await _userManager.ResetPasswordAsync(user, input.Token, input.Password).ConfigureAwait(false);
             if (!result.Succeeded)
             {
                 return BadRequest(result.Errors.Select(e => new NameValueDto(e.Code, e.Description)).ToList());
@@ -198,7 +190,7 @@ namespace Pathfinder.Web.Controllers
                 return null;
             }
 
-            if (await userManager.CheckPasswordAsync(userToVerify, password).ConfigureAwait(false))
+            if (await _userManager.CheckPasswordAsync(userToVerify, password).ConfigureAwait(false))
             {
                 return new ClaimsIdentity(new GenericIdentity(userNameOrEmail, "Token"), new[]
                 {
@@ -213,8 +205,8 @@ namespace Pathfinder.Web.Controllers
 
         private async Task<User> FindUserByUserNameOrEmail(string userNameOrEmail)
         {
-            return await userManager.FindByNameAsync(userNameOrEmail).ConfigureAwait(false) ??
-                   await userManager.FindByEmailAsync(userNameOrEmail).ConfigureAwait(false);
+            return await _userManager.FindByNameAsync(userNameOrEmail).ConfigureAwait(false) ??
+                   await _userManager.FindByEmailAsync(userNameOrEmail).ConfigureAwait(false);
         }
 
         [Authorize(Policy = DefaultPermissions.PermissionNameForMemberAccess)]
@@ -222,7 +214,7 @@ namespace Pathfinder.Web.Controllers
         [Route("[action]")]
         public async Task<ActionResult> CreateCharacter(CharacterDto newCharacter)
         {
-            await accountService.CreateCharacterAsync(newCharacter).ConfigureAwait(false);
+            await _accountService.CreateCharacterAsync(newCharacter).ConfigureAwait(false);
             return Ok();
         }
 
@@ -231,7 +223,7 @@ namespace Pathfinder.Web.Controllers
         [Route("[action]")]
         public async Task<ActionResult> DeleteCharacter(int deletedCharacterId)
         {
-            await accountService.DeleteCharacterAsync(deletedCharacterId).ConfigureAwait(false);
+            await _accountService.DeleteCharacterAsync(deletedCharacterId).ConfigureAwait(false);
             return Ok();
         }
         
@@ -241,7 +233,7 @@ namespace Pathfinder.Web.Controllers
         [Route("[action]")]
         public async Task<ActionResult> SetCurrentCharacter([FromForm]int characterId)
         {
-            await accountService.SetCurrentCharacterAsync(characterId).ConfigureAwait(false);
+            await _accountService.SetCurrentCharacterAsync(characterId).ConfigureAwait(false);
             return Ok();
         }
     }

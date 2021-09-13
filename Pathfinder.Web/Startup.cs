@@ -1,16 +1,17 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Pathfinder.Infrastructure.Data;
 using System;
+using MediatR;
 using VueCliMiddleware;
 using Pathfinder.Web.fromNucleus.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Hosting;
 using Pathfinder.Application;
+using Pathfinder.Infrastructure;
 
 namespace Pathfinder.Web
 {
@@ -33,6 +34,7 @@ namespace Pathfinder.Web
             services.ConfigureDependencyInjection();
 
             services.AddControllers();
+            
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Pathfinde API", Version = "v1" });
@@ -59,10 +61,9 @@ namespace Pathfinder.Web
             });
 
             services.AddSpaStaticFiles(configuration => configuration.RootPath = "ClientApp/dist");
-
-            services.AddApplicationServices();
+            
             services.AddInfrastructureServices();
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddApplicationServices();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)

@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Pathfinder.Application.Interfaces.Auth;
@@ -8,47 +9,44 @@ using Pathfinder.Application.DTO.Auth.Roles;
 using Pathfinder.Core.Entities.Auth.Permissions;
 using Pathfinder.Utils.Paging;
 using Pathfinder.Application.DTO.Auth;
+using Pathfinder.Application.UseCases.Authorization.Roles;
 using Pathfinder.Web.Controllers.Base;
 
 namespace Pathfinder.Web.Controllers
 {
     public class RolesController : AdminController
     {
-        private readonly IRoleService roleAppService;
+        private readonly IRoleService _roleAppService;
+        private readonly IMediator _mediator;
 
-        public RolesController(IRoleService roleAppService)
+        public RolesController(IRoleService roleAppService, IMediator mediator)
         {
-            this.roleAppService = roleAppService;
+            _roleAppService = roleAppService;
+            _mediator = mediator;
         }
 
         [HttpGet]
         [Authorize(Policy = DefaultPermissions.PermissionNameForRoleRead)]
-        public async Task<ActionResult<IPagedList<RoleListOutput>>> GetRoles([FromQuery]RoleListInput input)
+        public async Task<ActionResult<IPagedList<RoleListOutput>>> GetRoles([FromQuery]RequestRoleListCommand command)
         {
-            return Ok(await roleAppService
-                        .GetRolesAsync(input)
-                       .ConfigureAwait(false));
+            return Ok(await _mediator.Send(command));
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         [Authorize(Policy = DefaultPermissions.PermissionNameForRoleCreate)]
         [Authorize(Policy = DefaultPermissions.PermissionNameForRoleUpdate)]
         public async Task<ActionResult<GetRoleForCreateOrUpdateOutput>> GetRoles(int id)
         {
-            var getRoleForCreateOrUpdateOutput = await roleAppService
-                                                    .GetRoleForCreateOrUpdateAsync(id)
-                                                    .ConfigureAwait(false);
-
-            return Ok(getRoleForCreateOrUpdateOutput);
+            return Ok(await _mediator.Send(new RoleForCreateOrUpdateCommand(id)));
         }
 
         [HttpPost]
         [Authorize(Policy = DefaultPermissions.PermissionNameForRoleCreate)]
-        public async Task<ActionResult> PostRoles([FromBody]CreateOrUpdateRoleInput input)
+        public async Task<ActionResult> PostRoles([FromBody]CreateOrUpdateRoleCommand command)
         {
-            var identityResult = await roleAppService
-                                    .AddRoleAsync(input)
-                                    .ConfigureAwait(false);
+            
+            var identityResult = await _mediator.Send(command)
+                .ConfigureAwait(false);
 
             if (identityResult.Succeeded)
             {
@@ -60,10 +58,10 @@ namespace Pathfinder.Web.Controllers
 
         [HttpPut]
         [Authorize(Policy = DefaultPermissions.PermissionNameForRoleUpdate)]
-        public async Task<ActionResult> PutRoles([FromBody]CreateOrUpdateRoleInput input)
+        public async Task<ActionResult> PutRoles([FromBody]CreateOrUpdateRoleCommand command)
         {
-            var identityResult = await roleAppService
-                                    .EditRoleAsync(input)
+            var identityResult = await _roleAppService
+                                    .EditRoleAsync(command)
                                     .ConfigureAwait(false);
 
             if (identityResult.Succeeded)
@@ -78,7 +76,7 @@ namespace Pathfinder.Web.Controllers
         [Authorize(Policy = DefaultPermissions.PermissionNameForRoleDelete)]
         public async Task<ActionResult> DeleteRoles(int id)
         {
-            var identityResult = await roleAppService
+            var identityResult = await _roleAppService
                                     .RemoveRoleAsync(id)
                                     .ConfigureAwait(false);
 

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -9,33 +10,33 @@ namespace Pathfinder.Web.Authentication
 {
     public class PermissionHandler : AuthorizationHandler<PermissionRequirement>
     {
-        private readonly IPermissionService permissionApp;
-        private readonly IUserService userService;
-        private readonly UserManager<User> userManager;
+        private readonly IPermissionService _permissionApp;
+        private readonly IUserService _userService; 
+        private readonly UserManager<User> _userManager;
 
         public PermissionHandler(IPermissionService permissionApp, 
             IUserService userService, 
             UserManager<User> userManager)
         {
-            this.permissionApp = permissionApp;
-            this.userService = userService;
-            this.userManager = userManager;
+            _permissionApp = permissionApp;
+            _userService = userService;
+            _userManager = userManager;
         }
 
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, PermissionRequirement requirement)
         {
-            if (context.User?.Identity.IsAuthenticated != true)
+            if (context.User?.Identity != null && context.User?.Identity.IsAuthenticated != true)
             {
                 context.Fail();
                 return;
             }
             
-            var hasPermission = await permissionApp
+            var hasPermission = await _permissionApp
                                     .IsUserGrantedToPermissionAsync(context.User.Identity.Name, requirement.Permission.Name)
                                     .ConfigureAwait(false);
             if (hasPermission)
             {
-                await userService.SetCurrentUserByLogin(context.User.Identity.Name).ConfigureAwait(false);
+                await _userService.SetCurrentUserByLogin(context.User.Identity.Name).ConfigureAwait(false);
                 context.Succeed(requirement);
             }
         }

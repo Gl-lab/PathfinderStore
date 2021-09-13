@@ -13,11 +13,11 @@ namespace Pathfinder.Web.Controllers
     [ApiController]
     public class CategoriesController : ControllerBase
     {
-        private readonly ICategoryService categoryService;
+        private readonly ICategoryService _categoryService;
 
         public CategoriesController(ICategoryService categoryService)
         {
-            this.categoryService = categoryService;
+            this._categoryService = categoryService;
         }
 
         [Produces("application/json")]
@@ -25,7 +25,7 @@ namespace Pathfinder.Web.Controllers
         [ProducesResponseType(typeof(IEnumerable<CategoryDto>), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<IEnumerable<CategoryDto>>> Categories()
         {
-            var categories = await categoryService.GetCategoryList().ConfigureAwait(false);
+            var categories = await _categoryService.GetCategoryList().ConfigureAwait(false);
             return Ok(categories);
         }
 
@@ -34,7 +34,7 @@ namespace Pathfinder.Web.Controllers
         [ProducesResponseType(typeof(CategoryDto), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<CategoryDto>> GetCategoryById(byte categoryType)
         {
-            var product = await categoryService.Get((CategoryType)categoryType).ConfigureAwait(false);
+            var product = await _categoryService.Get((CategoryType)categoryType).ConfigureAwait(false);
             return Ok(product);
         }
     }

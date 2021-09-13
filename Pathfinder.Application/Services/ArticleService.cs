@@ -12,32 +12,30 @@ namespace Pathfinder.Application.Services
 {
     public class ArticleService : IArticleService
     {
-        private readonly IArticleRepository productRepository;
-        //private readonly IAppLogger<ArticleService> logger;
-        private readonly IMapper mapper;
+        private readonly IArticleRepository _productRepository;
+        private readonly IMapper _mapper;
 
-        public ArticleService(IArticleRepository productRepository,/* IAppLogger<ArticleService> logger,*/ IMapper mapper)
+        public ArticleService(IArticleRepository productRepository, IMapper mapper)
         {
-            this.productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
-          //  this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         public async Task<IEnumerable<ArticleDto>> GetArticleList()
         {
-            var productList = await productRepository
+            var productList = await _productRepository
                 .ListAllAsync()
                 .ConfigureAwait(false);
 
-            var productModels = mapper.Map<IEnumerable<ArticleDto>>(productList);
+            var productModels = _mapper.Map<IEnumerable<ArticleDto>>(productList);
 
             return productModels;
         }
 
         public async Task<IPagedList<ArticleDto>> SearchArticles(PageSearchArgs args)
         {
-            var productPagedList = await productRepository.SearchAsync(args).ConfigureAwait(false);
-            var productModels = mapper.Map<List<ArticleDto>>(productPagedList.Items);
+            var productPagedList = await _productRepository.SearchAsync(args).ConfigureAwait(false);
+            var productModels = _mapper.Map<List<ArticleDto>>(productPagedList.Items);
 
             return new PagedList<ArticleDto>(
                 productPagedList.PageIndex,
@@ -49,49 +47,75 @@ namespace Pathfinder.Application.Services
 
         public async Task<ArticleDto> GetArticleById(int productId)
         {
-            var product = await productRepository.GetByIdAsync(productId).ConfigureAwait(false);
+            var product = await _productRepository.GetByIdAsync(productId).ConfigureAwait(false);
 
-            var productModel = mapper.Map<ArticleDto>(product);
+            var productModel = _mapper.Map<ArticleDto>(product);
 
             return productModel;
         }
 
         public async Task<IEnumerable<ArticleDto>> GetArticlesByName(string name)
         {
-            var productList = await productRepository.GetListByNameAsync(name).ConfigureAwait(false);
-            var productModels = mapper.Map<IEnumerable<ArticleDto>>(productList);
+            var productList = await _productRepository.SearchByNameAsync(name).ConfigureAwait(false);
+            var productModels = _mapper.Map<IEnumerable<ArticleDto>>(productList);
             return productModels;
         }
 
         public async Task<IEnumerable<ArticleDto>> GetArticlesByCategoryId(CategoryType categoryType)
         {
-            var productList = await productRepository
+            var productList = await _productRepository
                 .GetListByCategoryAsync(categoryType)
                 .ConfigureAwait(false);
 
-            return mapper.Map<IEnumerable<ArticleDto>>(productList);
+            return _mapper.Map<IEnumerable<ArticleDto>>(productList);
         }
-
-        public async Task<ArticleDto> CreateArticle(ArticleDto product)
+        
+        public async Task<ArticleDto> CreateArticle(string name, string description, decimal? price, decimal? weight, byte categoryType)
         {
-            var existingArticle = await productRepository.GetByIdAsync(product.Id).ConfigureAwait(false);
+            var existingArticle = await _productRepository.GetByName(name).ConfigureAwait(false);
             if (existingArticle != null)
             {
                 throw new ApplicationException("Article with this id already exists");
             }
 
-            var newArticle = mapper.Map<Article>(product);
-            newArticle = await productRepository.SaveAsync(newArticle).ConfigureAwait(false);
+            if (!Enum.IsDefined(typeof(CategoryType), categoryType))
+            {
+                throw new ApplicationException("categoryType is undefined");
+            }
 
-           // logger.LogInformation("Entity successfully added - AspnetRunAppService");
+            var newArticle = new Article
+            {
+                Name = name,
+                Description = description,
+                Price = price,
+                Weight = weight,
+                CategoryType = (CategoryType) categoryType
+            };
 
-            var newArticleModel = mapper.Map<ArticleDto>(newArticle);
+            _productRepository.Add(newArticle);
+
+            var newArticleModel = _mapper.Map<ArticleDto>(newArticle);
+            return newArticleModel;
+        }
+        
+        public async Task<ArticleDto> CreateArticle(ArticleDto product)
+        {
+            var existingArticle = await _productRepository.GetByIdAsync(product.Id).ConfigureAwait(false);
+            if (existingArticle != null)
+            {
+                throw new ApplicationException("Article with this id already exists");
+            }
+
+            var newArticle = _mapper.Map<Article>(product);
+            newArticle = await _productRepository.SaveAsync(newArticle).ConfigureAwait(false);
+
+            var newArticleModel = _mapper.Map<ArticleDto>(newArticle);
             return newArticleModel;
         }
 
         public async Task UpdateArticle(ArticleDto product)
         {
-            var existingArticle = await productRepository.GetByIdAsync(product.Id).ConfigureAwait(false);
+            var existingArticle = await _productRepository.GetByIdAsync(product.Id).ConfigureAwait(false);
             if (existingArticle == null)
             {
                 throw new ApplicationException("Article with this id is not exists");
@@ -102,22 +126,18 @@ namespace Pathfinder.Application.Services
             existingArticle.Price = product.Price;
             existingArticle.CategoryType = (CategoryType)product.CategoryType;
 
-            await productRepository.SaveAsync(existingArticle).ConfigureAwait(false);
-
-            //logger.LogInformation("Entity successfully updated - AspnetRunAppService");
+            _productRepository.Add(existingArticle);
         }
 
         public async Task DeleteArticleById(int productId)
         {
-            var existingArticle = await productRepository.GetByIdAsync(productId).ConfigureAwait(false);
+            var existingArticle = await _productRepository.GetByIdAsync(productId).ConfigureAwait(false);
             if (existingArticle == null)
             {
                 throw new ApplicationException("Article with this id is not exists");
             }
 
-            await productRepository.DeleteAsync(existingArticle).ConfigureAwait(false);
-
-            //logger.LogInformation("Entity successfully deleted - AspnetRunAppService");
+            await _productRepository.DeleteAsync(existingArticle).ConfigureAwait(false);
         }
     }
 }

@@ -17,38 +17,38 @@ namespace Pathfinder.Application.Services.Auth
 {
     public class UserService : IUserService
     {
-        private readonly UserManager<User> userManager;
-        private readonly IMapper mapper;
-        private readonly IRoleRepository roleRepository;
-        private readonly IUserRoleRepository userRoleRepository;
-        private User currentUser;
+        private readonly UserManager<User> _userManager;
+        private readonly IMapper _mapper;
+        private readonly IRoleRepository _roleRepository;
+        private readonly IUserRoleRepository _userRoleRepository;
+        private User _currentUser;
 
         public UserService(IMapper mapper,
             UserManager<User> userManager,
             IRoleRepository roleRepository,
             IUserRoleRepository userRoleRepository)
         {
-            this.mapper = mapper;
-            this.userManager = userManager;
-            this.roleRepository = roleRepository;
-            this.userRoleRepository = userRoleRepository;
+            _mapper = mapper;
+            _userManager = userManager;
+            _roleRepository = roleRepository;
+            _userRoleRepository = userRoleRepository;
         }
 
         public async Task<IPagedList<UserListOutput>> GetUsersAsync(UserListInput input)
         {
-            var query = userManager.Users.Where(
+            var query = _userManager.Users.Where(
                     predicate => predicate.UserName.Contains(input.FilteringOptions[0].Value as string) ||
                                  predicate.Email.Contains(input.FilteringOptions[0].Value as string))
                 .OrderBy(input.SortingOptions?.Count > 0 ? "UserName" : input.SortingOptions[0].Field);
             var usersCount = await query.CountAsync().ConfigureAwait(false);
-            IEnumerable<UserListOutput> userListOutput = mapper.Map<List<UserListOutput>>(query.ToArrayAsync().ConfigureAwait(false));
+            IEnumerable<UserListOutput> userListOutput = _mapper.Map<List<UserListOutput>>(query.ToArrayAsync().ConfigureAwait(false));
             var pageCount = usersCount/input.PageSize;
             return new PagedList<UserListOutput>(input.PageIndex, input.PageSize, usersCount, pageCount, userListOutput);
         }
 
         public async Task<GetUserForCreateOrUpdateOutput> GetUserForCreateOrUpdateAsync(int id)
         {
-            var allRoles = mapper.Map<List<RoleDto>>(await roleRepository.GetListAsync().ConfigureAwait(false));
+            var allRoles = _mapper.Map<List<RoleDto>>(await _roleRepository.GetListAsync().ConfigureAwait(false));
             var getUserForCreateOrUpdateOutput = new GetUserForCreateOrUpdateOutput
             {
                 AllRoles = allRoles
@@ -71,7 +71,7 @@ namespace Pathfinder.Application.Services.Auth
                 Email = input.User.Email
             };
 
-            var createUserResult = await userManager.CreateAsync(user, input.User.Password).ConfigureAwait(false);
+            var createUserResult = await _userManager.CreateAsync(user, input.User.Password).ConfigureAwait(false);
             if (createUserResult.Succeeded)
             {
                 await GrantRolesToUserAsync(input.GrantedRoleIds, user).ConfigureAwait(false);
@@ -82,7 +82,7 @@ namespace Pathfinder.Application.Services.Auth
 
         public async Task<IdentityResult> EditUserAsync(CreateOrUpdateUserInput input)
         {
-            var user = await userManager.FindByIdAsync(input.User.Id.ToString()).ConfigureAwait(false);
+            var user = await _userManager.FindByIdAsync(input.User.Id.ToString()).ConfigureAwait(false);
             if (user.UserName == input.User.UserName && user.Id != input.User.Id)
             {
                 return IdentityResult.Failed(new IdentityError
@@ -105,7 +105,7 @@ namespace Pathfinder.Application.Services.Auth
 
         public async Task<IdentityResult> RemoveUserAsync(int id)
         {
-            var user = await userManager
+            var user = await _userManager
                 .Users.FirstOrDefaultAsync(u => u.Id == id)
                 .ConfigureAwait(false);
             if (user == null)
@@ -126,7 +126,7 @@ namespace Pathfinder.Application.Services.Auth
                 });
             }
 
-            var removeUserResult = await userManager.DeleteAsync(user).ConfigureAwait(false);
+            var removeUserResult = await _userManager.DeleteAsync(user).ConfigureAwait(false);
             if (!removeUserResult.Succeeded)
             {
                 return removeUserResult;
@@ -139,16 +139,16 @@ namespace Pathfinder.Application.Services.Auth
 
         public void SetCurrentUser(User user)
         {
-            currentUser = user;
+            _currentUser = user;
         }
         public async Task SetCurrentUserByLogin(string login)
         {
-            currentUser = await userManager.FindByNameAsync(login).ConfigureAwait(false);
+            _currentUser = await _userManager.FindByNameAsync(login).ConfigureAwait(false);
         }
 
         public User GetCurrentUser()
         {
-            return currentUser;
+            return _currentUser;
         }
 
         private async Task GrantRolesToUserAsync(IEnumerable<int> grantedRoleIds, User user)
@@ -156,15 +156,15 @@ namespace Pathfinder.Application.Services.Auth
             var userRoles = grantedRoleIds
                 .Select(roleId => new UserRole {RoleId = roleId, UserId = user.Id})
                 .ToList();
-            await userRoleRepository.AddRangeAsync(userRoles).ConfigureAwait(false);
+            await _userRoleRepository.AddRangeAsync(userRoles).ConfigureAwait(false);
         }
 
         private async Task<IdentityResult> ChangePassword(User user, string password)
         {
-            var changePasswordResult = await userManager.RemovePasswordAsync(user).ConfigureAwait(false);
+            var changePasswordResult = await _userManager.RemovePasswordAsync(user).ConfigureAwait(false);
             if (changePasswordResult.Succeeded)
             {
-                changePasswordResult = await userManager.AddPasswordAsync(user, password).ConfigureAwait(false);
+                changePasswordResult = await _userManager.AddPasswordAsync(user, password).ConfigureAwait(false);
             }
 
             return changePasswordResult;
@@ -177,7 +177,7 @@ namespace Pathfinder.Application.Services.Auth
             user.UserRoles.Clear();
             user.SecurityStamp = Guid.NewGuid().ToString();
 
-            var updateUserResult = await userManager.UpdateAsync(user).ConfigureAwait(false);
+            var updateUserResult = await _userManager.UpdateAsync(user).ConfigureAwait(false);
             if (updateUserResult.Succeeded)
             {
                 await GrantRolesToUserAsync(input.GrantedRoleIds, user).ConfigureAwait(false);
@@ -188,8 +188,8 @@ namespace Pathfinder.Application.Services.Auth
 
         private async Task<GetUserForCreateOrUpdateOutput> GetUserForCreateOrUpdateOutputAsync(int id, List<RoleDto> allRoles)
         {
-            var user = await userManager.FindByIdAsync(id.ToString()).ConfigureAwait(false);
-            var userDto = mapper.Map<UserDto>(user);
+            var user = await _userManager.FindByIdAsync(id.ToString()).ConfigureAwait(false);
+            var userDto = _mapper.Map<UserDto>(user);
             var grantedRoles = user.UserRoles.Select(ur => ur.Role);
 
             return new GetUserForCreateOrUpdateOutput

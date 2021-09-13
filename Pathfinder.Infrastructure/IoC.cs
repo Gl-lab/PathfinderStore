@@ -2,12 +2,14 @@
 using Pathfinder.Core.Repositories;
 using Pathfinder.Core.Repositories.Auth;
 using Pathfinder.Core.Repositories.Base;
+using Pathfinder.Core.UnitOfWork;
+using Pathfinder.Infrastructure.Data;
 using Pathfinder.Infrastructure.Repository;
 using Pathfinder.Infrastructure.Repository.Auth;
 using Pathfinder.Infrastructure.Repository.Base;
 
 
-namespace Pathfinder.Application
+namespace Pathfinder.Infrastructure
 {
     public static class DependencyInjection
     {
@@ -24,11 +26,11 @@ namespace Pathfinder.Application
             services.AddScoped<IAccountRepository, AccountRepository>();
             services.AddScoped<IPermissionsRepository, PermissionsRepository>();
             services.AddScoped<IRolePermissionsRepository, RolePermissionsRepository>();
-            services.AddTransient<IRacesRepository, RacesRepository>();
+            services.AddScoped<IRacesRepository, RacesRepository>();
 
-            services.AddTransient<IWeaponItemPropertyRepository, WeaponItemPropertyRepository>();
-            services.AddTransient<IWeaponRepository, WeaponRepository>();
+            services.AddScoped<IWeaponItemPropertyRepository, WeaponItemPropertyRepository>();
+            services.AddScoped<IWeaponRepository, WeaponRepository>();
+            services.AddScoped<IUnitOfWork>( sp => sp.GetService<PgDbContext>() );
         }
     }
-
 }

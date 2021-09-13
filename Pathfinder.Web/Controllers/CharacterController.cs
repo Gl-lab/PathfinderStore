@@ -11,11 +11,11 @@ namespace Pathfinder.Web.Controllers
 {
     public class CharacterController: AuthorizedController
     {
-        private readonly ICharacterService characterService;
+        private readonly ICharacterService _characterService;
 
         public CharacterController(ICharacterService characterService)
         {
-            this.characterService = characterService;
+            this._characterService = characterService;
         }
         
         [HttpGet]
@@ -23,7 +23,7 @@ namespace Pathfinder.Web.Controllers
         {
             try
             {
-                return Ok(await characterService.GetCharacterAsync().ConfigureAwait(false));
+                return Ok(await _characterService.GetCharacterAsync().ConfigureAwait(false));
             }
             catch (Exception e)
             {
@@ -44,28 +44,21 @@ namespace Pathfinder.Web.Controllers
         {
             try
             {
-                return Ok(await characterService.GetWeapons());
+                return Ok(await _characterService.GetWeapons());
             }
             catch (Exception e)
             {
                 return BadRequest(e.Message);
             }
         }
-        
-        /*[HttpPut]
-        [Route("items/use")]
-        public async Task<ActionResult> ItemUse()
-        {
-            return Ok();
-        }*/
-        
+
         [HttpDelete]
         [Route("items/drop")]
         public async Task<ActionResult> ItemDrop()
         {
             try
             {
-                return Ok(await characterService.GetWeapons());
+                return Ok(await _characterService.GetWeapons());
             }
             catch (Exception e)
             {
@@ -79,7 +72,7 @@ namespace Pathfinder.Web.Controllers
         {
             try
             {
-                return Ok(await characterService.IncreaseBalance(value));
+                return Ok(await _characterService.IncreaseBalance(value));
             }
             catch (Exception e)
             {
@@ -93,7 +86,7 @@ namespace Pathfinder.Web.Controllers
         {
             try
             {
-                return Ok(await characterService.DecreaseBalance(value));
+                return Ok(await _characterService.DecreaseBalance(value));
             }
             catch (Exception e)
             {

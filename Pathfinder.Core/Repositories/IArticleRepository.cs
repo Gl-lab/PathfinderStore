@@ -10,8 +10,10 @@ namespace Pathfinder.Core.Repositories
     {
         Task<IEnumerable<Article>> GetListAsync();
         Task<IPagedList<Article>> SearchAsync(PageSearchArgs args);
-        Task<IEnumerable<Article>> GetListByNameAsync(string productName);
+        Task<IEnumerable<Article>> SearchByNameAsync(string productName);
         Task<Article> GetByIdWithCategoryAsync(int productId);
         Task<IEnumerable<Article>> GetListByCategoryAsync(CategoryType categoryType);
+
+        Task<Article> GetByName(string name);
     }
 }

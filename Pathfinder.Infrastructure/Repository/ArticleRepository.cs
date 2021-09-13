@@ -93,11 +93,16 @@ namespace Pathfinder.Infrastructure.Repository
             return Task.FromResult<IPagedList<Article>>(productPagedList);
         }
 
-        public async Task<IEnumerable<Article>> GetListByNameAsync(string productName)
+        public async Task<IEnumerable<Article>> SearchByNameAsync(string productName)
         {
             return await TableNoTracking.Where(p => p.Name.Contains(productName, StringComparison.OrdinalIgnoreCase))
                                         .Include(p => p.Category)
                                         .ToListAsync().ConfigureAwait(false);
+        }
+
+        public async Task<Article> GetByName(string name)
+        {
+            return await Table.FirstOrDefaultAsync(p => p.Name == name);
         }
 
         public async Task<Article> GetByIdWithCategoryAsync(int productId)

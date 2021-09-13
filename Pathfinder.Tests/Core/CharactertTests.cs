@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Pathfinder.Core.Entities.Account;
 using Pathfinder.Core.Exceptions;
 using Xunit;

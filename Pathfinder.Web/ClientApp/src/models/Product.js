@@ -3,7 +3,7 @@ class Product {
     this.id = 0;
     this.name = "";
     this.description = "";
-    this.categoryId = 0;
+    this.categoryType = 0;
     this.price = 0;
     this.category = null;
     this.copyModel = target => {

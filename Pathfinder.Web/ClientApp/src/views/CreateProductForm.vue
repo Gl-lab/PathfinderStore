@@ -52,7 +52,7 @@ export default {
   },
   methods: {
     selectCategory(category) {
-      this.product.categoryId = category.id;
+      this.product.categoryType = category.categoryType;
     },
     createProduct() {
       if (
@@ -65,8 +65,8 @@ export default {
         try {
           this.axios
             .post("/api/Products/CreateProduct", this.product)
-            .then(response => (this.resultCode = response.status))
-            .then(() => {
+            .catch(response => (this.resultCode = response.status))
+            .finally(() => {
               if (this.resultCode !== 200) {
                 this.errorText = "Неудачно";
               } else {
