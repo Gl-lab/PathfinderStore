@@ -31,11 +31,11 @@ namespace Pathfinder.Infrastructure.Behaviors
                 {
                     _logger.LogInformation($"Begin transaction {typeof(TRequest).Name}");
 
-                    await _dbContext.BeginTransactionAsync().ConfigureAwait(false);
+                    await _dbContext.BeginTransaction().ConfigureAwait(false);
 
                     response = await next().ConfigureAwait(false);
 
-                    await _dbContext.CommitTransactionAsync().ConfigureAwait(false);
+                    await _dbContext.CommitAsync().ConfigureAwait(false);
 
                     _logger.LogInformation($"Committed transaction {typeof(TRequest).Name}");
                 }).ConfigureAwait(false);
@@ -46,7 +46,7 @@ namespace Pathfinder.Infrastructure.Behaviors
             {
                 _logger.LogInformation($"Rollback transaction executed {typeof(TRequest).Name}");
 
-                _dbContext.RollbackTransaction();
+                await _dbContext.RollbackAsync();
                 throw;
             }
         }

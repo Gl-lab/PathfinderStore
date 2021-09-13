@@ -8,17 +8,17 @@ namespace Pathfinder.Web.Controllers
 {
     public class GameAccountController: AuthorizedController
     {
-        private readonly IAccountService accountService;
+        private readonly IAccountService _accountService;
  
         public GameAccountController(IAccountService accountService)
         {
-            this.accountService = accountService;
+            this._accountService = accountService;
         }
 
         [HttpGet]
         public async Task<ActionResult<AccountDto>> Get()
         {
-            var result = await accountService.GetCurrentAccountAsync().ConfigureAwait(false);
+            var result = await _accountService.GetCurrentAccountAsync().ConfigureAwait(false);
             return Ok(result);
         }
     }

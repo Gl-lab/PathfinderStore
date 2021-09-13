@@ -3,7 +3,7 @@ using Pathfinder.Core.Entities.Auth.Permissions;
 
 namespace Pathfinder.Web.Controllers.Base
 {
-    [Authorize(Policy = DefaultPermissions.PermissionNameForAdministration)]
+    [Authorize(Policy = DefaultPermissions.PermissionNameForMemberAccess)]
     public class AdminController : BaseController
     {
     }

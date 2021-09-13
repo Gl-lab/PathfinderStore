@@ -71,8 +71,8 @@ namespace Pathfinder.Web.fromNucleus.Extensions
 
         public static void ConfigureDependencyInjection(this IServiceCollection services)
         {
-            services.AddScoped<IAuthorizationHandler, PermissionHandler>();
-            services.AddScoped<UnitOfWorkActionFilter>();
+            services.AddTransient<IAuthorizationHandler, PermissionHandler>();
+            services.AddTransient<UnitOfWorkActionFilter>();
         }
 
         public static void ConfigureJwtTokenAuth(this IServiceCollection services, IConfiguration configuration)

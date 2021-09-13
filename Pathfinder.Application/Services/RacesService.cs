@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Pathfinder.Application.DTO;
 using Pathfinder.Application.Interfaces;
-using Pathfinder.Core.Entities.Account;
 using Pathfinder.Core.Repositories;
 
 namespace Pathfinder.Application.Services

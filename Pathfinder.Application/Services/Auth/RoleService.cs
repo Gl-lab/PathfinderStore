@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Pathfinder.Application.DTO.Auth.Permissions;
 using Pathfinder.Application.DTO.Auth.Roles;
 using Pathfinder.Application.Interfaces.Auth;
+using Pathfinder.Application.UseCases.Authorization.Roles;
 using Pathfinder.Core.Entities.Auth.Roles;
 using Pathfinder.Core.Repositories.Auth;
 using Pathfinder.Utils.Paging;
@@ -16,40 +17,40 @@ namespace  Pathfinder.Application.Services.Auth
 {
     public class RoleService : IRoleService
     {
-        private readonly IPermissionsRepository permissionsRepository;
-        private readonly IRolePermissionsRepository rolePermissionsRepository;
-        private readonly RoleManager<Role> roleManager;
-        private readonly IMapper mapper;
+        private readonly IPermissionsRepository _permissionsRepository;
+        private readonly IRolePermissionsRepository _rolePermissionsRepository;
+        private readonly RoleManager<Role> _roleManager;
+        private readonly IMapper _mapper;
 
         public RoleService(IPermissionsRepository permissionsRepository, 
             IRolePermissionsRepository rolePermissionsRepository, 
             RoleManager<Role> roleManager, 
             IMapper mapper)
         {
-            this.rolePermissionsRepository = rolePermissionsRepository;
-            this.permissionsRepository = permissionsRepository;
-            this.roleManager = roleManager;
-            this.mapper = mapper;
+            _rolePermissionsRepository = rolePermissionsRepository;
+            _permissionsRepository = permissionsRepository;
+            _roleManager = roleManager;
+            _mapper = mapper;
         }
 
-        public async Task<IPagedList<RoleListOutput>> GetRolesAsync(RoleListInput input)
+        public async Task<IPagedList<RoleListOutput>> GetRolesAsync(RequestRoleListCommand command)
         {
-            var a = input.FilteringOptions?.Count > 0;
-            var query = roleManager.Roles.Where(
+            var a = command.FilteringOptions?.Count > 0;
+            var query = _roleManager.Roles.Where(
 
-                    predicate => predicate.Name.Contains(input.FilteringOptions[0].Value as string))
-                .OrderBy(string.IsNullOrEmpty(input.SortingOptions?.First().Field) ? "Name" : input.SortingOptions?.First().Field);
+                    predicate => predicate.Name.Contains(command.FilteringOptions[0].Value as string))
+                .OrderBy(string.IsNullOrEmpty(command.SortingOptions?.First().Field) ? "Name" : command.SortingOptions?.First().Field);
 
             var rolesCount = await query.CountAsync().ConfigureAwait(false);
-            IEnumerable<RoleListOutput> roleListOutput = mapper.Map<List<RoleListOutput>>(await query.ToArrayAsync().ConfigureAwait(false));
-            var pageCount = rolesCount/input.PageSize;
-            return new PagedList<RoleListOutput>(input.PageIndex, input.PageSize, rolesCount, pageCount, roleListOutput);
+            IEnumerable<RoleListOutput> roleListOutput = _mapper.Map<List<RoleListOutput>>(await query.ToArrayAsync().ConfigureAwait(false));
+            var pageCount = rolesCount/command.PageSize;
+            return new PagedList<RoleListOutput>(command.PageIndex, command.PageSize, rolesCount, pageCount, roleListOutput);
         }
 
         public async Task<GetRoleForCreateOrUpdateOutput> GetRoleForCreateOrUpdateAsync(int id)
         {
-            var allPermissions = mapper
-                .Map<List<PermissionDto>>(await permissionsRepository.GetListAsync().ConfigureAwait(false))
+            var allPermissions = _mapper
+                .Map<List<PermissionDto>>(await _permissionsRepository.GetListAsync().ConfigureAwait(false))
                 .OrderBy(p => p.DisplayName)
                 .ToList();
             var getRoleForCreateOrUpdateOutput = new GetRoleForCreateOrUpdateOutput
@@ -65,27 +66,27 @@ namespace  Pathfinder.Application.Services.Auth
             return await GetRoleForCreateOrUpdateOutputAsync(id, allPermissions).ConfigureAwait(false);
         }
 
-        public async Task<IdentityResult> AddRoleAsync(CreateOrUpdateRoleInput input)
+        public async Task<IdentityResult> AddRoleAsync(CreateOrUpdateRoleCommand command)
         {
             var role = new Role
             {
-                Id = input.Role.Id,
-                Name = input.Role.Name
+                Id = command.Role.Id,
+                Name = command.Role.Name
             };
 
-            var createRoleResult = await roleManager.CreateAsync(role).ConfigureAwait(false);
+            var createRoleResult = await _roleManager.CreateAsync(role).ConfigureAwait(false);
             if (createRoleResult.Succeeded)
             {
-                GrantPermissionsToRole(input.GrantedPermissionIds, role);
+                GrantPermissionsToRole(command.GrantedPermissionIds, role);
             }
 
             return createRoleResult;
         }
 
-        public async Task<IdentityResult> EditRoleAsync(CreateOrUpdateRoleInput input)
+        public async Task<IdentityResult> EditRoleAsync(CreateOrUpdateRoleCommand command)
         {
-            var role = await roleManager.FindByIdAsync(input.Role.Id.ToString()).ConfigureAwait(false);
-            if (role.Name == input.Role.Name && role.Id != input.Role.Id)
+            var role = await _roleManager.FindByIdAsync(command.Role.Id.ToString()).ConfigureAwait(false);
+            if (role.Name == command.Role.Name && role.Id != command.Role.Id)
             {
                 return IdentityResult.Failed(new IdentityError
                 {
@@ -93,13 +94,13 @@ namespace  Pathfinder.Application.Services.Auth
                     Description = "This role name is already exists!"
                 });
             }
-            role.Name = input.Role.Name;
+            role.Name = command.Role.Name;
             role.RolePermissions.Clear();
 
-            var updateRoleResult = await roleManager.UpdateAsync(role).ConfigureAwait(false);
+            var updateRoleResult = await _roleManager.UpdateAsync(role).ConfigureAwait(false);
             if (updateRoleResult.Succeeded)
             {
-                GrantPermissionsToRole(input.GrantedPermissionIds, role);
+                GrantPermissionsToRole(command.GrantedPermissionIds, role);
             }
 
             return updateRoleResult;
@@ -107,7 +108,7 @@ namespace  Pathfinder.Application.Services.Auth
 
         public async Task<IdentityResult> RemoveRoleAsync(int id)
         {
-            var role = await roleManager.Roles.FirstOrDefaultAsync(r => r.Id == id).ConfigureAwait(false);
+            var role = await _roleManager.Roles.FirstOrDefaultAsync(r => r.Id == id).ConfigureAwait(false);
             if (role == null)
             {
                 return IdentityResult.Failed(new IdentityError()
@@ -126,7 +127,7 @@ namespace  Pathfinder.Application.Services.Auth
                 });
             }
 
-            var removeRoleResult = await roleManager.DeleteAsync(role).ConfigureAwait(false);
+            var removeRoleResult = await _roleManager.DeleteAsync(role).ConfigureAwait(false);
             if (!removeRoleResult.Succeeded)
             {
                 return removeRoleResult;
@@ -140,7 +141,7 @@ namespace  Pathfinder.Application.Services.Auth
 
         private void GrantPermissionsToRole(IEnumerable<int> grantedPermissionIds, Role role)
         {
-            rolePermissionsRepository
+            _rolePermissionsRepository
                 .AddRangeAsync(grantedPermissionIds.Select(permissionId =>
                 new RolePermission
                 {
@@ -151,8 +152,8 @@ namespace  Pathfinder.Application.Services.Auth
 
         private async Task<GetRoleForCreateOrUpdateOutput> GetRoleForCreateOrUpdateOutputAsync(int id, List<PermissionDto> allPermissions)
         {
-            var role = await roleManager.FindByIdAsync(id.ToString()).ConfigureAwait(false);
-            var roleDto = mapper.Map<RoleDto>(role);
+            var role = await _roleManager.FindByIdAsync(id.ToString()).ConfigureAwait(false);
+            var roleDto = _mapper.Map<RoleDto>(role);
             var grantedPermissions = role.RolePermissions.Select(rp => rp.Permission);
 
             return new GetRoleForCreateOrUpdateOutput

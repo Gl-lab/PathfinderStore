@@ -1,12 +1,8 @@
 ﻿using Pathfinder.Core.Entities.Product;
-using Pathfinder.Core.Entities.Base;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Pathfinder.Core.Entities.Auth.Users;
 using Pathfinder.Core.Entities.Auth.Roles;
@@ -14,12 +10,16 @@ using Pathfinder.Core.Entities.Auth.Permissions;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Pathfinder.Core.Entities.Account;
 using Pathfinder.Core.Entities.Shop;
+using Pathfinder.Core.UnitOfWork;
 
 namespace Pathfinder.Infrastructure.Data
 {
-    public class PgDbContext: IdentityDbContext<User, Role, int, UserClaim, UserRole, UserLogin, RoleClaim, UserToken>
+    public class PgDbContext: IdentityDbContext<User, Role, int, UserClaim, UserRole, UserLogin, RoleClaim, UserToken>, IUnitOfWork
     {
-        public PgDbContext(DbContextOptions<PgDbContext> options) : base(options) { }
+        public PgDbContext(DbContextOptions<PgDbContext> options) : base(options)
+        {
+            
+        }
         public DbSet<Article> ArticleList { get; set; }
         public DbSet<Category> CategoryList { get; set; }
         public DbSet<DamageType> DamageTypeList { get; set; }
@@ -45,21 +45,24 @@ namespace Pathfinder.Infrastructure.Data
         private IDbContextTransaction _currentTransaction;
         public IDbContextTransaction GetCurrentTransaction => _currentTransaction;
 
-        public async Task BeginTransactionAsync()
+        public async Task BeginTransaction()
         {
             _currentTransaction ??= await Database.BeginTransactionAsync().ConfigureAwait(false);
         }
 
-        public async Task CommitTransactionAsync()
+        public async Task CommitAsync()
         {
             try
             {
                 await SaveChangesAsync().ConfigureAwait(false);
-                await _currentTransaction?.CommitAsync();
+                if (_currentTransaction != null)
+                {
+                    await _currentTransaction.CommitAsync();
+                }
             }
             catch
             {
-                RollbackTransaction();
+                await RollbackAsync();
                 throw;
             }
             finally
@@ -72,11 +75,14 @@ namespace Pathfinder.Infrastructure.Data
             }
         }
 
-        public void RollbackTransaction()
+        public async Task RollbackAsync()
         {
             try
             {
-                _currentTransaction?.Rollback();
+                if (_currentTransaction != null)
+                {
+                    await _currentTransaction.RollbackAsync();    
+                }
             }
             finally
             {
@@ -91,6 +97,11 @@ namespace Pathfinder.Infrastructure.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Article>()
+                .HasOne(p => p.Category)
+                .WithMany()
+                .HasForeignKey(p => p.CategoryType);
 
             modelBuilder.Entity<Permission>()
                 .ToTable("Permission")

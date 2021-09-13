@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Pathfinder.Application.DTO.Auth.Permissions;
 using Pathfinder.Application.Interfaces.Auth;
+using Pathfinder.Application.UseCases.Authorization.Permission;
 using Pathfinder.Web.Controllers.Base;
 
 namespace Pathfinder.Web.Controllers
@@ -11,18 +13,17 @@ namespace Pathfinder.Web.Controllers
     [ApiController]
     public class PermissionsController : AuthorizedController
     {
-        private readonly IPermissionService permissionAppService;
+        private readonly IMediator _mediator;
 
-        public PermissionsController(IPermissionService permissionAppService)
+        public PermissionsController(IMediator mediator)
         {
-            this.permissionAppService = permissionAppService;
+            _mediator = mediator;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<PermissionDto>>> GetPermissions(string userNameOrEmail)
         {
-            return Ok(await permissionAppService
-                        .GetGrantedPermissionsAsync(userNameOrEmail)
+            return Ok(await _mediator.Send(new PermissionsByUserNameOrEmailCommand(userNameOrEmail))
                         .ConfigureAwait(false));
         }
     }

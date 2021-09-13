@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Pathfinder.Application.Interfaces;
 using Pathfinder.Application.DTO;
 using Pathfinder.Core.Repositories;
-using Pathfinder.Utils.Paging;
 using AutoMapper;
 using Pathfinder.Core.Entities.Product;
 

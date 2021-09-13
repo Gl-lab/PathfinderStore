@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using Pathfinder.Application.Interfaces;
 using Pathfinder.Application.Interfaces.Auth;
 using Pathfinder.Application.Services;
@@ -20,7 +21,8 @@ namespace Pathfinder.Application
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<ICharacterService, CharacterService>();
             services.AddAutoMapper(typeof(AutoMapperProfile));
-            services.AddTransient<IRacesService, RacesService>();
+            services.AddScoped<IRacesService, RacesService>();
+            services.AddMediatR(typeof(DependencyInjection), typeof(AutoMapperProfile));
         }
     }
 

@@ -14,7 +14,10 @@ namespace Pathfinder.Application.Interfaces
         Task<IEnumerable<ArticleDto>> GetArticlesByName(string name);
         Task<IEnumerable<ArticleDto>> GetArticlesByCategoryId(CategoryType categoryType);
         Task<ArticleDto> CreateArticle(ArticleDto article);
+        Task<ArticleDto> CreateArticle(string name, string description, decimal? price, decimal? weight,
+            byte categoryType);
         Task UpdateArticle(ArticleDto article);
         Task DeleteArticleById(int articleId);
+        
     }
 }
