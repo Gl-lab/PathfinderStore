@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Pathfinder.Core.Entities.Account;
 using Pathfinder.Core.Entities.Base;
-using Pathfinder.Core.Entities.Product;
 
 namespace Pathfinder.Core.Entities.Product
 {

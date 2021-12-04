@@ -7,6 +7,8 @@ using Pathfinder.Core.Entities.Auth.Users;
 using Pathfinder.Application.DTO.Auth.Users;
 using Pathfinder.Application.DTO.Items;
 using Size = Pathfinder.Core.Entities.Account.Size;
+using Pathfinder.Core.Entities.Shop;
+using Pathfinder.Application.DTO.Shop;
 
 namespace Pathfinder.Application.Mapper
 {
@@ -33,7 +35,7 @@ namespace Pathfinder.Application.Mapper
             CreateMap<GroupCharacteristic, GroupCharacteristicDto>()
                 .ReverseMap();
             CreateMap<Item, ItemDto>();
-            
+            CreateMap<Shop, ShopDto>();   
         }
     }
 }

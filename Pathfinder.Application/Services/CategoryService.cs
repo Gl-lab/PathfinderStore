@@ -9,7 +9,7 @@ using Pathfinder.Core.Entities.Product;
 
 namespace Pathfinder.Application.Services
 {
-    public class CategoryService : ICategoryService
+    public sealed class CategoryService : ICategoryService
     {
         private readonly ICategoryRepository categoryRepository;
        // private readonly IAppLogger<CategoryService> logger;

@@ -12,7 +12,7 @@ using Pathfinder.Core.Repositories;
 
 namespace Pathfinder.Application.Services
 {
-    public class CharacterService: ICharacterService
+    public sealed class CharacterService: ICharacterService
     {
         private readonly IUserService userService;
         private readonly IMapper mapper;
