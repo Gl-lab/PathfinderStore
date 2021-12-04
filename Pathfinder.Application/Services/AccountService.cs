@@ -12,7 +12,7 @@ using Pathfinder.Core.Entities.Account;
 
 namespace Pathfinder.Application.Services
 {
-    public class AccountService: IAccountService
+    public sealed class AccountService: IAccountService
     {
         private readonly IMapper mapper;
         private readonly IAccountRepository accountRepository;

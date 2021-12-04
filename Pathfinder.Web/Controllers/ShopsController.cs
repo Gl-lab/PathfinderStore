@@ -1,15 +1,25 @@
 ﻿using System.Threading.Tasks;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Pathfinder.Application.UseCases.Shop;
 using Pathfinder.Web.Controllers.Base;
 
 namespace Pathfinder.Web.Controllers
 {
     public class ShopsController: AuthorizedController
     {
+        private readonly IMediator _mediator;
+
+        public ShopsController(IMediator mediator)
+        {
+            _mediator = mediator;
+        }
+
         [HttpGet]
         public async Task<ActionResult> Get()
         {
-            return Ok();
+            var result = await _mediator.Send(new GetAllShopsCommand());
+            return Ok(result);
         }
         
         [HttpPost]

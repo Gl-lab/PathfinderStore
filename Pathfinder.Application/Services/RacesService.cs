@@ -7,7 +7,7 @@ using Pathfinder.Core.Repositories;
 
 namespace Pathfinder.Application.Services
 {
-    public class RacesService: IRacesService
+    public sealed class RacesService: IRacesService
     {
         private readonly IRacesRepository racesRepository;
         private readonly IMapper mapper;

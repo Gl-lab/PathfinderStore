@@ -10,7 +10,7 @@ using Pathfinder.Core.Entities.Product;
 
 namespace Pathfinder.Application.Services
 {
-    public class ArticleService : IArticleService
+    public sealed class ArticleService : IArticleService
     {
         private readonly IArticleRepository _productRepository;
         private readonly IMapper _mapper;

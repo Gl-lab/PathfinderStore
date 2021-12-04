@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Pathfinder.Core.Entities.Shop;
 using Pathfinder.Core.Repositories;
 using Pathfinder.Core.Repositories.Auth;
 using Pathfinder.Core.Repositories.Base;
+using Pathfinder.Core.Repositories.Shop;
 using Pathfinder.Core.UnitOfWork;
 using Pathfinder.Infrastructure.Data;
 using Pathfinder.Infrastructure.Repository;
@@ -30,6 +32,7 @@ namespace Pathfinder.Infrastructure
 
             services.AddScoped<IWeaponItemPropertyRepository, WeaponItemPropertyRepository>();
             services.AddScoped<IWeaponRepository, WeaponRepository>();
+            services.AddScoped<IShopRepository, ShopRepository>();
             services.AddScoped<IUnitOfWork>( sp => sp.GetService<PgDbContext>() );
         }
     }

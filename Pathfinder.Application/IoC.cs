@@ -22,6 +22,7 @@ namespace Pathfinder.Application
             services.AddScoped<ICharacterService, CharacterService>();
             services.AddAutoMapper(typeof(AutoMapperProfile));
             services.AddScoped<IRacesService, RacesService>();
+            services.AddScoped<IShopService, ShopService>();
             services.AddMediatR(typeof(DependencyInjection), typeof(AutoMapperProfile));
         }
     }
