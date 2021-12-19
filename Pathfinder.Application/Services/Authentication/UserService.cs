@@ -1,19 +1,23 @@
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using System.Security.Claims;
+using System.Security.Principal;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Pathfinder.Application.DTO.Auth.Account;
 using Pathfinder.Application.DTO.Auth.Roles;
 using Pathfinder.Application.DTO.Auth.Users;
 using Pathfinder.Application.Interfaces.Auth;
-using Pathfinder.Core.Entities.Auth.Users;
+using Pathfinder.Core.Entities.Authentication.User;
 using Pathfinder.Core.Repositories.Auth;
 using Pathfinder.Utils.Paging;
 
-namespace Pathfinder.Application.Services.Auth
+namespace Pathfinder.Application.Services.Authentication
 {
     public class UserService : IUserService
     {
@@ -137,6 +141,82 @@ namespace Pathfinder.Application.Services.Auth
             return removeUserResult;
         }
 
+        public async Task<IdentityResult> CreateUser(RegisterInput user)
+        {
+            var applicationUser = new User
+            {
+                UserName = user.UserName,
+                Email = user.Email,
+                EmailConfirmed = true
+            };
+
+            return await _userManager.CreateAsync(applicationUser, user.Password).ConfigureAwait(false);
+        }
+
+        public async Task<IdentityResult> CreateUser(string userName, string email, string password)
+        {
+            var applicationUser = new User
+            {
+                UserName = userName,
+                Email = email,
+                EmailConfirmed = true
+            };
+
+            return await _userManager.CreateAsync(applicationUser, password).ConfigureAwait(false);
+        }
+
+        public async Task<User> FindByEmailAsync(string email)
+        {
+            return await _userManager.FindByEmailAsync(email);
+        }
+
+        public async Task<User> FindByNameAsync(string name)
+        {
+            return await _userManager.FindByNameAsync(name);
+        }
+
+        public async Task<IdentityResult> ChangePasswordAsync(User user, string currentPassword, string newPassword)
+        {
+            return await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+        }
+
+        public async Task<ClaimsIdentity> CreateClaimsIdentityAsync(string userNameOrEmail, string password)
+        {
+            if (string.IsNullOrEmpty(userNameOrEmail) || string.IsNullOrEmpty(password))
+            {
+                return null;
+            }
+
+            var userToVerify = await FindUserByUserNameOrEmail(userNameOrEmail).ConfigureAwait(false);
+
+            if (userToVerify == null)
+            {
+                return null;
+            }
+
+            if (await _userManager.CheckPasswordAsync(userToVerify, password).ConfigureAwait(false))
+            {
+                return new ClaimsIdentity(new GenericIdentity(userNameOrEmail, "Token"), new[]
+                {
+                    new Claim(JwtRegisteredClaimNames.Sub, userNameOrEmail),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    new Claim(ClaimTypes.NameIdentifier, userToVerify.Id.ToString())
+                });
+            }
+
+            return null;
+        }
+
+        public async Task<IdentityResult> ResetPasswordAsync(User user, string token, string password)
+        {
+            return await _userManager.ResetPasswordAsync(user, token, password);
+        }
+
+        private async Task<User> FindUserByUserNameOrEmail(string userNameOrEmail)
+        {
+            return await _userManager.FindByNameAsync(userNameOrEmail).ConfigureAwait(false) ??
+                   await _userManager.FindByEmailAsync(userNameOrEmail).ConfigureAwait(false);
+        }
         public void SetCurrentUser(User user)
         {
             _currentUser = user;

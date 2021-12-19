@@ -1,7 +1,7 @@
 using System.Linq;
-using Pathfinder.Core.Entities.Auth.Permissions;
-using Pathfinder.Core.Entities.Auth.Roles;
-using Pathfinder.Core.Entities.Auth.Users;
+using Pathfinder.Core.Entities.Authentication.Permissions;
+using Pathfinder.Core.Entities.Authentication.Role;
+using Pathfinder.Core.Entities.Authentication.User;
 
 namespace Pathfinder.Infrastructure.Data
 {

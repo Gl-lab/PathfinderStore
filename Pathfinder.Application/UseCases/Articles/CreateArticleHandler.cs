@@ -1,30 +1,34 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoMapper;
 using MediatR;
 using Pathfinder.Application.DTO;
 using Pathfinder.Application.Interfaces;
+using Pathfinder.Core.Entities.Product;
 using Pathfinder.Core.UnitOfWork;
 
 namespace Pathfinder.Application.UseCases.Articles
 {
     public class CreateArticleHandler: IRequestHandler<CreateArticleCommand, ArticleDto>
     {
-        private readonly IArticleService _articleServiceService;
+        private readonly IProductService _productService;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public CreateArticleHandler(IArticleService articleServiceService, IUnitOfWork unitOfWork)
+        public CreateArticleHandler(IProductService productService, IUnitOfWork unitOfWork, IMapper mapper)
         {
-            _articleServiceService = articleServiceService;
+            _productService = productService;
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
         public async Task<ArticleDto> Handle(CreateArticleCommand request, CancellationToken cancellationToken)
         {
-            ArticleDto article;
+            Article article;
             try
             {
-                article = await _articleServiceService.CreateArticle(request.Name, request.Description, request.Price, request.Weight,
+                article = await _productService.CreateArticle(request.Name, request.Description, request.Price, request.Weight,
                     request.CategoryType);
                 await _unitOfWork.CommitAsync();
             }
@@ -33,7 +37,8 @@ namespace Pathfinder.Application.UseCases.Articles
                 await _unitOfWork.RollbackAsync();
                 throw;
             }
-            return article;
+
+            return _mapper.Map<ArticleDto>(article);
         }
     }
 }

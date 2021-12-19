@@ -4,7 +4,7 @@ using Pathfinder.Application.Interfaces;
 using Pathfinder.Application.Interfaces.Auth;
 using Pathfinder.Application.Services;
 using Pathfinder.Application.Mapper;
-using Pathfinder.Application.Services.Auth;
+using Pathfinder.Application.Services.Authentication;
 
 
 namespace Pathfinder.Application
@@ -13,7 +13,7 @@ namespace Pathfinder.Application
     {
         public static void AddApplicationServices(this IServiceCollection services)
         {
-            services.AddScoped<IArticleService, ArticleService>();
+            services.AddScoped<IProductService, ProductService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IPermissionService, PermissionService>();
             services.AddScoped<IRoleService, RoleService>();

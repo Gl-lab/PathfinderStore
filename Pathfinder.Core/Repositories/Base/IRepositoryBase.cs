@@ -17,13 +17,11 @@ namespace Pathfinder.Core.Repositories.Base
 
         Task<IReadOnlyList<T>> ListAllAsync();
 
-        Task<IEnumerable<T>> AddRangeAsync(IEnumerable<T> entities);
-
-        Task<T> SaveAsync(T entity);
+        void Save(T entity);
 
         void Add(T entity);
 
-        Task DeleteAsync(T entity);
+        void Delete(T entity);
 
         Task<IReadOnlyList<T>> GetAsync(Expression<Func<T, bool>> predicate);
 

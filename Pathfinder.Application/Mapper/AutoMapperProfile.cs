@@ -3,12 +3,12 @@ using Pathfinder.Core.Entities;
 using Pathfinder.Core.Entities.Account;
 using Pathfinder.Core.Entities.Product;
 using Pathfinder.Application.DTO;
-using Pathfinder.Core.Entities.Auth.Users;
 using Pathfinder.Application.DTO.Auth.Users;
 using Pathfinder.Application.DTO.Items;
 using Size = Pathfinder.Core.Entities.Account.Size;
 using Pathfinder.Core.Entities.Shop;
 using Pathfinder.Application.DTO.Shop;
+using Pathfinder.Core.Entities.Authentication.User;
 
 namespace Pathfinder.Application.Mapper
 {
