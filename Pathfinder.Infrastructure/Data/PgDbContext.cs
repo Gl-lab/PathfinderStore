@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Threading.Tasks;
-using Pathfinder.Core.Entities.Auth.Users;
-using Pathfinder.Core.Entities.Auth.Roles;
-using Pathfinder.Core.Entities.Auth.Permissions;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Pathfinder.Core.Entities.Account;
+using Pathfinder.Core.Entities.Authentication.Permissions;
+using Pathfinder.Core.Entities.Authentication.Role;
+using Pathfinder.Core.Entities.Authentication.User;
 using Pathfinder.Core.Entities.Shop;
 using Pathfinder.Core.UnitOfWork;
 

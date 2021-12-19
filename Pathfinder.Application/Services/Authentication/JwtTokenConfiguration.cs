@@ -1,7 +1,7 @@
 using System;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Pathfinder.Web.Authentication
+namespace Pathfinder.Application.Services.Authentication
 {
     public class JwtTokenConfiguration
     {

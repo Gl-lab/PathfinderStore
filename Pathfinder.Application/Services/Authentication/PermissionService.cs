@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Pathfinder.Application.DTO.Auth.Permissions;
 using Pathfinder.Application.Interfaces.Auth;
-using Pathfinder.Core.Entities.Auth.Users;
+using Pathfinder.Core.Entities.Authentication.User;
 
-namespace Pathfinder.Application.Services.Auth
+namespace Pathfinder.Application.Services.Authentication
 {
     public class PermissionService : IPermissionService
     {

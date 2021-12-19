@@ -14,11 +14,11 @@ namespace Pathfinder.Application.Services
 {
     public sealed class CharacterService: ICharacterService
     {
-        private readonly IUserService userService;
-        private readonly IMapper mapper;
-        private readonly ICharacterRepository characterRepository;
-        private readonly IWeaponItemPropertyRepository weaponItemPropertyRepository;
-        private readonly IWeaponRepository weaponRepository;
+        private readonly IUserService _userService;
+        private readonly IMapper _mapper;
+        private readonly ICharacterRepository _characterRepository;
+        private readonly IWeaponItemPropertyRepository _weaponItemPropertyRepository;
+        private readonly IWeaponRepository _weaponRepository;
 
         public CharacterService(IUserService userService, 
             IMapper mapper,
@@ -26,47 +26,47 @@ namespace Pathfinder.Application.Services
             IWeaponItemPropertyRepository weaponItemPropertyRepository,
             IWeaponRepository weaponRepository)
         {
-            this.userService = userService;
-            this.mapper = mapper;
-            this.characterRepository = characterRepository;
-            this.weaponItemPropertyRepository = weaponItemPropertyRepository;
-            this.weaponRepository = weaponRepository;
+            _userService = userService;
+            _mapper = mapper;
+            _characterRepository = characterRepository;
+            _weaponItemPropertyRepository = weaponItemPropertyRepository;
+            _weaponRepository = weaponRepository;
         }
         
         public async Task<CharacterDto> GetCharacterAsync()
         {
-            var character = await characterRepository.GetCurrentAsync(userService.GetCurrentUser().Id);
-            return mapper.Map<CharacterDto>(character);
+            var character = await _characterRepository.GetCurrentAsync(_userService.GetCurrentUser().Id);
+            return _mapper.Map<CharacterDto>(character);
         }
 
         public async Task<int> IncreaseBalance(int balance)
         {
-            var character = await characterRepository.GetCurrentAsync(userService.GetCurrentUser().Id);
+            var character = await _characterRepository.GetCurrentAsync(_userService.GetCurrentUser().Id);
             character.Backpack.Wallet.IncreaseBalance(balance);
-            await characterRepository.SaveAsync(character);
+            _characterRepository.Save(character);
             return character.Backpack.Wallet.Balance;
         }
         
         public async Task<int> DecreaseBalance(int balance)
         {
-            var character = await characterRepository.GetCurrentAsync(userService.GetCurrentUser().Id);
+            var character = await _characterRepository.GetCurrentAsync(_userService.GetCurrentUser().Id);
             character.Backpack.Wallet.DecreaseBalance(balance);
-            await characterRepository.SaveAsync(character);
+            _characterRepository.Save(character);
             return character.Backpack.Wallet.Balance;
         }
 
         public async Task EditCharacter(CharacterDto newCharacter)
         {
-            var character = await characterRepository.GetCurrentAsync(userService.GetCurrentUser().Id);
+            var character = await _characterRepository.GetCurrentAsync(_userService.GetCurrentUser().Id);
             if (newCharacter.Name != character.Name ) character.Rename(newCharacter.Name);
             if (newCharacter.RaceId != character.RaceId) character.ChangeRace(newCharacter.RaceId);
         }
 
         public async Task<ICollection<WeaponItemDto>> GetWeapons()
         {
-            var character = await characterRepository.GetCurrentAsync(userService.GetCurrentUser().Id);
+            var character = await _characterRepository.GetCurrentAsync(_userService.GetCurrentUser().Id);
             if (character == null) throw new ApplicationException("User dont have current character");
-            var weaponItems = await weaponItemPropertyRepository.GetWeaponItemByItemIdCollection(
+            var weaponItems = await _weaponItemPropertyRepository.GetWeaponItemByItemIdCollection(
                 character
                     .Backpack
                     .Items
@@ -74,14 +74,14 @@ namespace Pathfinder.Application.Services
                     .Select(e => e.Item.Id)
                     .ToList());
             var items = weaponItems.Select(e => e.Item.Id).ToList();
-            var weapons = await weaponRepository.GetDistinctCollectionByArticles(items);
+            var weapons = await _weaponRepository.GetDistinctCollectionByArticles(items);
 
             var result = weaponItems.Select(e =>
             {
                 var currentWeapon = weapons.First(w => w.ArticleId == e.Item.ArticleId);   
                 return new WeaponItemDto
                 {
-                    Item = mapper.Map<ItemDto>(e.Item),
+                    Item = _mapper.Map<ItemDto>(e.Item),
                     IsMasterful = e.IsMasterful,
                     Size = e.Size,
                     Damage = currentWeapon.DamageBySize(e.Size),

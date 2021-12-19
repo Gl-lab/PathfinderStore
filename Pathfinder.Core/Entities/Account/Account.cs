@@ -1,6 +1,5 @@
-using System;
 using System.Collections.Generic;
-using Pathfinder.Core.Entities.Auth.Users;
+using Pathfinder.Core.Entities.Authentication.User;
 using Pathfinder.Core.Entities.Base;
 
 namespace Pathfinder.Core.Entities.Account

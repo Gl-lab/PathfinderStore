@@ -44,37 +44,23 @@ namespace Pathfinder.Infrastructure.Repository.Base
             return await Entities.FindAsync(id).ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<T>> AddRangeAsync(IEnumerable<T> entities)
+        public Task AddRangeAsync(IEnumerable<T> entities)
         {
             Entities.AddRange(entities);
-            await context.SaveChangesAsync().ConfigureAwait(false);
-
-            return entities;
+            return Task.CompletedTask;
         }
 
-        public async Task<T> SaveAsync(T entity)
+        public void Save(T entity)
         {
-            if (entity.Id == null || entity.Id.Equals(default(TId)))
-            {
-                Entities.Add(entity);
-            }
-            else
-            {
-                context.Entry(entity).State = EntityState.Modified;
-            }
-
-            await context.SaveChangesAsync().ConfigureAwait(false);
-
-            return entity;
+            context.Entry(entity).State = EntityState.Modified;
         }
 
-        public async Task DeleteAsync(T entity)
+        public void Delete(T entity)
         {
             Entities.Remove(entity);
-            await context.SaveChangesAsync().ConfigureAwait(false);
         }
 
-        public async virtual Task<IReadOnlyList<T>> ListAllAsync()
+        public virtual async Task<IReadOnlyList<T>> ListAllAsync()
         {
             return await Entities.ToListAsync().ConfigureAwait(false);
         }

@@ -6,18 +6,14 @@ using Pathfinder.Core.Entities.Product;
 
 namespace Pathfinder.Application.Interfaces
 {
-    public interface IArticleService
+    public interface IProductService
     {
-        Task<IEnumerable<ArticleDto>> GetArticleList();
-        Task<IPagedList<ArticleDto>> SearchArticles(PageSearchArgs args);
-        Task<ArticleDto> GetArticleById(int articleId);
-        Task<IEnumerable<ArticleDto>> GetArticlesByName(string name);
-        Task<IEnumerable<ArticleDto>> GetArticlesByCategoryId(CategoryType categoryType);
-        Task<ArticleDto> CreateArticle(ArticleDto article);
-        Task<ArticleDto> CreateArticle(string name, string description, decimal? price, decimal? weight,
+        Task<IPagedList<Article>> SearchArticles(PageSearchArgs args);
+        Task<Article> GetArticleById(int articleId);
+        Task<Article> CreateArticle(string name, string description, decimal? price, decimal? weight,
             byte categoryType);
-        Task UpdateArticle(ArticleDto article);
-        Task DeleteArticleById(int articleId);
+        Task UpdateArticle(Article article);
+        Task DeleteArticle(Article article);
         
     }
 }

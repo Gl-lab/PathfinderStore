@@ -9,11 +9,11 @@ using Pathfinder.Application.DTO.Auth.Permissions;
 using Pathfinder.Application.DTO.Auth.Roles;
 using Pathfinder.Application.Interfaces.Auth;
 using Pathfinder.Application.UseCases.Authorization.Roles;
-using Pathfinder.Core.Entities.Auth.Roles;
+using Pathfinder.Core.Entities.Authentication.Role;
 using Pathfinder.Core.Repositories.Auth;
 using Pathfinder.Utils.Paging;
 
-namespace  Pathfinder.Application.Services.Auth
+namespace  Pathfinder.Application.Services.Authentication
 {
     public class RoleService : IRoleService
     {

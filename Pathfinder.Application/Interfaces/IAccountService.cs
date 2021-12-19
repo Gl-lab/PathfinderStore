@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Pathfinder.Application.DTO;
 using System.Threading.Tasks;
-using Pathfinder.Core.Entities.Auth.Users;
+using Pathfinder.Core.Entities.Authentication.User;
 
 namespace Pathfinder.Application.Interfaces
 {

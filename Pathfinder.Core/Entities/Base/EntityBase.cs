@@ -24,10 +24,7 @@ namespace Pathfinder.Core.Entities.Base
 
             var item = (EntityBase<TId>)obj;
 
-            if (item.IsTransient() || IsTransient())
-                return false;
-            else
-                return false;//return item == this;
+            return !item.IsTransient() && !IsTransient();
         }
 
         public override int GetHashCode()
