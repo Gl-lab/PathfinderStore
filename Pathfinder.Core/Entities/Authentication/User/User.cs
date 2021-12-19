@@ -1,8 +1,7 @@
-using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
 
-namespace Pathfinder.Core.Entities.Auth.Users
+namespace Pathfinder.Core.Entities.Authentication.User
 {
     public class User : IdentityUser<int>
     {

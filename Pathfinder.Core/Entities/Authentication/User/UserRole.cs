@@ -1,13 +1,11 @@
-using System;
 using Microsoft.AspNetCore.Identity;
-using Pathfinder.Core.Entities.Auth.Roles;
 
-namespace Pathfinder.Core.Entities.Auth.Users
+namespace Pathfinder.Core.Entities.Authentication.User
 {
     public class UserRole : IdentityUserRole<int>
     {
         public virtual User User { get; set; }
 
-        public virtual Role Role { get; set; }
+        public virtual Role.Role Role { get; set; }
     }
 }

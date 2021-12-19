@@ -1,7 +1,6 @@
-using System;
-using Pathfinder.Core.Entities.Auth.Permissions;
+using Pathfinder.Core.Entities.Authentication.Permissions;
 
-namespace Pathfinder.Core.Entities.Auth.Roles
+namespace Pathfinder.Core.Entities.Authentication.Role
 {
     public class RolePermission
     {

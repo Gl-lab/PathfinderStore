@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Pathfinder.Core.Entities.Auth.Users;
+using Pathfinder.Core.Entities.Authentication.User;
 using Pathfinder.Core.Repositories.Auth;
 using Pathfinder.Infrastructure.Data;
 

@@ -1,7 +1,6 @@
-using System;
 using System.Collections.Generic;
 
-namespace Pathfinder.Core.Entities.Auth.Permissions
+namespace Pathfinder.Core.Entities.Authentication.Permissions
 {
     public static class DefaultPermissions
     {

@@ -1,5 +1,4 @@
 using Pathfinder.Application.DTO;
-using Pathfinder.Core.Entities.Auth.Users;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Pathfinder.Application.DTO.Items;

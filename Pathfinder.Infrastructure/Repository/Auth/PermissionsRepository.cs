@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Pathfinder.Core.Entities.Auth.Permissions;
+using Pathfinder.Core.Entities.Authentication.Permissions;
 using Pathfinder.Core.Repositories.Auth;
 using Pathfinder.Infrastructure.Data;
 

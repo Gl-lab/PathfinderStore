@@ -1,8 +1,7 @@
-using System;
-using System.Globalization;
 using System.Collections.Generic;
+using System.Globalization;
 
-namespace Pathfinder.Core.Entities.Auth.Users
+namespace Pathfinder.Core.Entities.Authentication.User
 {
     public static class DefaultUsers
     {

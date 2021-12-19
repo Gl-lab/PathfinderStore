@@ -1,9 +1,8 @@
-using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
-using Pathfinder.Core.Entities.Auth.Users;
+using Pathfinder.Core.Entities.Authentication.User;
 
-namespace Pathfinder.Core.Entities.Auth.Roles
+namespace Pathfinder.Core.Entities.Authentication.Role
 {
     public class Role : IdentityRole<int>
     {
