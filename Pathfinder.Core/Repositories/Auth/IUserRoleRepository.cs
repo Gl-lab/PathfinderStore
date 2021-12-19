@@ -1,10 +1,9 @@
 using Pathfinder.Core.Entities.Account;
-using Pathfinder.Core.Entities.Auth.Roles;
-using Pathfinder.Core.Entities.Auth.Users;
 using Pathfinder.Core.Repositories.Base;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Pathfinder.Core.Entities.Authentication.User;
 
 namespace Pathfinder.Core.Repositories.Auth
 {

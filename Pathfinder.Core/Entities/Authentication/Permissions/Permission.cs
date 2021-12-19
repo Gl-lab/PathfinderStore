@@ -1,9 +1,8 @@
-using System.Collections.Generic;
 using System;
-using Pathfinder.Core.Entities.Auth.Roles;
-using Pathfinder.Core.Entities.Base;
+using System.Collections.Generic;
+using Pathfinder.Core.Entities.Authentication.Role;
 
-namespace Pathfinder.Core.Entities.Auth.Permissions
+namespace Pathfinder.Core.Entities.Authentication.Permissions
 {
     public class Permission
     {

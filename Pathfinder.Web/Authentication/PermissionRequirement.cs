@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
-using Pathfinder.Core.Entities.Auth.Permissions;
+using Pathfinder.Core.Entities.Authentication.Permissions;
 
 namespace Pathfinder.Web.Authentication
 {

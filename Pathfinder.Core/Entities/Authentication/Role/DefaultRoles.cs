@@ -1,8 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace Pathfinder.Core.Entities.Auth.Roles
+namespace Pathfinder.Core.Entities.Authentication.Role
 {
     public static class DefaultRoles
     {

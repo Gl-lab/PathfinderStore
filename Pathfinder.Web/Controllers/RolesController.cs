@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using MediatR;
@@ -6,10 +5,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Pathfinder.Application.Interfaces.Auth;
 using Pathfinder.Application.DTO.Auth.Roles;
-using Pathfinder.Core.Entities.Auth.Permissions;
 using Pathfinder.Utils.Paging;
 using Pathfinder.Application.DTO.Auth;
 using Pathfinder.Application.UseCases.Authorization.Roles;
+using Pathfinder.Core.Entities.Authentication.Permissions;
 using Pathfinder.Web.Controllers.Base;
 
 namespace Pathfinder.Web.Controllers
