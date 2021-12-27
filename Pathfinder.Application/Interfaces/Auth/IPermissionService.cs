@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Pathfinder.Application.DTO.Auth.Permissions;
+using Pathfinder.Application.DTO.Authentication.Permissions;
 
 namespace Pathfinder.Application.Interfaces.Auth
 {

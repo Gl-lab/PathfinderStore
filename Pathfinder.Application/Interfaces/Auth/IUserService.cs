@@ -1,8 +1,7 @@
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
-using Pathfinder.Application.DTO.Auth.Account;
-using Pathfinder.Application.DTO.Auth.Users;
+using Pathfinder.Application.DTO.Authentication.Users;
 using Pathfinder.Core.Entities.Authentication.User;
 using Pathfinder.Utils.Paging;
 

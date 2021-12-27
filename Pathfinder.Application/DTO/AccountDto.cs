@@ -1,5 +1,5 @@
-using Pathfinder.Application.DTO.Auth.Users;
 using System.Collections.Generic;
+using Pathfinder.Application.DTO.Authentication.Users;
 using Pathfinder.Application.DTO.Base;
 
 namespace Pathfinder.Application.DTO

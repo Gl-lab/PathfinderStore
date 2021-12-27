@@ -1,29 +1,31 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Pathfinder.Application.Interfaces;
-using Pathfinder.Web.Controllers.Base;
 using Pathfinder.Application.DTO;
 using Pathfinder.Application.DTO.Items;
+using Pathfinder.Application.UseCases.Authorization.Account;
+using Pathfinder.Application.UseCases.Characters;
+using Pathfinder.Web.Controllers.Base;
 
 namespace Pathfinder.Web.Controllers
 {
-    public class CharacterController: AuthorizedController
+    public class CharacterController : AuthorizedController
     {
-        private readonly ICharacterService _characterService;
+        private readonly IMediator _mediator;
 
-        public CharacterController(ICharacterService characterService)
+        public CharacterController(IMediator mediator)
         {
-            this._characterService = characterService;
+            _mediator = mediator;
         }
-        
+
         [HttpGet]
         public async Task<ActionResult<CharacterDto>> Get()
         {
             try
             {
-                return Ok(await _characterService.GetCharacterAsync().ConfigureAwait(false));
+                return Ok(await _mediator.Send(new GetCurrentAccountCommand()));
             }
             catch (Exception e)
             {
@@ -37,14 +39,14 @@ namespace Pathfinder.Web.Controllers
         {
             return Ok();
         }
-        
+
         [HttpGet]
         [Route("items/Weapons")]
         public async Task<ActionResult<ICollection<WeaponItemDto>>> Weapons()
         {
             try
             {
-                return Ok(await _characterService.GetWeapons());
+                return Ok(await _mediator.Send(new GetWeaponsForCurrentCharacterCommand()));
             }
             catch (Exception e)
             {
@@ -58,35 +60,35 @@ namespace Pathfinder.Web.Controllers
         {
             try
             {
-                return Ok(await _characterService.GetWeapons());
+                return Ok();
             }
             catch (Exception e)
             {
                 return BadRequest(e.Message);
             }
         }
-        
+
         [HttpPut]
         [Route("IncreaseBalance")]
         public async Task<ActionResult> IncreaseBalance(int value)
         {
             try
             {
-                return Ok(await _characterService.IncreaseBalance(value));
+                return Ok(await _mediator.Send(new IncreaseCharacterBalanceCommand(value)));
             }
             catch (Exception e)
             {
                 return BadRequest(e.Message);
             }
         }
-        
+
         [HttpPost]
         [Route("DecreaseBalance")]
         public async Task<ActionResult> DecreaseBalance(int value)
         {
             try
             {
-                return Ok(await _characterService.DecreaseBalance(value));
+                return Ok(await _mediator.Send(new DecreaseCharacterBalanceCommand(value)));
             }
             catch (Exception e)
             {

@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using Pathfinder.Application.DTO.Auth.Roles;
+using Pathfinder.Application.DTO.Authentication.Roles;
 
 namespace Pathfinder.Application.UseCases.Authorization.Roles
 {

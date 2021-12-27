@@ -1,15 +1,15 @@
+using System;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using Pathfinder.Infrastructure.Data;
-using System;
-using VueCliMiddleware;
-using Pathfinder.Web.fromNucleus.Extensions;
-using Microsoft.AspNetCore.Hosting;
 using Pathfinder.Application;
 using Pathfinder.Infrastructure;
+using Pathfinder.Infrastructure.Data;
+using Pathfinder.Web.Extensions;
+using VueCliMiddleware;
 
 namespace Pathfinder.Web
 {
@@ -24,7 +24,6 @@ namespace Pathfinder.Web
 
         public void ConfigureServices(IServiceCollection services)
         {
-
             services.ConfigureDbContext(Configuration);
             services.ConfigureAuthentication();
             services.ConfigureJwtTokenAuth(Configuration);
@@ -32,7 +31,7 @@ namespace Pathfinder.Web
             services.ConfigureDependencyInjection();
 
             services.AddControllers();
-            
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Pathfinde API", Version = "v1" });
@@ -43,23 +42,24 @@ namespace Pathfinder.Web
                     Name = "Authorization",
                     Type = SecuritySchemeType.ApiKey
                 });
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement {
-                    { 
-                        new OpenApiSecurityScheme 
-                        { 
-                            Reference = new OpenApiReference 
-                            { 
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
                                 Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer" 
-                            } 
+                                Id = "Bearer"
+                            }
                         },
                         Array.Empty<string>()
-                    } 
+                    }
                 });
             });
 
             services.AddSpaStaticFiles(configuration => configuration.RootPath = "ClientApp/dist");
-            
+
             services.AddInfrastructureServices();
             services.AddApplicationServices();
         }

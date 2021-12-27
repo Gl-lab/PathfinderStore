@@ -1,25 +1,25 @@
 ﻿using System.Threading.Tasks;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Pathfinder.Application.DTO;
-using Pathfinder.Application.Interfaces;
+using Pathfinder.Application.UseCases.Races;
 using Pathfinder.Web.Controllers.Base;
 
 namespace Pathfinder.Web.Controllers
 {
-    public class RacesController: AuthorizedController
+    public class RacesController : AuthorizedController
     {
-        private readonly IRacesService racesService;
+        private readonly IMediator _mediator;
 
-        public RacesController(IRacesService racesService)
+        public RacesController(IMediator mediator)
         {
-            this.racesService = racesService;
+            _mediator = mediator;
         }
+
         [HttpGet]
         public async Task<ActionResult<RaceDto>> Races()
         {
-            return Ok(await racesService
-                .RacesListAsync()
-                .ConfigureAwait(false));
+            return Ok(await _mediator.Send(new GetRacesCommand()));
         }
     }
 }

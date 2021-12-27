@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using MediatR;
-using Pathfinder.Application.DTO.Auth.Permissions;
+using Pathfinder.Application.DTO.Authentication.Permissions;
 
 namespace Pathfinder.Application.UseCases.Authorization.Permission
 {
@@ -10,6 +10,7 @@ namespace Pathfinder.Application.UseCases.Authorization.Permission
         {
             UserNameOrEmail = userNameOrEmail;
         }
+
         public string UserNameOrEmail { get; }
     }
 }

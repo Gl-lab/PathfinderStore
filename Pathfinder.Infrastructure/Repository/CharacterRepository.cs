@@ -16,21 +16,19 @@ namespace Pathfinder.Infrastructure.Repository
         {
         }
 
-        public async Task<ICollection<Character>> GetListAsync(int UserId)
+        public async Task<ICollection<Character>> GetListAsync(int userId)
         {
             var account = await context.Set<Account>()
-                .Where(e => e.UserId == UserId)
-                .FirstOrDefaultAsync()
-                .ConfigureAwait(false);
+                .Where(e => e.UserId == userId)
+                .FirstOrDefaultAsync();
             return account?.Characters;
         }
 
-        public async Task<Character> GetCurrentAsync(int UserId)
+        public async Task<Character> GetCurrentAsync(int userId)
         {
             var account = await context.Set<Account>()
-                .Where(e => e.UserId == UserId)
-                .FirstOrDefaultAsync()
-                .ConfigureAwait(false);
+                .Where(e => e.UserId == userId)
+                .FirstOrDefaultAsync();
             return account?.CurrentCharacter;
         }
     }

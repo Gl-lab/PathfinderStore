@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -5,8 +6,8 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Pathfinder.Application.DTO;
-using Pathfinder.Application.DTO.Auth.Account;
-using Pathfinder.Application.DTO.Auth;
+using Pathfinder.Application.DTO.Authentication;
+using Pathfinder.Application.DTO.Authentication.Account;
 using Pathfinder.Application.UseCases.Authorization.Account;
 using Pathfinder.Core.Entities.Authentication.Permissions;
 using Pathfinder.Web.Controllers.Base;
@@ -34,18 +35,25 @@ namespace Pathfinder.Web.Controllers
         [HttpPost("/api/[action]")]
         public async Task<ActionResult<LoginOutput>> Login([FromBody] LoginInput input)
         {
-            LoginOutput loginOutput =
-                await _mediator.Send(new LoginCommand(input.UserNameOrEmail, input.UserNameOrEmail));
-
-            if (loginOutput == null)
+            try
             {
-                return BadRequest(new List<NameValueDto>
-                {
-                    new("UserNameOrPasswordIncorrect", "The user name or password is incorrect!")
-                });
-            }
+                var loginOutput =
+                    await _mediator.Send(new LoginCommand(input.UserNameOrEmail, input.Password));
 
-            return Ok(loginOutput);
+                if (loginOutput == null)
+                {
+                    return BadRequest(new List<NameValueDto>
+                    {
+                        new("UserNameOrPasswordIncorrect", "The user name or password is incorrect!")
+                    });
+                }
+
+                return Ok(loginOutput);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
         [HttpPost("/api/[action]")]
