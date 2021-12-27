@@ -1,24 +1,25 @@
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Pathfinder.Application.Interfaces;
-using Pathfinder.Web.Controllers.Base;
 using Pathfinder.Application.DTO;
+using Pathfinder.Application.UseCases.Authorization.Account;
+using Pathfinder.Web.Controllers.Base;
 
 namespace Pathfinder.Web.Controllers
 {
-    public class GameAccountController: AuthorizedController
+    public class GameAccountController : AuthorizedController
     {
-        private readonly IAccountService _accountService;
- 
-        public GameAccountController(IAccountService accountService)
+        private readonly IMediator _mediator;
+
+        public GameAccountController(IMediator mediator)
         {
-            this._accountService = accountService;
+            _mediator = mediator;
         }
 
         [HttpGet]
         public async Task<ActionResult<AccountDto>> Get()
         {
-            var result = await _accountService.GetCurrentAccountAsync().ConfigureAwait(false);
+            var result = await _mediator.Send(new GetCurrentAccountCommand());
             return Ok(result);
         }
     }

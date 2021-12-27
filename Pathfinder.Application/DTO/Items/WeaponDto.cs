@@ -4,7 +4,7 @@ using Pathfinder.Core.Entities.Product;
 
 namespace Pathfinder.Application.DTO.Items
 {
-    public class WeaponDto: BaseDto
+    public class WeaponDto : BaseDto
     {
         public int ArticleId { get; set; }
         public int? Range { get; set; }
@@ -16,6 +16,6 @@ namespace Pathfinder.Application.DTO.Items
         public DicesDto SmallSizeDamage { get; set; }
         public DicesDto MediumSizeDamage { get; set; }
         public DicesDto LargeSizeDamage { get; set; }
-        public ArticleDto Article { get; set; }
+        public ProductDto Product { get; set; }
     }
 }

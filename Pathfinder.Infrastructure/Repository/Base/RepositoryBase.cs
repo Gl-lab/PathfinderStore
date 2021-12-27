@@ -1,11 +1,11 @@
-﻿using Pathfinder.Core.Entities.Base;
-using Pathfinder.Core.Repositories.Base;
-using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Pathfinder.Core.Entities.Base;
+using Pathfinder.Core.Repositories.Base;
 using Pathfinder.Infrastructure.Data;
 
 namespace Pathfinder.Infrastructure.Repository.Base
@@ -23,17 +23,14 @@ namespace Pathfinder.Infrastructure.Repository.Base
 
         protected virtual DbSet<T> Entities
         {
-            get
-            {
-                return _entities ??= context.Set<T>();
-            }
+            get { return _entities ??= context.Set<T>(); }
         }
 
         public void Add(T entity)
         {
             Entities.Add(entity);
         }
-        
+
         public void AddRange(IEnumerable<T> entities)
         {
             Entities.AddRange(entities);
@@ -60,7 +57,7 @@ namespace Pathfinder.Infrastructure.Repository.Base
             Entities.Remove(entity);
         }
 
-        public virtual async Task<IReadOnlyList<T>> ListAllAsync()
+        public virtual async Task<IReadOnlyList<T>> ListAsync()
         {
             return await Entities.ToListAsync().ConfigureAwait(false);
         }

@@ -5,15 +5,15 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Pathfinder.Application.DTO.Auth.Permissions;
-using Pathfinder.Application.DTO.Auth.Roles;
+using Pathfinder.Application.DTO.Authentication.Permissions;
+using Pathfinder.Application.DTO.Authentication.Roles;
 using Pathfinder.Application.Interfaces.Auth;
 using Pathfinder.Application.UseCases.Authorization.Roles;
 using Pathfinder.Core.Entities.Authentication.Role;
 using Pathfinder.Core.Repositories.Auth;
 using Pathfinder.Utils.Paging;
 
-namespace  Pathfinder.Application.Services.Authentication
+namespace Pathfinder.Application.Services.Authentication
 {
     public class RoleService : IRoleService
     {
@@ -22,9 +22,9 @@ namespace  Pathfinder.Application.Services.Authentication
         private readonly RoleManager<Role> _roleManager;
         private readonly IMapper _mapper;
 
-        public RoleService(IPermissionsRepository permissionsRepository, 
-            IRolePermissionsRepository rolePermissionsRepository, 
-            RoleManager<Role> roleManager, 
+        public RoleService(IPermissionsRepository permissionsRepository,
+            IRolePermissionsRepository rolePermissionsRepository,
+            RoleManager<Role> roleManager,
             IMapper mapper)
         {
             _rolePermissionsRepository = rolePermissionsRepository;
@@ -37,14 +37,17 @@ namespace  Pathfinder.Application.Services.Authentication
         {
             var a = command.FilteringOptions?.Count > 0;
             var query = _roleManager.Roles.Where(
-
                     predicate => predicate.Name.Contains(command.FilteringOptions[0].Value as string))
-                .OrderBy(string.IsNullOrEmpty(command.SortingOptions?.First().Field) ? "Name" : command.SortingOptions?.First().Field);
+                .OrderBy(string.IsNullOrEmpty(command.SortingOptions?.First().Field)
+                    ? "Name"
+                    : command.SortingOptions?.First().Field);
 
             var rolesCount = await query.CountAsync().ConfigureAwait(false);
-            IEnumerable<RoleListOutput> roleListOutput = _mapper.Map<List<RoleListOutput>>(await query.ToArrayAsync().ConfigureAwait(false));
-            var pageCount = rolesCount/command.PageSize;
-            return new PagedList<RoleListOutput>(command.PageIndex, command.PageSize, rolesCount, pageCount, roleListOutput);
+            IEnumerable<RoleListOutput> roleListOutput =
+                _mapper.Map<List<RoleListOutput>>(await query.ToArrayAsync().ConfigureAwait(false));
+            var pageCount = rolesCount / command.PageSize;
+            return new PagedList<RoleListOutput>(command.PageIndex, command.PageSize, rolesCount, pageCount,
+                roleListOutput);
         }
 
         public async Task<GetRoleForCreateOrUpdateOutput> GetRoleForCreateOrUpdateAsync(int id)
@@ -94,6 +97,7 @@ namespace  Pathfinder.Application.Services.Authentication
                     Description = "This role name is already exists!"
                 });
             }
+
             role.Name = command.Role.Name;
             role.RolePermissions.Clear();
 
@@ -143,14 +147,15 @@ namespace  Pathfinder.Application.Services.Authentication
         {
             _rolePermissionsRepository
                 .AddRangeAsync(grantedPermissionIds.Select(permissionId =>
-                new RolePermission
-                {
-                    PermissionId = permissionId,
+                    new RolePermission
+                    {
+                        PermissionId = permissionId,
                         RoleId = role.Id
-                }));
+                    }));
         }
 
-        private async Task<GetRoleForCreateOrUpdateOutput> GetRoleForCreateOrUpdateOutputAsync(int id, List<PermissionDto> allPermissions)
+        private async Task<GetRoleForCreateOrUpdateOutput> GetRoleForCreateOrUpdateOutputAsync(int id,
+            List<PermissionDto> allPermissions)
         {
             var role = await _roleManager.FindByIdAsync(id.ToString()).ConfigureAwait(false);
             var roleDto = _mapper.Map<RoleDto>(role);

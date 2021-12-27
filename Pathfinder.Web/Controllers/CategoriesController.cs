@@ -1,11 +1,10 @@
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Pathfinder.Application.Interfaces;
-using Pathfinder.Application.DTO;
 using System.Net;
-using Pathfinder.Core.Entities.Product;
-using Pathfinder.Utils.Paging;
+using System.Threading.Tasks;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using Pathfinder.Application.DTO;
+using Pathfinder.Application.UseCases.Category;
 
 namespace Pathfinder.Web.Controllers
 {
@@ -13,11 +12,11 @@ namespace Pathfinder.Web.Controllers
     [ApiController]
     public class CategoriesController : ControllerBase
     {
-        private readonly ICategoryService _categoryService;
+        private readonly IMediator _mediator;
 
-        public CategoriesController(ICategoryService categoryService)
+        public CategoriesController(IMediator mediator)
         {
-            this._categoryService = categoryService;
+            _mediator = mediator;
         }
 
         [Produces("application/json")]
@@ -25,7 +24,7 @@ namespace Pathfinder.Web.Controllers
         [ProducesResponseType(typeof(IEnumerable<CategoryDto>), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<IEnumerable<CategoryDto>>> Categories()
         {
-            var categories = await _categoryService.GetCategoryList().ConfigureAwait(false);
+            var categories = await _mediator.Send(new GetCategoriesCommand());
             return Ok(categories);
         }
 
@@ -34,8 +33,8 @@ namespace Pathfinder.Web.Controllers
         [ProducesResponseType(typeof(CategoryDto), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<CategoryDto>> GetCategoryById(byte categoryType)
         {
-            var product = await _categoryService.Get((CategoryType)categoryType).ConfigureAwait(false);
-            return Ok(product);
+            var category = await _mediator.Send(new CategoryByCategoryTypeCommand(categoryType));
+            return Ok(category);
         }
     }
 }

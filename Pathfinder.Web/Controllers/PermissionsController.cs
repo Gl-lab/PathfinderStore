@@ -2,8 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Pathfinder.Application.DTO.Auth.Permissions;
-using Pathfinder.Application.Interfaces.Auth;
+using Pathfinder.Application.DTO.Authentication.Permissions;
 using Pathfinder.Application.UseCases.Authorization.Permission;
 using Pathfinder.Web.Controllers.Base;
 
@@ -24,7 +23,7 @@ namespace Pathfinder.Web.Controllers
         public async Task<ActionResult<IEnumerable<PermissionDto>>> GetPermissions(string userNameOrEmail)
         {
             return Ok(await _mediator.Send(new PermissionsByUserNameOrEmailCommand(userNameOrEmail))
-                        .ConfigureAwait(false));
+                .ConfigureAwait(false));
         }
     }
 }

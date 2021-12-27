@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Pathfinder.Application.DTO.Auth.Permissions;
+using Pathfinder.Application.DTO.Authentication.Permissions;
 using Pathfinder.Application.Interfaces.Auth;
 using Pathfinder.Core.Entities.Authentication.User;
 

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using Pathfinder.Application.DTO.Auth.Roles;
+using Pathfinder.Application.DTO.Authentication.Roles;
 
 namespace Pathfinder.Application.UseCases.Authorization.Roles
 {

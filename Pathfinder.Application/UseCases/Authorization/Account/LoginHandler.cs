@@ -2,13 +2,13 @@
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using Pathfinder.Application.DTO.Auth.Account;
+using Pathfinder.Application.DTO.Authentication.Account;
 using Pathfinder.Application.Interfaces.Auth;
 using Pathfinder.Application.Services.Authentication;
 
 namespace Pathfinder.Application.UseCases.Authorization.Account;
 
-public class LoginHandler: IRequestHandler<LoginCommand, LoginOutput>
+public class LoginHandler : IRequestHandler<LoginCommand, LoginOutput>
 {
     private readonly IUserService _userService;
     private readonly JwtTokenConfiguration _jwtTokenConfiguration;
