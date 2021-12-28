@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
+using Microsoft.Extensions.Options;
 using Pathfinder.Application.DTO.Authentication.Account;
 using Pathfinder.Application.Interfaces.Auth;
 using Pathfinder.Application.Services.Authentication;
@@ -13,10 +14,10 @@ public class LoginHandler : IRequestHandler<LoginCommand, LoginOutput>
     private readonly IUserService _userService;
     private readonly JwtTokenConfiguration _jwtTokenConfiguration;
 
-    public LoginHandler(IUserService userService, JwtTokenConfiguration jwtTokenConfiguration)
+    public LoginHandler(IUserService userService, IOptions<JwtTokenConfiguration> jwtTokenConfiguration)
     {
         _userService = userService;
-        _jwtTokenConfiguration = jwtTokenConfiguration;
+        _jwtTokenConfiguration = jwtTokenConfiguration.Value;
     }
 
     public async Task<LoginOutput> Handle(LoginCommand request, CancellationToken cancellationToken)

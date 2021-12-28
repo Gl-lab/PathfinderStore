@@ -4,9 +4,9 @@
       <v-toolbar-title>Login</v-toolbar-title>
     </v-toolbar>
     <v-card-text>
-      <div v-for="error in errors" :key="error.name">
+      <div v-for="error in errors" :key="error">
         <v-alert type="error">
-          {{ error.name }}
+          {{ error }}
         </v-alert>
       </div>
       <v-form ref="form" @keyup.native.enter="onSubmit">
@@ -30,9 +30,9 @@
     </v-card-text>
     <v-card-actions class="pa-5">
       <v-spacer></v-spacer>
-      <v-btn color="primary" text to="/account/forgot-password"
-        >ForgotPassword</v-btn
-      >
+      <v-btn color="primary" text to="/account/forgot-password">
+        ForgotPassword
+      </v-btn>
       <v-btn color="primary" text to="/account/register">Register</v-btn>
       <v-btn color="primary" @click="onSubmit">Login</v-btn>
     </v-card-actions>
@@ -40,9 +40,10 @@
 </template>
 
 <script>
-import { createNamespacedHelpers } from "vuex";
+import {createNamespacedHelpers} from "vuex";
 import axios from "axios";
-import { appConst } from "@/settings";
+import {appConst} from "@/settings";
+
 const { mapActions, mapMutations } = createNamespacedHelpers("auth");
 export default {
   data() {
@@ -66,7 +67,7 @@ export default {
             this.$router.push("/");
           },
           err => {
-            this.errors = err.response.data;
+            this.errors.push(err.response.data);
             this.removeToken();
           }
         );
