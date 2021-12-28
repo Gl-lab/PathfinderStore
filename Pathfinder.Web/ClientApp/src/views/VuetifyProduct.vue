@@ -77,9 +77,6 @@ export default {
       this.pageInfo.pageSize = newOption.itemsPerPage;
       this.loadData();
     }
-  },
-  mounted: function() {
-    this.loadData();
   }
 };
 </script>

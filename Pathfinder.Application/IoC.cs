@@ -22,6 +22,7 @@ public static class DependencyInjection
         services.AddAutoMapper(typeof(AutoMapperProfile));
         services.AddScoped<IRacesService, RacesService>();
         services.AddScoped<IShopService, ShopService>();
+        services.AddScoped<IWeaponService, WeaponService>();
         services.AddMediatR(typeof(DependencyInjection));
     }
 }
