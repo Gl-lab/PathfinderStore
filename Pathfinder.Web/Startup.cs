@@ -59,7 +59,6 @@ namespace Pathfinder.Web
             });
 
             services.AddSpaStaticFiles(configuration => configuration.RootPath = "ClientApp/dist");
-
             services.AddInfrastructureServices();
             services.AddApplicationServices();
         }

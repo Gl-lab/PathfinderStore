@@ -13,6 +13,6 @@ public static class Program
 
     private static IHostBuilder CreateHostBuilder(string[] args) =>
         Host.CreateDefaultBuilder(args)
-            .UseDefaultServiceProvider((_, options) => { options.ValidateScopes = true; })
-            .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>());
+            .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>())
+            .UseDefaultServiceProvider((_, options) => { options.ValidateScopes = true; });
 }
