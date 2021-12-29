@@ -62,8 +62,8 @@ export default {
       ) {
         this.product.category = null;
         this.product.price = Number.parseFloat(this.product.price);
-        try {
-          this.axios
+        this.resultCode = 200;
+        this.axios
             .post("/api/Products/CreateProduct", this.product)
             .catch(response => (this.resultCode = response.status))
             .finally(() => {
@@ -73,9 +73,6 @@ export default {
                 this.$router.push("vuetifyproduct");
               }
             });
-        } catch {
-          this.errorText = "Неудачно";
-        }
       }
     }
   }
