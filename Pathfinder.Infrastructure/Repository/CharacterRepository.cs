@@ -28,6 +28,11 @@ namespace Pathfinder.Infrastructure.Repository
         {
             var account = await context.Set<Account>()
                 .Where(e => e.UserId == userId)
+                /*.Include(x => x.CurrentCharacter)
+                .ThenInclude( x => x.Backpack)
+                .ThenInclude( x=> x.Wallet)
+                .Include(x => x.CurrentCharacter)
+                .ThenInclude(x => x.Characteristics)*/
                 .FirstOrDefaultAsync();
             return account?.CurrentCharacter;
         }

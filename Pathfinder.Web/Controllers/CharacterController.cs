@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Pathfinder.Application.DTO;
+using Pathfinder.Application.DTO.Account;
 using Pathfinder.Application.DTO.Items;
-using Pathfinder.Application.UseCases.Authorization.Account;
 using Pathfinder.Application.UseCases.Characters;
 using Pathfinder.Web.Controllers.Base;
 
@@ -25,7 +25,7 @@ namespace Pathfinder.Web.Controllers
         {
             try
             {
-                return Ok(await _mediator.Send(new GetCurrentAccountCommand()));
+                return Ok(await _mediator.Send(new GetCurrentCharacterForAccountCommand()));
             }
             catch (Exception e)
             {
@@ -70,11 +70,11 @@ namespace Pathfinder.Web.Controllers
 
         [HttpPut]
         [Route("IncreaseBalance")]
-        public async Task<ActionResult> IncreaseBalance(int value)
+        public async Task<ActionResult> IncreaseBalance([FromBody] ChangeAccountBalanceDto changeAccountBalanceDto)
         {
             try
             {
-                return Ok(await _mediator.Send(new IncreaseCharacterBalanceCommand(value)));
+                return Ok(await _mediator.Send(new IncreaseCharacterBalanceCommand(changeAccountBalanceDto.Value)));
             }
             catch (Exception e)
             {
@@ -82,13 +82,13 @@ namespace Pathfinder.Web.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPut]
         [Route("DecreaseBalance")]
-        public async Task<ActionResult> DecreaseBalance(int value)
+        public async Task<ActionResult> DecreaseBalance([FromBody] ChangeAccountBalanceDto changeAccountBalanceDto)
         {
             try
             {
-                return Ok(await _mediator.Send(new DecreaseCharacterBalanceCommand(value)));
+                return Ok(await _mediator.Send(new DecreaseCharacterBalanceCommand(changeAccountBalanceDto.Value)));
             }
             catch (Exception e)
             {
