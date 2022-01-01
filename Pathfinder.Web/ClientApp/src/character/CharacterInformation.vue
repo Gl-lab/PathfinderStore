@@ -45,8 +45,7 @@
             min="0"
             step="1"
             type="number"
-        ></v-text-field
-        >
+        ></v-text-field>
       </v-card-text>
       <v-card-actions>
         <v-btn text @click="topUpBalance" color="deep-purple accent-1">
