@@ -1,5 +1,5 @@
 import axios from "axios";
-import { appConst } from "../../settings";
+import {appConst} from "@/settings";
 
 const Auth = {
   namespaced: true,

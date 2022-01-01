@@ -34,6 +34,8 @@ namespace Pathfinder.Application.Mapper
                 .ReverseMap();
             CreateMap<Item, ItemDto>();
             CreateMap<Shop, ShopDto>();
+            CreateMap<Wallet, WalletDto>();
+            CreateMap<Backpack, BackpackDto>();
         }
     }
 }

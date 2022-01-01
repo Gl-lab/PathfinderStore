@@ -1,10 +1,15 @@
 <template>
-  <v-card v-if="currentCharacter">
-    <v-card-title>{{ currentCharacter.name }}</v-card-title>
-    <v-list-item two-line v-if="currentCharacter.race">
+  <v-card v-if="character" max-width="600">
+    <template slot="default">
+      <v-btn icon @click="loadCharacter">
+        <v-icon>mdi-cached</v-icon>
+      </v-btn>
+    </template>
+    <v-card-title>{{ character.name }}</v-card-title>
+    <v-list-item two-line v-if="character.race">
       <v-list-item-content>
         <v-list-item-title>
-          {{ currentCharacter.race.name }}
+          {{ character.race.name }}
         </v-list-item-title>
         <v-list-item-subtitle>Раса</v-list-item-subtitle>
       </v-list-item-content>
@@ -15,41 +20,66 @@
           <v-icon large color="amber darken-2">
             mdi-gold
           </v-icon>
-          {{ gold }}
+          {{ character.wallet.gold }}
         </v-col>
         <v-col>
           <v-icon large color="blue-grey lighten-4">
             mdi-gold
           </v-icon>
-          {{ silver }}
+          {{ character.wallet.silver }}
         </v-col>
         <v-col>
           <v-icon large color="orange accent-4">
             mdi-gold
           </v-icon>
-          {{ copper }}
+          {{ character.wallet.copper }}
         </v-col>
       </v-row>
     </v-card-text>
+    <v-card class="mx-auto" max-width="400">
+      <v-card-text>
+        <v-text-field
+            class="mr-4"
+            v-model="balance"
+            label="Медные монеты"
+            min="0"
+            step="1"
+            type="number"
+        ></v-text-field
+        >
+      </v-card-text>
+      <v-card-actions>
+        <v-btn text @click="topUpBalance" color="deep-purple accent-1">
+          Пополнить кошелек
+        </v-btn>
+      </v-card-actions>
+      <v-card-title class="text-h5">
+        {{ errorText }}
+      </v-card-title>
+    </v-card>
+
     <characteristics-form
-      v-if="currentCharacter.characteristics"
-      :model="currentCharacter.characteristics"
-      class="pt-5 px-15"
+        v-if="character.characteristics"
+        :model="character.characteristics"
+        class="pt-5 px-15"
     ></characteristics-form>
     {{ items }}
   </v-card>
 </template>
 
 <script>
-import { createNamespacedHelpers } from "vuex";
+import {createNamespacedHelpers} from "vuex";
 import CharacteristicsForm from "@/character/CharacteristicsForm.vue";
-const { mapGetters } = createNamespacedHelpers("auth");
+
+const {mapActions, mapGetters} = createNamespacedHelpers("character");
 export default {
   components: {
     CharacteristicsForm
   },
   data() {
     return {
+      balance: 0,
+      errorText: "",
       snackbar: {
         isActive: false,
         text: null,
@@ -59,34 +89,43 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["currentCharacter"]),
-    gold: function() {
-      return Math.floor(this.currentCharacter.balance / 100);
-    },
-    silver: function() {
-      return Math.floor((this.currentCharacter.balance % 100) / 10);
-    },
-    copper: function() {
-      return Math.floor(this.currentCharacter.balance % 10);
-    }
+    ...mapGetters(["character"])
   },
   methods: {
-    loadWeapons: function() {
+    ...mapActions(["loadCharacter"]),
+    topUpBalance: function () {
+      if (this.balance > 0) {
+        let resultCode = null;
+        this.axios
+            .put("/api/Character/IncreaseBalance", {value: this.balance})
+            .catch(error => (resultCode = error.response))
+            .finally(() => {
+              if (resultCode != null && resultCode.status !== 200) {
+                this.errorText = resultCode.data;
+              } else {
+                this.balance = 0;
+                this.loadCharacter();
+              }
+            });
+      }
+    },
+    loadWeapons: function () {
       try {
         this.axios
-          .get("/api/Character/items/Weapons")
-          .then(response => {
-            this.items = response.data;
-          })
-          .catch(error => {
-            console.log(error.message);
-          });
+            .get("/api/Character/items/Weapons")
+            .then(response => {
+              this.items = response.data;
+            })
+            .catch(error => {
+              console.log(error.message);
+            });
       } catch {
         console.log(1);
       }
     }
   },
   mounted() {
+    this.loadCharacter();
     this.loadWeapons();
   }
 };

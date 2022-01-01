@@ -46,7 +46,7 @@ export default {
   data() {
     return {
       product: new Product(),
-      resultCode: 0,
+      resultCode: null,
       errorText: ""
     };
   },
@@ -55,6 +55,7 @@ export default {
       this.product.categoryType = category.categoryType;
     },
     createProduct() {
+      this.resultCode = null;
       if (
         this.product.name !== "" &&
         this.product.description !== "" &&
@@ -62,13 +63,12 @@ export default {
       ) {
         this.product.category = null;
         this.product.price = Number.parseFloat(this.product.price);
-        this.resultCode = 200;
         this.axios
             .post("/api/Products/CreateProduct", this.product)
-            .catch(response => (this.resultCode = response.status))
+            .catch(response => (this.resultCode = response.response.status))
             .finally(() => {
-              if (this.resultCode !== 200) {
-                this.errorText = "Неудачно";
+              if (this.resultCode != null && this.resultCode.status !== 200) {
+                this.errorText = this.resultCode.data;
               } else {
                 this.$router.push("vuetifyproduct");
               }
