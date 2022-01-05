@@ -25,10 +25,10 @@ namespace Pathfinder.Application.UseCases.Products
 
         public async Task<ProductDto> Handle(CreateArticleCommand request, CancellationToken cancellationToken)
         {
-            Article article;
+            Product product;
             try
             {
-                article = await _productService.CreateArticle(request.Name, request.Description, request.Price,
+                product = await _productService.CreateArticle(request.Name, request.Description, request.Price,
                     request.Weight,
                     request.CategoryType);
                 await _unitOfWork.CommitAsync();
@@ -39,7 +39,7 @@ namespace Pathfinder.Application.UseCases.Products
                 throw;
             }
 
-            return _mapper.Map<ProductDto>(article);
+            return _mapper.Map<ProductDto>(product);
         }
     }
 }

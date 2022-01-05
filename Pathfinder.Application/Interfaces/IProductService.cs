@@ -1,19 +1,18 @@
-﻿using Pathfinder.Application.DTO;
-using Pathfinder.Utils.Paging;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Pathfinder.Core.Entities.Product;
+using Pathfinder.Utils.Paging;
 
 namespace Pathfinder.Application.Interfaces
 {
     public interface IProductService
     {
-        Task<IPagedList<Article>> SearchArticles(PageSearchArgs args);
-        Task<Article> GetArticleById(int articleId);
-        Task<Article> CreateArticle(string name, string description, decimal? price, decimal? weight,
+        Task<IPagedList<Product>> SearchArticles(PageSearchArgs args);
+        Task<Product> GetArticleById(int articleId);
+
+        Task<Product> CreateArticle(string name, string description, decimal? price, decimal? weight,
             byte categoryType);
-        Task UpdateArticle(Article article);
-        Task DeleteArticle(Article article);
-        
+
+        Task UpdateArticle(Product product);
+        Task DeleteArticle(Product product);
     }
 }

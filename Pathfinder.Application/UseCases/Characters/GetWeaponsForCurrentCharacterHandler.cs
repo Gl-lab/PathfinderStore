@@ -36,7 +36,7 @@ public class
         var weapons = await _weaponService.WeaponsByProductId(items);
         var result = weaponItems.Select(e =>
         {
-            var currentWeapon = weapons.First(w => w.ArticleId == e.Item.ArticleId);
+            var currentWeapon = weapons.First(w => w.ProductId == e.Item.ProductId);
             return new WeaponItemDto
             {
                 Item = _mapper.Map<ItemDto>(e.Item),

@@ -1,46 +1,47 @@
-﻿using Pathfinder.Core.Entities.Product;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
-using System;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Storage;
 using Pathfinder.Core.Entities.Account;
 using Pathfinder.Core.Entities.Authentication.Permissions;
 using Pathfinder.Core.Entities.Authentication.Role;
 using Pathfinder.Core.Entities.Authentication.User;
+using Pathfinder.Core.Entities.Product;
 using Pathfinder.Core.Entities.Shop;
 using Pathfinder.Core.UnitOfWork;
 
 namespace Pathfinder.Infrastructure.Data
 {
-    public class PgDbContext: IdentityDbContext<User, Role, int, UserClaim, UserRole, UserLogin, RoleClaim, UserToken>, IUnitOfWork
+    public class PgDbContext : IdentityDbContext<User, Role, int, UserClaim, UserRole, UserLogin, RoleClaim, UserToken>,
+        IUnitOfWork
     {
         public PgDbContext(DbContextOptions<PgDbContext> options) : base(options)
         {
-            
         }
-        public DbSet<Article> ArticleList { get; set; }
-        public DbSet<Category> CategoryList { get; set; }
-        public DbSet<DamageType> DamageTypeList { get; set; }
-        public DbSet<Weapon> WeaponList { get; set; }
-        public DbSet<WeaponType> WeaponTypeList { get; set; }
-        public DbSet<Permission> Permissions { get; set; }
-        public DbSet<RolePermission> RolePermissions { get; set; }
+
+        public DbSet<Product> Product { get; set; }
+        public DbSet<Category> Category { get; set; }
+        public DbSet<DamageType> DamageType { get; set; }
+        public DbSet<Weapon> Weapon { get; set; }
+        public DbSet<WeaponType> WeaponType { get; set; }
+        public DbSet<Permission> Permission { get; set; }
+        public DbSet<RolePermission> RolePermission { get; set; }
         public DbSet<Account> Account { get; set; }
         public DbSet<Backpack> Backpack { get; set; }
         public DbSet<Character> Character { get; set; }
         public DbSet<Characteristic> Characteristic { get; set; }
-        public DbSet<CharacteristicType> CharacteristicInfo { get; set; }
+        public DbSet<CharacteristicType> CharacteristicType { get; set; }
         public DbSet<GroupCharacteristic> GroupCharacteristic { get; set; }
         public DbSet<Race> Race { get; set; }
         public DbSet<Size> Size { get; set; }
-        public DbSet<Item> Items { get; set; }
+        public DbSet<Item> Item { get; set; }
         public DbSet<WeaponItemProperty> WeaponItemProperty { get; set; }
         public DbSet<Shop> Shops { get; set; }
         public DbSet<ShopsProduct> ShopsProducts { get; set; }
         public DbSet<WeaponProficiency> WeaponProficiency { get; set; }
-        
+
 
         private IDbContextTransaction _currentTransaction;
         public IDbContextTransaction GetCurrentTransaction => _currentTransaction;
@@ -81,7 +82,7 @@ namespace Pathfinder.Infrastructure.Data
             {
                 if (_currentTransaction != null)
                 {
-                    await _currentTransaction.RollbackAsync();    
+                    await _currentTransaction.RollbackAsync();
                 }
             }
             finally
@@ -98,7 +99,7 @@ namespace Pathfinder.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Article>()
+            modelBuilder.Entity<Product>()
                 .HasOne(p => p.Category)
                 .WithMany()
                 .HasForeignKey(p => p.CategoryType);

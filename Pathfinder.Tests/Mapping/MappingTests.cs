@@ -20,7 +20,7 @@ namespace Pathfinder.Tests.Mapping
         private static Category NewCategory =>
             new() { CategoryType = CategoryType.Weapon, Name = "Weapon", Description = "" };
 
-        private static Article NewArticle =>
+        private static Product NewProduct =>
             new()
             {
                 Name = "Name", Category = NewCategory, Price = 200, Weight = 1,
@@ -41,7 +41,7 @@ namespace Pathfinder.Tests.Mapping
         [Fact]
         public void ArticleMappingTest()
         {
-            var article = NewArticle;
+            var article = NewProduct;
             var articleDto = _mapper.Map<ProductDto>(article);
             Assert.IsType<ProductDto>(articleDto);
             Assert.Equal(article.Name, articleDto.Name);
@@ -51,7 +51,7 @@ namespace Pathfinder.Tests.Mapping
         [Fact]
         public void ItemMappingTest()
         {
-            var item = new Item() { Article = NewArticle };
+            var item = new Item() { Product = NewProduct };
             var itemDto = _mapper.Map<ItemDto>(item);
             Assert.IsType<ItemDto>(itemDto);
             Assert.IsType<ProductDto>(itemDto.Product);

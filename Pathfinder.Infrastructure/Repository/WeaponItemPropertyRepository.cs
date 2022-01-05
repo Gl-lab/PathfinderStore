@@ -9,7 +9,7 @@ using Pathfinder.Infrastructure.Repository.Base;
 
 namespace Pathfinder.Infrastructure.Repository
 {
-    public class WeaponItemPropertyRepository: Repository<WeaponItemProperty>, IWeaponItemPropertyRepository
+    public class WeaponItemPropertyRepository : Repository<WeaponItemProperty>, IWeaponItemPropertyRepository
     {
         public WeaponItemPropertyRepository(PgDbContext context) : base(context)
         {
@@ -20,11 +20,11 @@ namespace Pathfinder.Infrastructure.Repository
             return await TableNoTracking
                 .Where(e => items.Contains(e.ItemId))
                 .Include(e => e.Item)
-                    .ThenInclude(item => item.Article)
-                        .ThenInclude(article => article.Category)
+                .ThenInclude(item => item.Product)
+                .ThenInclude(article => article.Category)
                 .Include(e => e.Item)
-                    .ThenInclude(item => item.Article)
-                        .ThenInclude(article => article.Effects)
+                .ThenInclude(item => item.Product)
+                .ThenInclude(article => article.Effects)
                 .Include(e => e.AdditionalDamages)
                 .ToListAsync()
                 .ConfigureAwait(false);

@@ -12,29 +12,29 @@ using Pathfinder.Utils.Paging;
 
 namespace Pathfinder.Infrastructure.Repository
 {
-    public class ArticleRepository : Repository<Article>, IArticleRepository
+    public class ProductRepository : Repository<Product>, IProductRepository
     {
-        public ArticleRepository(PgDbContext context)
+        public ProductRepository(PgDbContext context)
             : base(context)
         {
         }
 
-        public override async Task<Article> GetByIdAsync(int id)
+        public override async Task<Product> GetByIdAsync(int id)
         {
             return await TableNoTracking.Include(e => e.Category).FirstOrDefaultAsync().ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<Article>> GetListAsync()
+        public async Task<IEnumerable<Product>> GetListAsync()
         {
             return await ListAsync()
                 .ConfigureAwait(false);
         }
 
-        public Task<IPagedList<Article>> SearchAsync(PageSearchArgs args)
+        public Task<IPagedList<Product>> SearchAsync(PageSearchArgs args)
         {
             var query = Table.Include(p => p.Category);
 
-            var orderByList = new List<Tuple<SortingOption, Expression<Func<Article, object>>>>();
+            var orderByList = new List<Tuple<SortingOption, Expression<Func<Product, object>>>>();
 
             if (args.SortingOptions != null)
             {
@@ -44,21 +44,21 @@ namespace Pathfinder.Infrastructure.Repository
                     {
                         case "id":
                             orderByList.Add(
-                                new Tuple<SortingOption, Expression<Func<Article, object>>>(sortingOption, p => p.Id));
+                                new Tuple<SortingOption, Expression<Func<Product, object>>>(sortingOption, p => p.Id));
                             break;
                         case "name":
                             orderByList.Add(
-                                new Tuple<SortingOption, Expression<Func<Article, object>>>(sortingOption,
+                                new Tuple<SortingOption, Expression<Func<Product, object>>>(sortingOption,
                                     p => p.Name));
                             break;
                         case "price":
                             orderByList.Add(
-                                new Tuple<SortingOption, Expression<Func<Article, object>>>(sortingOption,
+                                new Tuple<SortingOption, Expression<Func<Product, object>>>(sortingOption,
                                     p => p.Price));
                             break;
                         case "category.name":
                             orderByList.Add(
-                                new Tuple<SortingOption, Expression<Func<Article, object>>>(sortingOption,
+                                new Tuple<SortingOption, Expression<Func<Product, object>>>(sortingOption,
                                     p => p.Category.Name));
                             break;
                     }
@@ -67,11 +67,11 @@ namespace Pathfinder.Infrastructure.Repository
 
             if (orderByList.Count == 0)
             {
-                orderByList.Add(new Tuple<SortingOption, Expression<Func<Article, object>>>(
+                orderByList.Add(new Tuple<SortingOption, Expression<Func<Product, object>>>(
                     new SortingOption { Direction = SortingOption.SortingDirection.ASC }, p => p.Id));
             }
 
-            var filterList = new List<Tuple<FilteringOption, Expression<Func<Article, bool>>>>();
+            var filterList = new List<Tuple<FilteringOption, Expression<Func<Product, bool>>>>();
 
             if (args.FilteringOptions != null)
             {
@@ -80,52 +80,52 @@ namespace Pathfinder.Infrastructure.Repository
                     switch (filteringOption.Field)
                     {
                         case "id":
-                            filterList.Add(new Tuple<FilteringOption, Expression<Func<Article, bool>>>(filteringOption,
+                            filterList.Add(new Tuple<FilteringOption, Expression<Func<Product, bool>>>(filteringOption,
                                 p => p.Id == (int)filteringOption.Value));
                             break;
                         case "name":
-                            filterList.Add(new Tuple<FilteringOption, Expression<Func<Article, bool>>>(filteringOption,
+                            filterList.Add(new Tuple<FilteringOption, Expression<Func<Product, bool>>>(filteringOption,
                                 p => p.Name.Contains((string)filteringOption.Value)));
                             break;
                         case "price":
-                            filterList.Add(new Tuple<FilteringOption, Expression<Func<Article, bool>>>(filteringOption,
+                            filterList.Add(new Tuple<FilteringOption, Expression<Func<Product, bool>>>(filteringOption,
                                 p => p.Price == (int)filteringOption.Value));
                             break;
                         case "category.name":
-                            filterList.Add(new Tuple<FilteringOption, Expression<Func<Article, bool>>>(filteringOption,
+                            filterList.Add(new Tuple<FilteringOption, Expression<Func<Product, bool>>>(filteringOption,
                                 p => p.Category.Name.Contains((string)filteringOption.Value)));
                             break;
                     }
                 }
             }
 
-            var productPagedList = new PagedList<Article>(query,
+            var productPagedList = new PagedList<Product>(query,
                 new PagingArgs
                     { PageIndex = args.PageIndex, PageSize = args.PageSize, PagingStrategy = args.PagingStrategy },
                 orderByList, filterList);
 
-            return Task.FromResult<IPagedList<Article>>(productPagedList);
+            return Task.FromResult<IPagedList<Product>>(productPagedList);
         }
 
-        public async Task<IEnumerable<Article>> SearchByNameAsync(string productName)
+        public async Task<IEnumerable<Product>> SearchByNameAsync(string productName)
         {
             return await TableNoTracking.Where(p => p.Name.Contains(productName, StringComparison.OrdinalIgnoreCase))
                 .Include(p => p.Category)
                 .ToListAsync().ConfigureAwait(false);
         }
 
-        public async Task<Article> GetByName(string name)
+        public async Task<Product> GetByName(string name)
         {
             return await Table.FirstOrDefaultAsync(p => p.Name == name);
         }
 
-        public async Task<Article> GetByIdWithCategoryAsync(int productId)
+        public async Task<Product> GetByIdWithCategoryAsync(int productId)
         {
             return await GetByIdAsync(productId)
                 .ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<Article>> GetListByCategoryAsync(CategoryType categoryType)
+        public async Task<IEnumerable<Product>> GetListByCategoryAsync(CategoryType categoryType)
         {
             return await TableNoTracking
                 .Where(x => x.CategoryType == categoryType)
