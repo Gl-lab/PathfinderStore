@@ -1,41 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using AutoMapper;
 using Pathfinder.Application.Interfaces;
-using Pathfinder.Application.DTO;
+using Pathfinder.Core.Entities.Product;
 using Pathfinder.Core.Repositories;
 using Pathfinder.Utils.Paging;
-using AutoMapper;
-using Pathfinder.Core.Entities.Product;
 
 namespace Pathfinder.Application.Services
 {
     public sealed class ProductService : IProductService
     {
-        private readonly IArticleRepository _productRepository;
+        private readonly IProductRepository _productRepository;
 
-        public ProductService(IArticleRepository productRepository, IMapper mapper)
+        public ProductService(IProductRepository productRepository, IMapper mapper)
         {
             _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
         }
 
-        public async Task<IPagedList<Article>> SearchArticles(PageSearchArgs args)
+        public async Task<IPagedList<Product>> SearchArticles(PageSearchArgs args)
         {
             return await _productRepository.SearchAsync(args).ConfigureAwait(false);
         }
 
-        public async Task<Article> GetArticleById(int productId)
+        public async Task<Product> GetArticleById(int productId)
         {
             return await _productRepository.GetByIdAsync(productId).ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<Article>> GetArticlesByCategoryId(CategoryType categoryType)
+        public async Task<IEnumerable<Product>> GetArticlesByCategoryId(CategoryType categoryType)
         {
             return await _productRepository
                 .GetListByCategoryAsync(categoryType);
         }
-        
-        public async Task<Article> CreateArticle(string name, string description, decimal? price, decimal? weight, byte categoryType)
+
+        public async Task<Product> CreateArticle(string name, string description, decimal? price, decimal? weight,
+            byte categoryType)
         {
             var existingArticle = await _productRepository.GetByName(name).ConfigureAwait(false);
             if (existingArticle != null)
@@ -48,27 +48,27 @@ namespace Pathfinder.Application.Services
                 throw new ApplicationException("categoryType is undefined");
             }
 
-            var newArticle = new Article
+            var newArticle = new Product
             {
                 Name = name,
                 Description = description,
                 Price = price,
                 Weight = weight,
-                CategoryType = (CategoryType) categoryType
+                CategoryType = (CategoryType)categoryType
             };
 
             _productRepository.Add(newArticle);
 
             return newArticle;
         }
-        
-        public Task UpdateArticle(Article product)
+
+        public Task UpdateArticle(Product product)
         {
             _productRepository.Save(product);
             return Task.CompletedTask;
         }
 
-        public Task DeleteArticle(Article product)
+        public Task DeleteArticle(Product product)
         {
             _productRepository.Delete(product);
             return Task.CompletedTask;

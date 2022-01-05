@@ -1,13 +1,12 @@
-﻿using Pathfinder.Core.Entities.Base;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Pathfinder.Core.Entities.Base;
 
 namespace Pathfinder.Core.Entities.Product
 {
-    public class Article : Entity
+    public class Product : Entity
     {
-        [Required, StringLength(80)]
-        public string Name { get; set; }
+        [Required, StringLength(80)] public string Name { get; set; }
         public string Description { get; set; }
         public string ImageFile { get; set; }
         public decimal? Price { get; set; }

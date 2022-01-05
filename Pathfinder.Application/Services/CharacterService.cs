@@ -56,7 +56,7 @@ namespace Pathfinder.Application.Services
                 character
                     .Backpack
                     .Items
-                    .Where(e => e.Item.Article.CategoryType == CategoryType.Weapon)
+                    .Where(e => e.Item.Product.CategoryType == CategoryType.Weapon)
                     .Select(e => e.Item.Id)
                     .ToList());
         }

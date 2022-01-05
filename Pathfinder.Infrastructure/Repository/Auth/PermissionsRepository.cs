@@ -7,9 +7,10 @@ using Pathfinder.Infrastructure.Data;
 
 namespace Pathfinder.Infrastructure.Repository.Auth
 {
-    public class PermissionsRepository: IPermissionsRepository
+    public class PermissionsRepository : IPermissionsRepository
     {
         private readonly PgDbContext dbContext;
+
         public PermissionsRepository(PgDbContext dbContext)
         {
             this.dbContext = dbContext;
@@ -18,7 +19,7 @@ namespace Pathfinder.Infrastructure.Repository.Auth
         public async Task<ICollection<Permission>> GetListAsync()
         {
             return await dbContext
-                .Permissions
+                .Permission
                 .ToListAsync()
                 .ConfigureAwait(false);
         }

@@ -9,24 +9,25 @@ namespace Pathfinder.Infrastructure.Repository
 {
     public class CategoryRepository : ICategoryRepository
     {
-        private readonly PgDbContext dbContext;
+        private readonly PgDbContext _dbContext;
+
         public CategoryRepository(PgDbContext dbContext)
         {
-            this.dbContext = dbContext;
+            _dbContext = dbContext;
         }
 
         public async Task<ICollection<Category>> ListAsync()
         {
-            return await dbContext
-                .CategoryList
+            return await _dbContext
+                .Category
                 .ToListAsync()
                 .ConfigureAwait(false);
         }
 
         public async Task<Category> GetAsync(CategoryType categoryType)
         {
-            return await dbContext
-                .CategoryList
+            return await _dbContext
+                .Category
                 .FirstAsync(e => e.CategoryType == categoryType)
                 .ConfigureAwait(false);
         }

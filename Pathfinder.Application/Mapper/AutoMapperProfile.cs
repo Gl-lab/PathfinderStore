@@ -17,7 +17,7 @@ namespace Pathfinder.Application.Mapper
             CreateMap<Category, CategoryDto>()
                 .ForMember(m => m.CategoryType,
                     opt => opt.MapFrom(src => (byte)src.CategoryType));
-            CreateMap<Article, ProductDto>()
+            CreateMap<Product, ProductDto>()
                 .ForMember(m => m.CategoryType,
                     opt => opt.MapFrom(src => (byte)src.CategoryType));
             CreateMap<Character, CharacterDto>()
