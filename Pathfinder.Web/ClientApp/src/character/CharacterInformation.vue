@@ -62,7 +62,13 @@
         :model="character.characteristics"
         class="pt-5 px-15"
     ></characteristics-form>
-    {{ items }}
+    <v-data-table
+        dense
+        :headers="getHeaders"
+        :items="getWeapons"
+        item-key="id"
+        class="elevation-1"
+    ></v-data-table>
   </v-card>
 </template>
 
@@ -88,7 +94,36 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["character"])
+    ...mapGetters(["character"]),
+    getHeaders: function () {
+      return [
+        {
+          text: "Наименование",
+          align: "start",
+          sortable: false,
+          value: "name"
+        },
+        {text: "Размер", value: "size"},
+        {text: "Урон", value: "damage"},
+        {text: "Категория", value: "category"},
+        {text: "Тип", value: "type"}
+      ];
+    },
+    getWeapons: function () {
+      if (this.items == null) return null;
+      const itemTable = [];
+      this.items.forEach(value =>
+          itemTable.push({
+            id: value.item.id,
+            name: value.item.product.name,
+            category: value.item.product.category.name,
+            damage: value.damage.count + "D" + value.damage.d,
+            size: value.size,
+            type: value.weaponType.name
+          })
+      );
+      return itemTable;
+    }
   },
   methods: {
     ...mapActions(["loadCharacter"]),
