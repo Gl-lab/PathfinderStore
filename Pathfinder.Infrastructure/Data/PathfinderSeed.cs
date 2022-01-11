@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Pathfinder.Core.Entities.Account;
 using Pathfinder.Core.Entities.Product;
@@ -13,7 +14,7 @@ namespace Pathfinder.Infrastructure.Data
         public static async Task SeedAsync(IServiceProvider app)
         {
             var dbContext = app.GetRequiredService<PgDbContext>();
-
+            await dbContext.Database.MigrateAsync();
             var damageTypeList = GetPreconfiguredDamageTypeList();
 
             Category weaponCategory = new() { CategoryType = CategoryType.Weapon, Name = "Оружие", Description = "" };
