@@ -4,9 +4,9 @@
       <v-toolbar-title>Login</v-toolbar-title>
     </v-toolbar>
     <v-card-text>
-      <div v-for="error in errors" :key="error">
+      <div v-for="error in errors" :key="error.id">
         <v-alert type="error">
-          {{ error }}
+          {{ error.value }}
         </v-alert>
       </div>
       <v-form ref="form" @keyup.native.enter="onSubmit">
@@ -67,7 +67,9 @@ export default {
             this.$router.push("/");
           },
           err => {
-            this.errors.push(err.response.data);
+            err.response.data.forEach(x =>
+                this.errors.push({value: x.value, id: this.errors.length})
+            );
             this.removeToken();
           }
         );
