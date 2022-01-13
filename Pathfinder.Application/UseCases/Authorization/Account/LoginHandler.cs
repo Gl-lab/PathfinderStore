@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Pathfinder.Application.DTO.Authentication.Account;
 using Pathfinder.Application.Interfaces.Auth;
 using Pathfinder.Application.Services.Authentication;
+using Pathfinder.Core.UnitOfWork;
 
 namespace Pathfinder.Application.UseCases.Authorization.Account;
 
@@ -13,10 +14,13 @@ public class LoginHandler : IRequestHandler<LoginCommand, LoginOutput>
 {
     private readonly IUserService _userService;
     private readonly JwtTokenConfiguration _jwtTokenConfiguration;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public LoginHandler(IUserService userService, IOptions<JwtTokenConfiguration> jwtTokenConfiguration)
+    public LoginHandler(IUserService userService, IOptions<JwtTokenConfiguration> jwtTokenConfiguration,
+        IUnitOfWork unitOfWork)
     {
         _userService = userService;
+        _unitOfWork = unitOfWork;
         _jwtTokenConfiguration = jwtTokenConfiguration.Value;
     }
 
@@ -37,7 +41,7 @@ public class LoginHandler : IRequestHandler<LoginCommand, LoginOutput>
             expires: _jwtTokenConfiguration.EndDate,
             signingCredentials: _jwtTokenConfiguration.SigningCredentials
         );
-
+        await _unitOfWork.CommitAsync();
         return new LoginOutput { Token = new JwtSecurityTokenHandler().WriteToken(token) };
     }
 }

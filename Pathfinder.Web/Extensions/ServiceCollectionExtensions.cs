@@ -12,7 +12,6 @@ using Pathfinder.Core.Entities.Authentication.Permissions;
 using Pathfinder.Core.Entities.Authentication.Role;
 using Pathfinder.Core.Entities.Authentication.User;
 using Pathfinder.Infrastructure.Data;
-using Pathfinder.Web.ActionFilters;
 using Pathfinder.Web.Authentication;
 
 namespace Pathfinder.Web.Extensions;
@@ -48,6 +47,8 @@ public static class ServiceCollection
             options.Password.RequireNonAlphanumeric = false;
             options.Password.RequireUppercase = false;
             options.Password.RequiredUniqueChars = 2;
+            options.Lockout.AllowedForNewUsers = false;
+            options.Lockout.MaxFailedAccessAttempts = 5;
         });
 
         services.AddAuthorization(options =>
@@ -71,7 +72,6 @@ public static class ServiceCollection
     public static void ConfigureDependencyInjection(this IServiceCollection services)
     {
         services.AddTransient<IAuthorizationHandler, PermissionHandler>();
-        services.AddTransient<UnitOfWorkActionFilter>();
     }
 
     public static void ConfigureJwtTokenAuth(this IServiceCollection services, IConfiguration configuration)
@@ -86,7 +86,7 @@ public static class ServiceCollection
             Audience = configuration["Authentication:JwtBearer:Audience"],
             SigningCredentials = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256),
             StartDate = DateTime.UtcNow,
-            EndDate = DateTime.UtcNow.AddDays(60),
+            EndDate = DateTime.UtcNow.AddDays(14),
         };
 
         services.Configure<JwtTokenConfiguration>(config =>

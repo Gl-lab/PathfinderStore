@@ -152,7 +152,7 @@ namespace Pathfinder.Application.Services.Authentication
                 EmailConfirmed = true
             };
 
-            return await _userManager.CreateAsync(applicationUser, user.Password).ConfigureAwait(false);
+            return await _userManager.CreateAsync(applicationUser, user.Password);
         }
 
         public async Task<IdentityResult> CreateUser(string userName, string email, string password)
@@ -161,10 +161,17 @@ namespace Pathfinder.Application.Services.Authentication
             {
                 UserName = userName,
                 Email = email,
-                EmailConfirmed = true
+                EmailConfirmed = true,
+                AccessFailedCount = 5,
             };
 
-            return await _userManager.CreateAsync(applicationUser, password).ConfigureAwait(false);
+            var createUserResult = await _userManager.CreateAsync(applicationUser, password);
+            if (createUserResult.Succeeded)
+            {
+                await GrantRolesToUserAsync(new List<int> { 2 }, applicationUser);
+            }
+
+            return createUserResult;
         }
 
         public async Task<User> FindByEmailAsync(string email)
@@ -196,7 +203,7 @@ namespace Pathfinder.Application.Services.Authentication
                 return null;
             }
 
-            if (await _userManager.CheckPasswordAsync(userToVerify, password).ConfigureAwait(false))
+            if (await _userManager.CheckPasswordAsync(userToVerify, password))
             {
                 return new ClaimsIdentity(new GenericIdentity(userNameOrEmail, "Token"), new[]
                 {
