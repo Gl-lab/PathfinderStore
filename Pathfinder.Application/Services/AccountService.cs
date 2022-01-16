@@ -1,24 +1,25 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using Pathfinder.Application.Interfaces;
-using Pathfinder.Core.Repositories;
 using AutoMapper;
 using Pathfinder.Application.DTO;
-using System.Linq;
 using Pathfinder.Application.Exceptions;
+using Pathfinder.Application.Interfaces;
 using Pathfinder.Application.Interfaces.Auth;
 using Pathfinder.Core.Entities.Account;
 using Pathfinder.Core.Entities.Authentication.User;
+using Pathfinder.Core.Repositories;
 
 namespace Pathfinder.Application.Services
 {
-    public sealed class AccountService: IAccountService
+    public sealed class AccountService : IAccountService
     {
         private readonly IMapper _mapper;
         private readonly IAccountRepository _accountRepository;
         private readonly IUserService _userService; // TODO Вытащить от сюда этот сервис
-        public AccountService(IAccountRepository accountRepository, 
+
+        public AccountService(IAccountRepository accountRepository,
             IMapper mapper,
             IUserService userService)
         {
@@ -27,9 +28,15 @@ namespace Pathfinder.Application.Services
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         }
 
+        public Task CreateAsync(int userId)
+        {
+            _accountRepository.Add(new Account { UserId = userId });
+            return Task.CompletedTask;
+        }
+
         public async Task<AccountDto> GetCurrentAccountAsync()
         {
-            var account = await CurrentAccountAsync().ConfigureAwait(false);
+            var account = await CurrentAccountAsync();
             return _mapper.Map<AccountDto>(account);
         }
 
@@ -41,6 +48,7 @@ namespace Pathfinder.Application.Services
             {
                 throw new PathfiderApplicationException("Герой с таким именем уже существует");
             }
+
             account.Characters.Add(_mapper.Map<Character>(newCharacter));
             _accountRepository.Save(account);
         }
@@ -53,6 +61,7 @@ namespace Pathfinder.Application.Services
             {
                 throw new PathfiderApplicationException("Герой отсутствует");
             }
+
             account.Characters.Remove(character);
             _accountRepository.Save(account);
         }
@@ -72,26 +81,30 @@ namespace Pathfinder.Application.Services
 
         public async Task SetCurrentCharacterAsync(int characterId)
         {
-            var account = await CurrentAccountAsync().ConfigureAwait(false);
+            var account = await CurrentAccountAsync();
             var character = account.Characters.FirstOrDefault(e => e.Id == characterId);
-            account.CurrentCharacter = character ?? throw new PathfiderApplicationException("The user does not have a character with the specified ID");
+            account.CurrentCharacter = character ??
+                                       throw new PathfiderApplicationException(
+                                           "The user does not have a character with the specified ID");
             _accountRepository.Save(account);
         }
 
         public async Task SetCurrentCharacterAsync(CharacterDto character)
         {
             if (character == null) throw new ArgumentNullException(nameof(character));
-            var account = await CurrentAccountAsync().ConfigureAwait(false);
+            var account = await CurrentAccountAsync();
             var accountCharacter = account.Characters.FirstOrDefault(e => e.Id == character.Id);
-            account.CurrentCharacter = accountCharacter ?? throw new PathfiderApplicationException("The user does not have a character with the specified ID");
+            account.CurrentCharacter = accountCharacter ??
+                                       throw new PathfiderApplicationException(
+                                           "The user does not have a character with the specified ID");
             _accountRepository.Save(account);
         }
-       
+
         public async Task UpdateAsync(AccountDto newAccount)
         {
             var user = _userService.GetCurrentUser()
-                ?? throw new PathfiderApplicationException("userService.GetCurrentUser()");
-            var account = await _accountRepository.GetByUserIdAsync(user.Id).ConfigureAwait(false);
+                       ?? throw new PathfiderApplicationException("userService.GetCurrentUser()");
+            var account = await _accountRepository.GetByUserIdAsync(user.Id);
             if (account == null) throw new PathfiderApplicationException("Account for user not exists");
             account.Name = newAccount.Name;
             account.Surname = newAccount.Surname;
@@ -101,7 +114,7 @@ namespace Pathfinder.Application.Services
         private async Task<Account> CurrentAccountAsync()
         {
             var user = _userService.GetCurrentUser();
-            return await _accountRepository.GetByUserIdAsync(user.Id).ConfigureAwait(false);
+            return await _accountRepository.GetByUserIdAsync(user.Id);
         }
     }
 }

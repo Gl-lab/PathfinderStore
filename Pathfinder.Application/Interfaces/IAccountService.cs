@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using Pathfinder.Application.DTO;
 using System.Threading.Tasks;
+using Pathfinder.Application.DTO;
 using Pathfinder.Core.Entities.Authentication.User;
 
 namespace Pathfinder.Application.Interfaces
@@ -8,6 +8,7 @@ namespace Pathfinder.Application.Interfaces
     public interface IAccountService
     {
         Task UpdateAsync(AccountDto newAccount);
+        Task CreateAsync(int userId);
         Task<AccountDto> GetCurrentAccountAsync();
         Task CreateCharacterAsync(CharacterDto newCharacter);
         Task DeleteCharacterAsync(int deletedCharacterId);
@@ -15,7 +16,5 @@ namespace Pathfinder.Application.Interfaces
         Task<ICollection<CharacterDto>> GetCharactersByCurrentUserAsync();
         Task SetCurrentCharacterAsync(CharacterDto character);
         Task SetCurrentCharacterAsync(int characterId);
-        
-        
     }
 }

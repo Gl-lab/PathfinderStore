@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Pathfinder.Application.Interfaces;
 using Pathfinder.Application.Interfaces.Auth;
 using Pathfinder.Core.UnitOfWork;
 
@@ -12,11 +13,16 @@ public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, Identity
 {
     private readonly IUserService _userService;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAccountService _accountService;
 
-    public RegisterUserHandler(IUserService userService, IUnitOfWork unitOfWork)
+    public RegisterUserHandler(
+        IUserService userService,
+        IUnitOfWork unitOfWork,
+        IAccountService accountService)
     {
         _userService = userService;
         _unitOfWork = unitOfWork;
+        _accountService = accountService;
     }
 
 
@@ -35,7 +41,14 @@ public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, Identity
             }.ToArray());
         }
 
-        await _unitOfWork.CommitAsync();
-        return await _userService.CreateUser(request.UserName, request.Email, request.Password);
+        IdentityResult result = await _userService.CreateUser(request.UserName, request.Email, request.Password);
+        if (result.Succeeded)
+        {
+            var createdUser = await _userService.FindByEmailAsync(request.Email);
+            await _accountService.CreateAsync(createdUser.Id);
+            await _unitOfWork.CommitAsync();
+        }
+
+        return result;
     }
 }

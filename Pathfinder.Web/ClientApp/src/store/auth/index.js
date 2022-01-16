@@ -39,7 +39,7 @@ const Auth = {
     },
     getUserName: state => {
       if (state.account && state.account.user) {
-        return state.account.user.userName;
+        return state.account.user.userName.toString().toUpperCase()[0];
       }
       return null;
     }
