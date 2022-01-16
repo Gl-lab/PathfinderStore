@@ -9,24 +9,27 @@ Vue.use(VueRouter);
 
 const routes = [
   {
-    path: "/",
-    name: "Home",
+    path: "/Characters",
+    name: "Characters",
     meta: {
       mainMenu: {
+        index: 1,
         mainMenu: true,
-        icon: "mdi-home",
-        title: "Домашняя"
+        icon: "mdi-account-group",
+        title: "Персонажи"
       }
     },
     component: Home
   },
   {
-    path: "/about",
+    path: "/",
     name: "About",
+
     meta: {
       mainMenu: {
+        index: 0,
         mainMenu: true,
-        icon: "mdi-microsoft-xbox",
+        icon: "mdi-information-outline",
         title: "About"
       }
     },
@@ -42,8 +45,9 @@ const routes = [
     path: "/character",
     meta: {
       mainMenu: {
+        index: 2,
         mainMenu: true,
-        icon: "mdi-folder-heart-outline",
+        icon: "mdi-account",
         title: "Персонаж"
       }
     },
@@ -57,7 +61,8 @@ const routes = [
       mainMenu: {
         mainMenu: true,
         icon: "mdi-widgets",
-        title: "Товары"
+        title: "Товары",
+        index: 3,
       }
     },
     component: VuetifyProduct

@@ -70,6 +70,13 @@
         class="elevation-1"
     ></v-data-table>
   </v-card>
+  <h1 v-else>Создайте персонажа (
+    <v-btn icon to="Characters">
+      <v-icon>mdi-account-group</v-icon>
+    </v-btn>
+    ) и выберите его текущием с помощью кнопки
+    <v-icon>mdi-account-plus-outline</v-icon>
+  </h1>
 </template>
 
 <script>

@@ -1,16 +1,17 @@
 <template>
-  <div class="home">
-    <h1>Все хорошо! Вы на главной</h1>
+  <div>
     <div v-if="isAuthorized">
-      <characters-list />
+      <characters-list/>
     </div>
+    <h1 v-else>Авторизуйтесь</h1>
   </div>
 </template>
 <script>
-import { mapGetters } from "vuex";
+import {mapGetters} from "vuex";
 import CharactersList from "@/character/CharactersList";
+
 export default {
-  name: "Home",
+  name: "Characters",
   data() {
     return {
       dialog: false

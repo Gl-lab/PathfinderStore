@@ -43,9 +43,9 @@
       <v-icon small @click="deleteItem(item)">
         mdi-delete
       </v-icon>
-      <v-icon v-if="item.isCurrentCharacter"> mdi-star</v-icon>
+      <v-icon v-if="item.isCurrentCharacter"> mdi-account-check</v-icon>
       <v-icon v-else @click="setCurrentCharacter(item)">
-        mdi-star-plus-outline
+        mdi-account-plus-outline
       </v-icon>
     </template>
   </v-data-table>
