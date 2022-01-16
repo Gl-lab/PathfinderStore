@@ -2,7 +2,7 @@
   <div v-if="!registerComplete">
     <v-card class="elevation-12">
       <v-toolbar dark color="primary">
-        <v-toolbar-title>Register</v-toolbar-title>
+        <v-toolbar-title>Регистрация</v-toolbar-title>
       </v-toolbar>
       <v-card-text>
         <div v-for="error in errors" :key="error.name">
@@ -12,33 +12,33 @@
         </div>
         <v-form ref="form" @keyup.native.enter="onSubmit">
           <v-text-field
-            name="userName"
-            label="UserName"
-            type="text"
-            v-model="registerInput.userName"
-            :rules="[requiredError]"
+              name="userName"
+              label="Никнейм"
+              type="text"
+              v-model="registerInput.userName"
+              :rules="[requiredError]"
           ></v-text-field>
           <v-text-field
-            name="email"
-            label="EmailAddress"
-            type="text"
-            v-model="registerInput.email"
-            :rules="[requiredError]"
+              name="email"
+              label="Электронная почта"
+              type="text"
+              v-model="registerInput.email"
+              :rules="[requiredError]"
           ></v-text-field>
           <v-text-field
-            name="password"
-            label="Password"
-            type="password"
-            v-model="registerInput.password"
-            :rules="[requiredError]"
+              name="password"
+              label="Пароль"
+              type="password"
+              v-model="registerInput.password"
+              :rules="[requiredError]"
           ></v-text-field>
           <v-text-field
-            name="passwordRepeat"
-            label="PasswordRepeat"
-            v-model="registerInput.passwordRepeat"
-            type="password"
-            :rules="[requiredError]"
-            :error-messages="
+              name="passwordRepeat"
+              label="Повтор пароля"
+              v-model="registerInput.passwordRepeat"
+              type="password"
+              :rules="[requiredError]"
+              :error-messages="
               passwordMatchError(
                 registerInput.password,
                 registerInput.passwordRepeat
@@ -49,8 +49,8 @@
       </v-card-text>
       <v-card-actions class="pa-5">
         <v-spacer></v-spacer>
-        <v-btn color="primary" text to="/account/login">Login</v-btn>
-        <v-btn color="primary" @click="onSubmit">Register</v-btn>
+        <v-btn color="primary" text to="/account/login">Войти</v-btn>
+        <v-btn color="primary" @click="onSubmit">Регистрация</v-btn>
       </v-card-actions>
     </v-card>
   </div>
@@ -89,7 +89,7 @@ export default {
         this.axios
           .post("/api/register", this.registerInput)
           .then(() => {
-            this.resultMessage = "AccountCreationSuccessful";
+            this.resultMessage = "Регистрация прошла успешно";
             this.registerComplete = true;
           })
           .catch(err => {
@@ -99,9 +99,9 @@ export default {
       }
     },
     passwordMatchError(password, passwordRepeat) {
-      return password === passwordRepeat ? "" : "Несовпадение паролей";
+      return password === passwordRepeat ? "" : "Пароли не совпадают";
     },
-    requiredError: v => !!v || "RequiredField"
+    requiredError: v => !!v || "Обязательное поле"
   }
 };
 </script>

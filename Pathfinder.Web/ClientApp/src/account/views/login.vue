@@ -1,7 +1,7 @@
 ﻿<template>
-  <v-card class="elevation-12">
+  <v-card>
     <v-toolbar dark color="primary">
-      <v-toolbar-title>Login</v-toolbar-title>
+      <v-toolbar-title>Авторизация</v-toolbar-title>
     </v-toolbar>
     <v-card-text>
       <div v-for="error in errors" :key="error.id">
@@ -11,30 +11,27 @@
       </div>
       <v-form ref="form" @keyup.native.enter="onSubmit">
         <v-text-field
-          prepend-icon="mdi-account"
-          name="userNameOrEmail"
-          type="text"
-          label="UserNameOrEmailAddress"
-          v-model="loginInput.userNameOrEmail"
-          :rules="[requiredError]"
+            prepend-icon="mdi-account"
+            name="userNameOrEmail"
+            type="text"
+            label="Никнейм или эл. почта"
+            v-model="loginInput.userNameOrEmail"
+            :rules="[requiredError]"
         ></v-text-field>
         <v-text-field
-          prepend-icon="mdi-lock"
-          name="password"
-          type="password"
-          label="Password"
-          v-model="loginInput.password"
-          :rules="[requiredError]"
+            prepend-icon="mdi-lock"
+            name="password"
+            type="password"
+            label="Пароль"
+            v-model="loginInput.password"
+            :rules="[requiredError]"
         ></v-text-field>
       </v-form>
     </v-card-text>
     <v-card-actions class="pa-5">
       <v-spacer></v-spacer>
-      <v-btn color="primary" text to="/account/forgot-password">
-        ForgotPassword
-      </v-btn>
-      <v-btn color="primary" text to="/account/register">Register</v-btn>
-      <v-btn color="primary" @click="onSubmit">Login</v-btn>
+      <v-btn color="primary" text to="/account/register">Зарегистрироваться</v-btn>
+      <v-btn color="primary" @click="onSubmit">Войти</v-btn>
     </v-card-actions>
   </v-card>
 </template>

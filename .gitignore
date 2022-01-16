@@ -331,3 +331,4 @@ ASALocalRun/
 
 .vscode/
 Pathfinder.Web/appsettings.json
+Pathfinder.Web/appsettings.Development.json
