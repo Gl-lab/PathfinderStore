@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <v-app>
-      <v-navigation-drawer app expand-on-hover>
+      <v-navigation-drawer app v-model="drawer" expand-on-hover>
         <v-list v-if="isAuthorized">
           <v-list-item class="px-2">
             <v-avatar class="mr-5" color="primary white--text" size="45">
@@ -69,7 +69,10 @@
           </div>
         </template>
       </v-navigation-drawer>
-      <v-app-bar app clipped-left></v-app-bar>
+      <v-app-bar app clipped-left>
+        <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
+      </v-app-bar>
+
       <v-main>
         <v-container fluid>
           <v-fade-transition mode="out-in">
@@ -88,6 +91,7 @@ const { mapActions, mapGetters } = createNamespacedHelpers("auth");
 
 export default {
   name: "Home",
+  data: () => ({drawer: null}),
   computed: {
     ...mapGetters([
       "getToken",
