@@ -30,7 +30,7 @@ const routes = [
         index: 0,
         mainMenu: true,
         icon: "mdi-information-outline",
-        title: "About"
+        title: "Информация"
       }
     },
     component: () => import("../views/About.vue")
