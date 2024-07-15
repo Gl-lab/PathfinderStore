@@ -332,3 +332,5 @@ ASALocalRun/
 .vscode/
 Pathfinder.Web/appsettings.json
 Pathfinder.Web/appsettings.Development.json
+Dockerfile
+Pathfinder.Web/ClientApp/.env.production

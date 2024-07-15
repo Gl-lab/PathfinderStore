@@ -1,14 +1,16 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Authorization.Authentication.Permissions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Pathfinder.Application.DTO.Authentication;
-using Pathfinder.Application.DTO.Authentication.Roles;
-using Pathfinder.Application.UseCases.Authorization.Roles;
-using Pathfinder.Core.Entities.Authentication.Permissions;
 using Pathfinder.Utils.Paging;
 using Pathfinder.Web.Controllers.Base;
+using Secure.Application.DTO.Authentication;
+using Secure.Application.DTO.Authentication.Roles;
+using Secure.Application.UseCases.Authorization.Roles;
 
 namespace Pathfinder.Web.Controllers
 {
@@ -40,12 +42,12 @@ namespace Pathfinder.Web.Controllers
         [Authorize(Policy = DefaultPermissions.PermissionNameForRoleCreate)]
         public async Task<ActionResult> PostRoles([FromBody] CreateOrUpdateRoleCommand command)
         {
-            var identityResult = await _mediator.Send(command)
-                .ConfigureAwait(false);
+            IdentityResult identityResult = await _mediator.Send(command)
+                                                           .ConfigureAwait(false);
 
             if (identityResult.Succeeded)
             {
-                return Created(Url.Action("PostRoles") ?? string.Empty, identityResult);
+                return Created(Url.Action("PostRoles") ?? String.Empty, identityResult);
             }
 
             return BadRequest(identityResult.Errors.Select(e => new NameValueDto(e.Code, e.Description)));

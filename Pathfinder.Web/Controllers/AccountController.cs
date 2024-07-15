@@ -2,15 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Authorization.Authentication.Permissions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Pathfinder.Application.DTO;
-using Pathfinder.Application.DTO.Authentication;
-using Pathfinder.Application.DTO.Authentication.Account;
-using Pathfinder.Application.UseCases.Authorization.Account;
-using Pathfinder.Core.Entities.Authentication.Permissions;
+using Pathfinder.Application.UseCases.Account;
 using Pathfinder.Web.Controllers.Base;
+using Secure.Application.DTO.Authentication;
+using Secure.Application.DTO.Authentication.Account;
+using Secure.Application.UseCases.Authorization.Account;
 
 namespace Pathfinder.Web.Controllers
 {
@@ -19,110 +20,109 @@ namespace Pathfinder.Web.Controllers
         private readonly IMediator _mediator;
 
         public AccountController(
-            IMediator mediator)
+            IMediator mediator )
         {
             _mediator = mediator;
         }
 
-        [HttpGet]
-        [Authorize(Policy = DefaultPermissions.PermissionNameForMemberAccess)]
-        public async Task<ActionResult<AccountDto>> Get()
-        {
-            AccountDto result = await _mediator.Send(new GetCurrentAccountCommand());
-            return Ok(result);
-        }
+        // [HttpGet]
+        // [Authorize(Policy = DefaultPermissions.PermissionNameForMemberAccess)]
+        // public async Task<ActionResult<AccountDto>> Get()
+        // {
+        //     AccountDto result = await _mediator.Send(new GetCurrentAccountCommand());
+        //     return Ok(result);
+        // }
 
-        [HttpPost("/api/[action]")]
-        public async Task<ActionResult<LoginOutput>> Login([FromBody] LoginInput input)
+        [HttpPost( "/api/[action]" )]
+        public async Task<ActionResult<LoginOutput>> Login( [FromBody] LoginInput input )
         {
             try
             {
-                var loginOutput =
-                    await _mediator.Send(new LoginCommand(input.UserNameOrEmail, input.Password));
+                LoginOutput? loginOutput =
+                    await _mediator.Send( new LoginCommand( input.UserNameOrEmail, input.Password ) );
 
-                if (loginOutput == null)
+                if ( loginOutput is null )
                 {
-                    return BadRequest(new List<NameValueDto>
+                    return BadRequest( new List<NameValueDto>
                     {
-                        new("UserNameOrPasswordIncorrect", "The user name or password is incorrect!")
-                    });
+                        new( "UserNameOrPasswordIncorrect", "The user name or password is incorrect!" )
+                    } );
                 }
 
-                return Ok(loginOutput);
+                return Ok( loginOutput );
             }
-            catch (Exception e)
+            catch ( Exception e )
             {
-                return BadRequest(e.Message);
+                return BadRequest( e.Message );
             }
         }
 
-        [HttpPost("/api/[action]")]
-        public async Task<ActionResult> Register([FromBody] RegisterInput input)
+        [HttpPost( "/api/[action]" )]
+        public async Task<ActionResult> Register( [FromBody] RegisterInput input )
         {
-            var result = await _mediator.Send(new RegisterUserCommand(input.UserName, input.Email, input.Password));
-            if (!result.Succeeded)
+            RegisterUserOutput result =
+                await _mediator.Send( new RegisterUserCommand( input.UserName, input.Email, input.Password ) );
+            if ( !result.IdentityResult.Succeeded || result.UserId is null )
             {
-                return BadRequest(result.Errors.Select(e => new NameValueDto(e.Code, e.Description)).ToList());
+                return BadRequest( result.IdentityResult.Errors.Select( e => new NameValueDto( e.Code, e.Description ) ).ToList() );
             }
-
+            
+            await _mediator.Send( new CreateNewAccountCommand( result.UserId.Value ) );
+            
             return Ok();
         }
 
-        [HttpPost("/api/[action]")]
-        [Authorize(Policy = DefaultPermissions.PermissionNameForMemberAccess)]
-        public async Task<ActionResult> ChangePassword([FromBody] ChangePasswordInput input)
+        [HttpPost( "/api/[action]" )]
+        [Authorize( Policy = DefaultPermissions.PermissionNameForMemberAccess )]
+        public async Task<ActionResult> ChangePassword( [FromBody] ChangePasswordInput input )
         {
-            var result = await _mediator.Send(new ChangePasswordCommand(User.Identity.Name, input.CurrentPassword,
-                input.NewPassword, input.PasswordRepeat));
-
-            if (!result.Succeeded)
+            if ( User is not { Identity.Name: not null } )
             {
-                return BadRequest(result.Errors.Select(e => new NameValueDto(e.Code, e.Description)).ToList());
+                return Unauthorized();
             }
 
-            return Ok();
-        }
+            IdentityResult result = await _mediator.Send( new ChangePasswordCommand( User.Identity.Name,
+                input.CurrentPassword,
+                input.NewPassword, input.PasswordRepeat ) );
 
-        [HttpPost("/api/[action]")]
-        public async Task<ActionResult> ResetPassword([FromBody] ResetPasswordInput input)
-        {
-            var result =
-                await _mediator.Send(new ResetPasswordCommand(input.UserNameOrEmail, input.Password, input.Token));
-            if (!result.Succeeded)
+            if ( !result.Succeeded )
             {
-                return BadRequest(result.Errors.Select(e => new NameValueDto(e.Code, e.Description)).ToList());
+                return BadRequest( result.Errors.Select( e => new NameValueDto( e.Code, e.Description ) ).ToList() );
             }
 
             return Ok();
         }
 
-
-        [Authorize(Policy = DefaultPermissions.PermissionNameForMemberAccess)]
-        [HttpPost]
-        [Route("[action]")]
-        public async Task<ActionResult> CreateCharacter(CharacterDto newCharacter)
+        [HttpPost( "/api/[action]" )]
+        public async Task<ActionResult> ResetPassword( [FromBody] ResetPasswordInput input )
         {
-            await _mediator.Send(new CreateCharacterCommand(newCharacter));
+            IdentityResult result =
+                await _mediator.Send( new ResetPasswordCommand( input.UserNameOrEmail, input.Password, input.Token ) );
+            if ( !result.Succeeded )
+            {
+                return BadRequest( result.Errors.Select( e => new NameValueDto( e.Code, e.Description ) ).ToList() );
+            }
+
             return Ok();
         }
 
-        [Authorize(Policy = DefaultPermissions.PermissionNameForMemberAccess)]
-        [HttpDelete]
-        [Route("[action]")]
-        public async Task<ActionResult> DeleteCharacter(int deletedCharacterId)
-        {
-            await _mediator.Send(new DeleteCharacterCommand(deletedCharacterId));
-            return Ok();
-        }
+        //
+        // [Authorize(Policy = DefaultPermissions.PermissionNameForMemberAccess)]
+        // [HttpPost]
+        // [Route("[action]")]
+        // public async Task<ActionResult> CreateCharacter(CharacterDto newCharacter)
+        // {
+        //     await _mediator.Send(new CreateCharacterCommand(newCharacter));
+        //     return Ok();
+        // }
 
-        [Authorize(Policy = DefaultPermissions.PermissionNameForMemberAccess)]
-        [HttpPost]
-        [Produces("application/json")]
-        [Route("[action]")]
-        public async Task<ActionResult> SetCurrentCharacter([FromForm] int characterId)
-        {
-            await _mediator.Send(new SetCurrentCharacterCommand(characterId));
-            return Ok();
-        }
+        // [Authorize(Policy = DefaultPermissions.PermissionNameForMemberAccess)]
+        // [HttpDelete]
+        // [Route("[action]")]
+        // public async Task<ActionResult> DeleteCharacter(int deletedCharacterId)
+        // {
+        //     await _mediator.Send(new DeleteCharacterCommand(deletedCharacterId));
+        //     return Ok();
+        // }
     }
 }

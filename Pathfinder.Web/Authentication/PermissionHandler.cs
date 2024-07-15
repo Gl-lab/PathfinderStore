@@ -1,42 +1,30 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Pathfinder.Application.Interfaces.Auth;
-using Pathfinder.Core.Entities.Authentication.User;
+using Secure.Application.Services.Authentication;
 
 namespace Pathfinder.Web.Authentication
 {
-    public class PermissionHandler : AuthorizationHandler<PermissionRequirement>
+    public class PermissionHandler( IPermissionService permissionApp,
+                                    IUserService userService )
+        : AuthorizationHandler<PermissionRequirement>
     {
-        private readonly IPermissionService _permissionApp;
-        private readonly IUserService _userService;
-        private readonly UserManager<User> _userManager;
-
-        public PermissionHandler(IPermissionService permissionApp,
-            IUserService userService,
-            UserManager<User> userManager)
+        protected override async Task HandleRequirementAsync( AuthorizationHandlerContext context,
+                                                              PermissionRequirement requirement )
         {
-            _permissionApp = permissionApp;
-            _userService = userService;
-            _userManager = userManager;
-        }
-
-        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context,
-            PermissionRequirement requirement)
-        {
-            if (context.User?.Identity != null && context.User?.Identity.IsAuthenticated != true)
+            if ( context.User.Identity != null && context.User.Identity.IsAuthenticated != true )
             {
                 context.Fail();
                 return;
             }
 
-            var hasPermission = await _permissionApp
-                .IsUserGrantedToPermissionAsync(context.User.Identity.Name, requirement.Permission.Name)
-                .ConfigureAwait(false);
-            if (hasPermission)
+            bool hasPermission = await permissionApp
+                                      .IsUserGrantedToPermissionAsync( context.User.Identity?.Name,
+                                           requirement.Permission.Name )
+                                      .ConfigureAwait( false );
+            if ( hasPermission )
             {
-                await _userService.SetCurrentUserByLogin(context.User.Identity.Name).ConfigureAwait(false);
-                context.Succeed(requirement);
+                await userService.SetCurrentUserByLogin( context.User.Identity.Name ).ConfigureAwait( false );
+                context.Succeed( requirement );
             }
         }
     }

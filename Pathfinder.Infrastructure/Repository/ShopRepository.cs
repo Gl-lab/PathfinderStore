@@ -7,7 +7,7 @@ namespace Pathfinder.Infrastructure.Repository;
 
 internal sealed class ShopRepository : Repository<Shop>, IShopRepository
 {
-    public ShopRepository(PgDbContext context) : base(context)
+    public ShopRepository(PathfinderDbContext context) : base(context)
     {
     }
 }

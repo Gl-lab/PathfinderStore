@@ -12,18 +12,25 @@ namespace Pathfinder.Infrastructure.Repository
 {
     public class AccountRepository : Repository<Account>, IAccountRepository
     {
-        public AccountRepository(PgDbContext dbContext)
-            : base(dbContext)
+        public AccountRepository( PathfinderDbContext dbContext )
+            : base( dbContext )
         {
         }
 
-        public async Task<Account> GetByUserIdAsync(int UserId)
+        public async Task<Account> GetByUserIdAsync( int userId )
         {
             return await Table
-                .Where(e => UserId == e.UserId)
-                .Include(e => e.Characters)
-                .FirstOrDefaultAsync()
-                .ConfigureAwait(false);
+                        .Where( e => userId == e.User.Id )
+                        .Include( e => e.Characters )
+                        .FirstOrDefaultAsync();
+        }
+
+        public async Task<Account> GetByCharacterIdAsync( int characterId )
+        {
+            return await Table
+                 .Where( e => e.Characters.Any( x => x.Id == characterId ) )
+                 .Include( e => e.Characters )
+                 .FirstOrDefaultAsync();
         }
     }
 }

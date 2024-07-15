@@ -16,34 +16,34 @@ namespace Pathfinder.Web
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup( IConfiguration configuration )
         {
             Configuration = configuration;
         }
 
         private IConfiguration Configuration { get; }
 
-        public void ConfigureServices(IServiceCollection services)
+        public void ConfigureServices( IServiceCollection services )
         {
-            services.ConfigureDbContext(Configuration);
+            services.ConfigureDbContext( Configuration );
             services.ConfigureAuthentication();
-            services.ConfigureJwtTokenAuth(Configuration);
-            services.ConfigureCors(Configuration);
+            services.ConfigureJwtTokenAuth( Configuration );
+            services.ConfigureCors( Configuration );
             services.ConfigureDependencyInjection();
 
             services.AddControllers();
 
-            services.AddSwaggerGen(c =>
+            services.AddSwaggerGen( c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Pathfinde API", Version = "v1" });
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                c.SwaggerDoc( "v1", new OpenApiInfo { Title = "Pathfinde API", Version = "v1" } );
+                c.AddSecurityDefinition( "Bearer", new OpenApiSecurityScheme
                 {
                     Description = "Standard Authorization header using the Bearer scheme. Example: \"bearer {token}\"",
                     In = ParameterLocation.Header,
                     Name = "Authorization",
                     Type = SecuritySchemeType.ApiKey
-                });
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                } );
+                c.AddSecurityRequirement( new OpenApiSecurityRequirement
                 {
                     {
                         new OpenApiSecurityScheme
@@ -56,17 +56,19 @@ namespace Pathfinder.Web
                         },
                         Array.Empty<string>()
                     }
-                });
-            });
+                } );
+            } );
 
-            services.AddSpaStaticFiles(configuration => configuration.RootPath = "ClientApp/dist");
+            services.AddSpaStaticFiles( configuration => configuration.RootPath = "ClientApp/dist" );
             services.AddInfrastructureServices();
-            services.AddApplicationServices();
+            services.AddShopApplicationServices();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
+        public void Configure( IApplicationBuilder app,
+                               IWebHostEnvironment env,
+                               IServiceProvider serviceProvider )
         {
-            if (env.IsDevelopment())
+            if ( env.IsDevelopment() )
             {
                 app.UseDeveloperExceptionPage();
             }
@@ -79,29 +81,29 @@ namespace Pathfinder.Web
             app.UseSpaStaticFiles();
 
             app.UseSwagger();
-            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Pathfinder API V1"));
-            app.UseCors(Configuration["App:CorsOriginPolicyName"]);
+            app.UseSwaggerUI( c => c.SwaggerEndpoint( "/swagger/v1/swagger.json", "Pathfinder API V1" ) );
+            app.UseCors( Configuration[ "App:CorsOriginPolicyName" ] );
 
             app.UseRouting();
 
-            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            app.UseForwardedHeaders( new ForwardedHeadersOptions
             {
                 ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-            });
+            } );
             app.UseAuthentication();
             app.UseAuthorization();
-            app.UseEndpoints(endpoints => endpoints.MapControllers());
+            app.UseEndpoints( endpoints => endpoints.MapControllers() );
 
-            app.UseSpa(spa =>
-            {
-                spa.Options.SourcePath = env.IsDevelopment() ? "ClientApp" : "dist";
-
-                if (env.IsDevelopment())
-                {
-                    spa.UseVueCli(npmScript: "serve");
-                }
-            });
-            PathfinderSeed.SeedAsync(serviceProvider).Wait();
+            // app.UseSpa( spa =>
+            // {
+            //     spa.Options.SourcePath = env.IsDevelopment() ? "ClientApp" : "dist";
+            //
+            //     if ( env.IsDevelopment() )
+            //     {
+            //         spa.UseVueCli( npmScript: "serve" );
+            //     }
+            // } );
+            //PathfinderSeed.SeedAsync(serviceProvider).Wait();
         }
     }
 }

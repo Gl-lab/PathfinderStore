@@ -11,7 +11,7 @@ namespace Pathfinder.Infrastructure.Repository
 {
     public class WeaponItemPropertyRepository : Repository<WeaponItemProperty>, IWeaponItemPropertyRepository
     {
-        public WeaponItemPropertyRepository(PgDbContext context) : base(context)
+        public WeaponItemPropertyRepository(PathfinderDbContext context) : base(context)
         {
         }
 
@@ -21,10 +21,10 @@ namespace Pathfinder.Infrastructure.Repository
                 .Where(e => items.Contains(e.ItemId))
                 .Include(e => e.Item)
                 .ThenInclude(item => item.Product)
-                .ThenInclude(article => article.Category)
+             //   .ThenInclude(article => article.Category)
                 .Include(e => e.Item)
                 .ThenInclude(item => item.Product)
-                .ThenInclude(article => article.Effects)
+             //   .ThenInclude(article => article.Effects)
                 .Include(e => e.AdditionalDamages)
                 .ToListAsync()
                 .ConfigureAwait(false);

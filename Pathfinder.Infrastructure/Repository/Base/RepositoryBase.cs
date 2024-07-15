@@ -4,15 +4,15 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Pathfinder.Core.Entities.Base;
-using Pathfinder.Core.Repositories.Base;
 using Pathfinder.Infrastructure.Data;
+using Pathfinder.Utils.Entities.Base;
+using Pathfinder.Utils.Repositories.Base;
 
 namespace Pathfinder.Infrastructure.Repository.Base
 {
     public class RepositoryBase<T, TId> : IRepositoryBase<T, TId> where T : class, IEntityBase<TId>
     {
-        public RepositoryBase(PgDbContext context)
+        public RepositoryBase(PathfinderDbContext context)
         {
             this.context = context;
         }
@@ -76,9 +76,9 @@ namespace Pathfinder.Infrastructure.Repository.Base
             string includeString = null,
             bool disableTracking = true)
         {
-            var query = disableTracking ? TableNoTracking : Table;
+            IQueryable<T> query = disableTracking ? TableNoTracking : Table;
 
-            if (!string.IsNullOrWhiteSpace(includeString))
+            if (!String.IsNullOrWhiteSpace(includeString))
             {
                 query = query.Include(includeString);
             }
@@ -101,7 +101,7 @@ namespace Pathfinder.Infrastructure.Repository.Base
             List<Expression<Func<T, object>>> includes = null,
             bool disableTracking = true)
         {
-            var query = disableTracking ? TableNoTracking : Table;
+            IQueryable<T> query = disableTracking ? TableNoTracking : Table;
 
             if (includes != null)
             {

@@ -1,0 +1,21 @@
+using System.Text.Json;
+
+namespace Secure.Application.DTO.Authentication
+{
+    public class NameValueDto
+    {
+        public NameValueDto(string name, string value)
+        {
+            Name = name;
+            Value = value;
+        }
+
+        public string Name { get; }
+        public string Value { get; }
+
+        public override string ToString()
+        {
+            return JsonSerializer.Serialize( this );
+        }
+    }
+}

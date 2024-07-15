@@ -7,7 +7,7 @@ namespace Pathfinder.Infrastructure.Repository
 {
     public class RacesRepository: Repository<Race>, IRacesRepository
     {
-        public RacesRepository(PgDbContext context) : base(context)
+        public RacesRepository(PathfinderDbContext context) : base(context)
         {
         }
     }

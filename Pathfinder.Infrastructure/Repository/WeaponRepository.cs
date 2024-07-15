@@ -11,7 +11,7 @@ namespace Pathfinder.Infrastructure.Repository
 {
     public class WeaponRepository : Repository<Weapon>, IWeaponRepository
     {
-        public WeaponRepository(PgDbContext context) : base(context)
+        public WeaponRepository(PathfinderDbContext context) : base(context)
         {
         }
 

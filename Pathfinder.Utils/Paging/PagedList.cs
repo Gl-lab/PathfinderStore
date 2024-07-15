@@ -20,15 +20,15 @@ namespace Pathfinder.Utils.Paging
             List<Tuple<SortingOption, Expression<Func<T, object>>>> orderByList = null,
             List<Tuple<FilteringOption, Expression<Func<T, bool>>>> filterList = null)
         {
-            query = query.OrderBy(orderByList);
-            query = query.Where(filterList);
+            // query = query.OrderBy(orderByList);
+            // query = query.Where(filterList);
 
             PageIndex = pagingArgs.PageIndex < 1 ? 1 : pagingArgs.PageIndex;
             PageSize = pagingArgs.PageSize < 1 ? 10 : pagingArgs.PageSize;
 
             TotalCount = 0;
 
-            var items = pagingArgs.PagingStrategy == PagingStrategy.NoCount
+            List<T> items = pagingArgs.PagingStrategy == PagingStrategy.NoCount
                         ? query.Skip((PageIndex - 1) * PageSize).Take(PageSize + 1).ToList()
                         : (
                             (TotalCount = query.Count()) > 0
@@ -43,7 +43,9 @@ namespace Pathfinder.Utils.Paging
             TotalPages = TotalCount / PageSize;
 
             if (TotalCount % PageSize > 0)
+            {
                 TotalPages++;
+            }
 
             if (pagingArgs.PagingStrategy == PagingStrategy.NoCount && items.Count == PageSize + 1)
             {

@@ -11,30 +11,30 @@ namespace Pathfinder.Infrastructure.Repository
 {
     public class CharacterRepository : Repository<Character>, ICharacterRepository
     {
-        public CharacterRepository(PgDbContext dbContext)
+        public CharacterRepository(PathfinderDbContext dbContext)
             : base(dbContext)
         {
         }
 
-        public async Task<ICollection<Character>> GetListAsync(int userId)
+        public async Task<List<Character>> GetListAsync(int userId)
         {
-            var account = await context.Set<Account>()
-                .Where(e => e.UserId == userId)
-                .FirstOrDefaultAsync();
+            Account account = await context.Set<Account>()
+                                           .Where(e => e.User.Id == userId)
+                                           .FirstOrDefaultAsync();
             return account?.Characters;
         }
 
-        public async Task<Character> GetCurrentAsync(int userId)
-        {
-            var account = await context.Set<Account>()
-                .Where(e => e.UserId == userId)
-                /*.Include(x => x.CurrentCharacter)
-                .ThenInclude( x => x.Backpack)
-                .ThenInclude( x=> x.Wallet)
-                .Include(x => x.CurrentCharacter)
-                .ThenInclude(x => x.Characteristics)*/
-                .FirstOrDefaultAsync();
-            return account?.CurrentCharacter;
-        }
+        // public async Task<Character> GetCurrentAsync(int userId)
+        // {
+        //     Account account = await context.Set<Account>()
+        //                                    .Where(e => e.User.Id == userId)
+        //                                     /*.Include(x => x.CurrentCharacter)
+        //         .ThenInclude( x => x.Backpack)
+        //         .ThenInclude( x=> x.Wallet)
+        //         .Include(x => x.CurrentCharacter)
+        //         .ThenInclude(x => x.Characteristics)*/
+        //                                    .FirstOrDefaultAsync();
+        //     return account?.CurrentCharacter;
+        // }
     }
 }

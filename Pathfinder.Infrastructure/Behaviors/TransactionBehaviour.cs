@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Storage;
 using Pathfinder.Infrastructure.Data;
 
 namespace Pathfinder.Infrastructure.Behaviors
@@ -11,22 +12,22 @@ namespace Pathfinder.Infrastructure.Behaviors
     public class TransactionBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     {
         private readonly ILogger<TransactionBehaviour<TRequest, TResponse>> _logger;
-        private readonly PgDbContext _dbContext;
+        private readonly PathfinderDbContext _dbContext;
 
-        public TransactionBehaviour(PgDbContext dbContext,
+        public TransactionBehaviour(PathfinderDbContext dbContext,
             ILogger<TransactionBehaviour<TRequest, TResponse>> logger)
         {
-            _dbContext = dbContext ?? throw new ArgumentException(nameof(PgDbContext));
+            _dbContext = dbContext ?? throw new ArgumentException(nameof(PathfinderDbContext));
             _logger = logger ?? throw new ArgumentException(nameof(ILogger));
         }
 
-        public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<TResponse> next)
+        public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken )
         {
             TResponse response = default;
 
             try
             {
-                var strategy = _dbContext.Database.CreateExecutionStrategy();
+                IExecutionStrategy strategy = _dbContext.Database.CreateExecutionStrategy();
                 await strategy.ExecuteAsync(async () =>
                 {
                     _logger.LogInformation($"Begin transaction {typeof(TRequest).Name}");
@@ -35,7 +36,7 @@ namespace Pathfinder.Infrastructure.Behaviors
 
                     response = await next().ConfigureAwait(false);
 
-                    await _dbContext.CommitAsync().ConfigureAwait(false);
+                    await _dbContext.Commit().ConfigureAwait(false);
 
                     _logger.LogInformation($"Committed transaction {typeof(TRequest).Name}");
                 }).ConfigureAwait(false);
@@ -46,7 +47,7 @@ namespace Pathfinder.Infrastructure.Behaviors
             {
                 _logger.LogInformation($"Rollback transaction executed {typeof(TRequest).Name}");
 
-                await _dbContext.RollbackAsync();
+                await _dbContext.Rollback();
                 throw;
             }
         }

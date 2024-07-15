@@ -1,13 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Pathfinder.Core.Repositories;
-using Pathfinder.Core.Repositories.Auth;
-using Pathfinder.Core.Repositories.Base;
 using Pathfinder.Core.Repositories.Shop;
-using Pathfinder.Core.UnitOfWork;
 using Pathfinder.Infrastructure.Data;
 using Pathfinder.Infrastructure.Repository;
-using Pathfinder.Infrastructure.Repository.Auth;
 using Pathfinder.Infrastructure.Repository.Base;
+using Pathfinder.Utils.Repositories.Base;
+using Pathfinder.Utils.UnitOfWork;
 
 namespace Pathfinder.Infrastructure
 {
@@ -19,19 +17,14 @@ namespace Pathfinder.Infrastructure
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
 
-            services.AddScoped<IRoleRepository, RoleRepository>();
-            services.AddScoped<IUserRoleRepository, UserRoleRepository>();
             services.AddScoped<ICharacterRepository, CharacterRepository>();
 
             services.AddScoped<IAccountRepository, AccountRepository>();
-            services.AddScoped<IPermissionsRepository, PermissionsRepository>();
-            services.AddScoped<IRolePermissionsRepository, RolePermissionsRepository>();
             services.AddScoped<IRacesRepository, RacesRepository>();
 
             services.AddScoped<IWeaponItemPropertyRepository, WeaponItemPropertyRepository>();
             services.AddScoped<IWeaponRepository, WeaponRepository>();
             services.AddScoped<IShopRepository, ShopRepository>();
-            services.AddScoped<IUnitOfWork>(sp => sp.GetService<PgDbContext>());
         }
     }
 }

@@ -9,9 +9,9 @@ namespace Pathfinder.Infrastructure.Repository
 {
     public class CategoryRepository : ICategoryRepository
     {
-        private readonly PgDbContext _dbContext;
+        private readonly PathfinderDbContext _dbContext;
 
-        public CategoryRepository(PgDbContext dbContext)
+        public CategoryRepository(PathfinderDbContext dbContext)
         {
             _dbContext = dbContext;
         }
