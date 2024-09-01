@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Identity;
 
-namespace Secure.Application.UseCases.Authorization.Account;
+namespace Pathfinder.Secure.Application.UseCases.Authorization.Account;
 
 public class ResetPasswordCommand : IRequest<IdentityResult>
 {

@@ -1,11 +1,11 @@
-﻿using Authorization.Authentication.Permissions;
-using Authorization.Authentication.Role;
-using Authorization.Authentication.User;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Pathfinder.Secure.Domain.Authentication.Permissions;
+using Pathfinder.Secure.Domain.Authentication.Role;
+using Pathfinder.Secure.Domain.Authentication.User;
 
-namespace Secure.Infrastructure.Data;
+namespace Pathfinder.Secure.Infrastructure.Data;
 
 public class SecureDbContext : IdentityDbContext<User, Role, int, UserClaim, UserRole, UserLogin, RoleClaim, UserToken>
 {

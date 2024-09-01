@@ -1,13 +1,12 @@
-﻿using MediatR;
-using Pathfinder.Application.DTO.Shop;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using MediatR;
+using Pathfinder.Store.Application.DTO.Shop;
 
-namespace Pathfinder.Application.UseCases.Shop
+namespace Pathfinder.Store.Application.UseCases.Shop;
+
+public class GetAllShopsCommand : IRequest<IReadOnlyList<ShopDto>>
 {
-    public class GetAllShopsCommand : IRequest<IReadOnlyList<ShopDto>>
+    public GetAllShopsCommand()
     {
-        public GetAllShopsCommand()
-        {
-        }
     }
 }

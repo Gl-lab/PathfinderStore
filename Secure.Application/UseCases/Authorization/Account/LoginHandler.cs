@@ -2,12 +2,12 @@
 using System.Security.Claims;
 using MediatR;
 using Microsoft.Extensions.Options;
+using Pathfinder.Secure.Application.Configuration;
+using Pathfinder.Secure.Application.DTO.Authentication.Account;
+using Pathfinder.Secure.Application.Services.Authentication;
 using Pathfinder.Utils.UnitOfWork;
-using Secure.Application.Configuration;
-using Secure.Application.DTO.Authentication.Account;
-using Secure.Application.Services.Authentication;
 
-namespace Secure.Application.UseCases.Authorization.Account;
+namespace Pathfinder.Secure.Application.UseCases.Authorization.Account;
 
 public class LoginHandler : IRequestHandler<LoginCommand, LoginOutput>
 {

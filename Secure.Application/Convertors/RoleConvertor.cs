@@ -1,7 +1,7 @@
-﻿using Authorization.Authentication.Role;
-using Secure.Application.DTO.Authentication.Roles;
+﻿using Pathfinder.Secure.Application.DTO.Authentication.Roles;
+using Pathfinder.Secure.Domain.Authentication.Role;
 
-namespace Secure.Application.Convertors;
+namespace Pathfinder.Secure.Application.Convertors;
 
 public class RoleConvertor : IRoleConvertor
 {

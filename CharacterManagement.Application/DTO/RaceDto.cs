@@ -1,13 +1,12 @@
-﻿using CharacterManagement.Application.DTO.Base;
+﻿using Pathfinder.CharacterManagement.Application.DTO.Base;
 
-namespace CharacterManagement.Application.DTO
+namespace Pathfinder.CharacterManagement.Application.DTO;
+
+public class RaceDto: BaseDto
 {
-    public class RaceDto: BaseDto
-    {
-        public string Name { get; set; }
-        public int SizeId { get; set; }
-        public virtual RaceSizeDto Size { get; set; }
-        public int BaseSpeed { get; set;}
-        public bool IsNightVision { get; set; }
-    }
+    public string Name { get; set; }
+    public int SizeId { get; set; }
+    public virtual RaceSizeDto Size { get; set; }
+    public int BaseSpeed { get; set;}
+    public bool IsNightVision { get; set; }
 }

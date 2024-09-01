@@ -1,6 +1,6 @@
-﻿using Domain.Contracts;
+﻿using Pathfinder.Contracts;
 
-namespace Authorization.Exceptions;
+namespace Pathfinder.Secure.Domain.Exceptions;
 
 public class SecureException: PathfinderException
 {

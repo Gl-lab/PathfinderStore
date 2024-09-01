@@ -1,7 +1,7 @@
-﻿using CharacterManagement.Application.DTO;
-using MediatR;
+﻿using MediatR;
+using Pathfinder.CharacterManagement.Application.DTO;
 
-namespace Pathfinder.Application.UseCases.Authorization.Account;
+namespace Pathfinder.CharacterManagement.Application.UseCases.Characters;
 
 public class CreateCharacterCommand : IRequest, IRequest<Task>
 {

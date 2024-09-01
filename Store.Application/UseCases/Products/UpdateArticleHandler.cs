@@ -2,12 +2,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using Pathfinder.Application.Exceptions;
-using Pathfinder.Application.Services;
-using Pathfinder.Core.Entities.Product;
+using Pathfinder.Store.Application.Exceptions;
+using Pathfinder.Store.Application.Services;
 using Pathfinder.Utils.UnitOfWork;
 
-namespace Pathfinder.Application.UseCases.Products;
+namespace Pathfinder.Store.Application.UseCases.Products;
 
 public class UpdateArticleHandler : IRequestHandler<UpdateArticleCommand, Task>
 {
@@ -25,12 +24,12 @@ public class UpdateArticleHandler : IRequestHandler<UpdateArticleCommand, Task>
     {
         if ( request.Id < 1 )
         {
-            throw new PathfiderApplicationException( $"Incorrect Id={request.Id} in {nameof( UpdateArticleHandler )}" );
+            throw new PathfinderApplicationException( $"Incorrect Id={request.Id} in {nameof( UpdateArticleHandler )}" );
         }
 
         if ( !Enum.IsDefined( typeof( CategoryType ), request.CategoryType ) )
         {
-            throw new PathfiderApplicationException(
+            throw new PathfinderApplicationException(
                 $"Incorrect CategoryType={request.CategoryType} in {nameof( CategoryType )}" );
         }
 

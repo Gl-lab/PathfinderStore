@@ -1,9 +1,8 @@
-using Authorization.Authentication.Role;
+using Pathfinder.Secure.Domain.Authentication.Role;
 
-namespace Authorization.Repositories
+namespace Pathfinder.Secure.Application.Repositories;
+
+public interface IRolePermissionsRepository
 {
-    public interface IRolePermissionsRepository
-    {
-        Task AddRangeAsync(IEnumerable<RolePermission> rolePermissions);
-    }
+    Task AddRangeAsync(IEnumerable<RolePermission> rolePermissions);
 }

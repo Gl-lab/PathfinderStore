@@ -1,7 +1,6 @@
-namespace Secure.Application.DTO.Authentication.Account
+namespace Pathfinder.Secure.Application.DTO.Authentication.Account;
+
+public class ForgotPasswordInput
 {
-    public class ForgotPasswordInput
-    {
-        public string UserNameOrEmail { get; set; }
-    }
+    public string UserNameOrEmail { get; set; }
 }

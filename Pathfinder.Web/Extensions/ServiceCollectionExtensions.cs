@@ -1,8 +1,5 @@
 using System;
 using System.Text;
-using Authorization.Authentication.Permissions;
-using Authorization.Authentication.Role;
-using Authorization.Authentication.User;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -10,14 +7,16 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using Pathfinder.Infrastructure.Data;
+using Pathfinder.Secure.Application;
+using Pathfinder.Secure.Application.Configuration;
+using Pathfinder.Secure.Domain.Authentication.Permissions;
+using Pathfinder.Secure.Domain.Authentication.Role;
+using Pathfinder.Secure.Domain.Authentication.User;
+using Pathfinder.Secure.Infrastructure;
+using Pathfinder.Secure.Infrastructure.Data;
 using Pathfinder.Utils.UnitOfWork;
 using Pathfinder.Web.Authentication;
 using Pathfinder.Web.Utils;
-using Secure.Application;
-using Secure.Application.Configuration;
-using Secure.Infrastructure;
-using Secure.Infrastructure.Data;
 
 namespace Pathfinder.Web.Extensions;
 
@@ -68,10 +67,10 @@ public static class ServiceCollection
 
     public static void ConfigureDbContext( this IServiceCollection services, IConfiguration configuration )
     {
-        services.AddDbContext<PathfinderDbContext>( options =>
-            options
-               .UseNpgsql( connectionString: configuration[ "DB:Main" ] ?? throw new InvalidOperationException("DB_CONNECTION for PathfinderDbContext not found") )
-               .UseLazyLoadingProxies() );
+        // services.AddDbContext<StoreDbContext>( options =>
+        //     options
+        //        .UseNpgsql( connectionString: configuration[ "DB:Main" ] ?? throw new InvalidOperationException("DB_CONNECTION for PathfinderDbContext not found") )
+        //        .UseLazyLoadingProxies() );
         
         services.AddDbContext<SecureDbContext>( options =>
             options
@@ -81,7 +80,7 @@ public static class ServiceCollection
         services.AddScoped<IUnitOfWork>( context =>
         {
             UnitOfWork unitOfWork = new();
-            unitOfWork.AddDbContext( context.GetService<PathfinderDbContext>() );
+            // unitOfWork.AddDbContext( context.GetService<StoreDbContext>() );
             unitOfWork.AddDbContext( context.GetService<SecureDbContext>() );
             return unitOfWork;
         } );

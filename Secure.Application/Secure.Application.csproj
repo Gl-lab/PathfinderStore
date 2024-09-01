@@ -5,6 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>12</LangVersion>
+        <RootNamespace>Pathfinder.Secure.Application</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -20,6 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="MassTransit.Abstractions" Version="8.2.3" />
       <PackageReference Include="MediatR" Version="12.3.0" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.7" />
       <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="8.0.7" />

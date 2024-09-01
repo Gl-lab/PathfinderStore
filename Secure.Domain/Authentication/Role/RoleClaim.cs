@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 
-namespace Authorization.Authentication.Role
+namespace Pathfinder.Secure.Domain.Authentication.Role;
+
+public class RoleClaim : IdentityRoleClaim<int>
 {
-    public class RoleClaim : IdentityRoleClaim<int>
-    {
-    }
 }

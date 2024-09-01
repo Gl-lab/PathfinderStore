@@ -1,18 +1,14 @@
 ﻿using MediatR;
-using Pathfinder.Application.Services;
 
-namespace Pathfinder.Application.UseCases.Authorization.Account;
+namespace Pathfinder.CharacterManagement.Application.UseCases.Characters;
 
-public class CreateCharacterHandler: IRequestHandler<CreateCharacterCommand>
+public class CreateCharacterHandler : IRequestHandler<CreateCharacterCommand>
 {
-    private readonly IAccountService _accountService;
-
-    public CreateCharacterHandler(IAccountService accountService)
+    public CreateCharacterHandler(  )
     {
-        _accountService = accountService;
     }
 
-    public async Task Handle(CreateCharacterCommand request, CancellationToken cancellationToken)
+    public async Task Handle( CreateCharacterCommand request, CancellationToken cancellationToken )
     {
         //await _accountService.CreateCharacterAsync(request.Character);
     }

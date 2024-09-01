@@ -1,76 +1,74 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Pathfinder.Core.Entities.Product;
-using Pathfinder.Core.Repositories;
+using Pathfinder.Store.Application.Repositories;
 using Pathfinder.Utils.Paging;
 
-namespace Pathfinder.Application.Services.Implementation
+namespace Pathfinder.Store.Application.Services.Implementation;
+
+public sealed class ProductService : IProductService
 {
-    public sealed class ProductService : IProductService
+    private readonly IProductRepository _productRepository;
+
+    public ProductService( IProductRepository productRepository )
     {
-        private readonly IProductRepository _productRepository;
+        _productRepository = productRepository ?? throw new ArgumentNullException( nameof( productRepository ) );
+    }
 
-        public ProductService( IProductRepository productRepository )
+    public async Task<List<Product>> SearchArticles( PageSearchArgs args )
+    {
+        return await _productRepository.SearchAsync( args ).ConfigureAwait( false );
+    }
+
+    public async Task<Product> GetArticleById( int productId )
+    {
+        return await _productRepository.GetByIdAsync( productId ).ConfigureAwait( false );
+    }
+
+    public async Task<IEnumerable<Product>> GetArticlesByCategoryId( CategoryType categoryType )
+    {
+        return await _productRepository
+           .GetListByCategoryAsync( categoryType );
+    }
+
+    public async Task<Product> CreateArticle( string name,
+                                              string description,
+                                              decimal? price,
+                                              decimal? weight,
+                                              byte categoryType )
+    {
+        Product existingArticle = await _productRepository.GetByName( name );
+        if ( existingArticle != null )
         {
-            _productRepository = productRepository ?? throw new ArgumentNullException( nameof( productRepository ) );
+            throw new ApplicationException( "Article with this id already exists" );
         }
 
-        public async Task<List<Product>> SearchArticles( PageSearchArgs args )
+        if ( !Enum.IsDefined( typeof( CategoryType ), categoryType ) )
         {
-            return await _productRepository.SearchAsync( args ).ConfigureAwait( false );
+            throw new ApplicationException( "categoryType is undefined" );
         }
 
-        public async Task<Product> GetArticleById( int productId )
+        Product newArticle = new Product
         {
-            return await _productRepository.GetByIdAsync( productId ).ConfigureAwait( false );
-        }
+            Price = price,
+            Weight = weight,
+            CategoryType = ( CategoryType )categoryType
+        };
 
-        public async Task<IEnumerable<Product>> GetArticlesByCategoryId( CategoryType categoryType )
-        {
-            return await _productRepository
-               .GetListByCategoryAsync( categoryType );
-        }
+        _productRepository.Add( newArticle );
 
-        public async Task<Product> CreateArticle( string name,
-                                                  string description,
-                                                  decimal? price,
-                                                  decimal? weight,
-                                                  byte categoryType )
-        {
-            Product existingArticle = await _productRepository.GetByName( name );
-            if ( existingArticle != null )
-            {
-                throw new ApplicationException( "Article with this id already exists" );
-            }
+        return newArticle;
+    }
 
-            if ( !Enum.IsDefined( typeof( CategoryType ), categoryType ) )
-            {
-                throw new ApplicationException( "categoryType is undefined" );
-            }
+    public Task UpdateArticle( Product product )
+    {
+        _productRepository.Save( product );
+        return Task.CompletedTask;
+    }
 
-            Product newArticle = new Product
-            {
-                Price = price,
-                Weight = weight,
-                CategoryType = ( CategoryType )categoryType
-            };
-
-            _productRepository.Add( newArticle );
-
-            return newArticle;
-        }
-
-        public Task UpdateArticle( Product product )
-        {
-            _productRepository.Save( product );
-            return Task.CompletedTask;
-        }
-
-        public Task DeleteArticle( Product product )
-        {
-            _productRepository.Delete( product );
-            return Task.CompletedTask;
-        }
+    public Task DeleteArticle( Product product )
+    {
+        _productRepository.Delete( product );
+        return Task.CompletedTask;
     }
 }

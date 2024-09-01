@@ -1,9 +1,9 @@
-﻿using Authorization.Authentication.User;
-using Secure.Application.Repositories;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Pathfinder.Secure.Application.Repositories;
+using Pathfinder.Secure.Domain.Authentication.User;
 
-namespace Secure.Infrastructure.Repositories;
+namespace Pathfinder.Secure.Infrastructure.Repositories;
 
 public class UserRepository: IUserRepository
 {

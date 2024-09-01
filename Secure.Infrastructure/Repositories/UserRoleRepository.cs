@@ -1,21 +1,20 @@
-using Authorization.Authentication.User;
-using Authorization.Repositories;
-using Secure.Infrastructure.Data;
+using Pathfinder.Secure.Application.Repositories;
+using Pathfinder.Secure.Domain.Authentication.User;
+using Pathfinder.Secure.Infrastructure.Data;
 
-namespace Secure.Infrastructure.Repositories
+namespace Pathfinder.Secure.Infrastructure.Repositories;
+
+public class UserRoleRepository: IUserRoleRepository
 {
-    public class UserRoleRepository: IUserRoleRepository
+    private readonly SecureDbContext _dbContext;
+    public UserRoleRepository(SecureDbContext dbContext)
     {
-        private readonly SecureDbContext _dbContext;
-        public UserRoleRepository(SecureDbContext dbContext)
-        {
-            _dbContext = dbContext;
-        }
+        _dbContext = dbContext;
+    }
 
-        public async Task AddRangeAsync(IEnumerable<UserRole> userRoles)
-        {
-            _dbContext.AddRange(userRoles);
-            await _dbContext.SaveChangesAsync().ConfigureAwait(false);
-        }
+    public async Task AddRangeAsync(IEnumerable<UserRole> userRoles)
+    {
+        _dbContext.AddRange(userRoles);
+        await _dbContext.SaveChangesAsync().ConfigureAwait(false);
     }
 }

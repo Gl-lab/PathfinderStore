@@ -2,12 +2,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using Pathfinder.Application.DTO;
-using Pathfinder.Application.Exceptions;
-using Pathfinder.Application.Services;
-using Pathfinder.Core.Entities.Product;
+using Pathfinder.Store.Application.DTO;
+using Pathfinder.Store.Application.Exceptions;
+using Pathfinder.Store.Application.Services;
 
-namespace Pathfinder.Application.UseCases.Category;
+namespace Pathfinder.Store.Application.UseCases.Category;
 
 public class CategoryByCategoryTypeHandler : IRequestHandler<CategoryByCategoryTypeCommand, CategoryDto>
 {
@@ -22,7 +21,7 @@ public class CategoryByCategoryTypeHandler : IRequestHandler<CategoryByCategoryT
     {
         if ( !Enum.IsDefined( typeof( CategoryType ), request.CategoryType ) )
         {
-            throw new PathfiderApplicationException(
+            throw new PathfinderApplicationException(
                 $"Incorrect CategoryType={request.CategoryType} in {nameof( CategoryType )}" );
         }
 

@@ -1,9 +1,8 @@
-﻿using Pathfinder.Core.Entities.Account;
+﻿using Pathfinder.CharacterManagement.Domain.Entity;
 
-namespace CharacterManagement.Application.Services
+namespace Pathfinder.CharacterManagement.Application.Services;
+
+public interface IRacesService
 {
-    public interface IRacesService
-    {
-        public Task<IReadOnlyCollection<Race>> RacesListAsync();
-    }
+    public Task<IReadOnlyCollection<Race>> RacesListAsync();
 }

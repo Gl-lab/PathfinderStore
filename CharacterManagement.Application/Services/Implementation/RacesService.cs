@@ -1,21 +1,20 @@
-﻿using Pathfinder.Core.Entities.Account;
-using Pathfinder.Core.Repositories;
+﻿using Pathfinder.CharacterManagement.Application.Repositories;
+using Pathfinder.CharacterManagement.Domain.Entity;
 
-namespace CharacterManagement.Application.Services.Implementation
+namespace Pathfinder.CharacterManagement.Application.Services.Implementation;
+
+public sealed class RacesService : IRacesService
 {
-    public sealed class RacesService : IRacesService
+    private readonly IRacesRepository racesRepository;
+
+
+    public RacesService( IRacesRepository racesRepository )
     {
-        private readonly IRacesRepository racesRepository;
+        this.racesRepository = racesRepository;
+    }
 
-
-        public RacesService( IRacesRepository racesRepository )
-        {
-            this.racesRepository = racesRepository;
-        }
-
-        public async Task<IReadOnlyCollection<Race>> RacesListAsync()
-        {
-            return await racesRepository.ListAsync();
-        }
+    public async Task<IReadOnlyCollection<Race>> RacesListAsync()
+    {
+        return await racesRepository.ListAsync();
     }
 }

@@ -1,14 +1,13 @@
-using Authorization.Authentication.User;
 using Microsoft.AspNetCore.Identity;
+using Pathfinder.Secure.Domain.Authentication.User;
 
-namespace Authorization.Authentication.Role
+namespace Pathfinder.Secure.Domain.Authentication.Role;
+
+public class Role : IdentityRole<int>
 {
-    public class Role : IdentityRole<int>
-    {
-        public bool IsSystemDefault { get; set; } = false;
+    public bool IsSystemDefault { get; set; } = false;
 
-        public virtual ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
+    public virtual ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
 
-        public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
-    }
+    public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
 }

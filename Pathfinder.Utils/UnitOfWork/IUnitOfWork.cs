@@ -1,11 +1,10 @@
 ﻿using System.Threading.Tasks;
 
-namespace Pathfinder.Utils.UnitOfWork
+namespace Pathfinder.Utils.UnitOfWork;
+
+public interface IUnitOfWork
 {
-    public interface IUnitOfWork
-    {
-        Task Commit();
-        Task Rollback();
-        Task BeginTransaction();
-    }
+    Task Commit();
+    Task Rollback();
+    Task BeginTransaction();
 }

@@ -1,10 +1,9 @@
-﻿using Pathfinder.Application.DTO.Base;
+﻿using Pathfinder.Store.Application.DTO.Base;
 
-namespace Pathfinder.Application.DTO.Items
+namespace Pathfinder.Store.Application.DTO.Items;
+
+public class ItemDto : BaseDto
 {
-    public class ItemDto : BaseDto
-    {
-        public int ArticleId { get; set; }
-        public ProductDto Product { get; set; }
-    }
+    public int ArticleId { get; set; }
+    public ProductDto Product { get; set; }
 }

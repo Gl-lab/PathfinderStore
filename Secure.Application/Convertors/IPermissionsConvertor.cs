@@ -1,7 +1,7 @@
-﻿using Authorization.Authentication.Permissions;
-using Secure.Application.DTO.Authentication.Permissions;
+﻿using Pathfinder.Secure.Application.DTO.Authentication.Permissions;
+using Pathfinder.Secure.Domain.Authentication.Permissions;
 
-namespace Secure.Application.Convertors;
+namespace Pathfinder.Secure.Application.Convertors;
 
 public interface IPermissionsConvertor
 {

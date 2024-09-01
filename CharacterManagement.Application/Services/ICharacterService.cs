@@ -1,12 +1,10 @@
-using Pathfinder.Core.Entities.Account;
-using Pathfinder.Core.Entities.Product;
+using Pathfinder.CharacterManagement.Domain.Entity;
 
-namespace CharacterManagement.Application.Services
+namespace Pathfinder.CharacterManagement.Application.Services;
+
+public interface ICharacterService
 {
-    public interface ICharacterService
-    {
-        Task<List<Character>> GetCharactersAsync(int userId);
+    Task<List<Character>> GetCharactersAsync(int userId);
         
-     //   Task<ICollection<WeaponItemProperty>> WeaponItemProperty(int userId);
-    }
+    //   Task<ICollection<WeaponItemProperty>> WeaponItemProperty(int userId);
 }

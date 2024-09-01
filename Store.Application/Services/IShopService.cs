@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Pathfinder.Core.Entities.Shop;
+using Pathfinder.Contracts.Core.Entities.Shop;
 
-namespace Pathfinder.Application.Services
+namespace Pathfinder.Store.Application.Services;
+
+public interface IShopService
 {
-    public interface IShopService
-    {
-        Task<IReadOnlyList<Shop>> GetShopList();
-        Task<Shop> ShopById(int shopId);
-    }
+    Task<IReadOnlyList<Shop>> GetShopList();
+    Task<Shop> ShopById(int shopId);
 }

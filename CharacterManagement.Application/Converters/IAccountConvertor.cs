@@ -1,7 +1,7 @@
-﻿using CharacterManagement.Application.DTO;
-using Pathfinder.Core.Entities.Account;
+﻿using Pathfinder.CharacterManagement.Application.DTO;
+using Pathfinder.CharacterManagement.Domain.Entity;
 
-namespace Pathfinder.Application.Converters;
+namespace Pathfinder.CharacterManagement.Application.Converters;
 
 public interface IAccountConvertor
 {

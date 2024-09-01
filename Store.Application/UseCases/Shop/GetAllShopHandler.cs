@@ -1,28 +1,27 @@
 ﻿using System;
-using MediatR;
-using Pathfinder.Application.DTO.Shop;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Pathfinder.Application.Services;
+using MediatR;
+using Pathfinder.Store.Application.DTO.Shop;
+using Pathfinder.Store.Application.Services;
 
-namespace Pathfinder.Application.UseCases.Shop
+namespace Pathfinder.Store.Application.UseCases.Shop;
+
+internal class GetAllShopHandler : IRequestHandler<GetAllShopsCommand, IReadOnlyList<ShopDto>>
 {
-    internal class GetAllShopHandler : IRequestHandler<GetAllShopsCommand, IReadOnlyList<ShopDto>>
+    private readonly IShopService _shopService;
+
+    public GetAllShopHandler( IShopService shopService )
     {
-        private readonly IShopService _shopService;
+        _shopService = shopService;
+    }
 
-        public GetAllShopHandler( IShopService shopService )
-        {
-            _shopService = shopService;
-        }
-
-        public async Task<IReadOnlyList<ShopDto>> Handle( GetAllShopsCommand request,
-                                                          CancellationToken cancellationToken )
-        {
-            IReadOnlyList<Core.Entities.Shop.Shop> shops = await _shopService.GetShopList();
-            throw new NotImplementedException();
-            //return _mapper.Map<IReadOnlyList<ShopDto>>( shops );
-        }
+    public async Task<IReadOnlyList<ShopDto>> Handle( GetAllShopsCommand request,
+                                                      CancellationToken cancellationToken )
+    {
+        IReadOnlyList<Contracts.Core.Entities.Shop.Shop> shops = await _shopService.GetShopList();
+        throw new NotImplementedException();
+        //return _mapper.Map<IReadOnlyList<ShopDto>>( shops );
     }
 }

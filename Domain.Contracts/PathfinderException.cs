@@ -1,4 +1,4 @@
-﻿namespace Domain.Contracts;
+﻿namespace Pathfinder.Contracts;
 
 public class PathfinderException : Exception
 {

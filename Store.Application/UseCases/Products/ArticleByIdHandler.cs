@@ -2,11 +2,10 @@
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using Pathfinder.Application.DTO;
-using Pathfinder.Application.Services;
-using Pathfinder.Core.Entities.Product;
+using Pathfinder.Store.Application.DTO;
+using Pathfinder.Store.Application.Services;
 
-namespace Pathfinder.Application.UseCases.Products;
+namespace Pathfinder.Store.Application.UseCases.Products;
 
 public class ArticleByIdHandler : IRequestHandler<ArticleByIdCommand, ProductDto>
 {

@@ -5,6 +5,8 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>12</LangVersion>
+        <RootNamespace>Pathfinder.Contracts</RootNamespace>
+        <AssemblyName>Contracts</AssemblyName>
     </PropertyGroup>
 
 </Project>

@@ -1,41 +1,37 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Pathfinder.Application.DTO.Shop;
-using Pathfinder.Application.UseCases.Shop;
 using Pathfinder.Web.Controllers.Base;
 
-namespace Pathfinder.Web.Controllers
+namespace Pathfinder.Web.Controllers.Shop;
+
+public class ShopsController: AuthorizedController
 {
-    public class ShopsController: AuthorizedController
+    private readonly IMediator _mediator;
+
+    public ShopsController(IMediator mediator)
     {
-        private readonly IMediator _mediator;
+        _mediator = mediator;
+    }
 
-        public ShopsController(IMediator mediator)
-        {
-            _mediator = mediator;
-        }
-
-        [HttpGet]
-        public async Task<ActionResult> Get()
-        {
-            IReadOnlyList<ShopDto> result = await _mediator.Send(new GetAllShopsCommand());
-            return Ok(result);
-        }
+    [HttpGet]
+    public async Task<ActionResult> Get()
+    {
+        // IReadOnlyList<ShopDto> result = await _mediator.Send(new GetAllShopsCommand());
+        return Ok();
+    }
         
-        [HttpPost]
-        [Route("{shopId}/[action]")]
-        public async Task<ActionResult> Buy()
-        {
-            return Ok();
-        }
+    [HttpPost]
+    [Route("{shopId}/[action]")]
+    public async Task<ActionResult> Buy()
+    {
+        return Ok();
+    }
         
-        [HttpPost]
-        [Route("{shopId}/[action]")]
-        public async Task<ActionResult> Sell()
-        {
-            return Ok();
-        }
+    [HttpPost]
+    [Route("{shopId}/[action]")]
+    public async Task<ActionResult> Sell()
+    {
+        return Ok();
     }
 }

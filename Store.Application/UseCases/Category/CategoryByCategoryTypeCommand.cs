@@ -1,7 +1,7 @@
 ﻿using MediatR;
-using Pathfinder.Application.DTO;
+using Pathfinder.Store.Application.DTO;
 
-namespace Pathfinder.Application.UseCases.Category;
+namespace Pathfinder.Store.Application.UseCases.Category;
 
 public class CategoryByCategoryTypeCommand : IRequest<CategoryDto>
 {

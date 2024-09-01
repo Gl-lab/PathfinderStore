@@ -1,10 +1,9 @@
-using Secure.Application.DTO.Authentication.Permissions;
+using Pathfinder.Secure.Application.DTO.Authentication.Permissions;
 
-namespace Secure.Application.Services.Authentication
+namespace Pathfinder.Secure.Application.Services.Authentication;
+
+public interface IPermissionService
 {
-    public interface IPermissionService
-    {
-        Task<IEnumerable<PermissionDto>> GetGrantedPermissionsAsync(string userNameOrEmail);
-        Task<bool> IsUserGrantedToPermissionAsync(string userNameOrEmail, string permissionName);
-    }
+    Task<IEnumerable<PermissionDto>> GetGrantedPermissionsAsync(string userNameOrEmail);
+    Task<bool> IsUserGrantedToPermissionAsync(string userNameOrEmail, string permissionName);
 }

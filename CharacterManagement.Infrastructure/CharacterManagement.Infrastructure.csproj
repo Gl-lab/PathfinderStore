@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <LangVersion>12</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Pathfinder.CharacterManagement.Infrastructure</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.7" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\CharacterManagement.Application\CharacterManagement.Application.csproj" />
+      <ProjectReference Include="..\CharacterManagement.Domain\CharacterManagement.Domain.csproj" />
+      <ProjectReference Include="..\Infrasturture.Shared\Infrasturture.Shared.csproj" />
+    </ItemGroup>
+
+</Project>

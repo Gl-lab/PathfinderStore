@@ -1,4 +1,4 @@
-﻿namespace Secure.Application.DTO.Account;
+﻿namespace Pathfinder.Secure.Application.DTO.Account;
 
 public class ChangeAccountBalanceDto
 {

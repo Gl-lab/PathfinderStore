@@ -1,24 +1,29 @@
-﻿using Authorization.Authentication.User;
-using Authorization.Exceptions;
+﻿using MassTransit;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Pathfinder.Contracts.Events;
+using Pathfinder.Secure.Application.DTO.Authentication.Account;
+using Pathfinder.Secure.Application.Services.Authentication;
+using Pathfinder.Secure.Domain.Authentication.User;
+using Pathfinder.Secure.Domain.Exceptions;
 using Pathfinder.Utils.UnitOfWork;
-using Secure.Application.DTO.Authentication.Account;
-using Secure.Application.Services.Authentication;
 
-namespace Secure.Application.UseCases.Authorization.Account;
+namespace Pathfinder.Secure.Application.UseCases.Authorization.Account;
 
 public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, RegisterUserOutput>
 {
     private readonly IUserService _userService;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IBus _bus;
 
     public RegisterUserHandler(
         IUserService userService,
-        IUnitOfWork unitOfWork )
+        IUnitOfWork unitOfWork,
+        IBus bus )
     {
         _userService = userService;
         _unitOfWork = unitOfWork;
+        _bus = bus;
     }
 
 
@@ -40,14 +45,14 @@ public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, Register
         user = await _userService.FindByNameAsync( request.UserName ).ConfigureAwait( false );
         if ( user is not null )
         {
-            return new RegisterUserOutput(IdentityResult.Failed( new List<IdentityError>
+            return new RegisterUserOutput( IdentityResult.Failed( new List<IdentityError>
             {
                 new()
                 {
                     Code = "UserNameAlreadyExist",
                     Description = "This user name already exists"
                 }
-            }.ToArray() ), null);
+            }.ToArray() ), null );
         }
 
         IdentityResult result = await _userService.CreateUser( request.UserName, request.Email, request.Password );
@@ -55,12 +60,14 @@ public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, Register
         {
             await _unitOfWork.Commit();
         }
+
         user = await _userService.FindByNameAsync( request.UserName ).ConfigureAwait( false );
         if ( user is null )
         {
             throw new SecureException( $"User {request.UserName} not created" );
         }
-        return new RegisterUserOutput( result, user.Id );
 
+        await _bus.Publish( new UserRegisteredEvent( user.Id ), cancellationToken );
+        return new RegisterUserOutput( result, user.Id );
     }
 }

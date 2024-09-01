@@ -1,9 +1,8 @@
-﻿using CharacterManagement.Application.Services;
-using CharacterManagement.Application.Services.Implementation;
-using MediatR;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Pathfinder.CharacterManagement.Application.Services;
+using Pathfinder.CharacterManagement.Application.Services.Implementation;
 
-namespace CharacterManagement.Application;
+namespace Pathfinder.CharacterManagement.Application;
 
 public static class DependencyInjection
 {

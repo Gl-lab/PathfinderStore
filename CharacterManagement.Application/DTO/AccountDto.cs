@@ -1,15 +1,14 @@
-using CharacterManagement.Application.DTO.Base;
+using Pathfinder.CharacterManagement.Application.DTO.Base;
 
-namespace CharacterManagement.Application.DTO
+namespace Pathfinder.CharacterManagement.Application.DTO;
+
+public class AccountDto : BaseDto
 {
-    public class AccountDto : BaseDto
-    {
-        public string Name { get; set; }
-        public string Surname { get; set; }
-        public int UserId { get; set; }
-        public virtual List<CharacterDto> Characters { get; set; }
-        public virtual CharacterDto CurrentCharacter { get; set; }
+    public string Name { get; set; }
+    public string Surname { get; set; }
+    public int UserId { get; set; }
+    public virtual List<CharacterDto> Characters { get; set; }
+    public virtual CharacterDto CurrentCharacter { get; set; }
 
-       //public virtual UserDto User { get; set; }
-    }
+    //public virtual UserDto User { get; set; }
 }

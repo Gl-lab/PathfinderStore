@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Pathfinder.Core.Entities.Shop;
-using Pathfinder.Core.Repositories.Shop;
+using Pathfinder.Contracts.Core.Entities.Shop;
+using Pathfinder.Store.Application.Repositories.Shop;
 
-namespace Pathfinder.Application.Services.Implementation;
+namespace Pathfinder.Store.Application.Services.Implementation;
 
 public sealed class ShopService : IShopService
 {

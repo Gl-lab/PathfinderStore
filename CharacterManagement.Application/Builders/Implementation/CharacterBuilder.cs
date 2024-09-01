@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using Pathfinder.Core.Entities.Account;
-using Pathfinder.Core.Repositories;
+﻿using Pathfinder.CharacterManagement.Application.Repositories;
+using Pathfinder.CharacterManagement.Domain.Entity;
 
-namespace Pathfinder.Application.Builders.Implementation;
+namespace Pathfinder.CharacterManagement.Application.Builders.Implementation;
 
 public class CharacterBuilder : ICharacterBuilder
 {
@@ -24,55 +23,15 @@ public class CharacterBuilder : ICharacterBuilder
 
     public void SetAncestry( AncestryType ancestryType )
     {
-        _character.AncestryType = ancestryType;
+        if ( _character is null )
+        {
+            throw new InvalidOperationException( "Character must be created before setting ancestry." );
+        }
         Ancestry ancestry = _ancestryRepository.GetAncestry( ancestryType );
-        foreach ( AbilityType ancestryAbilityBoost in ancestry.AbilityBoosts )
-        {
-            _character.AbilityScores.GetCharacteristic( ancestryAbilityBoost ).Value += 2;
-        }
-        foreach ( AbilityType ancestryAbilityFlaw in ancestry.AbilityFlaws )
-        {
-            _character.AbilityScores.GetCharacteristic( ancestryAbilityFlaw ).Value += 2;
-        }
+        _character.SetAncestry( ancestry );
     }
 
-    private static AbilityScores InitializationAbilityScores()
-    {
-        AbilityScores abilityScores = new()
-        {
-            Charisma = new Characteristic()
-            {
-                Value = 10,
-                AbilityType = AbilityType.Charisma
-            },
-            Constitution = new Characteristic()
-            {
-                Value = 10,
-                AbilityType = AbilityType.Constitution
-            },
-            Wisdom = new Characteristic()
-            {
-                Value = 10,
-                AbilityType = AbilityType.Wisdom
-            },
-            Dexterity = new Characteristic()
-            {
-                Value = 10,
-                AbilityType = AbilityType.Dexterity
-            },
-            Intelligence = new Characteristic()
-            {
-                Value = 10,
-                AbilityType = AbilityType.Intelligence
-            },
-            Strength = new Characteristic()
-            {
-                Value = 10,
-                AbilityType = AbilityType.Strength
-            }
-        };
-        return abilityScores;
-    }
+   
 
     public void SetBackground()
     {
@@ -126,6 +85,6 @@ public class CharacterBuilder : ICharacterBuilder
 
     public void SetName( string name )
     {
-        _character.Name = name;
+        _character.Rename( name );
     }
 }

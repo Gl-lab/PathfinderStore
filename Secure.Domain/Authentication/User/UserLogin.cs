@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 
-namespace Authorization.Authentication.User
+namespace Pathfinder.Secure.Domain.Authentication.User;
+
+public class UserLogin : IdentityUserLogin<int>
 {
-    public class UserLogin : IdentityUserLogin<int>
-    {
-    }
 }

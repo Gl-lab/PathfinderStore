@@ -1,19 +1,15 @@
 ﻿using MediatR;
-using Pathfinder.Application.Services;
 
-namespace Pathfinder.Application.UseCases.Authorization.Account;
+namespace Pathfinder.CharacterManagement.Application.UseCases.Characters;
 
 public class DeleteCharacterHandler : IRequestHandler<DeleteCharacterCommand>
 {
-    private readonly IAccountService _accountService;
-
-    public DeleteCharacterHandler( IAccountService accountService )
+    public DeleteCharacterHandler()
     {
-        _accountService = accountService;
     }
 
     public async Task Handle( DeleteCharacterCommand request, CancellationToken cancellationToken )
     {
-        await _accountService.DeleteCharacterAsync( request.DeletedCharacterId );
+        throw new NotImplementedException();
     }
 }

@@ -1,6 +1,6 @@
-﻿using Authorization.Authentication.User;
+﻿using Pathfinder.Secure.Domain.Authentication.User;
 
-namespace Secure.Application.Repositories;
+namespace Pathfinder.Secure.Application.Repositories;
 
 public interface IUserRepository
 {

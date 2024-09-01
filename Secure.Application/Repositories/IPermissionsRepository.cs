@@ -1,9 +1,8 @@
-using Authorization.Authentication.Permissions;
+using Pathfinder.Secure.Domain.Authentication.Permissions;
 
-namespace Authorization.Repositories
+namespace Pathfinder.Secure.Application.Repositories;
+
+public interface IPermissionsRepository
 {
-    public interface IPermissionsRepository
-    {
-        Task<ICollection<Permission>> GetListAsync();
-    }
+    Task<ICollection<Permission>> GetListAsync();
 }

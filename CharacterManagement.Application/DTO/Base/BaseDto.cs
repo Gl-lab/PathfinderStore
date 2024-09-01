@@ -1,7 +1,6 @@
-namespace CharacterManagement.Application.DTO.Base
+namespace Pathfinder.CharacterManagement.Application.DTO.Base;
+
+public class BaseDto
 {
-    public class BaseDto
-    {
-        public int Id { get; set; }
-    }
+    public int Id { get; set; }
 }

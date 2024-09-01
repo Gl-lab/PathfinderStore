@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Secure.Application.Convertors;
-using Secure.Application.Services.Authentication;
+using Pathfinder.Secure.Application.Convertors;
+using Pathfinder.Secure.Application.Services.Authentication;
 
-namespace Secure.Application;
+namespace Pathfinder.Secure.Application;
 
 public static class DependencyInjection
 {

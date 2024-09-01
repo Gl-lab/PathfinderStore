@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Pathfinder.Core.Entities.Product;
-using Pathfinder.Core.Repositories;
+using Pathfinder.Store.Application.Repositories;
 
-namespace Pathfinder.Application.Services.Implementation;
+namespace Pathfinder.Store.Application.Services.Implementation;
 
 public class WeaponService : IWeaponService
 {

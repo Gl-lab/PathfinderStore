@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace Secure.Application.DTO.Authentication.Account;
+namespace Pathfinder.Secure.Application.DTO.Authentication.Account;
 
 public class RegisterUserOutput
 {

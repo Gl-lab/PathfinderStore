@@ -1,4 +1,4 @@
-﻿namespace Pathfinder.Application.Products;
+﻿namespace Pathfinder.Store.Application.Products;
 
 public class ProductEnriched
 {

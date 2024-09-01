@@ -1,12 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Pathfinder.Core.Entities.Product;
 
-namespace Pathfinder.Application.Services
+namespace Pathfinder.Store.Application.Services;
+
+public interface ICategoryService
 {
-    public interface ICategoryService
-    {
-        Task<ICollection<Category>> GetCategoryList();
-        Task<Category> Get(CategoryType categoryType);
-    }
+    Task<ICollection<Category>> GetCategoryList();
+    Task<Category> Get(CategoryType categoryType);
 }

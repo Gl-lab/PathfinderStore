@@ -1,7 +1,7 @@
-﻿using CharacterManagement.Application.DTO;
-using MediatR;
+﻿using MediatR;
+using Pathfinder.CharacterManagement.Application.DTO;
 
-namespace CharacterManagement.Application.UseCases.Races;
+namespace Pathfinder.CharacterManagement.Application.UseCases.Races;
 
 public class GetRacesCommand : IRequest<ICollection<RaceDto>>
 {

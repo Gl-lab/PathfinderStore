@@ -1,8 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Pathfinder.Core.Entities.Account;
+﻿using Pathfinder.CharacterManagement.Domain.Entity;
 
-namespace Pathfinder.Application.Builders;
+namespace Pathfinder.CharacterManagement.Application.Builders;
 
 public interface ICharacterBuilder
 {

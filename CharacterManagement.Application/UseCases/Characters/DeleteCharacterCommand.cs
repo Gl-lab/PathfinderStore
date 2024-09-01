@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace Pathfinder.Application.UseCases.Authorization.Account;
+namespace Pathfinder.CharacterManagement.Application.UseCases.Characters;
 
 public class DeleteCharacterCommand: IRequest
 {

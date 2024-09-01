@@ -1,9 +1,8 @@
-using Authorization.Authentication.User;
+using Pathfinder.Secure.Domain.Authentication.User;
 
-namespace Authorization.Repositories
+namespace Pathfinder.Secure.Application.Repositories;
+
+public interface IUserRoleRepository
 {
-    public interface IUserRoleRepository
-    {
-        Task AddRangeAsync(IEnumerable<UserRole> userRoles);
-    }
+    Task AddRangeAsync(IEnumerable<UserRole> userRoles);
 }

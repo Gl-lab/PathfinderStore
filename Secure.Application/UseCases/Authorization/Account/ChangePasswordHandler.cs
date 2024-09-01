@@ -1,9 +1,9 @@
-﻿using Authorization.Authentication.User;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Identity;
-using Secure.Application.Services.Authentication;
+using Pathfinder.Secure.Application.Services.Authentication;
+using Pathfinder.Secure.Domain.Authentication.User;
 
-namespace Secure.Application.UseCases.Authorization.Account;
+namespace Pathfinder.Secure.Application.UseCases.Authorization.Account;
 
 public class ChangePasswordHandler : IRequestHandler<ChangePasswordCommand, IdentityResult>
 {

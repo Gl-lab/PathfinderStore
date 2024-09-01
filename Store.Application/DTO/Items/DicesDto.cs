@@ -1,10 +1,7 @@
-﻿using Pathfinder.Core.Entities.Product;
+﻿namespace Pathfinder.Store.Application.DTO.Items;
 
-namespace Pathfinder.Application.DTO.Items
+public class DicesDto
 {
-    public class DicesDto
-    {
-        public int Count { get; set; }
-        public virtual DiceType D { get; set; }
-    }
+    public int Count { get; set; }
+    public virtual DiceType D { get; set; }
 }

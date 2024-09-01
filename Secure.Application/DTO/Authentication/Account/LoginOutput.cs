@@ -1,7 +1,6 @@
-namespace Secure.Application.DTO.Authentication.Account
+namespace Pathfinder.Secure.Application.DTO.Authentication.Account;
+
+public class LoginOutput
 {
-    public class LoginOutput
-    {
-        public string? Token { get; set; }
-    }
+    public string? Token { get; set; }
 }

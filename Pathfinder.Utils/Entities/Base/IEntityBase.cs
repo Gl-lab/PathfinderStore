@@ -1,7 +1,6 @@
-namespace Pathfinder.Utils.Entities.Base
+namespace Pathfinder.Utils.Entities.Base;
+
+public interface IEntityBase<TId>
 {
-    public interface IEntityBase<TId>
-    {
-        TId Id { get; }
-    }
+    TId Id { get; }
 }

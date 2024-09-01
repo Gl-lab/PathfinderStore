@@ -1,6 +1,5 @@
-namespace Pathfinder.Utils.Entities.Base
+namespace Pathfinder.Utils.Entities.Base;
+
+public abstract class Entity : EntityBase<int>
 {
-    public abstract class Entity : EntityBase<int>
-    {
-    }
 }

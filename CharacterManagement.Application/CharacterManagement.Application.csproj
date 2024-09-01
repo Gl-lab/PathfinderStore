@@ -4,6 +4,7 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <RootNamespace>Pathfinder.CharacterManagement.Application</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -15,8 +16,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Domain.Pathfinder\Domain.Pathfinder.csproj" />
-      <ProjectReference Include="..\Store.Application\Store.Application.csproj" />
+      <ProjectReference Include="..\CharacterManagement.Domain\CharacterManagement.Domain.csproj" />
     </ItemGroup>
 
 </Project>

@@ -1,9 +1,8 @@
-namespace Secure.Application.DTO.Authentication.Account
-{
-    public class LoginInput
-    {
-        public string UserNameOrEmail { get; set; }
+namespace Pathfinder.Secure.Application.DTO.Authentication.Account;
 
-        public string Password { get; set; }
-    }
+public class LoginInput
+{
+    public string UserNameOrEmail { get; set; }
+
+    public string Password { get; set; }
 }

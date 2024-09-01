@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using MediatR;
-using Pathfinder.Application.DTO;
+using Pathfinder.Store.Application.DTO;
 using Pathfinder.Utils.Paging;
 
-namespace Pathfinder.Application.UseCases.Products;
+namespace Pathfinder.Store.Application.UseCases.Products;
 
 public class SearchArticlesCommand : IRequest<List<ProductDto>>
 {

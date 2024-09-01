@@ -1,9 +1,8 @@
-using Authorization.Authentication.Role;
+using Pathfinder.Secure.Domain.Authentication.Role;
 
-namespace Authorization.Repositories
+namespace Pathfinder.Secure.Application.Repositories;
+
+public interface IRoleRepository
 {
-    public interface IRoleRepository
-    {
-         Task<ICollection<Role>> GetListAsync();
-    }
+    Task<ICollection<Role>> GetListAsync();
 }

@@ -1,7 +1,7 @@
-﻿using Authorization.Authentication.User;
-using Secure.Application.DTO.Authentication.Users;
+﻿using Pathfinder.Secure.Application.DTO.Authentication.Users;
+using Pathfinder.Secure.Domain.Authentication.User;
 
-namespace Secure.Application.Convertors;
+namespace Pathfinder.Secure.Application.Convertors;
 
 public interface IUserConvertor
 {

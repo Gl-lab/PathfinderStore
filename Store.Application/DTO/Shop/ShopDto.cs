@@ -1,6 +1,6 @@
-﻿using Pathfinder.Application.DTO.Base;
+﻿using Pathfinder.Store.Application.DTO.Base;
 
-namespace Pathfinder.Application.DTO.Shop;
+namespace Pathfinder.Store.Application.DTO.Shop;
 
 public sealed class ShopDto: BaseDto
 {

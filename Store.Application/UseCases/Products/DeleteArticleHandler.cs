@@ -1,11 +1,10 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using Pathfinder.Application.Services;
-using Pathfinder.Core.Entities.Product;
+using Pathfinder.Store.Application.Services;
 using Pathfinder.Utils.UnitOfWork;
 
-namespace Pathfinder.Application.UseCases.Products;
+namespace Pathfinder.Store.Application.UseCases.Products;
 
 public class DeleteArticleHandler : IRequestHandler<DeleteArticleCommand, Task>
 {

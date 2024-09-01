@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Pathfinder.Core.Entities.Product;
-using Pathfinder.Core.Repositories;
+using Pathfinder.Store.Application.Repositories;
 
-namespace Pathfinder.Application.Products;
+namespace Pathfinder.Store.Application.Products;
 
 public class ProductFactory
 {

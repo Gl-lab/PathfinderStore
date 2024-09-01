@@ -1,10 +1,9 @@
-﻿using CharacterManagement.Application.DTO;
-using CharacterManagement.Application.Services;
-using CharacterManagement.Application.UseCases.Races;
-using MediatR;
-using Pathfinder.Core.Entities.Account;
+﻿using MediatR;
+using Pathfinder.CharacterManagement.Application.DTO;
+using Pathfinder.CharacterManagement.Application.Services;
+using Pathfinder.CharacterManagement.Domain.Entity;
 
-namespace Pathfinder.Application.UseCases.Races;
+namespace Pathfinder.CharacterManagement.Application.UseCases.Races;
 
 public class GetRacesHandler : IRequestHandler<GetRacesCommand, ICollection<RaceDto>>
 {

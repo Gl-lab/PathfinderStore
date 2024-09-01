@@ -1,7 +1,7 @@
 ﻿using MediatR;
-using Secure.Application.DTO.Authentication.Account;
+using Pathfinder.Secure.Application.DTO.Authentication.Account;
 
-namespace Secure.Application.UseCases.Authorization.Account;
+namespace Pathfinder.Secure.Application.UseCases.Authorization.Account;
 
 public class LoginCommand : IRequest<LoginOutput?>
 {

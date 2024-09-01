@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Identity;
+using Pathfinder.Contracts;
 
-namespace Authorization.Authentication.User
+namespace Pathfinder.Secure.Domain.Authentication.User;
+
+public class User : IdentityUser<int>, IUser
 {
-    public class User : IdentityUser<int>, Domain.Contracts.IUser
-    {
-        public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
-    }
+    public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
 }

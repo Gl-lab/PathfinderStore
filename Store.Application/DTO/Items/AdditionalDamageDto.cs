@@ -1,10 +1,7 @@
-﻿using Pathfinder.Core.Entities.Product;
+﻿namespace Pathfinder.Store.Application.DTO.Items;
 
-namespace Pathfinder.Application.DTO.Items
+public class AdditionalDamageDto
 {
-    public class AdditionalDamageDto
-    {
-        public DicesDto Dices { get; set; } 
-        public DamageType DamageType { get; set; }
-    }
+    public DicesDto Dices { get; set; } 
+    public DamageType DamageType { get; set; }
 }

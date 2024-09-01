@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using Pathfinder.Application.DTO;
-using Pathfinder.Application.Services;
+using Pathfinder.Store.Application.DTO;
+using Pathfinder.Store.Application.Services;
 
-namespace Pathfinder.Application.UseCases.Category;
+namespace Pathfinder.Store.Application.UseCases.Category;
 
 public class GetCategoriesHandler : IRequestHandler<GetCategoriesCommand, ICollection<CategoryDto>>
 {
