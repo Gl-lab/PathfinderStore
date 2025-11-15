@@ -2,10 +2,12 @@ using Pathfinder.Contracts;
 
 namespace Pathfinder.CharacterManagement.Domain.Entity;
 
-public class Character : Pathfinder.Utils.Entities.Base.Entity
+public class DraftCharacter : Utils.Entities.Base.Entity
 {
     public Ancestry Ancestry { get; private set; }
+
     public string Name { get; private set; }
+
     // public int RaceId { get; set; }
     public Race Race { get; private set; }
     public AbilityScores AbilityScores { get; private set; }
@@ -35,16 +37,17 @@ public class Character : Pathfinder.Utils.Entities.Base.Entity
         {
             AbilityScores = AbilityScores.InitializationAbilityScores();
         }
-            
+
         foreach ( AbilityType ancestryAbilityBoost in ancestry.AbilityBoosts )
         {
-            AbilityScores.GetCharacteristic( ancestryAbilityBoost ).Value += 2;
+            AbilityScores.GetCharacteristic( ancestryAbilityBoost )
+               .Value += 2;
         }
+
         foreach ( AbilityType ancestryAbilityFlaw in ancestry.AbilityFlaws )
         {
-            AbilityScores.GetCharacteristic( ancestryAbilityFlaw ).Value -= 2;
+            AbilityScores.GetCharacteristic( ancestryAbilityFlaw )
+               .Value -= 2;
         }
     }
-        
-        
 }

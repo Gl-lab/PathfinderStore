@@ -5,6 +5,6 @@ namespace Pathfinder.CharacterManagement.Application.Converters;
 
 public interface ICharacterConvertor
 {
-    public Character Convert( CharacterDto character );
-    public CharacterDto Convert( Character character );
+    public DraftCharacter Convert( CharacterDto character );
+    public CharacterDto Convert( DraftCharacter draftCharacter );
 }

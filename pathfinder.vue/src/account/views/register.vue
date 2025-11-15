@@ -26,6 +26,18 @@
               :rules="[requiredError]"
           ></v-text-field>
           <v-text-field
+              name="name"
+              label="Имя"
+              type="text"
+              v-model="registerInput.name"
+          ></v-text-field>
+          <v-text-field
+              name="surname"
+              label="Фамилия"
+              type="text"
+              v-model="registerInput.surname"
+          ></v-text-field>
+          <v-text-field
               name="password"
               label="Пароль"
               type="password"

@@ -2,12 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using Pathfinder.Utils.Paging;
 
-namespace Pathfinder.Utils.Paging;
+namespace Pathfinder.Web.Paging;
 
 public class PagedList<T> : IPagedList<T>
 {
-    public PagedList(int pageIndex, int pageSize, int totalCount, int totalPages, IEnumerable<T> items)
+    public PagedList(
+        int pageIndex,
+        int pageSize,
+        int totalCount,
+        int totalPages,
+        IEnumerable<T> items )
     {
         PageIndex = pageIndex;
         PageSize = pageSize;
@@ -16,9 +22,11 @@ public class PagedList<T> : IPagedList<T>
         Items = items;
     }
 
-    public PagedList(IQueryable<T> query, PagingArgs pagingArgs,
-                     List<Tuple<SortingOption, Expression<Func<T, object>>>> orderByList = null,
-                     List<Tuple<FilteringOption, Expression<Func<T, bool>>>> filterList = null)
+    public PagedList(
+        IQueryable<T> query,
+        PagingArgs pagingArgs,
+        List<Tuple<SortingOption, Expression<Func<T, object>>>> orderByList = null,
+        List<Tuple<FilteringOption, Expression<Func<T, bool>>>> filterList = null )
     {
         // query = query.OrderBy(orderByList);
         // query = query.Where(filterList);
@@ -29,27 +37,29 @@ public class PagedList<T> : IPagedList<T>
         TotalCount = 0;
 
         List<T> items = pagingArgs.PagingStrategy == PagingStrategy.NoCount
-            ? query.Skip((PageIndex - 1) * PageSize).Take(PageSize + 1).ToList()
-            : (
-                (TotalCount = query.Count()) > 0
-                    ? query.Skip((PageIndex - 1) * PageSize).Take(PageSize).ToList()
-                    : new List<T>()
-            );
+            ? query.Skip( ( PageIndex - 1 ) * PageSize )
+               .Take( PageSize + 1 )
+               .ToList()
+            : ( TotalCount = query.Count() ) > 0
+                ? query.Skip( ( PageIndex - 1 ) * PageSize )
+                   .Take( PageSize )
+                   .ToList()
+                : new List<T>();
 
         TotalCount = pagingArgs.PagingStrategy == PagingStrategy.NoCount
-            ? ((PageIndex - 1) * PageSize) + items.Count
+            ? ( ( PageIndex - 1 ) * PageSize ) + items.Count
             : TotalCount;
 
         TotalPages = TotalCount / PageSize;
 
-        if (TotalCount % PageSize > 0)
+        if ( TotalCount % PageSize > 0 )
         {
             TotalPages++;
         }
 
-        if (pagingArgs.PagingStrategy == PagingStrategy.NoCount && items.Count == PageSize + 1)
+        if ( pagingArgs.PagingStrategy == PagingStrategy.NoCount && items.Count == PageSize + 1 )
         {
-            items.RemoveAt(PageSize);
+            items.RemoveAt( PageSize );
         }
 
         Items = items;

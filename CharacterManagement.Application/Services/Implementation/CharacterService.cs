@@ -7,21 +7,16 @@ namespace Pathfinder.CharacterManagement.Application.Services.Implementation;
 public sealed class CharacterService : ICharacterService
 {
     private readonly ICharacterRepository _characterRepository;
-    private readonly IWeaponItemPropertyRepository _weaponItemPropertyRepository;
 
-    public CharacterService( ICharacterRepository characterRepository,
-                             IWeaponItemPropertyRepository weaponItemPropertyRepository )
+    public CharacterService( ICharacterRepository characterRepository )
     {
         _characterRepository = characterRepository;
-        _weaponItemPropertyRepository = weaponItemPropertyRepository;
     }
 
-    public async Task<List<Character>> GetCharactersAsync( int userId )
+    public async Task<List<DraftCharacter>> GetCharactersAsync( int userId )
     {
         return await _characterRepository.GetListAsync( userId );
     }
-
-      
 
     public async Task EditCharacter( CharacterDto newCharacter )
     {

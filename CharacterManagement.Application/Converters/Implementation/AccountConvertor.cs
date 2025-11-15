@@ -3,7 +3,7 @@ using Pathfinder.CharacterManagement.Domain.Entity;
 
 namespace Pathfinder.CharacterManagement.Application.Converters.Implementation;
 
-public class AccountConvertor: IAccountConvertor
+public class AccountConvertor : IAccountConvertor
 {
     private readonly ICharacterConvertor _characterConvertor;
 
@@ -18,13 +18,14 @@ public class AccountConvertor: IAccountConvertor
         {
             Name = account.Name,
             Surname = account.Surname,
-            UserId = account.User.Id,
-            Characters = account.Characters.ConvertAll( x => _characterConvertor.Convert( x ) )
+            UserId = account.UserId,
+
+            //Characters = account.Characters.ConvertAll( x => _characterConvertor.Convert( x ) )
         };
     }
 
     public Account Convert( AccountDto account )
     {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
     }
 }

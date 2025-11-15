@@ -7,9 +7,8 @@ public class CharacterManagementDbContext( DbContextOptions<CharacterManagementD
     : DbContext( options )
 {
     public DbSet<Account> Account { get; set; }
-    public DbSet<Character> Character { get; set; }
+    public DbSet<DraftCharacter> Character { get; set; }
     public DbSet<Characteristic> Characteristic { get; set; }
     public DbSet<AbilityScores> GroupCharacteristic { get; set; }
     public DbSet<Race> Race { get; set; }
-    
 }

@@ -26,33 +26,40 @@ public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, Register
         _bus = bus;
     }
 
-
     public async Task<RegisterUserOutput> Handle( RegisterUserCommand request, CancellationToken cancellationToken )
     {
-        User? user = await _userService.FindByEmailAsync( request.Email ).ConfigureAwait( false );
+        User? user = await _userService.FindByEmailAsync( request.Email )
+           .ConfigureAwait( false );
         if ( user is not null )
         {
-            return new RegisterUserOutput( IdentityResult.Failed( new List<IdentityError>
-            {
-                new()
-                {
-                    Code = "EmailAlreadyExist",
-                    Description = "This email already exists"
-                }
-            }.ToArray() ), null );
+            return new RegisterUserOutput(
+                IdentityResult.Failed(
+                    new List<IdentityError>
+                    {
+                        new()
+                        {
+                            Code = "EmailAlreadyExist",
+                            Description = "This email already exists"
+                        }
+                    }.ToArray() ),
+                null );
         }
 
-        user = await _userService.FindByNameAsync( request.UserName ).ConfigureAwait( false );
+        user = await _userService.FindByNameAsync( request.UserName )
+           .ConfigureAwait( false );
         if ( user is not null )
         {
-            return new RegisterUserOutput( IdentityResult.Failed( new List<IdentityError>
-            {
-                new()
-                {
-                    Code = "UserNameAlreadyExist",
-                    Description = "This user name already exists"
-                }
-            }.ToArray() ), null );
+            return new RegisterUserOutput(
+                IdentityResult.Failed(
+                    new List<IdentityError>
+                    {
+                        new()
+                        {
+                            Code = "UserNameAlreadyExist",
+                            Description = "This user name already exists"
+                        }
+                    }.ToArray() ),
+                null );
         }
 
         IdentityResult result = await _userService.CreateUser( request.UserName, request.Email, request.Password );
@@ -61,13 +68,14 @@ public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, Register
             await _unitOfWork.Commit();
         }
 
-        user = await _userService.FindByNameAsync( request.UserName ).ConfigureAwait( false );
+        user = await _userService.FindByNameAsync( request.UserName )
+           .ConfigureAwait( false );
         if ( user is null )
         {
             throw new SecureException( $"User {request.UserName} not created" );
         }
 
-        await _bus.Publish( new UserRegisteredEvent( user.Id ), cancellationToken );
+        await _bus.Publish( new UserRegisteredEvent( user.Id, request.Name, request.Surname ), cancellationToken );
         return new RegisterUserOutput( result, user.Id );
     }
 }

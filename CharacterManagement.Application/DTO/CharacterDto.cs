@@ -8,7 +8,6 @@ public class CharacterDto : BaseDto
 
     public int RaceId { get; set; }
     public virtual BackpackDto Backpack { get; set; }
-    public virtual Race Race { get; set; }
     public virtual GroupCharacteristicDto Characteristics { get; set; }
 }
 

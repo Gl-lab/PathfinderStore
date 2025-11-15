@@ -16,16 +16,7 @@ public class AccountRepository : Repository<Account>, IAccountRepository
     public async Task<Account?> GetByUserIdAsync( int userId )
     {
         return await Table
-                    .Where( e => userId == e.User.Id )
-                    .Include( e => e.Characters )
-                    .FirstOrDefaultAsync();
-    }
-
-    public async Task<Account?> GetByCharacterIdAsync( int characterId )
-    {
-        return await Table
-                    .Where( e => e.Characters.Any( x => x.Id == characterId ) )
-                    .Include( e => e.Characters )
-                    .FirstOrDefaultAsync();
+           .Where( e => userId == e.UserId )
+           .FirstOrDefaultAsync();
     }
 }

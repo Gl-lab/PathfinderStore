@@ -42,10 +42,7 @@ public class AccountController : BaseController
 
             if ( loginOutput is null )
             {
-                return BadRequest( new List<NameValueDto>
-                {
-                    new( "UserNameOrPasswordIncorrect", "The user name or password is incorrect!" )
-                } );
+                return BadRequest( new List<NameValueDto> { new( "UserNameOrPasswordIncorrect", "The user name or password is incorrect!" ) } );
             }
 
             return Ok( loginOutput );
@@ -60,12 +57,14 @@ public class AccountController : BaseController
     public async Task<ActionResult> Register( [FromBody] RegisterInput input )
     {
         RegisterUserOutput result =
-            await _mediator.Send( new RegisterUserCommand( input.UserName, input.Email, input.Password ) );
+            await _mediator.Send( new RegisterUserCommand( input.UserName, input.Email, input.Password, input.Name, input.Surname ) );
         if ( !result.IdentityResult.Succeeded || result.UserId is null )
         {
-            return BadRequest( result.IdentityResult.Errors.Select( e => new NameValueDto( e.Code, e.Description ) ).ToList() );
+            return BadRequest(
+                result.IdentityResult.Errors.Select( e => new NameValueDto( e.Code, e.Description ) )
+                   .ToList() );
         }
-            
+
         return Ok();
     }
 
@@ -78,13 +77,18 @@ public class AccountController : BaseController
             return Unauthorized();
         }
 
-        IdentityResult result = await _mediator.Send( new ChangePasswordCommand( User.Identity.Name,
-            input.CurrentPassword,
-            input.NewPassword, input.PasswordRepeat ) );
+        IdentityResult result = await _mediator.Send(
+            new ChangePasswordCommand(
+                User.Identity.Name,
+                input.CurrentPassword,
+                input.NewPassword,
+                input.PasswordRepeat ) );
 
         if ( !result.Succeeded )
         {
-            return BadRequest( result.Errors.Select( e => new NameValueDto( e.Code, e.Description ) ).ToList() );
+            return BadRequest(
+                result.Errors.Select( e => new NameValueDto( e.Code, e.Description ) )
+                   .ToList() );
         }
 
         return Ok();
@@ -97,7 +101,9 @@ public class AccountController : BaseController
             await _mediator.Send( new ResetPasswordCommand( input.UserNameOrEmail, input.Password, input.Token ) );
         if ( !result.Succeeded )
         {
-            return BadRequest( result.Errors.Select( e => new NameValueDto( e.Code, e.Description ) ).ToList() );
+            return BadRequest(
+                result.Errors.Select( e => new NameValueDto( e.Code, e.Description ) )
+                   .ToList() );
         }
 
         return Ok();

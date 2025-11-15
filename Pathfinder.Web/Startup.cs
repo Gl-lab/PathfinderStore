@@ -28,49 +28,60 @@ public class Startup( IConfiguration configuration )
 
         services.AddSwaggerGen( c =>
         {
-            c.SwaggerDoc( "v1", new OpenApiInfo { Title = "Pathfinde API", Version = "v1" } );
-            c.AddSecurityDefinition( "Bearer", new OpenApiSecurityScheme
-            {
-                Description = "Standard Authorization header using the Bearer scheme. Example: \"bearer {token}\"",
-                In = ParameterLocation.Header,
-                Name = "Authorization",
-                Type = SecuritySchemeType.ApiKey
-            } );
-            c.AddSecurityRequirement( new OpenApiSecurityRequirement
-            {
+            c.SwaggerDoc(
+                "v1",
+                new OpenApiInfo
                 {
-                    new OpenApiSecurityScheme
+                    Title = "Pathfinde API",
+                    Version = "v1"
+                } );
+            c.AddSecurityDefinition(
+                "Bearer",
+                new OpenApiSecurityScheme
+                {
+                    Description = "Standard Authorization header using the Bearer scheme. Example: \"bearer {token}\"",
+                    In = ParameterLocation.Header,
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey
+                } );
+            c.AddSecurityRequirement(
+                new OpenApiSecurityRequirement
+                {
                     {
-                        Reference = new OpenApiReference
+                        new OpenApiSecurityScheme
                         {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = "Bearer"
-                        }
-                    },
-                    Array.Empty<string>()
-                }
-            } );
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                } );
         } );
 
         services.AddSpaStaticFiles( configuration => configuration.RootPath = "ClientApp/dist" );
+
         // services.AddStoreInfrastructure();
         // services.AddStoreApplication();
-        services.AddMassTransit(busConfigurator =>
+        services.AddMassTransit( busConfigurator =>
         {
             busConfigurator.AddConsumer<UserRegisteredEventConsumer>();
             busConfigurator.SetKebabCaseEndpointNameFormatter();
 
-            busConfigurator.UsingInMemory((context, configurator) =>
+            busConfigurator.UsingInMemory( ( context, configurator ) =>
             {
                 configurator.UseInMemoryOutbox( context );
-                configurator.ConfigureEndpoints(context);
-            });
-        });
+                configurator.ConfigureEndpoints( context );
+            } );
+        } );
     }
 
-    public void Configure( IApplicationBuilder app,
-                           IWebHostEnvironment env,
-                           IServiceProvider serviceProvider )
+    public void Configure(
+        IApplicationBuilder app,
+        IWebHostEnvironment env,
+        IServiceProvider serviceProvider )
     {
         if ( env.IsDevelopment() )
         {
@@ -82,7 +93,6 @@ public class Startup( IConfiguration configuration )
         }
 
         app.UseHttpsRedirection();
-        app.UseSpaStaticFiles();
 
         app.UseSwagger();
         app.UseSwaggerUI( c => c.SwaggerEndpoint( "/swagger/v1/swagger.json", "Pathfinder API V1" ) );
@@ -90,23 +100,11 @@ public class Startup( IConfiguration configuration )
 
         app.UseRouting();
 
-        app.UseForwardedHeaders( new ForwardedHeadersOptions
-        {
-            ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-        } );
+        app.UseForwardedHeaders( new ForwardedHeadersOptions { ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto } );
         app.UseAuthentication();
         app.UseAuthorization();
         app.UseEndpoints( endpoints => endpoints.MapControllers() );
 
-        // app.UseSpa( spa =>
-        // {
-        //     spa.Options.SourcePath = env.IsDevelopment() ? "ClientApp" : "dist";
-        //
-        //     if ( env.IsDevelopment() )
-        //     {
-        //         spa.UseVueCli( npmScript: "serve" );
-        //     }
-        // } );
         //PathfinderSeed.SeedAsync(serviceProvider).Wait();
     }
 }

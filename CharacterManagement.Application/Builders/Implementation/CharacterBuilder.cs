@@ -5,7 +5,7 @@ namespace Pathfinder.CharacterManagement.Application.Builders.Implementation;
 
 public class CharacterBuilder : ICharacterBuilder
 {
-    private Character _character;
+    private DraftCharacter _draftCharacter;
     private readonly IAncestryRepository _ancestryRepository;
 
     public CharacterBuilder( IAncestryRepository ancestryRepository )
@@ -15,76 +15,71 @@ public class CharacterBuilder : ICharacterBuilder
 
     public void CreateCharacter()
     {
-        _character = new Character
-        {
-            AbilityScores = InitializationAbilityScores()
-        };
+        _draftCharacter = new DraftCharacter();
     }
 
     public void SetAncestry( AncestryType ancestryType )
     {
-        if ( _character is null )
+        if ( _draftCharacter is null )
         {
             throw new InvalidOperationException( "Character must be created before setting ancestry." );
         }
-        Ancestry ancestry = _ancestryRepository.GetAncestry( ancestryType );
-        _character.SetAncestry( ancestry );
-    }
 
-   
+        Ancestry ancestry = _ancestryRepository.GetAncestry( ancestryType );
+        _draftCharacter.SetAncestry( ancestry );
+    }
 
     public void SetBackground()
     {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
     }
 
     public void SetClass()
     {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
     }
 
     public void IncreaseAbilityScores( IEnumerable<AbilityType> increasedAbilityTypes )
     {
-        foreach ( AbilityType abilityType  in increasedAbilityTypes )
+        foreach ( AbilityType abilityType in increasedAbilityTypes )
         {
-            Characteristic characteristic = _character.AbilityScores.GetCharacteristic( abilityType );
+            Characteristic characteristic = _draftCharacter.AbilityScores.GetCharacteristic( abilityType );
             characteristic.Value += 2;
         }
-        
     }
 
     public void SetAbilityScores()
     {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
     }
 
     public void SetInventory()
     {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
     }
 
     public void SetAlignment()
     {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
     }
 
     public void SetDeity()
     {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
     }
 
     public void SetAge()
     {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
     }
 
     public void SetGender()
     {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
     }
 
     public void SetName( string name )
     {
-        _character.Rename( name );
+        _draftCharacter.Rename( name );
     }
 }

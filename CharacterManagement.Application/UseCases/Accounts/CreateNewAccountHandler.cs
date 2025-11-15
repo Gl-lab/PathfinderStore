@@ -20,7 +20,7 @@ public class CreateNewAccountHandler : IRequestHandler<CreateNewAccountCommand>
     public async Task Handle( CreateNewAccountCommand request, CancellationToken cancellationToken )
     {
         Account? account = await _accountRepository.GetByUserIdAsync( request.UserId );
-        if ( account is null )
+        if ( account is not null )
         {
             throw new CharacterManagementException( $"Account already exists for user {request.UserId}" );
         }

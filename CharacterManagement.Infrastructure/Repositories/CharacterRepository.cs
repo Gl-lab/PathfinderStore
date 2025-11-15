@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using Pathfinder.CharacterManagement.Application.Repositories;
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.CharacterManagement.Infrastructure.Data;
@@ -6,19 +5,16 @@ using Pathfinder.Shared.Infrasturture.Repositories;
 
 namespace Pathfinder.CharacterManagement.Infrastructure.Repositories;
 
-public class CharacterRepository : Repository<Character>, ICharacterRepository
+public class CharacterRepository : Repository<DraftCharacter>, ICharacterRepository
 {
-    public CharacterRepository(CharacterManagementDbContext dbContext)
-        : base(dbContext)
+    public CharacterRepository( CharacterManagementDbContext dbContext )
+        : base( dbContext )
     {
     }
 
-    public async Task<List<Character>> GetListAsync(int userId)
+    public async Task<List<DraftCharacter>> GetListAsync( int userId )
     {
-        Account? account = await context.Set<Account>()
-                                        .Where(e => e.User.Id == userId)
-                                        .FirstOrDefaultAsync();
-        return account?.Characters;
+        throw new NotImplementedException( "CharacterRepository.GetListAsync" );
     }
 
     // public async Task<Character> GetCurrentAsync(int userId)
