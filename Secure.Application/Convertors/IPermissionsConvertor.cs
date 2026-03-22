@@ -5,6 +5,6 @@ namespace Pathfinder.Secure.Application.Convertors;
 
 public interface IPermissionsConvertor
 {
-    public Permission Convert( PermissionDto permission );
-    public PermissionDto Convert( Permission permission );
+    Permission Convert( PermissionDto permission );
+    PermissionDto Convert( Permission permission );
 }

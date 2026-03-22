@@ -4,5 +4,5 @@ namespace Pathfinder.Secure.Application.Repositories;
 
 public interface IUserRepository
 {
-    public Task<User?> GetUserByNameOrEmail( string userNameOrEmail );
+    Task<User?> GetUserByNameOrEmail( string userNameOrEmail );
 }

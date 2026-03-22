@@ -1,53 +1,128 @@
-using Pathfinder.Contracts;
+using Pathfinder.CharacterManagement.Domain.Exceptions;
+using Pathfinder.Utils.Entities.Base;
 
 namespace Pathfinder.CharacterManagement.Domain.Entity;
 
-public class DraftCharacter : Utils.Entities.Base.Entity
+public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
 {
-    public Ancestry Ancestry { get; private set; }
-
+    public int UserId { get; private set; }
     public string Name { get; private set; }
-
-    // public int RaceId { get; set; }
-    public Race Race { get; private set; }
+    public int RaceId { get; private set; }
+    public AncestryType? AncestryType { get; private set; }
     public AbilityScores AbilityScores { get; private set; }
-    public IUser User { get; set; }
+
+    // Навигационные свойства для EF Core (опционально, только для загрузки связанных данных)
+    public Race Race { get; private set; }
+
+    // Приватный конструктор для EF Core
+    private DraftCharacter()
+    {
+    }
+
+    public static DraftCharacter Create(
+        int userId,
+        string name,
+        int raceId )
+    {
+        if ( userId <= 0 )
+        {
+            throw new CharacterManagementException( "UserId must be greater than 0" );
+        }
+
+        if ( String.IsNullOrWhiteSpace( name ) )
+        {
+            throw new CharacterManagementException( "Character name cannot be empty" );
+        }
+
+        if ( raceId <= 0 )
+        {
+            throw new CharacterManagementException( "RaceId must be greater than 0" );
+        }
+
+        return new DraftCharacter
+        {
+            UserId = userId,
+            Name = name.Trim(),
+            RaceId = raceId,
+            AbilityScores = AbilityScores.CreateDefault()
+        };
+    }
 
     public void Rename( string newName )
     {
         ArgumentNullException.ThrowIfNull( newName );
 
-        if ( !String.IsNullOrWhiteSpace( newName ) && newName != Name )
+        if ( String.IsNullOrWhiteSpace( newName ) )
         {
-            Name = newName;
+            throw new CharacterManagementException( "Character name cannot be empty" );
+        }
+
+        if ( newName.Trim() != Name )
+        {
+            Name = newName.Trim();
+            EnsureInvariants();
         }
     }
 
-    public void ChangeRace( Race newRace )
+    public void ChangeRace( int raceId )
     {
-        ArgumentNullException.ThrowIfNull( newRace );
-        Race = newRace;
+        if ( raceId <= 0 )
+        {
+            throw new CharacterManagementException( "RaceId must be greater than 0" );
+        }
+
+        RaceId = raceId;
+
+        EnsureInvariants();
     }
 
     public void SetAncestry( Ancestry ancestry )
     {
         ArgumentNullException.ThrowIfNull( ancestry );
-        Ancestry = ancestry;
-        if ( AbilityScores is null )
+
+        AncestryType = ancestry.AncestryType;
+
+        // Применяем бонусы
+        foreach ( AbilityType abilityBoost in ancestry.AbilityBoosts )
         {
-            AbilityScores = AbilityScores.InitializationAbilityScores();
+            AbilityScores.ApplyAbilityBoost( abilityBoost );
         }
 
-        foreach ( AbilityType ancestryAbilityBoost in ancestry.AbilityBoosts )
+        // Применяем штрафы
+        foreach ( AbilityType abilityFlaw in ancestry.AbilityFlaws )
         {
-            AbilityScores.GetCharacteristic( ancestryAbilityBoost )
-               .Value += 2;
+            AbilityScores.ApplyAbilityFlaw( abilityFlaw );
         }
 
-        foreach ( AbilityType ancestryAbilityFlaw in ancestry.AbilityFlaws )
+        EnsureInvariants();
+    }
+
+    public void UpdateAbilityScore( AbilityType abilityType, int value )
+    {
+        if ( AbilityScores == null )
         {
-            AbilityScores.GetCharacteristic( ancestryAbilityFlaw )
-               .Value -= 2;
+            throw new CharacterManagementException( "AbilityScores must be initialized before updating" );
+        }
+
+        AbilityScores.UpdateCharacteristic( abilityType, value );
+        EnsureInvariants();
+    }
+
+    private void EnsureInvariants()
+    {
+        if ( String.IsNullOrWhiteSpace( Name ) )
+        {
+            throw new CharacterManagementException( "Character name cannot be empty" );
+        }
+
+        if ( RaceId <= 0 )
+        {
+            throw new CharacterManagementException( "Character must have a valid race" );
+        }
+
+        if ( AbilityScores == null )
+        {
+            throw new CharacterManagementException( "Character must have ability scores" );
         }
     }
 }

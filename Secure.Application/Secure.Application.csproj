@@ -15,7 +15,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Store.Application\Store.Application.csproj" />
       <ProjectReference Include="..\Pathfinder.Utils\Pathfinder.Utils.csproj" />
       <ProjectReference Include="..\Secure.Domain\Secure.Domain.csproj" />
     </ItemGroup>

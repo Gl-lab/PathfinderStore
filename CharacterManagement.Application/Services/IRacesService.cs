@@ -4,5 +4,5 @@ namespace Pathfinder.CharacterManagement.Application.Services;
 
 public interface IRacesService
 {
-    public Task<IReadOnlyCollection<Race>> RacesListAsync();
+    Task<IReadOnlyCollection<Race>> RacesListAsync();
 }

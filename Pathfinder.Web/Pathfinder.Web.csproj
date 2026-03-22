@@ -30,9 +30,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CharacterManagement.Application\CharacterManagement.Application.csproj" />
     <ProjectReference Include="..\Secure.Domain\Secure.Domain.csproj" />
-    <ProjectReference Include="..\Store.Infrastructure\Store.Infrastructure.csproj" />
     <ProjectReference Include="..\Secure.Infrastructure\Secure.Infrastructure.csproj" />
-    <ProjectReference Include="..\Store.Application\Store.Application.csproj" />
     <ProjectReference Include="..\Secure.Application\Secure.Application.csproj" />
   </ItemGroup>
 

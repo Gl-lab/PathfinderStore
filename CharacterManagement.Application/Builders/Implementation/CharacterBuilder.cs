@@ -13,9 +13,12 @@ public class CharacterBuilder : ICharacterBuilder
         _ancestryRepository = ancestryRepository;
     }
 
-    public void CreateCharacter()
+    public void CreateCharacter(
+        int userId,
+        string name,
+        int raceId )
     {
-        _draftCharacter = new DraftCharacter();
+        _draftCharacter = DraftCharacter.Create( userId, name, raceId );
     }
 
     public void SetAncestry( AncestryType ancestryType )
@@ -41,10 +44,16 @@ public class CharacterBuilder : ICharacterBuilder
 
     public void IncreaseAbilityScores( IEnumerable<AbilityType> increasedAbilityTypes )
     {
+        if ( _draftCharacter is null )
+        {
+            throw new InvalidOperationException( "Character must be created before increasing ability scores." );
+        }
+
         foreach ( AbilityType abilityType in increasedAbilityTypes )
         {
-            Characteristic characteristic = _draftCharacter.AbilityScores.GetCharacteristic( abilityType );
-            characteristic.Value += 2;
+            Characteristic current = _draftCharacter.AbilityScores.GetCharacteristic( abilityType );
+            int newValue = current.Value + 2;
+            _draftCharacter.UpdateAbilityScore( abilityType, newValue );
         }
     }
 
@@ -80,6 +89,21 @@ public class CharacterBuilder : ICharacterBuilder
 
     public void SetName( string name )
     {
+        if ( _draftCharacter is null )
+        {
+            throw new InvalidOperationException( "Character must be created before setting name." );
+        }
+
         _draftCharacter.Rename( name );
+    }
+
+    public DraftCharacter Build()
+    {
+        if ( _draftCharacter is null )
+        {
+            throw new InvalidOperationException( "Character must be created before building." );
+        }
+
+        return _draftCharacter;
     }
 }

@@ -56,7 +56,7 @@ public class Startup( IConfiguration configuration )
                                 Id = "Bearer"
                             }
                         },
-                        Array.Empty<string>()
+                        [ ]
                     }
                 } );
         } );

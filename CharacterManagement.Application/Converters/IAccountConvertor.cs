@@ -5,6 +5,6 @@ namespace Pathfinder.CharacterManagement.Application.Converters;
 
 public interface IAccountConvertor
 {
-    public AccountDto Convert( Account account );
-    public Account Convert( AccountDto account );
+    AccountDto Convert( Account account );
+    Account Convert( AccountDto account );
 }
