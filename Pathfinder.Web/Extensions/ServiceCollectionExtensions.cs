@@ -74,8 +74,7 @@ public static class ServiceCollection
         
         services.AddDbContext<SecureDbContext>( options =>
             options
-               .UseNpgsql( connectionString: configuration[ "DB:Secure" ] ?? throw new InvalidOperationException("DB_CONNECTION for SecureDbContext not found") )
-               .UseLazyLoadingProxies() );
+               .UseNpgsql( connectionString: configuration[ "DB:Secure" ] ?? throw new InvalidOperationException("DB_CONNECTION for SecureDbContext not found") ) );
 
         services.AddScoped<IUnitOfWork>( context =>
         {

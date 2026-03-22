@@ -6,7 +6,10 @@ import vuetify from "./plugins/vuetify";
 import VueAxios from "vue-axios";
 import axios from "axios";
 
+import { appConst } from "@/settings";
+
 Vue.config.productionTip = false;
+axios.defaults.baseURL = appConst.webApiUrl;
 Vue.use(VueAxios, axios);
 new Vue({
   router,

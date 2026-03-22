@@ -12,4 +12,10 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.6.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Store.Domain\Store.Domain.csproj" />
+    <ProjectReference Include="..\Pathfinder.Utils\Pathfinder.Utils.csproj" />
+    <ProjectReference Include="..\Domain.Contracts\Domain.Contracts.csproj" />
+  </ItemGroup>
+
 </Project>
