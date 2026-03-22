@@ -57,6 +57,16 @@ public class CharacterBuilder : ICharacterBuilder
         }
     }
 
+    public void ApplyFreeBoosts( IEnumerable<AbilityType> freeBoosts )
+    {
+        if ( _draftCharacter is null )
+        {
+            throw new InvalidOperationException( "Character must be created before applying free boosts." );
+        }
+
+        _draftCharacter.SetFreeBoosts( freeBoosts.ToList() );
+    }
+
     public void SetAbilityScores()
     {
         throw new NotImplementedException();

@@ -94,6 +94,20 @@ public class AbilityScores
         UpdateCharacteristic( abilityType, updated.Value );
     }
 
+    public void RemoveAbilityBoost( AbilityType abilityType )
+    {
+        Characteristic current = GetCharacteristic( abilityType );
+        Characteristic updated = current.Decrease( 2 );
+        UpdateCharacteristic( abilityType, updated.Value );
+    }
+
+    public void RemoveAbilityFlaw( AbilityType abilityType )
+    {
+        Characteristic current = GetCharacteristic( abilityType );
+        Characteristic updated = current.Increase( 2 );
+        UpdateCharacteristic( abilityType, updated.Value );
+    }
+
     public void ApplyAbilityFlaw( AbilityType abilityType )
     {
         Characteristic current = GetCharacteristic( abilityType );

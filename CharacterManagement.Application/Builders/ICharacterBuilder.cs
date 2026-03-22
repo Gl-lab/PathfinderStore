@@ -13,6 +13,7 @@ public interface ICharacterBuilder
     void SetBackground();
     void SetClass();
     void IncreaseAbilityScores( IEnumerable<AbilityType> increasedAbilityScores );
+    void ApplyFreeBoosts( IEnumerable<AbilityType> freeBoosts );
     void SetInventory();
     void SetAlignment();
     void SetDeity();
