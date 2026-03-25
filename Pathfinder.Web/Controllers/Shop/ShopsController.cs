@@ -23,15 +23,9 @@ public class ShopsController: AuthorizedController
         
     [HttpPost]
     [Route("{shopId}/[action]")]
-    public async Task<ActionResult> Buy()
-    {
-        return Ok();
-    }
-        
+    public async Task<ActionResult> Buy() => Ok();
+
     [HttpPost]
     [Route("{shopId}/[action]")]
-    public async Task<ActionResult> Sell()
-    {
-        return Ok();
-    }
+    public async Task<ActionResult> Sell() => Ok();
 }

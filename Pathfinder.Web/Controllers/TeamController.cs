@@ -7,47 +7,26 @@ namespace Pathfinder.Web.Controllers;
 public class TeamsController: AuthorizedController
 {
     [HttpGet]
-    public async Task<ActionResult> Get()
-    {
-        return Ok();
-    }
-        
+    public async Task<ActionResult> Get() => Ok();
+
     [HttpGet]
     [Route("[action]")]
-    public async Task<ActionResult> Teammates()
-    {
-        return Ok();
-    }
-        
+    public async Task<ActionResult> Teammates() => Ok();
+
     [HttpPost]
-    public async Task<ActionResult> CreateTeam()
-    {
-        return Ok();
-    }
-        
+    public async Task<ActionResult> CreateTeam() => Ok();
+
     [HttpPost]
     [Route("[action]")]
-    public async Task<ActionResult> LeaveTeam()
-    {
-        return Ok();
-    }
-        
+    public async Task<ActionResult> LeaveTeam() => Ok();
+
     [HttpDelete]
-    public async Task<ActionResult> DeleteTeam()
-    {
-        return Ok();
-    }
-        
+    public async Task<ActionResult> DeleteTeam() => Ok();
+
     [HttpPut]
-    public async Task<ActionResult> EditTeam()
-    {
-        return Ok();
-    }
-        
+    public async Task<ActionResult> EditTeam() => Ok();
+
     [HttpPost]
     [Route("[action]")]
-    public async Task<ActionResult> JoinToTeam()
-    {
-        return Ok();
-    }
+    public async Task<ActionResult> JoinToTeam() => Ok();
 }

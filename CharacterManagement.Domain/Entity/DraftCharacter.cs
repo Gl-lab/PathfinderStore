@@ -29,13 +29,19 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         int raceId )
     {
         if ( userId <= 0 )
+        {
             throw new CharacterManagementException( "UserId must be greater than 0" );
+        }
 
-        if ( string.IsNullOrWhiteSpace( name ) )
+        if ( String.IsNullOrWhiteSpace( name ) )
+        {
             throw new CharacterManagementException( "Character name cannot be empty" );
+        }
 
         if ( raceId <= 0 )
+        {
             throw new CharacterManagementException( "RaceId must be greater than 0" );
+        }
 
         return new DraftCharacter
         {
@@ -50,8 +56,10 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     {
         ArgumentNullException.ThrowIfNull( newName );
 
-        if ( string.IsNullOrWhiteSpace( newName ) )
+        if ( String.IsNullOrWhiteSpace( newName ) )
+        {
             throw new CharacterManagementException( "Character name cannot be empty" );
+        }
 
         if ( newName.Trim() != Name )
         {
@@ -63,7 +71,9 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public void ChangeRace( int raceId )
     {
         if ( raceId <= 0 )
+        {
             throw new CharacterManagementException( "RaceId must be greater than 0" );
+        }
 
         RaceId = raceId;
         EnsureInvariants();
@@ -78,18 +88,24 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         {
             // Сначала откатываем free boosts
             foreach ( AbilityType boost in AppliedFreeBoosts )
+            {
                 AbilityScores.RemoveAbilityBoost( boost );
+            }
 
             // Откатываем fixed boosts
             foreach ( AncestryBoostSlot slot in _ancestry.AbilityBoosts )
             {
                 if ( slot is AncestryBoostSlot.FixedBoost fixedBoost )
+                {
                     AbilityScores.RemoveAbilityBoost( fixedBoost.AbilityType );
+                }
             }
 
             // Отменяем флои
             foreach ( AbilityType flaw in _ancestry.AbilityFlaws )
+            {
                 AbilityScores.RemoveAbilityFlaw( flaw );
+            }
 
             AppliedFreeBoosts = [];
         }
@@ -100,11 +116,15 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         foreach ( AncestryBoostSlot slot in ancestry.AbilityBoosts )
         {
             if ( slot is AncestryBoostSlot.FixedBoost fixedBoost )
+            {
                 AbilityScores.ApplyAbilityBoost( fixedBoost.AbilityType );
+            }
         }
 
         foreach ( AbilityType flaw in ancestry.AbilityFlaws )
+        {
             AbilityScores.ApplyAbilityFlaw( flaw );
+        }
 
         EnsureInvariants();
     }
@@ -114,16 +134,22 @@ public void SetFreeBoosts( IReadOnlyList<AbilityType> freeBoosts )
         ArgumentNullException.ThrowIfNull( freeBoosts );
 
         if ( _ancestry is null )
+        {
             throw new CharacterManagementException( "Ancestry must be set before applying free boosts." );
+        }
 
         int freeSlotCount = _ancestry.AbilityBoosts.Count( s => s is AncestryBoostSlot.FreeBoost );
 
         if ( freeBoosts.Count != freeSlotCount )
+        {
             throw new CharacterManagementException(
                 $"Expected {freeSlotCount} free boost(s) for {AncestryType}, got {freeBoosts.Count}." );
+        }
 
         if ( freeBoosts.Distinct().Count() != freeBoosts.Count )
+        {
             throw new CharacterManagementException( "Free boosts cannot target the same ability twice." );
+        }
 
         HashSet<AbilityType> fixedBoostTypes = _ancestry.AbilityBoosts
             .OfType<AncestryBoostSlot.FixedBoost>()
@@ -133,17 +159,23 @@ public void SetFreeBoosts( IReadOnlyList<AbilityType> freeBoosts )
         foreach ( AbilityType boost in freeBoosts )
         {
             if ( fixedBoostTypes.Contains( boost ) )
+            {
                 throw new CharacterManagementException(
                     $"Cannot apply free boost to {boost}: already boosted by ancestry." );
+            }
         }
 
         // Откат предыдущих free boosts
         foreach ( AbilityType boost in AppliedFreeBoosts )
+        {
             AbilityScores.RemoveAbilityBoost( boost );
+        }
 
         // Применяем новые
         foreach ( AbilityType boost in freeBoosts )
+        {
             AbilityScores.ApplyAbilityBoost( boost );
+        }
 
         AppliedFreeBoosts = freeBoosts;
         EnsureInvariants();
@@ -152,7 +184,9 @@ public void SetFreeBoosts( IReadOnlyList<AbilityType> freeBoosts )
     public void UpdateAbilityScore( AbilityType abilityType, int value )
     {
         if ( AbilityScores == null )
+        {
             throw new CharacterManagementException( "AbilityScores must be initialized before updating" );
+        }
 
         AbilityScores.UpdateCharacteristic( abilityType, value );
         EnsureInvariants();
@@ -160,13 +194,19 @@ public void SetFreeBoosts( IReadOnlyList<AbilityType> freeBoosts )
 
     private void EnsureInvariants()
     {
-        if ( string.IsNullOrWhiteSpace( Name ) )
+        if ( String.IsNullOrWhiteSpace( Name ) )
+        {
             throw new CharacterManagementException( "Character name cannot be empty" );
+        }
 
         if ( RaceId <= 0 )
+        {
             throw new CharacterManagementException( "Character must have a valid race" );
+        }
 
         if ( AbilityScores == null )
+        {
             throw new CharacterManagementException( "Character must have ability scores" );
+        }
     }
 }

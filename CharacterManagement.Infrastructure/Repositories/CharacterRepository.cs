@@ -12,10 +12,7 @@ public class CharacterRepository : Repository<DraftCharacter>, ICharacterReposit
     {
     }
 
-    public async Task<List<DraftCharacter>> GetListAsync( int userId )
-    {
-        throw new NotImplementedException( "CharacterRepository.GetListAsync" );
-    }
+    public async Task<List<DraftCharacter>> GetListAsync( int userId ) => throw new NotImplementedException( "CharacterRepository.GetListAsync" );
 
     // public async Task<Character> GetCurrentAsync(int userId)
     // {

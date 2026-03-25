@@ -67,8 +67,5 @@ public class SecureDbContext : IdentityDbContext<User, Role, int, UserClaim, Use
         modelBuilder.Entity<UserToken>().ToTable( "UserToken" );
     }
 
-    public async Task Commit()
-    {
-        await SaveChangesAsync();
-    }
+    public async Task Commit() => await SaveChangesAsync();
 }

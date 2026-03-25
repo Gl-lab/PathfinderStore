@@ -57,7 +57,7 @@ public class CharacterBuilderFreeBoostsTests
         CharacterBuilder builder = CreateBuilder( HumanAncestry() );
 
         builder.ApplyFreeBoosts( [ AbilityType.Strength, AbilityType.Intelligence ] );
-        var character = builder.Build();
+        DraftCharacter character = builder.Build();
 
         Assert.Equal( 12, character.AbilityScores.Strength.Value );
         Assert.Equal( 12, character.AbilityScores.Intelligence.Value );
@@ -70,7 +70,7 @@ public class CharacterBuilderFreeBoostsTests
 
         builder.ApplyFreeBoosts( [ AbilityType.Strength, AbilityType.Intelligence ] );
         builder.ApplyFreeBoosts( [ AbilityType.Dexterity, AbilityType.Wisdom ] );
-        var character = builder.Build();
+        DraftCharacter character = builder.Build();
 
         Assert.Equal( 10, character.AbilityScores.Strength.Value );
         Assert.Equal( 10, character.AbilityScores.Intelligence.Value );
@@ -122,7 +122,7 @@ public class CharacterBuilderFreeBoostsTests
         CharacterBuilder builder = CreateBuilder( DwarfAncestry() );
 
         builder.ApplyFreeBoosts( [ AbilityType.Intelligence ] );
-        var character = builder.Build();
+        DraftCharacter character = builder.Build();
 
         Assert.Equal( 12, character.AbilityScores.Intelligence.Value );
     }
@@ -146,7 +146,7 @@ public class CharacterBuilderFreeBoostsTests
         CharacterBuilder builder = CreateBuilder( noFreeSlots );
 
         builder.ApplyFreeBoosts( [] ); // не должно бросать
-        var character = builder.Build();
+        DraftCharacter character = builder.Build();
 
         Assert.Equal( 10, character.AbilityScores.Strength.Value );
     }
@@ -164,7 +164,7 @@ public class CharacterBuilderFreeBoostsTests
         builder.SetAncestry( AncestryType.Dwarf );   // 1 free слот
         builder.ApplyFreeBoosts( [ AbilityType.Intelligence ] );
 
-        var character = builder.Build();
+        DraftCharacter character = builder.Build();
 
         // Human бусты откатились, Dwarf применён
         Assert.Equal( 10, character.AbilityScores.Strength.Value );
@@ -175,7 +175,11 @@ public class CharacterBuilderFreeBoostsTests
     private sealed class StubAncestryRepository : IAncestryRepository
     {
         private readonly Ancestry _ancestry;
-        public StubAncestryRepository( Ancestry ancestry ) => _ancestry = ancestry;
+        public StubAncestryRepository( Ancestry ancestry )
+        {
+            _ancestry = ancestry;
+        }
+
         public Ancestry GetAncestry( AncestryType ancestryType ) => _ancestry;
     }
 
@@ -183,8 +187,10 @@ public class CharacterBuilderFreeBoostsTests
     {
         private readonly Dictionary<AncestryType, Ancestry> _ancestries;
 
-        public MultiAncestryRepository( params Ancestry[] ancestries ) =>
+        public MultiAncestryRepository( params Ancestry[] ancestries )
+        {
             _ancestries = ancestries.ToDictionary( a => a.AncestryType );
+        }
 
         public Ancestry GetAncestry( AncestryType ancestryType ) => _ancestries[ ancestryType ];
     }

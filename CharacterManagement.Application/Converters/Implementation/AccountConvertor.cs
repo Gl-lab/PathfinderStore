@@ -24,8 +24,5 @@ public class AccountConvertor : IAccountConvertor
         };
     }
 
-    public Account Convert( AccountDto account )
-    {
-        throw new NotImplementedException();
-    }
+    public Account Convert( AccountDto account ) => throw new NotImplementedException();
 }

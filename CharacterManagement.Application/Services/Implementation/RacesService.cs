@@ -13,8 +13,5 @@ public sealed class RacesService : IRacesService
         this.racesRepository = racesRepository;
     }
 
-    public async Task<IReadOnlyCollection<Race>> RacesListAsync()
-    {
-        return await racesRepository.ListAsync();
-    }
+    public async Task<IReadOnlyCollection<Race>> RacesListAsync() => await racesRepository.ListAsync();
 }

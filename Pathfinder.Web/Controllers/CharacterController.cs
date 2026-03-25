@@ -30,10 +30,7 @@ public class CharacterController : AuthorizedController
 
     [HttpGet]
     [Route("items")]
-    public async Task<ActionResult> Items()
-    {
-        return Ok();
-    }
+    public async Task<ActionResult> Items() => Ok();
 
     // [HttpGet]
     // [Route("items/Weapons")]

@@ -183,20 +183,11 @@ public class UserService : IUserService
         return createUserResult;
     }
 
-    public async Task<User?> FindByEmailAsync( string email )
-    {
-        return await _userManager.FindByEmailAsync( email );
-    }
+    public async Task<User?> FindByEmailAsync( string email ) => await _userManager.FindByEmailAsync( email );
 
-    public async Task<User?> FindByNameAsync( string name )
-    {
-        return await _userManager.FindByNameAsync( name );
-    }
+    public async Task<User?> FindByNameAsync( string name ) => await _userManager.FindByNameAsync( name );
 
-    public async Task<IdentityResult> ChangePasswordAsync( User user, string currentPassword, string newPassword )
-    {
-        return await _userManager.ChangePasswordAsync( user, currentPassword, newPassword );
-    }
+    public async Task<IdentityResult> ChangePasswordAsync( User user, string currentPassword, string newPassword ) => await _userManager.ChangePasswordAsync( user, currentPassword, newPassword );
 
     public async Task<ClaimsIdentity?> CreateClaimsIdentityAsync( string userNameOrEmail, string password )
     {
@@ -225,10 +216,7 @@ public class UserService : IUserService
         return null;
     }
 
-    public async Task<IdentityResult> ResetPasswordAsync( User user, string token, string password )
-    {
-        return await _userManager.ResetPasswordAsync( user, token, password );
-    }
+    public async Task<IdentityResult> ResetPasswordAsync( User user, string token, string password ) => await _userManager.ResetPasswordAsync( user, token, password );
 
     private async Task<User?> FindUserByUserNameOrEmail( string userNameOrEmail )
     {
@@ -236,20 +224,11 @@ public class UserService : IUserService
             await _userManager.FindByEmailAsync( userNameOrEmail ).ConfigureAwait( false );
     }
 
-    public void SetCurrentUser( User user )
-    {
-        _currentUser = user;
-    }
+    public void SetCurrentUser( User user ) => _currentUser = user;
 
-    public async Task SetCurrentUserByLogin( string login )
-    {
-        _currentUser = await _userManager.FindByNameAsync( login ).ConfigureAwait( false );
-    }
+    public async Task SetCurrentUserByLogin( string login ) => _currentUser = await _userManager.FindByNameAsync( login ).ConfigureAwait( false );
 
-    public User GetCurrentUser()
-    {
-        return _currentUser;
-    }
+    public User GetCurrentUser() => _currentUser;
 
     private async Task GrantRolesToUserAsync( IEnumerable<int> grantedRoleIds, User user )
     {

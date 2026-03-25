@@ -13,10 +13,7 @@ public sealed class CharacterService : ICharacterService
         _characterRepository = characterRepository;
     }
 
-    public async Task<List<DraftCharacter>> GetCharactersAsync( int userId )
-    {
-        return await _characterRepository.GetListAsync( userId );
-    }
+    public async Task<List<DraftCharacter>> GetCharactersAsync( int userId ) => await _characterRepository.GetListAsync( userId );
 
     public async Task EditCharacter( CharacterDto newCharacter )
     {

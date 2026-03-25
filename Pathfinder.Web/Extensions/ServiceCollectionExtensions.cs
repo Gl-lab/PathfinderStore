@@ -85,10 +85,7 @@ public static class ServiceCollection
         } );
     }
 
-    public static void ConfigureDependencyInjection( this IServiceCollection services )
-    {
-        services.AddTransient<IAuthorizationHandler, PermissionHandler>();
-    }
+    public static void ConfigureDependencyInjection( this IServiceCollection services ) => services.AddTransient<IAuthorizationHandler, PermissionHandler>();
 
     public static void ConfigureJwtTokenAuth( this IServiceCollection services, IConfiguration configuration )
     {

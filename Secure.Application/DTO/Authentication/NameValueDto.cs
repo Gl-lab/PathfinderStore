@@ -13,8 +13,5 @@ public class NameValueDto
     public string Name { get; }
     public string Value { get; }
 
-    public override string ToString()
-    {
-        return JsonSerializer.Serialize( this );
-    }
+    public override string ToString() => JsonSerializer.Serialize( this );
 }

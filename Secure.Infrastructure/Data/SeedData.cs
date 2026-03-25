@@ -8,15 +8,9 @@ public static class SeedData
 {
     #region BuildData
 
-    public static User[] BuildApplicationUsers()
-    {
-        return DefaultUsers.All().ToArray();
-    }
+    public static User[] BuildApplicationUsers() => DefaultUsers.All().ToArray();
 
-    public static Role[] BuildApplicationRoles()
-    {
-        return DefaultRoles.All().ToArray();
-    }
+    public static Role[] BuildApplicationRoles() => DefaultRoles.All().ToArray();
 
     public static UserRole[] BuildApplicationUserRoles()
     {
@@ -37,10 +31,7 @@ public static class SeedData
         };
     }
 
-    public static Permission[] BuildPermissions()
-    {
-        return DefaultPermissions.All().ToArray();
-    }
+    public static Permission[] BuildPermissions() => DefaultPermissions.All().ToArray();
 
     public static RolePermission[] BuildRolePermissions()
     {

@@ -10,10 +10,8 @@ public class UnitOfWork: IUnitOfWork
 {
     private readonly List<DbContext> _dbContexts = new();
 
-    public void AddDbContext( DbContext? dbContext )
-    {
-        _dbContexts.Add( dbContext ?? throw new ArgumentNullException( nameof( dbContext ) ) );
-    }
+    public void AddDbContext( DbContext? dbContext ) => _dbContexts.Add( dbContext ?? throw new ArgumentNullException( nameof( dbContext ) ) );
+
     public async Task Commit()
     {
         foreach ( DbContext dbContext in _dbContexts )
@@ -22,13 +20,7 @@ public class UnitOfWork: IUnitOfWork
         }
     }
 
-    public Task Rollback()
-    {
-        throw new System.NotImplementedException();
-    }
+    public Task Rollback() => throw new System.NotImplementedException();
 
-    public Task BeginTransaction()
-    {
-        throw new System.NotImplementedException();
-    }
+    public Task BeginTransaction() => throw new System.NotImplementedException();
 }

@@ -8,8 +8,5 @@ public class DeleteCharacterHandler : IRequestHandler<DeleteCharacterCommand>
     {
     }
 
-    public async Task Handle( DeleteCharacterCommand request, CancellationToken cancellationToken )
-    {
-        throw new NotImplementedException();
-    }
+    public async Task Handle( DeleteCharacterCommand request, CancellationToken cancellationToken ) => throw new NotImplementedException();
 }

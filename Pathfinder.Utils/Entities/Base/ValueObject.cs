@@ -41,8 +41,5 @@ public abstract class ValueObject
         return left.Equals( right );
     }
 
-    public static bool operator !=( ValueObject left, ValueObject right )
-    {
-        return !( left == right );
-    }
+    public static bool operator !=( ValueObject left, ValueObject right ) => !( left == right );
 }

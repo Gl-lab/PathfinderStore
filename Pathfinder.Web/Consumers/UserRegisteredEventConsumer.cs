@@ -15,8 +15,5 @@ public class UserRegisteredEventConsumer : IConsumer<UserRegisteredEvent>
         _mediator = mediator;
     }
 
-    public async Task Consume( ConsumeContext<UserRegisteredEvent> context )
-    {
-        await _mediator.Send( new CreateNewAccountCommand( context.Message.UserId, context.Message.Name, context.Message.Surname ) );
-    }
+    public async Task Consume( ConsumeContext<UserRegisteredEvent> context ) => await _mediator.Send( new CreateNewAccountCommand( context.Message.UserId, context.Message.Name, context.Message.Surname ) );
 }

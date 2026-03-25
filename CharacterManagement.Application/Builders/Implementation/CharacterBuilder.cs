@@ -16,10 +16,8 @@ public class CharacterBuilder : ICharacterBuilder
     public void CreateCharacter(
         int userId,
         string name,
-        int raceId )
-    {
+        int raceId ) =>
         _draftCharacter = DraftCharacter.Create( userId, name, raceId );
-    }
 
     public void SetAncestry( AncestryType ancestryType )
     {
@@ -32,15 +30,9 @@ public class CharacterBuilder : ICharacterBuilder
         _draftCharacter.SetAncestry( ancestry );
     }
 
-    public void SetBackground()
-    {
-        throw new NotImplementedException();
-    }
+    public void SetBackground() => throw new NotImplementedException();
 
-    public void SetClass()
-    {
-        throw new NotImplementedException();
-    }
+    public void SetClass() => throw new NotImplementedException();
 
     public void IncreaseAbilityScores( IEnumerable<AbilityType> increasedAbilityTypes )
     {
@@ -67,35 +59,17 @@ public class CharacterBuilder : ICharacterBuilder
         _draftCharacter.SetFreeBoosts( freeBoosts.ToList() );
     }
 
-    public void SetAbilityScores()
-    {
-        throw new NotImplementedException();
-    }
+    public void SetAbilityScores() => throw new NotImplementedException();
 
-    public void SetInventory()
-    {
-        throw new NotImplementedException();
-    }
+    public void SetInventory() => throw new NotImplementedException();
 
-    public void SetAlignment()
-    {
-        throw new NotImplementedException();
-    }
+    public void SetAlignment() => throw new NotImplementedException();
 
-    public void SetDeity()
-    {
-        throw new NotImplementedException();
-    }
+    public void SetDeity() => throw new NotImplementedException();
 
-    public void SetAge()
-    {
-        throw new NotImplementedException();
-    }
+    public void SetAge() => throw new NotImplementedException();
 
-    public void SetGender()
-    {
-        throw new NotImplementedException();
-    }
+    public void SetGender() => throw new NotImplementedException();
 
     public void SetName( string name )
     {

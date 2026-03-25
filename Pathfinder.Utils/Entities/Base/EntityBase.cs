@@ -6,10 +6,7 @@ public abstract class EntityBase<TId> : IEntityBase<TId>
 
     private int? _requestedHashCode;
 
-    public bool IsTransient()
-    {
-        return Id.Equals(default(TId));
-    }
+    public bool IsTransient() => Id.Equals(default(TId));
 
     public override bool Equals(object obj)
     {
@@ -62,8 +59,5 @@ public abstract class EntityBase<TId> : IEntityBase<TId>
         }
     }
 
-    public static bool operator !=(EntityBase<TId> left, EntityBase<TId> right)
-    {
-        return !(left == right);
-    }
+    public static bool operator !=(EntityBase<TId> left, EntityBase<TId> right) => !(left == right);
 }

@@ -14,8 +14,6 @@ public class PermissionHandler : IRequestHandler<PermissionsByUserNameOrEmailCom
     }
 
     public async Task<IEnumerable<PermissionDto>> Handle(PermissionsByUserNameOrEmailCommand request,
-                                                         CancellationToken cancellationToken)
-    {
-        return await _permissionService.GetGrantedPermissionsAsync(request.UserNameOrEmail);
-    }
+                                                         CancellationToken cancellationToken) =>
+        await _permissionService.GetGrantedPermissionsAsync(request.UserNameOrEmail);
 }

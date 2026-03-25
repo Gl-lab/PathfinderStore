@@ -36,12 +36,12 @@ public class AbilityScores
     public static AbilityScores CreateDefault()
     {
         return new AbilityScores(
-            new Characteristic( AbilityType.Strength, 10 ),
-            new Characteristic( AbilityType.Dexterity, 10 ),
-            new Characteristic( AbilityType.Constitution, 10 ),
-            new Characteristic( AbilityType.Intelligence, 10 ),
-            new Characteristic( AbilityType.Wisdom, 10 ),
-            new Characteristic( AbilityType.Charisma, 10 )
+            new Characteristic( 10 ),
+            new Characteristic( 10 ),
+            new Characteristic( 10 ),
+            new Characteristic( 10 ),
+            new Characteristic( 10 ),
+            new Characteristic( 10 )
         );
     }
 
@@ -61,7 +61,7 @@ public class AbilityScores
 
     public void UpdateCharacteristic( AbilityType abilityType, int newValue )
     {
-        Characteristic characteristic = new Characteristic( abilityType, newValue );
+        Characteristic characteristic = new Characteristic( newValue );
         switch ( abilityType )
         {
             case AbilityType.Strength:

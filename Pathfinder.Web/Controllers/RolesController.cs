@@ -34,10 +34,7 @@ public class RolesController : AdminController
     [HttpGet( "{id:int}" )]
     [Authorize( Policy = DefaultPermissions.PermissionNameForRoleCreate )]
     [Authorize( Policy = DefaultPermissions.PermissionNameForRoleUpdate )]
-    public async Task<ActionResult<GetRoleForCreateOrUpdateOutput>> GetRoles( int id )
-    {
-        return Ok( await _mediator.Send( new RoleForCreateOrUpdateCommand( id ) ) );
-    }
+    public async Task<ActionResult<GetRoleForCreateOrUpdateOutput>> GetRoles( int id ) => Ok( await _mediator.Send( new RoleForCreateOrUpdateCommand( id ) ) );
 
     [HttpPost]
     [Authorize( Policy = DefaultPermissions.PermissionNameForRoleCreate )]
