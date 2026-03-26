@@ -340,3 +340,5 @@ Pathfinder.Web/ClientApp/.env.production
 
 # MemoryBank - AI assistant documentation
 MemoryBank/
+AGENTS.md
+CLAUDE.md
