@@ -11,7 +11,7 @@ public class CharacterBuilderFreeBoostsTests
     {
         IAncestryRepository repository = new StubAncestryRepository( ancestry );
         CharacterBuilder builder = new CharacterBuilder( repository );
-        builder.CreateCharacter( accountId: 1, name: "Tester", raceId: 1 );
+        builder.CreateCharacter( accountId: 1, name: "Tester", ancestryType: ancestry.AncestryType );
         builder.SetAncestry( ancestry.AncestryType );
         return builder;
     }
@@ -110,7 +110,7 @@ public class CharacterBuilderFreeBoostsTests
     {
         IAncestryRepository repository = new StubAncestryRepository( HumanAncestry() );
         CharacterBuilder builder = new CharacterBuilder( repository );
-        builder.CreateCharacter( accountId: 1, name: "Tester", raceId: 1 );
+        builder.CreateCharacter( accountId: 1, name: "Tester", ancestryType: AncestryType.Human );
 
         Assert.Throws<CharacterManagementException>( () =>
             builder.ApplyFreeBoosts( [ AbilityType.Strength, AbilityType.Intelligence ] ) );
@@ -156,7 +156,7 @@ public class CharacterBuilderFreeBoostsTests
     {
         IAncestryRepository repository = new MultiAncestryRepository( HumanAncestry(), DwarfAncestry() );
         CharacterBuilder builder = new CharacterBuilder( repository );
-        builder.CreateCharacter( accountId: 1, name: "Tester", raceId: 1 );
+        builder.CreateCharacter( accountId: 1, name: "Tester", ancestryType: AncestryType.Human );
 
         builder.SetAncestry( AncestryType.Human );   // 2 free слота
         builder.ApplyFreeBoosts( [ AbilityType.Strength, AbilityType.Intelligence ] );
@@ -180,6 +180,8 @@ public class CharacterBuilderFreeBoostsTests
             _ancestry = ancestry;
         }
 
+        public IReadOnlyCollection<Ancestry> GetAll() => throw new NotImplementedException();
+
         public Ancestry GetAncestry( AncestryType ancestryType ) => _ancestry;
     }
 
@@ -191,6 +193,8 @@ public class CharacterBuilderFreeBoostsTests
         {
             _ancestries = ancestries.ToDictionary( a => a.AncestryType );
         }
+
+        public IReadOnlyCollection<Ancestry> GetAll() => throw new NotImplementedException();
 
         public Ancestry GetAncestry( AncestryType ancestryType ) => _ancestries[ ancestryType ];
     }

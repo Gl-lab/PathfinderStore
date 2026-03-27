@@ -17,7 +17,11 @@ public class UserRepository: IUserRepository
     public async Task<User?> GetUserByNameOrEmail( string userNameOrEmail )
     {
         return await _userManager
-                    .Users
-                    .FirstOrDefaultAsync(u => u.UserName == userNameOrEmail || u.Email == userNameOrEmail);
+            .Users
+            .Include( user => user.UserRoles )
+            .ThenInclude( userRole => userRole.Role )
+            .ThenInclude( role => role.RolePermissions )
+            .ThenInclude( rolePermission => rolePermission.Permission )
+            .FirstOrDefaultAsync( user => user.UserName == userNameOrEmail || user.Email == userNameOrEmail );
     }
 }

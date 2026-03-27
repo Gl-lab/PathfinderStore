@@ -19,7 +19,7 @@ public sealed class CharacterService : ICharacterService
     {
         // var character = await _characterRepository.GetCurrentAsync(_userService.GetCurrentUser().Id);
         // if (newCharacter.Name != character.Name ) character.Rename(newCharacter.Name);
-        // if (newCharacter.RaceId != character.RaceId) character.ChangeRace(newCharacter.RaceId);
+        // if (newCharacter.AncestryType != character.AncestryType) character.ChangeAncestryType(newCharacter.AncestryType);
     }
 
     // public async Task<ICollection<WeaponItemProperty>> WeaponItemProperty( int userId )

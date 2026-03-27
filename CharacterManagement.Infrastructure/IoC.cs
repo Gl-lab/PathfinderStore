@@ -9,6 +9,7 @@ public static class DependencyInjection
     public static void AddCharacterManagementInfrastructureServices(this IServiceCollection services)
     {
         services.AddScoped<IAccountRepository, AccountRepository>();
-        services.AddScoped<IRacesRepository, RacesRepository>();
+        services.AddScoped<ICharacterRepository, CharacterRepository>();
+        services.AddScoped<IAncestryRepository, AncestryRepository>();
     }
 }

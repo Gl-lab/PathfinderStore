@@ -7,6 +7,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Pathfinder.CharacterManagement.Application;
+using Pathfinder.CharacterManagement.Infrastructure;
 using Pathfinder.Web.Consumers;
 using Pathfinder.Web.Extensions;
 
@@ -23,6 +25,8 @@ public class Startup( IConfiguration configuration )
         services.ConfigureJwtTokenAuth( Configuration );
         services.ConfigureCors( Configuration );
         services.ConfigureDependencyInjection();
+        services.AddCharacterManagementApplicationServices();
+        services.AddCharacterManagementInfrastructureServices();
 
         services.AddControllers();
 

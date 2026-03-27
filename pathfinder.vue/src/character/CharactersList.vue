@@ -1,7 +1,7 @@
 <template>
   <v-data-table
     :headers="headers"
-    :items="list"
+    :items="characters"
     :items-per-page="5"
     class="elevation-1"
     :loading="loading"
@@ -39,13 +39,17 @@
         </v-dialog>
       </v-toolbar>
     </template>
+    <template v-slot:item.name="{ item }">
+      <v-btn text color="primary" @click="openCharacter(item)">
+        {{ item.name }}
+      </v-btn>
+    </template>
     <template v-slot:item.actions="{ item }">
+      <v-icon small class="mr-2" @click="openCharacter(item)">
+        mdi-open-in-new
+      </v-icon>
       <v-icon small @click="deleteItem(item)">
         mdi-delete
-      </v-icon>
-      <v-icon v-if="item.isCurrentCharacter"> mdi-account-check</v-icon>
-      <v-icon v-else @click="setCurrentCharacter(item)">
-        mdi-account-plus-outline
       </v-icon>
     </template>
   </v-data-table>
@@ -53,9 +57,9 @@
 
 <script>
 import CharacterCreateForm from "@/character/CharacterCreateForm";
-import {createNamespacedHelpers} from "vuex";
+import { createNamespacedHelpers } from "vuex";
 
-const { mapActions, mapGetters } = createNamespacedHelpers("auth");
+const { mapActions, mapGetters } = createNamespacedHelpers("character");
 
 export default {
   components: {
@@ -63,12 +67,9 @@ export default {
   },
   data() {
     return {
-      loading: false,
       dialog: false,
-      list: [],
       editedIndex: null,
       dialogDelete: false,
-      editedItem: null,
       headers: [
         {
           text: "Персонаж",
@@ -81,62 +82,50 @@ export default {
       ]
     };
   },
+  computed: {
+    ...mapGetters(["characters", "loading"])
+  },
   methods: {
-    ...mapGetters(["currentCharacter", "characterlist"]),
-    ...mapActions(["loadAccount"]),
+    ...mapActions(["loadCharacters", "deleteCharacter"]),
     loadData() {
-      this.loading = true;
-      this.loadAccount().then(() => {
-        this.copyCharacterList();
-        this.loading = false;
-      });
+      return this.loadCharacters();
     },
-    copyCharacterList() {
-      let currentCharacterId = -1;
-      if (this.currentCharacter())
-        currentCharacterId = this.currentCharacter().id;
-      this.list = this.characterlist().map(item => {
-        return {
-          isCurrentCharacter: item.id === currentCharacterId,
-          ...item
-        };
+    openCharacter(character) {
+      this.$router.push({
+        name: "character",
+        params: { id: character.id.toString() }
       });
-    },
-    setCurrentCharacter(character) {
-      console.log(character);
-
-      this.axios
-        .post("/api/Account/SetCurrentCharacter", "characterId=" + character.id)
-        .then(() => {
-          this.loadData();
-        });
     },
     closeDialog() {
-      this.loadData();
-      this.dialog = false;
+      Promise.resolve(this.loadData()).finally(() => {
+        this.dialog = false;
+      });
     },
     deleteItem(item) {
-      console.log(item);
       this.editedIndex = item.id;
       this.dialogDelete = true;
     },
     closeDelete() {
       this.dialogDelete = false;
       this.$nextTick(() => {
-        this.editedItem = null;
         this.editedIndex = null;
       });
     },
     deleteItemConfirm() {
-      if (this.editedIndex)
-        this.axios
-          .delete("/api/Account/DeleteCharacter", {
-            params: { deletedCharacterId: this.editedIndex }
-          })
-          .then(() => {
-            this.loadData();
-            this.closeDelete();
-          });
+      if (this.editedIndex) {
+        const deletedCharacterId = this.editedIndex.toString();
+
+        this.deleteCharacter(this.editedIndex).then(() => {
+          this.closeDelete();
+
+          if (
+            this.$route.name === "character" &&
+            this.$route.params.id === deletedCharacterId
+          ) {
+            this.$router.push({ name: "Characters" });
+          }
+        });
+      }
     }
   },
   mounted: function() {

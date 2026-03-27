@@ -1,14 +1,16 @@
-﻿using MediatR;
+using MediatR;
 using Pathfinder.CharacterManagement.Application.DTO;
 
 namespace Pathfinder.CharacterManagement.Application.UseCases.Characters;
 
-public class CreateCharacterCommand : IRequest, IRequest<Task>
+public sealed class CreateCharacterCommand : IRequest
 {
-    public CreateCharacterCommand(CharacterDto character)
+    public CreateCharacterCommand( int userId, CreateCharacterRequestDto character )
     {
+        UserId = userId;
         Character = character;
     }
 
-    public CharacterDto Character { get; }
+    public int UserId { get; }
+    public CreateCharacterRequestDto Character { get; }
 }

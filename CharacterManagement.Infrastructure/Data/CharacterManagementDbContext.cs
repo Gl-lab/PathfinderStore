@@ -10,7 +10,6 @@ public class CharacterManagementDbContext( DbContextOptions<CharacterManagementD
 {
     public DbSet<Account> Account { get; set; }
     public DbSet<DraftCharacter> Character { get; set; }
-    public DbSet<Race> Race { get; set; }
 
     protected override void OnModelCreating( ModelBuilder modelBuilder )
     {
@@ -21,13 +20,7 @@ public class CharacterManagementDbContext( DbContextOptions<CharacterManagementD
             b.ToTable( "Character" );
 
             b.Property( x => x.Name ).HasMaxLength( 200 );
-
-            b.HasOne( x => x.Race )
-                .WithMany()
-                .HasForeignKey( x => x.RaceId )
-                .IsRequired();
-
-            b.Property( x => x.AncestryType ).HasConversion<int?>();
+            b.Property( x => x.AncestryType ).HasConversion<int>();
 
             b.Property( x => x.AppliedFreeBoosts )
                 .HasConversion(
@@ -66,13 +59,6 @@ public class CharacterManagementDbContext( DbContextOptions<CharacterManagementD
                 .HasForeignKey( c => c.AccountId )
                 .IsRequired()
                 .OnDelete( DeleteBehavior.Cascade );
-        } );
-
-        modelBuilder.Entity<Race>( b =>
-        {
-            b.ToTable( "Race" );
-            b.Property( x => x.Name ).HasMaxLength( 100 );
-            b.Property( x => x.SizeId ).HasConversion<int>();
         } );
     }
 }

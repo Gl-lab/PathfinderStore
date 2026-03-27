@@ -6,7 +6,7 @@ namespace CharacterManagement.Domain.Tests;
 public class SetAncestryTests
 {
     private static DraftCharacter CreateCharacter() =>
-        DraftCharacter.Create( accountId: 1, name: "Thorin", raceId: 1 );
+        DraftCharacter.Create( accountId: 1, name: "Thorin", ancestryType: AncestryType.Human );
 
     private static Ancestry HumanAncestry() => new Ancestry(
         AncestryType.Human,
@@ -127,7 +127,7 @@ public class SetAncestryTests
         Assert.Equal( 10, character.AbilityScores.Charisma.Value );
     }
 
-[Fact]
+    [Fact]
     public void SetAncestry_CalledTwice_FreeBoostsReset()
     {
         DraftCharacter character = CreateCharacter();

@@ -42,15 +42,8 @@ const routes = [
     component: () => import("../views/CreateProductForm.vue")
   },
   {
-    path: "/character",
-    meta: {
-      mainMenu: {
-        index: 2,
-        mainMenu: true,
-        icon: "mdi-account",
-        title: "Персонаж"
-      }
-    },
+    path: "/character/:id",
+    meta: { requiresAuth: true },
     name: "character",
     component: () => import("@/character/CharacterInformation.vue")
   },
@@ -62,7 +55,7 @@ const routes = [
         mainMenu: true,
         icon: "mdi-widgets",
         title: "Товары",
-        index: 3,
+        index: 3
       }
     },
     component: VuetifyProduct

@@ -1,4 +1,4 @@
-﻿class Race {
+class Race {
   constructor() {
     this.id = null;
     this.name = null;
@@ -17,3 +17,5 @@
     return race;
   }
 }
+
+export default Race;

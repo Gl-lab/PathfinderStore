@@ -2,10 +2,11 @@
 
 public enum AncestryType
 {
-    Gnome,
-    Goblin,
-    Dwarf,
-    Halfling,
-    Human,
-    Elf
+    None = 0,
+    Gnome = 1,
+    Goblin = 2,
+    Dwarf = 3,
+    Halfling = 4,
+    Human = 5,
+    Elf = 6
 }

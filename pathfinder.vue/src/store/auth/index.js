@@ -1,66 +1,86 @@
 import axios from "axios";
-import {appConst} from "@/settings";
+
+function getPersistedAuthState() {
+  const rawState = localStorage.getItem("AuthStore");
+
+  if (!rawState) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(rawState);
+  } catch (error) {
+    return null;
+  }
+}
+
+function getTokenFromState(state) {
+  if (state && state.token) {
+    return state.token;
+  }
+
+  const persistedState = getPersistedAuthState();
+
+  return persistedState && persistedState.token ? persistedState.token : null;
+}
+
+function decodeTokenPayload(token) {
+  if (!token) {
+    return null;
+  }
+
+  const tokenParts = token.split(".");
+
+  if (tokenParts.length < 2) {
+    return null;
+  }
+
+  const base64 = tokenParts[1].replace(/-/g, "+").replace(/_/g, "/");
+  const padding = "=".repeat((4 - (base64.length % 4)) % 4);
+
+  try {
+    return JSON.parse(atob(base64 + padding));
+  } catch (error) {
+    return null;
+  }
+}
+
+function getUserNameFromToken(token) {
+  const payload = decodeTokenPayload(token);
+
+  if (!payload) {
+    return null;
+  }
+
+  return typeof payload.sub === "string" ? payload.sub : null;
+}
 
 const Auth = {
   namespaced: true,
   state: {
-    token: null,
-    account: null
+    token: null
   },
   getters: {
     isAuthorized: state => {
-      if (!state.token) {
-        const temp = localStorage.getItem("AuthStore");
-        if (temp) {
-          state = JSON.parse(temp);
-        }
-      }
-      return !!state.token;
+      return !!getTokenFromState(state);
     },
     getToken: state => {
-      if (!state.token) {
-        const temp = localStorage.getItem("AuthStore");
-        if (temp) {
-          state = JSON.parse(temp);
-        }
-      }
-      return state.token;
-    },
-    isLoadedAccount: state => !!state.account,
-    currentCharacter: state => {
-      if (state.account && state.account.currentCharacter) {
-        return state.account.currentCharacter;
-      } else return null;
-    },
-    characterlist: state => {
-      if (state.account && state.account.characters) {
-        return state.account.characters;
-      } else return [];
+      return getTokenFromState(state);
     },
     getUserName: state => {
-      if (state.account && state.account.user) {
-        return state.account.user.userName.toString().toUpperCase()[0];
+      const userName = getUserNameFromToken(getTokenFromState(state));
+
+      if (userName) {
+        return userName.toUpperCase()[0];
       }
+
       return null;
     }
   },
   actions: {
-    loadAccount(context) {
-      if (context.getters.isAuthorized) {
-        return axios.get(appConst.webApiUrl + "/api/Account").then(
-          response => {
-            context.commit("setAccount", response.data);
-          },
-          () => {
-            context.commit("removeAccount");
-          }
-        );
-      }
-    },
     logout(context) {
       delete axios.defaults.headers.common["Authorization"];
       context.commit("removeToken");
-      context.commit("removeAccount");
     }
   },
   mutations: {
@@ -71,12 +91,6 @@ const Auth = {
     removeToken(state) {
       state.token = undefined;
       localStorage.removeItem("AuthStore");
-    },
-    setAccount(state, account) {
-      state.account = account;
-    },
-    removeAccount(state) {
-      state.account = null;
     }
   }
 };

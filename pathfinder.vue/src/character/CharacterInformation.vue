@@ -1,17 +1,17 @@
 <template>
   <v-card v-if="character" max-width="600">
     <template slot="default">
-      <v-btn icon @click="loadCharacter">
+      <v-btn icon @click="loadCurrentCharacter">
         <v-icon>mdi-cached</v-icon>
       </v-btn>
     </template>
     <v-card-title>{{ character.name }}</v-card-title>
-    <v-list-item two-line v-if="character.race">
+    <v-list-item two-line>
       <v-list-item-content>
         <v-list-item-title>
-          {{ character.race.name }}
+          {{ ancestryName }}
         </v-list-item-title>
-        <v-list-item-subtitle>Раса</v-list-item-subtitle>
+        <v-list-item-subtitle>Родословная</v-list-item-subtitle>
       </v-list-item-content>
     </v-list-item>
     <v-card-text>
@@ -36,138 +36,90 @@
         </v-col>
       </v-row>
     </v-card-text>
-    <v-card class="mx-auto" max-width="400">
-      <v-card-text>
-        <v-text-field
-            class="mr-4"
-            v-model="balance"
-            label="Медные монеты"
-            min="0"
-            step="1"
-            type="number"
-        ></v-text-field>
-      </v-card-text>
-      <v-card-actions>
-        <v-btn text @click="topUpBalance" color="deep-purple accent-1">
-          Пополнить кошелек
-        </v-btn>
-      </v-card-actions>
-      <v-card-title class="text-h5">
-        {{ errorText }}
-      </v-card-title>
-    </v-card>
 
     <characteristics-form
-        v-if="character.characteristics"
-        :model="character.characteristics"
-        class="pt-5 px-15"
+      v-if="character.characteristics"
+      :model="character.characteristics"
+      class="pt-5 px-15"
     ></characteristics-form>
-    <v-data-table
-        dense
-        :headers="getHeaders"
-        :items="getWeapons"
-        item-key="id"
-        class="elevation-1"
-    ></v-data-table>
   </v-card>
-  <h1 v-else>Создайте персонажа (
-    <v-btn icon to="Characters">
+  <h1 v-else>
+    {{ emptyStateText }} (
+    <v-btn icon :to="{ name: 'Characters' }">
       <v-icon>mdi-account-group</v-icon>
     </v-btn>
-    ) и выберите его текущием с помощью кнопки
-    <v-icon>mdi-account-plus-outline</v-icon>
+    ) чтобы перейти к списку персонажей.
   </h1>
 </template>
 
 <script>
-import {createNamespacedHelpers} from "vuex";
+import { createNamespacedHelpers } from "vuex";
 import CharacteristicsForm from "@/character/CharacteristicsForm.vue";
 
-const {mapActions, mapGetters} = createNamespacedHelpers("character");
+const { mapActions, mapGetters } = createNamespacedHelpers("character");
+
+const ancestryMap = {
+  0: "Не выбрана",
+  1: "Gnome",
+  2: "Goblin",
+  3: "Dwarf",
+  4: "Halfling",
+  5: "Human",
+  6: "Elf"
+};
+
 export default {
   components: {
     CharacteristicsForm
   },
   data() {
     return {
-      balance: 0,
-      errorText: "",
-      snackbar: {
-        isActive: false,
-        text: null,
-        timeout: 2000
-      },
-      items: []
+      loadError: false
     };
   },
   computed: {
     ...mapGetters(["character"]),
-    getHeaders: function () {
-      return [
-        {
-          text: "Наименование",
-          align: "start",
-          sortable: false,
-          value: "name"
-        },
-        {text: "Размер", value: "size"},
-        {text: "Урон", value: "damage"},
-        {text: "Категория", value: "category"},
-        {text: "Тип", value: "type"}
-      ];
+    emptyStateText: function() {
+      if (this.loadError) {
+        return "Персонаж не найден или недоступен";
+      }
+
+      return "Выберите персонажа из списка";
     },
-    getWeapons: function () {
-      if (this.items == null) return null;
-      const itemTable = [];
-      this.items.forEach(value =>
-          itemTable.push({
-            id: value.item.id,
-            name: value.item.product.name,
-            category: value.item.product.category.name,
-            damage: value.damage.count + "D" + value.damage.d,
-            size: value.size,
-            type: value.weaponType.name
-          })
+    ancestryName: function() {
+      if (!this.character) {
+        return "";
+      }
+
+      return (
+        ancestryMap[this.character.ancestryType] || this.character.ancestryType
       );
-      return itemTable;
     }
   },
   methods: {
     ...mapActions(["loadCharacter"]),
-    topUpBalance: function () {
-      if (this.balance > 0) {
-        let resultCode = null;
-        this.axios
-            .put("/api/Character/IncreaseBalance", {value: this.balance})
-            .catch(error => (resultCode = error.response))
-            .finally(() => {
-              if (resultCode != null && resultCode.status !== 200) {
-                this.errorText = resultCode.data;
-              } else {
-                this.balance = 0;
-                this.loadCharacter();
-              }
-            });
+    loadCurrentCharacter: function() {
+      const characterId = parseInt(this.$route.params.id, 10);
+
+      this.loadError = false;
+
+      if (Number.isNaN(characterId)) {
+        this.loadError = true;
+        return;
       }
-    },
-    loadWeapons: function () {
-      try {
-        this.axios
-            .get("/api/Character/items/Weapons")
-            .then(response => {
-              this.items = response.data;
-            })
-            .catch(error => {
-              console.log(error.message);
-            });
-      } catch {
-        console.log(1);
-      }
+
+      this.loadCharacter(characterId).catch(() => {
+        this.loadError = true;
+      });
     }
   },
   mounted() {
-    this.loadCharacter();
-    this.loadWeapons();
+    this.loadCurrentCharacter();
+  },
+  watch: {
+    "$route.params.id": function() {
+      this.loadCurrentCharacter();
+    }
   }
 };
 </script>

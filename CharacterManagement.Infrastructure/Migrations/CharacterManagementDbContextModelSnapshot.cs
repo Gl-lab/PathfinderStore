@@ -17,7 +17,7 @@ namespace Pathfinder.CharacterManagement.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("character_management")
-                .HasAnnotation("ProductVersion", "8.0.7")
+                .HasAnnotation("ProductVersion", "8.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -57,7 +57,7 @@ namespace Pathfinder.CharacterManagement.Infrastructure.Migrations
                     b.Property<int>("AccountId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("AncestryType")
+                    b.Property<int>("AncestryType")
                         .HasColumnType("integer");
 
                     b.Property<string>("AppliedFreeBoosts")
@@ -71,43 +71,11 @@ namespace Pathfinder.CharacterManagement.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<int>("RaceId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
                     b.HasIndex("AccountId");
 
-                    b.HasIndex("RaceId");
-
                     b.ToTable("Character", "character_management");
-                });
-
-            modelBuilder.Entity("Pathfinder.CharacterManagement.Domain.Entity.Race", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("BaseSpeed")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("IsNightVision")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<int>("SizeId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Race", "character_management");
                 });
 
             modelBuilder.Entity("Pathfinder.CharacterManagement.Domain.Entity.DraftCharacter", b =>
@@ -115,12 +83,6 @@ namespace Pathfinder.CharacterManagement.Infrastructure.Migrations
                     b.HasOne("Pathfinder.CharacterManagement.Domain.Entity.Account", "Account")
                         .WithMany("DraftCharacters")
                         .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Pathfinder.CharacterManagement.Domain.Entity.Race", "Race")
-                        .WithMany()
-                        .HasForeignKey("RaceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -261,8 +223,6 @@ namespace Pathfinder.CharacterManagement.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Account");
-
-                    b.Navigation("Race");
                 });
 
             modelBuilder.Entity("Pathfinder.CharacterManagement.Domain.Entity.Account", b =>

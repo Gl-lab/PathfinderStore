@@ -5,7 +5,7 @@
         <v-list v-if="isAuthorized">
           <v-list-item class="px-2">
             <v-avatar class="mr-5" color="primary white--text" size="45">
-              <div v-if="isLoadedAccount">
+              <div v-if="getUserName">
                 {{ getUserName }}
               </div>
             </v-avatar>
@@ -96,12 +96,11 @@ export default {
     ...mapGetters([
       "getToken",
       "isAuthorized",
-      "isLoadedAccount",
       "getUserName"
     ])
   },
   methods: {
-    ...mapActions(["logout", "loadAccount"]),
+    ...mapActions(["logout"]),
     login() {
       this.$router.push("/account/login");
     }
@@ -117,7 +116,6 @@ export default {
         throw err;
       });
     });
-    if (this.isAuthorized) this.loadAccount();
   }
 };
 </script>

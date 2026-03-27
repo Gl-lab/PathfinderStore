@@ -7,14 +7,12 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
 {
     public int AccountId { get; private set; }
     public string Name { get; private set; }
-    public int RaceId { get; private set; }
-    public AncestryType? AncestryType { get; private set; }
+    public AncestryType AncestryType { get; private set; }
     public AbilityScores AbilityScores { get; private set; }
     public IReadOnlyList<AbilityType> AppliedFreeBoosts { get; private set; } = [];
 
     // Навигационные свойства для EF Core
     public Account Account { get; private set; }
-    public Race Race { get; private set; }
 
     // Хранится только in-memory, не персистируется в БД
     private Ancestry? _ancestry;
@@ -27,7 +25,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public static DraftCharacter Create(
         int accountId,
         string name,
-        int raceId )
+        AncestryType ancestryType )
     {
         if ( accountId <= 0 )
         {
@@ -39,16 +37,16 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
             throw new CharacterManagementException( "Character name cannot be empty" );
         }
 
-        if ( raceId <= 0 )
+        if ( ancestryType == AncestryType.None )
         {
-            throw new CharacterManagementException( "RaceId must be greater than 0" );
+            throw new CharacterManagementException( "AncestryType must be specified" );
         }
 
         return new DraftCharacter
         {
             AccountId = accountId,
             Name = name.Trim(),
-            RaceId = raceId,
+            AncestryType = ancestryType,
             AbilityScores = AbilityScores.CreateDefault()
         };
     }
@@ -69,14 +67,14 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         }
     }
 
-    public void ChangeRace( int raceId )
+    public void ChangeAncestryType( AncestryType ancestryType )
     {
-        if ( raceId <= 0 )
+        if ( ancestryType == AncestryType.None )
         {
-            throw new CharacterManagementException( "RaceId must be greater than 0" );
+            throw new CharacterManagementException( "AncestryType must be specified" );
         }
 
-        RaceId = raceId;
+        AncestryType = ancestryType;
         EnsureInvariants();
     }
 
@@ -130,7 +128,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         EnsureInvariants();
     }
 
-public void SetFreeBoosts( IReadOnlyList<AbilityType> freeBoosts )
+    public void SetFreeBoosts( IReadOnlyList<AbilityType> freeBoosts )
     {
         ArgumentNullException.ThrowIfNull( freeBoosts );
 
@@ -200,9 +198,9 @@ public void SetFreeBoosts( IReadOnlyList<AbilityType> freeBoosts )
             throw new CharacterManagementException( "Character name cannot be empty" );
         }
 
-        if ( RaceId <= 0 )
+        if ( AncestryType == AncestryType.None )
         {
-            throw new CharacterManagementException( "Character must have a valid race" );
+            throw new CharacterManagementException( "Character must have a valid ancestry" );
         }
 
         if ( AbilityScores == null )

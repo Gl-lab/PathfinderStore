@@ -1,18 +1,22 @@
 using System;
 using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Pathfinder.Secure.Application;
 using Pathfinder.Secure.Application.Configuration;
 using Pathfinder.Secure.Domain.Authentication.Permissions;
 using Pathfinder.Secure.Domain.Authentication.Role;
 using Pathfinder.Secure.Domain.Authentication.User;
 using Pathfinder.Secure.Infrastructure;
+using Pathfinder.CharacterManagement.Infrastructure.Data;
 using Pathfinder.Secure.Infrastructure.Data;
 using Pathfinder.Utils.UnitOfWork;
 using Pathfinder.Web.Authentication;
@@ -76,11 +80,16 @@ public static class ServiceCollection
             options
                .UseNpgsql( connectionString: configuration[ "DB:Secure" ] ?? throw new InvalidOperationException("DB_CONNECTION for SecureDbContext not found") ) );
 
+        services.AddDbContext<CharacterManagementDbContext>( options =>
+            options
+               .UseNpgsql( connectionString: configuration[ "DB:CharacterManagement" ] ?? throw new InvalidOperationException("DB_CONNECTION for CharacterManagementDbContext not found") ) );
+
         services.AddScoped<IUnitOfWork>( context =>
         {
             UnitOfWork unitOfWork = new();
             // unitOfWork.AddDbContext( context.GetService<StoreDbContext>() );
-            unitOfWork.AddDbContext( context.GetService<SecureDbContext>() );
+            unitOfWork.AddDbContext( context.GetRequiredService<SecureDbContext>() );
+            unitOfWork.AddDbContext( context.GetRequiredService<CharacterManagementDbContext>() );
             return unitOfWork;
         } );
     }
@@ -117,15 +126,44 @@ public static class ServiceCollection
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
         } ).AddJwtBearer( jwtBearerOptions =>
         {
+            string environmentName = Environment.GetEnvironmentVariable( "ASPNETCORE_ENVIRONMENT" ) ?? String.Empty;
+            bool isDevelopment = String.Equals( environmentName, "Development", StringComparison.OrdinalIgnoreCase );
+
+            jwtBearerOptions.MapInboundClaims = false;
             jwtBearerOptions.TokenValidationParameters = new TokenValidationParameters
             {
-                ValidateActor = true,
+                ValidateActor = false,
+                ValidateIssuer = true,
                 ValidateAudience = true,
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
                 ValidIssuer = jwtTokenConfiguration.Issuer,
                 ValidAudience = jwtTokenConfiguration.Audience,
-                IssuerSigningKey = signingKey
+                IssuerSigningKey = signingKey,
+                NameClaimType = JwtRegisteredClaimNames.Sub
+            };
+
+            jwtBearerOptions.Events = new JwtBearerEvents
+            {
+                OnChallenge = async context =>
+                {
+                    if ( !isDevelopment )
+                    {
+                        return;
+                    }
+
+                    context.HandleResponse();
+                    context.Response.StatusCode = 401;
+                    context.Response.ContentType = "application/json; charset=utf-8";
+
+                    string payload = JsonSerializer.Serialize( new
+                    {
+                        error = context.Error,
+                        errorDescription = context.ErrorDescription,
+                    } );
+
+                    await context.Response.WriteAsync( payload );
+                }
             };
         } );
     }

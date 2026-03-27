@@ -8,6 +8,7 @@ public static class DependencyInjection
 {
     public static void AddSecureInfrastructureServices(this IServiceCollection services)
     {
+        services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IUserRoleRepository, UserRoleRepository>();
         services.AddScoped<IPermissionsRepository, PermissionsRepository>();

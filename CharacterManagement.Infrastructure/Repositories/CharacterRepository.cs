@@ -17,9 +17,26 @@ public class CharacterRepository : Repository<DraftCharacter>, ICharacterReposit
     }
 
     public async Task<List<DraftCharacter>> GetListAsync( int userId )
-        => await _dbContext.Character
-            .Where( c => c.Account.UserId == userId )
+    {
+        IQueryable<int> accountIds = _dbContext.Account
+            .Where( account => account.UserId == userId )
+            .Select( account => account.Id );
+
+        return await _dbContext.Character
+            .Where( character => accountIds.Contains( character.AccountId ) )
             .ToListAsync();
+    }
+
+    public async Task<DraftCharacter?> GetByIdAsync( int id, int userId )
+    {
+        IQueryable<int> accountIds = _dbContext.Account
+            .Where( account => account.UserId == userId )
+            .Select( account => account.Id );
+
+        return await _dbContext.Character
+            .Where( character => character.Id == id && accountIds.Contains( character.AccountId ) )
+            .SingleOrDefaultAsync();
+    }
 
     // public async Task<Character> GetCurrentAsync(int userId)
     // {

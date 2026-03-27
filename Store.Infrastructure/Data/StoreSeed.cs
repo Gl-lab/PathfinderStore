@@ -21,10 +21,9 @@ public static class StoreSeed
         IList<Product> articles = GetPreconfiguredArticles(weaponCategory, armorCategory);
         IEnumerable<Size> sizes = GetSizes();
         IList<Item> items = GetItems(articles);
-        IList<Race> races = GetRaces();
         IList<WeaponType> weaponTypes = GetPreconfiguredWeaponTypeList();
         IEnumerable<Weapon> weapons = GetWeapons(articles, weaponTypes, damageTypeList);
-        Character character = GetCharacter(races.First(), items.Take(5));
+        Character character = GetCharacter(items.Take(5));
         IEnumerable<Account> accounts = GetAccounts(character);
         IEnumerable<WeaponItemProperty> weaponItemProperty = GetWeaponItemProperties(items, weaponCategory);
 
@@ -38,7 +37,6 @@ public static class StoreSeed
             //await dbContext.DamageType.AddRangeAsync(damageTypeList);
             await dbContext.WeaponType.AddRangeAsync(weaponTypes);
             await dbContext.Product.AddRangeAsync(articles);
-            await dbContext.Race.AddRangeAsync(races);
             await dbContext.Account.AddRangeAsync(accounts);
             await dbContext.Item.AddRangeAsync(items);
             await dbContext.WeaponItemProperty.AddRangeAsync(weaponItemProperty);
@@ -102,57 +100,6 @@ public static class StoreSeed
         };
     }
 
-    private static IList<Race> GetRaces()
-    {
-        return new List<Race>
-        {
-            new()
-            {
-                Name = "Гном",
-                BaseSpeed = 20,
-                //  SizeId = SizeType.Small
-            },
-            new()
-            {
-                Name = "Дварф",
-                BaseSpeed = 20,
-                // SizeId = SizeType.Medium,
-                IsNightVision = true
-            },
-            new()
-            {
-                Name = "Человек",
-                BaseSpeed = 30,
-                // SizeId = SizeType.Medium,
-            },
-            new()
-            {
-                Name = "Полуорк",
-                BaseSpeed = 30,
-                //  SizeId = SizeType.Medium,
-                IsNightVision = true
-            },
-            new()
-            {
-                Name = "Полурослик",
-                BaseSpeed = 20,
-                // SizeId = SizeType.Small,
-            },
-            new()
-            {
-                Name = "Полуэльф",
-                BaseSpeed = 30,
-                //SizeId = SizeType.Medium,
-            },
-            new()
-            {
-                Name = "Эльф",
-                BaseSpeed = 30,
-                // SizeId = SizeType.Medium,
-            }
-        };
-    }
-
     private static IList<Item> GetItems(IEnumerable<Product> articles)
     {
         return articles.Select(e => new Item { Product = e }).ToList();
@@ -173,7 +120,7 @@ public static class StoreSeed
         };
     }
 
-    private static Character GetCharacter(Race race, IEnumerable<Item> items)
+    private static Character GetCharacter(IEnumerable<Item> items)
     {
         List<InventoryItem> backpackItems = new List<InventoryItem>();
         backpackItems.AddRange(items.Select(item => new InventoryItem()
@@ -191,7 +138,6 @@ public static class StoreSeed
                 Wallet = new Wallet(1000),
                 Items = backpackItems
             },
-            //   Race = race,
             AbilityScores = new AbilityScores
             {
                 Strength = new Characteristic

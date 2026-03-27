@@ -1,0 +1,239 @@
+using System.Security.Claims;
+using FluentValidation;
+using FluentValidation.Results;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Pathfinder.CharacterManagement.Application.DTO;
+using Pathfinder.CharacterManagement.Application.Exceptions;
+using Pathfinder.CharacterManagement.Application.UseCases.Ancestries;
+using Pathfinder.CharacterManagement.Application.UseCases.Characters;
+using Pathfinder.CharacterManagement.Domain.Entity;
+using Pathfinder.Web.Controllers;
+
+namespace CharacterManagement.Infrastructure.Tests;
+
+public sealed class ControllerTests
+{
+    [Fact]
+    public async Task AncestriesController_Get_ReturnsOkWithPayload()
+    {
+        IReadOnlyCollection<AncestryDto> expected =
+        [
+            new AncestryDto
+            {
+                Type = AncestryType.Human,
+                Name = "Human",
+                AbilityBoosts =
+                [
+                    new AncestryBoostDto
+                    {
+                        IsFree = true,
+                    },
+                ],
+                AbilityFlaws = [ ],
+            },
+        ];
+        TestMediator mediator = new TestMediator();
+        mediator.Register( new GetAncestriesCommand(), expected );
+        AncestriesController controller = new AncestriesController( mediator );
+
+        ActionResult<IReadOnlyCollection<AncestryDto>> actionResult = await controller.Get();
+
+        OkObjectResult okResult = Assert.IsType<OkObjectResult>( actionResult.Result );
+        IReadOnlyCollection<AncestryDto> payload = Assert.IsAssignableFrom<IReadOnlyCollection<AncestryDto>>( okResult.Value );
+        Assert.Same( expected, payload );
+    }
+
+    [Fact]
+    public async Task CharacterController_Create_WhenUserIdClaimIsMissing_ReturnsUnauthorized()
+    {
+        TestMediator mediator = new TestMediator();
+        CharacterController controller = CreateCharacterController( mediator );
+        CreateCharacterRequestDto request = new CreateCharacterRequestDto
+        {
+            Name = "Thorin",
+            AncestryType = AncestryType.Human,
+            FreeBoosts = [ AbilityType.Strength, AbilityType.Intelligence ],
+        };
+
+        ActionResult actionResult = await controller.Create( request );
+
+        Assert.IsType<UnauthorizedResult>( actionResult );
+    }
+
+    [Fact]
+    public async Task CharacterController_Create_WhenMediatorThrowsValidationException_ReturnsBadRequest()
+    {
+        TestMediator mediator = new TestMediator();
+        CreateCharacterRequestDto request = new CreateCharacterRequestDto
+        {
+            Name = String.Empty,
+            AncestryType = AncestryType.Human,
+            FreeBoosts = [ AbilityType.Strength, AbilityType.Intelligence ],
+        };
+        mediator.RegisterException<CreateCharacterCommand>(
+            new ValidationException(
+            [
+                new ValidationFailure( "Name", "'Name' must not be empty." ),
+            ] ) );
+        CharacterController controller = CreateCharacterController( mediator, 77 );
+
+        ActionResult actionResult = await controller.Create( request );
+
+        BadRequestObjectResult badRequestResult = Assert.IsType<BadRequestObjectResult>( actionResult );
+        IReadOnlyCollection<string> errors = Assert.IsAssignableFrom<IReadOnlyCollection<string>>( badRequestResult.Value );
+        Assert.Contains( "'Name' must not be empty.", errors );
+    }
+
+    [Fact]
+    public async Task CharacterController_GetById_WhenMediatorThrowsDomainException_ReturnsNotFound()
+    {
+        TestMediator mediator = new TestMediator();
+        mediator.RegisterException<GetCharacterByIdCommand>(
+            new CharacterManagementException( "Character 15 was not found for current user." ) );
+        CharacterController controller = CreateCharacterController( mediator, 77 );
+
+        ActionResult<CharacterDto> actionResult = await controller.GetById( 15 );
+
+        NotFoundObjectResult notFoundResult = Assert.IsType<NotFoundObjectResult>( actionResult.Result );
+        IReadOnlyCollection<string> errors = Assert.IsAssignableFrom<IReadOnlyCollection<string>>( notFoundResult.Value );
+        Assert.Contains( "Character 15 was not found for current user.", errors );
+    }
+
+    [Fact]
+    public async Task CharacterController_Get_WhenMediatorThrowsDbUpdateException_ReturnsServiceUnavailable()
+    {
+        TestMediator mediator = new TestMediator();
+        mediator.RegisterException<GetCharactersCommand>(
+            new DbUpdateException( "Database read failed.", new Exception( "inner" ) ) );
+        CharacterController controller = CreateCharacterController( mediator, 77 );
+
+        ActionResult<IReadOnlyCollection<CharacterDto>> actionResult = await controller.Get();
+
+        ObjectResult objectResult = Assert.IsType<ObjectResult>( actionResult.Result );
+        Assert.Equal( StatusCodes.Status503ServiceUnavailable, objectResult.StatusCode );
+        IReadOnlyCollection<string> errors = Assert.IsAssignableFrom<IReadOnlyCollection<string>>( objectResult.Value );
+        Assert.Contains( "Character data is temporarily unavailable.", errors );
+    }
+
+    [Fact]
+    public async Task CharacterController_Delete_WhenMediatorThrowsDomainException_ReturnsNotFound()
+    {
+        TestMediator mediator = new TestMediator();
+        mediator.RegisterException<DeleteCharacterCommand>(
+            new CharacterManagementException( "Character 19 was not found for current user." ) );
+        CharacterController controller = CreateCharacterController( mediator, 77 );
+
+        ActionResult actionResult = await controller.Delete( 19 );
+
+        NotFoundObjectResult notFoundResult = Assert.IsType<NotFoundObjectResult>( actionResult );
+        IReadOnlyCollection<string> errors = Assert.IsAssignableFrom<IReadOnlyCollection<string>>( notFoundResult.Value );
+        Assert.Contains( "Character 19 was not found for current user.", errors );
+    }
+
+    private static CharacterController CreateCharacterController( IMediator mediator, int? userId = null )
+    {
+        CharacterController controller = new CharacterController( mediator );
+        ClaimsIdentity identity = userId.HasValue
+            ? new ClaimsIdentity(
+                [
+                    new Claim( ClaimTypes.NameIdentifier, userId.Value.ToString() ),
+                ],
+                "TestAuthenticationType" )
+            : new ClaimsIdentity();
+
+        controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext
+            {
+                User = new ClaimsPrincipal( identity ),
+            },
+        };
+
+        return controller;
+    }
+
+    private sealed class TestMediator : IMediator
+    {
+        private readonly Dictionary<Type, object?> _responses = new();
+        private readonly Dictionary<Type, Exception> _exceptions = new();
+
+        public void Register<TRequest, TResponse>( TRequest request, TResponse response )
+            where TRequest : IRequest<TResponse>
+        {
+            _responses[ request.GetType() ] = response;
+        }
+
+        public void RegisterException<TRequest>( Exception exception )
+        {
+            _exceptions[ typeof( TRequest ) ] = exception;
+        }
+
+        public Task Publish( object notification, CancellationToken cancellationToken = default ) => Task.CompletedTask;
+
+        public Task Publish<TNotification>( TNotification notification, CancellationToken cancellationToken = default )
+            where TNotification : INotification
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task<TResponse> Send<TResponse>( IRequest<TResponse> request, CancellationToken cancellationToken = default )
+        {
+            Type requestType = request.GetType();
+            if ( _exceptions.TryGetValue( requestType, out Exception? exception ) )
+            {
+                throw exception;
+            }
+
+            if ( !_responses.TryGetValue( requestType, out object? response ) )
+            {
+                throw new InvalidOperationException( $"No response registered for {requestType.Name}." );
+            }
+
+            return Task.FromResult( ( TResponse )response! );
+        }
+
+        public Task Send( IRequest request, CancellationToken cancellationToken = default )
+        {
+            Type requestType = request.GetType();
+            if ( _exceptions.TryGetValue( requestType, out Exception? exception ) )
+            {
+                throw exception;
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public Task<object?> Send( object request, CancellationToken cancellationToken = default )
+        {
+            Type requestType = request.GetType();
+            if ( _exceptions.TryGetValue( requestType, out Exception? exception ) )
+            {
+                throw exception;
+            }
+
+            return _responses.TryGetValue( requestType, out object? response )
+                ? Task.FromResult( response )
+                : Task.FromResult<object?>( null );
+        }
+
+        public IAsyncEnumerable<TResponse> CreateStream<TResponse>(
+            IStreamRequest<TResponse> request,
+            CancellationToken cancellationToken = default )
+        {
+            throw new NotSupportedException( "Streaming is not used in these controller tests." );
+        }
+
+        Task ISender.Send<TRequest>( TRequest request, CancellationToken cancellationToken )
+        {
+            return Send( ( IRequest )request!, cancellationToken );
+        }
+
+        public IAsyncEnumerable<object?> CreateStream( object request, CancellationToken cancellationToken = default )
+        {
+            throw new NotSupportedException( "Streaming is not used in these controller tests." );
+        }
+    }
+}

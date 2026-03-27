@@ -2,9 +2,9 @@
   <div>
     <v-select
       v-model="select"
-      label="Раса"
+      label="Родословная"
       :items="list"
-      item-text="name"
+      item-text="displayName"
       :hint="hintText"
       return-object
       @change="response"
@@ -14,9 +14,10 @@
 
 <script>
 export default {
+  name: "RaceSelect",
   data() {
     return {
-      list: [{ id: 0, name: "No data." }],
+      list: [],
       select: null
     };
   },
@@ -29,9 +30,29 @@ export default {
   },
   methods: {
     loadData() {
-      this.axios.get("/api/Character/Races").then(response => {
-        this.list = response.data;
+      this.axios.get("/api/ancestries").then(response => {
+        this.list = Array.isArray(response.data)
+          ? response.data.map(ancestry => this.mapAncestry(ancestry))
+          : [];
       });
+    },
+    mapAncestry(ancestry) {
+      return {
+        ...ancestry,
+        displayName: ancestry.name || this.getAncestryName(ancestry.type)
+      };
+    },
+    getAncestryName(type) {
+      const ancestryMap = {
+        1: "Gnome",
+        2: "Goblin",
+        3: "Dwarf",
+        4: "Halfling",
+        5: "Human",
+        6: "Elf"
+      };
+
+      return ancestryMap[type] || "Unknown ancestry";
     },
     response() {
       this.$emit("response", this.select);
@@ -39,7 +60,11 @@ export default {
   },
   computed: {
     hintText: function() {
-      return this.select ? `Размер ${this.select.size.name}` : "";
+      if (!this.select) {
+        return "";
+      }
+
+      return `Размер ${this.select.size}, HP ${this.select.baseHitPoints}, скорость ${this.select.baseSpeed}`;
     }
   }
 };
