@@ -61,11 +61,11 @@ public class CharacterManagementDbContext( DbContextOptions<CharacterManagementD
             b.Property( x => x.Name ).HasMaxLength( 100 );
             b.Property( x => x.Surname ).HasMaxLength( 100 );
 
-            b.HasOne( a => a.DraftCharacter )
-                .WithOne()
-                .HasForeignKey<Account>( "DraftCharacterId" )
-                .IsRequired( false )
-                .OnDelete( DeleteBehavior.SetNull );
+            b.HasMany( a => a.DraftCharacters )
+                .WithOne( c => c.Account )
+                .HasForeignKey( c => c.AccountId )
+                .IsRequired()
+                .OnDelete( DeleteBehavior.Cascade );
         } );
 
         modelBuilder.Entity<Race>( b =>

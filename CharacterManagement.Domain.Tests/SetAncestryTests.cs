@@ -6,7 +6,7 @@ namespace CharacterManagement.Domain.Tests;
 public class SetAncestryTests
 {
     private static DraftCharacter CreateCharacter() =>
-        DraftCharacter.Create( userId: 1, name: "Thorin", raceId: 1 );
+        DraftCharacter.Create( accountId: 1, name: "Thorin", raceId: 1 );
 
     private static Ancestry HumanAncestry() => new Ancestry(
         AncestryType.Human,

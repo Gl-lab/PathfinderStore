@@ -5,14 +5,15 @@ namespace Pathfinder.CharacterManagement.Domain.Entity;
 
 public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
 {
-    public int UserId { get; private set; }
+    public int AccountId { get; private set; }
     public string Name { get; private set; }
     public int RaceId { get; private set; }
     public AncestryType? AncestryType { get; private set; }
     public AbilityScores AbilityScores { get; private set; }
     public IReadOnlyList<AbilityType> AppliedFreeBoosts { get; private set; } = [];
 
-    // Навигационное свойство для EF Core
+    // Навигационные свойства для EF Core
+    public Account Account { get; private set; }
     public Race Race { get; private set; }
 
     // Хранится только in-memory, не персистируется в БД
@@ -24,13 +25,13 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     }
 
     public static DraftCharacter Create(
-        int userId,
+        int accountId,
         string name,
         int raceId )
     {
-        if ( userId <= 0 )
+        if ( accountId <= 0 )
         {
-            throw new CharacterManagementException( "UserId must be greater than 0" );
+            throw new CharacterManagementException( "AccountId must be greater than 0" );
         }
 
         if ( String.IsNullOrWhiteSpace( name ) )
@@ -45,7 +46,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
 
         return new DraftCharacter
         {
-            UserId = userId,
+            AccountId = accountId,
             Name = name.Trim(),
             RaceId = raceId,
             AbilityScores = AbilityScores.CreateDefault()
