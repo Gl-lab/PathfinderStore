@@ -16,6 +16,7 @@ public class CharacterManagementDbContextFactory : IDesignTimeDbContextFactory<C
             .SetBasePath( configurationBasePath )
             .AddJsonFile( "appsettings.json", optional: false )
             .AddJsonFile( $"appsettings.{environmentName}.json", optional: true )
+            .AddUserSecrets( "c3db048d-4a24-483f-9e9a-fe0cc5bbd832" )
             .AddEnvironmentVariables()
             .Build();
         string connectionString = configuration[ "DB:CharacterManagement" ]

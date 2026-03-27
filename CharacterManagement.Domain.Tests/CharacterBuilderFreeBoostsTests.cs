@@ -11,7 +11,7 @@ public class CharacterBuilderFreeBoostsTests
     {
         IAncestryRepository repository = new StubAncestryRepository( ancestry );
         CharacterBuilder builder = new CharacterBuilder( repository );
-        builder.CreateCharacter( userId: 1, name: "Tester", raceId: 1 );
+        builder.CreateCharacter( accountId: 1, name: "Tester", raceId: 1 );
         builder.SetAncestry( ancestry.AncestryType );
         return builder;
     }
@@ -110,7 +110,7 @@ public class CharacterBuilderFreeBoostsTests
     {
         IAncestryRepository repository = new StubAncestryRepository( HumanAncestry() );
         CharacterBuilder builder = new CharacterBuilder( repository );
-        builder.CreateCharacter( userId: 1, name: "Tester", raceId: 1 );
+        builder.CreateCharacter( accountId: 1, name: "Tester", raceId: 1 );
 
         Assert.Throws<CharacterManagementException>( () =>
             builder.ApplyFreeBoosts( [ AbilityType.Strength, AbilityType.Intelligence ] ) );
@@ -156,7 +156,7 @@ public class CharacterBuilderFreeBoostsTests
     {
         IAncestryRepository repository = new MultiAncestryRepository( HumanAncestry(), DwarfAncestry() );
         CharacterBuilder builder = new CharacterBuilder( repository );
-        builder.CreateCharacter( userId: 1, name: "Tester", raceId: 1 );
+        builder.CreateCharacter( accountId: 1, name: "Tester", raceId: 1 );
 
         builder.SetAncestry( AncestryType.Human );   // 2 free слота
         builder.ApplyFreeBoosts( [ AbilityType.Strength, AbilityType.Intelligence ] );

@@ -14,10 +14,10 @@ public class CharacterBuilder : ICharacterBuilder
     }
 
     public void CreateCharacter(
-        int userId,
+        int accountId,
         string name,
         int raceId ) =>
-        _draftCharacter = DraftCharacter.Create( userId, name, raceId );
+        _draftCharacter = DraftCharacter.Create( accountId, name, raceId );
 
     public void SetAncestry( AncestryType ancestryType )
     {

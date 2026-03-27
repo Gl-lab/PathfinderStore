@@ -5,7 +5,7 @@ namespace Pathfinder.CharacterManagement.Application.Builders;
 public interface ICharacterBuilder
 {
     void CreateCharacter(
-        int userId,
+        int accountId,
         string name,
         int raceId );
 
