@@ -35,4 +35,11 @@
     <ProjectReference Include="..\Secure.Application\Secure.Application.csproj" />
   </ItemGroup>
 
+
+    <ItemGroup>
+        <_ContentIncludedByDefault Remove="ClientApp\jsconfig.json"/>
+        <_ContentIncludedByDefault Remove="ClientApp\package-lock.json"/>
+        <_ContentIncludedByDefault Remove="ClientApp\package.json"/>
+    </ItemGroup>
+
 </Project>
