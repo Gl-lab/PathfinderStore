@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>12</LangVersion>
+        <RootNamespace>Pathfinder.Secure.Application</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Folder Include="DTO" />
+      <Folder Include="Exceptions" />
+      <Folder Include="UseCases" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Pathfinder.Utils\Pathfinder.Utils.csproj" />
+      <ProjectReference Include="..\Secure.Domain\Secure.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="MassTransit.Abstractions" Version="8.2.3" />
+      <PackageReference Include="MediatR" Version="12.3.0" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.7" />
+      <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="8.0.7" />
+      <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="7.6.3" />
+      <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.6.3" />
+      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.6.3" />
+    </ItemGroup>
+
+</Project>

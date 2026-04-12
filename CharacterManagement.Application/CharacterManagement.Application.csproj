@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Pathfinder.CharacterManagement.Application</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Folder Include="UseCases\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="FluentValidation" Version="11.11.0" />
+      <PackageReference Include="MediatR" Version="12.3.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\CharacterManagement.Domain\CharacterManagement.Domain.csproj" />
+    </ItemGroup>
+
+</Project>

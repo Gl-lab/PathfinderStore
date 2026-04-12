@@ -1,15 +1,15 @@
 using Microsoft.AspNetCore.Authorization;
-using Pathfinder.Core.Entities.Authentication.Permissions;
+using Pathfinder.Secure.Domain.Authentication.Permissions;
 
-namespace Pathfinder.Web.Authentication
+
+namespace Pathfinder.Web.Authentication;
+
+public class PermissionRequirement : IAuthorizationRequirement
 {
-    public class PermissionRequirement : IAuthorizationRequirement
+    public PermissionRequirement(Permission permission)
     {
-        public PermissionRequirement(Permission permission)
-        {
-            Permission = permission;
-        }
-
-        public Permission Permission { get; }
+        Permission = permission;
     }
+
+    public Permission Permission { get; }
 }

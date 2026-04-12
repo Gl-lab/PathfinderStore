@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>Pathfinder.Store.Domain</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Folder Include="Entities\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Pathfinder.Utils\Pathfinder.Utils.csproj" />
+    </ItemGroup>
+
+</Project>

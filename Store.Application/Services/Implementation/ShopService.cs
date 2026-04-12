@@ -1,0 +1,23 @@
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Pathfinder.Contracts.Core.Entities.Shop;
+using Pathfinder.Store.Application.Repositories.Shop;
+
+namespace Pathfinder.Store.Application.Services.Implementation;
+
+public sealed class ShopService : IShopService
+{
+    private readonly IShopRepository _shopRepository;
+
+    public ShopService(IShopRepository shopRepository)
+    {
+        _shopRepository = shopRepository;
+    }
+
+    public async Task<IReadOnlyList<Shop>> GetShopList() => await _shopRepository.ListAsync();
+
+    public async Task<Shop> ShopById(int shopId)
+    {
+        return await _shopRepository.GetByIdAsync(shopId);
+    }
+}

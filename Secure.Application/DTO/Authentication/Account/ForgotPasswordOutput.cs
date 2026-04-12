@@ -1,0 +1,6 @@
+namespace Pathfinder.Secure.Application.DTO.Authentication.Account;
+
+public class ForgotPasswordOutput
+{
+    public string ResetToken { get; set; }
+}

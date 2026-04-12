@@ -1,99 +1,178 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using FluentValidation;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Pathfinder.Application.DTO;
-using Pathfinder.Application.DTO.Account;
-using Pathfinder.Application.DTO.Items;
-using Pathfinder.Application.UseCases.Characters;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using Pathfinder.CharacterManagement.Application.DTO;
+using Pathfinder.CharacterManagement.Application.Exceptions;
+using Pathfinder.CharacterManagement.Application.UseCases.Characters;
 using Pathfinder.Web.Controllers.Base;
 
-namespace Pathfinder.Web.Controllers
+namespace Pathfinder.Web.Controllers;
+
+[Route( "api/character" )]
+public sealed class CharacterController : AuthorizedController
 {
-    public class CharacterController : AuthorizedController
+    private readonly IMediator _mediator;
+
+    public CharacterController( IMediator mediator )
     {
-        private readonly IMediator _mediator;
+        _mediator = mediator;
+    }
 
-        public CharacterController(IMediator mediator)
+    [HttpGet]
+    [ProducesResponseType( typeof( IReadOnlyCollection<CharacterDto> ), StatusCodes.Status200OK )]
+    [ProducesResponseType( StatusCodes.Status401Unauthorized )]
+    [ProducesResponseType( typeof( IReadOnlyCollection<string> ), StatusCodes.Status400BadRequest )]
+    [ProducesResponseType( typeof( IReadOnlyCollection<string> ), StatusCodes.Status503ServiceUnavailable )]
+    public async Task<ActionResult<IReadOnlyCollection<CharacterDto>>> Get()
+    {
+        try
         {
-            _mediator = mediator;
+            int userId = GetCurrentUserId();
+            IReadOnlyCollection<CharacterDto> characters = await _mediator.Send( new GetCharactersCommand( userId ) );
+            return Ok( characters );
         }
-
-        [HttpGet]
-        public async Task<ActionResult<CharacterDto>> Get()
+        catch ( InvalidOperationException )
         {
-            try
-            {
-                return Ok(await _mediator.Send(new GetCurrentCharacterForAccountCommand()));
-            }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
+            return Unauthorized();
         }
-
-        [HttpGet]
-        [Route("items")]
-        public async Task<ActionResult> Items()
+        catch ( ValidationException exception )
         {
+            return BadRequest( MapValidationErrors( exception ) );
+        }
+        catch ( CharacterManagementException exception )
+        {
+            return BadRequest( MapErrorMessage( exception.Message ) );
+        }
+        catch ( DbUpdateException )
+        {
+            return StatusCode( StatusCodes.Status503ServiceUnavailable, MapErrorMessage( "Character data is temporarily unavailable." ) );
+        }
+        catch ( PostgresException )
+        {
+            return StatusCode( StatusCodes.Status503ServiceUnavailable, MapErrorMessage( "Character data is temporarily unavailable." ) );
+        }
+    }
+
+    [HttpGet( "{characterId:int}" )]
+    [ProducesResponseType( typeof( CharacterDto ), StatusCodes.Status200OK )]
+    [ProducesResponseType( StatusCodes.Status401Unauthorized )]
+    [ProducesResponseType( typeof( IReadOnlyCollection<string> ), StatusCodes.Status400BadRequest )]
+    [ProducesResponseType( typeof( IReadOnlyCollection<string> ), StatusCodes.Status404NotFound )]
+    [ProducesResponseType( typeof( IReadOnlyCollection<string> ), StatusCodes.Status503ServiceUnavailable )]
+    public async Task<ActionResult<CharacterDto>> GetById( int characterId )
+    {
+        try
+        {
+            int userId = GetCurrentUserId();
+            CharacterDto character = await _mediator.Send( new GetCharacterByIdCommand( userId, characterId ) );
+            return Ok( character );
+        }
+        catch ( InvalidOperationException )
+        {
+            return Unauthorized();
+        }
+        catch ( ValidationException exception )
+        {
+            return BadRequest( MapValidationErrors( exception ) );
+        }
+        catch ( CharacterManagementException exception )
+        {
+            return NotFound( MapErrorMessage( exception.Message ) );
+        }
+        catch ( DbUpdateException )
+        {
+            return StatusCode( StatusCodes.Status503ServiceUnavailable, MapErrorMessage( "Character data is temporarily unavailable." ) );
+        }
+        catch ( PostgresException )
+        {
+            return StatusCode( StatusCodes.Status503ServiceUnavailable, MapErrorMessage( "Character data is temporarily unavailable." ) );
+        }
+    }
+
+    [HttpPost]
+    [ProducesResponseType( StatusCodes.Status200OK )]
+    [ProducesResponseType( StatusCodes.Status401Unauthorized )]
+    [ProducesResponseType( typeof( IReadOnlyCollection<string> ), StatusCodes.Status400BadRequest )]
+    public async Task<ActionResult> Create( [FromBody] CreateCharacterRequestDto character )
+    {
+        try
+        {
+            int userId = GetCurrentUserId();
+            await _mediator.Send( new CreateCharacterCommand( userId, character ) );
             return Ok();
         }
-
-        [HttpGet]
-        [Route("items/Weapons")]
-        public async Task<ActionResult<ICollection<WeaponItemDto>>> Weapons()
+        catch ( InvalidOperationException )
         {
-            try
-            {
-                return Ok(await _mediator.Send(new GetWeaponsForCurrentCharacterCommand()));
-            }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
+            return Unauthorized();
+        }
+        catch ( ValidationException exception )
+        {
+            return BadRequest( MapValidationErrors( exception ) );
+        }
+        catch ( CharacterManagementException exception )
+        {
+            return BadRequest( MapErrorMessage( exception.Message ) );
+        }
+    }
+
+    [HttpDelete( "{characterId:int}" )]
+    [ProducesResponseType( StatusCodes.Status200OK )]
+    [ProducesResponseType( StatusCodes.Status401Unauthorized )]
+    [ProducesResponseType( typeof( IReadOnlyCollection<string> ), StatusCodes.Status400BadRequest )]
+    [ProducesResponseType( typeof( IReadOnlyCollection<string> ), StatusCodes.Status404NotFound )]
+    public async Task<ActionResult> Delete( int characterId )
+    {
+        try
+        {
+            int userId = GetCurrentUserId();
+            await _mediator.Send( new DeleteCharacterCommand( userId, characterId ) );
+            return Ok();
+        }
+        catch ( InvalidOperationException )
+        {
+            return Unauthorized();
+        }
+        catch ( ValidationException exception )
+        {
+            return BadRequest( MapValidationErrors( exception ) );
+        }
+        catch ( CharacterManagementException exception )
+        {
+            return NotFound( MapErrorMessage( exception.Message ) );
+        }
+    }
+
+    [HttpGet]
+    [Route( "items" )]
+    public ActionResult Items() => Ok();
+
+    [HttpDelete]
+    [Route( "items/drop" )]
+    public ActionResult ItemDrop() => Ok();
+
+    private static IReadOnlyCollection<string> MapErrorMessage( string message ) => [ message ];
+
+    private static IReadOnlyCollection<string> MapValidationErrors( ValidationException exception ) => exception.Errors
+       .Select( error => error.ErrorMessage )
+       .Distinct()
+       .ToArray();
+
+    private int GetCurrentUserId()
+    {
+        string? rawUserId = User.FindFirstValue( ClaimTypes.NameIdentifier );
+        if ( !Int32.TryParse( rawUserId, out int userId ) )
+        {
+            throw new InvalidOperationException( "Current user identifier claim is missing." );
         }
 
-        [HttpDelete]
-        [Route("items/drop")]
-        public async Task<ActionResult> ItemDrop()
-        {
-            try
-            {
-                return Ok();
-            }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
-        }
-
-        [HttpPut]
-        [Route("IncreaseBalance")]
-        public async Task<ActionResult> IncreaseBalance([FromBody] ChangeAccountBalanceDto changeAccountBalanceDto)
-        {
-            try
-            {
-                return Ok(await _mediator.Send(new IncreaseCharacterBalanceCommand(changeAccountBalanceDto.Value)));
-            }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
-        }
-
-        [HttpPut]
-        [Route("DecreaseBalance")]
-        public async Task<ActionResult> DecreaseBalance([FromBody] ChangeAccountBalanceDto changeAccountBalanceDto)
-        {
-            try
-            {
-                return Ok(await _mediator.Send(new DecreaseCharacterBalanceCommand(changeAccountBalanceDto.Value)));
-            }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
-        }
+        return userId;
     }
 }
