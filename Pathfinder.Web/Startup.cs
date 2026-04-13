@@ -9,7 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Pathfinder.CharacterManagement.Application;
 using Pathfinder.CharacterManagement.Infrastructure;
-using Pathfinder.Web.Consumers;
+using Pathfinder.CharacterManagement.Infrastructure.Consumers;
 using Pathfinder.Web.Extensions;
 
 namespace Pathfinder.Web;

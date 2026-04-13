@@ -9,6 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="MassTransit" Version="8.2.3" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8">
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -24,6 +25,7 @@
     <ItemGroup>
       <ProjectReference Include="..\CharacterManagement.Application\CharacterManagement.Application.csproj" />
       <ProjectReference Include="..\CharacterManagement.Domain\CharacterManagement.Domain.csproj" />
+      <ProjectReference Include="..\Domain.Contracts\Domain.Contracts.csproj" />
       <ProjectReference Include="..\Infrasturture.Shared\Infrasturture.Shared.csproj" />
     </ItemGroup>
 

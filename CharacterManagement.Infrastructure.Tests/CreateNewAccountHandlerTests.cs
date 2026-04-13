@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Pathfinder.CharacterManagement.Application.Exceptions;
+using Microsoft.Extensions.Logging.Abstractions;
 using Pathfinder.CharacterManagement.Application.UseCases.Accounts;
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.CharacterManagement.Infrastructure.Data;
@@ -14,8 +14,8 @@ public sealed class CreateNewAccountHandlerTests
     public async Task Handle_NewUser_PersistsAccountInDbContext()
     {
         await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
-        CreateNewAccountHandler handler = CreateHandler( dbContext );
-        CreateNewAccountCommand command = new CreateNewAccountCommand( 42, "Alrik", "Stone" );
+        EnsureAccountExistsHandler handler = CreateHandler( dbContext );
+        EnsureAccountExistsCommand command = new EnsureAccountExistsCommand( 42, "Alrik", "Stone" );
 
         await handler.Handle( command, CancellationToken.None );
 
@@ -30,7 +30,7 @@ public sealed class CreateNewAccountHandlerTests
     }
 
     [Fact]
-    public async Task Handle_DuplicateUserId_ThrowsAndDoesNotCreateDuplicate()
+    public async Task Handle_DuplicateUserId_DoesNotCreateDuplicate()
     {
         await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
         Account existingAccount = new Account
@@ -43,11 +43,10 @@ public sealed class CreateNewAccountHandlerTests
         dbContext.Account.Add( existingAccount );
         await dbContext.SaveChangesAsync();
 
-        CreateNewAccountHandler handler = CreateHandler( dbContext );
-        CreateNewAccountCommand command = new CreateNewAccountCommand( 77, "Duplicate", "User" );
+        EnsureAccountExistsHandler handler = CreateHandler( dbContext );
+        EnsureAccountExistsCommand command = new EnsureAccountExistsCommand( 77, "Duplicate", "User" );
 
-        await Assert.ThrowsAsync<CharacterManagementException>( async () =>
-            await handler.Handle( command, CancellationToken.None ) );
+        await handler.Handle( command, CancellationToken.None );
 
         List<Account> accounts = await dbContext.Account
             .AsNoTracking()
@@ -59,11 +58,31 @@ public sealed class CreateNewAccountHandlerTests
         Assert.Equal( existingAccount.Surname, savedAccount.Surname );
     }
 
-    private static CreateNewAccountHandler CreateHandler( CharacterManagementDbContext dbContext )
+    [Fact]
+    public async Task Handle_RepeatedRun_IsSafeAndKeepsSingleAccount()
+    {
+        await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
+        EnsureAccountExistsHandler handler = CreateHandler( dbContext );
+        EnsureAccountExistsCommand command = new EnsureAccountExistsCommand( 91, "Meri", "Gold" );
+
+        await handler.Handle( command, CancellationToken.None );
+        await handler.Handle( command, CancellationToken.None );
+
+        List<Account> accounts = await dbContext.Account
+            .AsNoTracking()
+            .Where( account => account.UserId == command.UserId )
+            .ToListAsync();
+
+        Account savedAccount = Assert.Single( accounts );
+        Assert.Equal( command.Name, savedAccount.Name );
+        Assert.Equal( command.Surname, savedAccount.Surname );
+    }
+
+    private static EnsureAccountExistsHandler CreateHandler( CharacterManagementDbContext dbContext )
     {
         AccountRepository accountRepository = new AccountRepository( dbContext );
         TestUnitOfWork unitOfWork = new TestUnitOfWork( dbContext );
 
-        return new CreateNewAccountHandler( accountRepository, unitOfWork );
+        return new EnsureAccountExistsHandler( accountRepository, unitOfWork, NullLogger<EnsureAccountExistsHandler>.Instance );
     }
 }

@@ -35,6 +35,10 @@
     <ProjectReference Include="..\Secure.Application\Secure.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="Consumers\UserRegisteredEventConsumer.cs" />
+  </ItemGroup>
+
 
     <ItemGroup>
         <_ContentIncludedByDefault Remove="ClientApp\jsconfig.json"/>
