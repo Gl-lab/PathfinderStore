@@ -26,6 +26,21 @@ namespace Pathfinder.Web.Extensions;
 
 public static class ServiceCollection
 {
+    private static string GetSecureConnectionString( IConfiguration configuration ) =>
+        configuration[ "DB:Secure" ]
+        ?? configuration[ "DB_CONNECTION" ]
+        ?? throw new InvalidOperationException( "Connection string 'DB:Secure' was not found. Configure 'DB:Secure' or legacy 'DB_CONNECTION'." );
+
+    private static string GetCharacterManagementConnectionString( IConfiguration configuration ) =>
+        configuration[ "DB:CharacterManagement" ]
+        ?? configuration[ "DB_CONNECTION" ]
+        ?? throw new InvalidOperationException( "Connection string 'DB:CharacterManagement' was not found. Configure 'DB:CharacterManagement' or legacy 'DB_CONNECTION'." );
+
+    private static string GetSecurityKey( IConfiguration configuration ) =>
+        configuration[ "Authentication:SecurityKey" ]
+        ?? configuration[ "SECURITY_KEY" ]
+        ?? throw new InvalidOperationException( "Authentication key 'Authentication:SecurityKey' was not found. Configure 'Authentication:SecurityKey' or legacy 'SECURITY_KEY'." );
+
     public static void ConfigureCors( this IServiceCollection services, IConfiguration configuration )
     {
         services.AddCors( options =>
@@ -78,11 +93,11 @@ public static class ServiceCollection
         
         services.AddDbContext<SecureDbContext>( options =>
             options
-               .UseNpgsql( connectionString: configuration[ "DB:Secure" ] ?? throw new InvalidOperationException("DB_CONNECTION for SecureDbContext not found") ) );
+               .UseNpgsql( connectionString: GetSecureConnectionString( configuration ) ) );
 
         services.AddDbContext<CharacterManagementDbContext>( options =>
             options
-               .UseNpgsql( connectionString: configuration[ "DB:CharacterManagement" ] ?? throw new InvalidOperationException("DB_CONNECTION for CharacterManagementDbContext not found") ) );
+               .UseNpgsql( connectionString: GetCharacterManagementConnectionString( configuration ) ) );
 
         services.AddScoped<IUnitOfWork>( context =>
         {
@@ -100,7 +115,7 @@ public static class ServiceCollection
     {
         SymmetricSecurityKey signingKey =
             new(
-                Encoding.ASCII.GetBytes( configuration[ "Authentication:SecurityKey" ] ?? throw new InvalidOperationException( "Authentication.SecurityKey for JwtTokenConfiguration not found") ) );
+                Encoding.ASCII.GetBytes( GetSecurityKey( configuration ) ) );
 
         JwtTokenConfiguration jwtTokenConfiguration = new JwtTokenConfiguration
         {
