@@ -23,32 +23,33 @@
 
 | Файл | Содержимое |
 |------|-----------|
-| `project_overview.md` | Обзор проекта: стек, структура, конфигурация dev-среды |
-| `sandbox.md` | Практические ограничения sandbox и признаки, когда нужна escalation |
-| `vikunja.md` | Подробные правила работы с задачами через MCP Vikunja |
+| `MemoryBank/00_project/project_overview.md` | Обзор проекта: стек, структура, конфигурация dev-среды |
+| `MemoryBank/10_workflow/sandbox.md` | Практические ограничения sandbox и признаки, когда нужна escalation |
+| `MemoryBank/10_workflow/vikunja.md` | Подробные правила работы с задачами через MCP Vikunja |
 
 ### Читать обязательно только при разработке
 
 | Файл | Содержимое |
 |------|-----------|
-| `feedback_csharp_style.md` | Правила стиля C# кода |
-| `ef.md` | Проверенный workflow для EF migrations и связанные known issues |
+| `MemoryBank/10_workflow/feedback_csharp_style.md` | Правила стиля C# кода |
+| `MemoryBank/10_workflow/ef.md` | Проверенный workflow для EF migrations и связанные known issues |
 
 ### Читать обязательно при исследованиях
 
 | Файл | Содержимое |
 |------|-----------|
-| `aon_elasticsearch_usage.md` | Как использовать AoN Elasticsearch в исследовательских сессиях |
+| `MemoryBank/10_workflow/aon_elasticsearch_usage.md` | Как использовать AoN Elasticsearch в исследовательских сессиях |
 
 ### Читать по необходимости
 
 | Файл | Содержимое |
 |------|-----------|
-| `project_pathfinder_character_domain.md` | Детальный анализ CharacterManagement: что реализовано, что нет |
-| `task_mvp_character_creation.md` | Задача MVP: API-контракты, frontend, критерии готовности |
-| `task_14_integration_test_context.md` | Контекст по интеграционным тестам CharacterManagement |
-| `character_creation_rules/` | Нормативные доменные правила создания персонажа |
-| `tempinfo/` | Временные исследовательские заметки и выгрузки |
+| `MemoryBank/00_project/project_pathfinder_character_domain.md` | Детальный анализ CharacterManagement: что реализовано, что нет |
+| `MemoryBank/30_task_notes/mvp_character_creation_backend.md` | Статус backend MVP создания персонажа |
+| `MemoryBank/30_task_notes/mvp_character_creation_frontend.md` | Статус frontend MVP создания персонажа |
+| `MemoryBank/30_task_notes/task_14_integration_test_context.md` | Контекст по интеграционным тестам CharacterManagement |
+| `MemoryBank/20_domain/character_creation/` | Нормативные доменные правила создания персонажа |
+| `MemoryBank/90_research/` | Временные исследовательские заметки и выгрузки |
 
 ---
 
@@ -81,12 +82,12 @@
 
 Для ведения задач используется **MCP Vikunja** (`@0xk3vin/vikunja-mcp`).
 
-Подробные правила, конфигурация, known issues и контракт инструментов вынесены в `MemoryBank/vikunja.md`.
+Подробные правила, конфигурация, known issues и контракт инструментов вынесены в `MemoryBank/10_workflow/vikunja.md`.
 
 Короткие обязательные правила:
 - перед созданием новой задачи всегда сначала проверять существующие задачи проекта;
 - при работе с кириллицей в задачах использовать только UTF-8 и после записи перепроверять отображение;
-- если MCP-инструменты начинают отвергать числа или булевы значения, свериться с `MemoryBank/vikunja.md` и перепроверить локальный патч.
+- если MCP-инструменты начинают отвергать числа или булевы значения, свериться с `MemoryBank/10_workflow/vikunja.md` и перепроверить локальный патч.
 
 ---
 
