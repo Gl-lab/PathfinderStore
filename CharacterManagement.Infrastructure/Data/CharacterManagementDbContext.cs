@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Pathfinder.CharacterManagement.Domain.Entity;
 
 namespace Pathfinder.CharacterManagement.Infrastructure.Data;
@@ -51,8 +52,29 @@ public class CharacterManagementDbContext( DbContextOptions<CharacterManagementD
         {
             b.ToTable( "Account" );
 
+            b.Property( x => x.Id )
+                .UseIdentityByDefaultColumn()
+                .HasIdentityOptions( startValue: 3 );
             b.Property( x => x.Name ).HasMaxLength( 100 );
             b.Property( x => x.Surname ).HasMaxLength( 100 );
+            b.HasIndex( x => x.UserId )
+                .IsUnique();
+
+            b.HasData(
+                new
+                {
+                    Id = 1,
+                    UserId = 1,
+                    Name = "System",
+                    Surname = "Administrator",
+                },
+                new
+                {
+                    Id = 2,
+                    UserId = 2,
+                    Name = "Test",
+                    Surname = "User",
+                } );
 
             b.HasMany( a => a.DraftCharacters )
                 .WithOne( c => c.Account )

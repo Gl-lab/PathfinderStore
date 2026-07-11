@@ -27,6 +27,8 @@
     <ProjectReference Include="..\CharacterManagement.Infrastructure\CharacterManagement.Infrastructure.csproj" />
     <ProjectReference Include="..\Pathfinder.Web\Pathfinder.Web.csproj" />
     <ProjectReference Include="..\Pathfinder.Utils\Pathfinder.Utils.csproj" />
+    <ProjectReference Include="..\Secure.Domain\Secure.Domain.csproj" />
+    <ProjectReference Include="..\Secure.Infrastructure\Secure.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

@@ -5,6 +5,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging.Abstractions;
 using Pathfinder.CharacterManagement.Application.DTO;
 using Pathfinder.CharacterManagement.Application.Exceptions;
 using Pathfinder.CharacterManagement.Application.UseCases.Ancestries;
@@ -135,7 +136,9 @@ public sealed class ControllerTests
 
     private static CharacterController CreateCharacterController( IMediator mediator, int? userId = null )
     {
-        CharacterController controller = new CharacterController( mediator );
+        CharacterController controller = new CharacterController(
+            mediator,
+            NullLogger<CharacterController>.Instance );
         ClaimsIdentity identity = userId.HasValue
             ? new ClaimsIdentity(
                 [

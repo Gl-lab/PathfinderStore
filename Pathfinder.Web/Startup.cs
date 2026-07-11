@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -11,6 +12,8 @@ using Pathfinder.CharacterManagement.Application;
 using Pathfinder.CharacterManagement.Infrastructure;
 using Pathfinder.CharacterManagement.Infrastructure.Consumers;
 using Pathfinder.Web.Extensions;
+using Serilog;
+using SerilogLogContext = Serilog.Context.LogContext;
 
 namespace Pathfinder.Web;
 
@@ -103,6 +106,16 @@ public class Startup( IConfiguration configuration )
         app.UseCors( Configuration[ "App:CorsOriginPolicyName" ] );
 
         app.UseRouting();
+
+        app.Use( async ( context, next ) =>
+        {
+            string traceId = Activity.Current?.TraceId.ToString() ?? context.TraceIdentifier;
+            using IDisposable traceIdContext = SerilogLogContext.PushProperty( "TraceId", traceId );
+            using IDisposable requestIdContext = SerilogLogContext.PushProperty( "RequestId", context.TraceIdentifier );
+            await next();
+        } );
+
+        app.UseSerilogRequestLogging();
 
         app.UseForwardedHeaders( new ForwardedHeadersOptions { ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto } );
         app.UseAuthentication();

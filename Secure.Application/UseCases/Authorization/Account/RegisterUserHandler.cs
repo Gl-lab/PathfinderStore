@@ -36,6 +36,7 @@ public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, Register
            .ConfigureAwait( false );
         if ( user is not null )
         {
+            _logger.LogWarning( "User registration rejected because the email is already registered." );
             return new RegisterUserOutput(
                 IdentityResult.Failed(
                     new List<IdentityError>
@@ -53,6 +54,7 @@ public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, Register
            .ConfigureAwait( false );
         if ( user is not null )
         {
+            _logger.LogWarning( "User registration rejected because the user name is already registered." );
             return new RegisterUserOutput(
                 IdentityResult.Failed(
                     new List<IdentityError>
@@ -71,9 +73,7 @@ public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, Register
         {
             await _unitOfWork.Commit();
 
-            _logger.LogInformation(
-                "User registration committed for user {UserName}.",
-                request.UserName );
+            _logger.LogInformation( "Secure user registration committed." );
         }
 
         user = await _userService.FindByNameAsync( request.UserName )
@@ -83,11 +83,26 @@ public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, Register
             throw new SecureException( $"User {request.UserName} not created" );
         }
 
-        _logger.LogInformation(
-            "Publishing UserRegisteredEvent for user {UserId}.",
-            user.Id );
+        Guid correlationId = NewId.NextGuid();
+        UserRegisteredEvent registeredEvent = new UserRegisteredEvent( user.Id, request.Name, request.Surname );
 
-        await _bus.Publish( new UserRegisteredEvent( user.Id, request.Name, request.Surname ), cancellationToken );
+        _logger.LogInformation(
+            "Publishing {EventType} for user {UserId} with correlation {CorrelationId}.",
+            nameof( UserRegisteredEvent ),
+            user.Id,
+            correlationId );
+
+        await _bus.Publish(
+            registeredEvent,
+            publishContext => publishContext.CorrelationId = correlationId,
+            cancellationToken );
+
+        _logger.LogInformation(
+            "Published {EventType} for user {UserId} with correlation {CorrelationId}.",
+            nameof( UserRegisteredEvent ),
+            user.Id,
+            correlationId );
+
         return new RegisterUserOutput( result, user.Id );
     }
 }

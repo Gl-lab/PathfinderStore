@@ -11,6 +11,34 @@ namespace CharacterManagement.Infrastructure.Tests;
 public sealed class CreateNewAccountHandlerTests
 {
     [Fact]
+    public async Task EnsureCreated_SeedsAccountsForDefaultUsers()
+    {
+        await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
+
+        List<Account> accounts = await dbContext.Account
+            .AsNoTracking()
+            .OrderBy( account => account.UserId )
+            .ToListAsync();
+
+        Assert.Collection(
+            accounts,
+            adminAccount =>
+            {
+                Assert.Equal( 1, adminAccount.Id );
+                Assert.Equal( 1, adminAccount.UserId );
+                Assert.Equal( "System", adminAccount.Name );
+                Assert.Equal( "Administrator", adminAccount.Surname );
+            },
+            memberAccount =>
+            {
+                Assert.Equal( 2, memberAccount.Id );
+                Assert.Equal( 2, memberAccount.UserId );
+                Assert.Equal( "Test", memberAccount.Name );
+                Assert.Equal( "User", memberAccount.Surname );
+            } );
+    }
+
+    [Fact]
     public async Task Handle_NewUser_PersistsAccountInDbContext()
     {
         await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();

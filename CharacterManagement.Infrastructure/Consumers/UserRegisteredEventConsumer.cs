@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using MassTransit;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -21,16 +22,35 @@ public sealed class UserRegisteredEventConsumer : IConsumer<UserRegisteredEvent>
 
     public async Task Consume( ConsumeContext<UserRegisteredEvent> context )
     {
-        _logger.LogInformation(
-            "UserRegisteredEvent received for user {UserId}. MessageId: {MessageId}. CorrelationId: {CorrelationId}.",
-            context.Message.UserId,
-            context.MessageId,
-            context.CorrelationId );
+        using IDisposable? logScope = _logger.BeginScope(
+            new Dictionary<string, object?>
+            {
+                [ "UserId" ] = context.Message.UserId,
+                [ "MessageId" ] = context.MessageId,
+                [ "CorrelationId" ] = context.CorrelationId,
+                [ "ConversationId" ] = context.ConversationId,
+            } );
 
-        await _mediator.Send(
-            new EnsureAccountExistsCommand(
-                context.Message.UserId,
-                context.Message.Name,
-                context.Message.Surname ) );
+        try
+        {
+            _logger.LogInformation( "Received {EventType}.", nameof( UserRegisteredEvent ) );
+
+            await _mediator.Send(
+                new EnsureAccountExistsCommand(
+                    context.Message.UserId,
+                    context.Message.Name,
+                    context.Message.Surname ),
+                context.CancellationToken );
+
+            _logger.LogInformation( "Processed {EventType}.", nameof( UserRegisteredEvent ) );
+        }
+        catch ( Exception exception )
+        {
+            _logger.LogError(
+                exception,
+                "Failed to process {EventType}.",
+                nameof( UserRegisteredEvent ) );
+            throw;
+        }
     }
 }
