@@ -1,0 +1,40 @@
+{
+    "name": "pathfinder.frontend",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vue-tsc -b && vite build",
+        "lint": "eslint . --max-warnings 0",
+        "format": "prettier . --write",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "@mdi/font": "^7.4.47",
+        "axios": "^1.18.1",
+        "pinia": "^3.0.4",
+        "vue": "^3.5.39",
+        "vue-router": "^4.6.4",
+        "vuetify": "^3.12.9"
+    },
+    "devDependencies": {
+        "@eslint/js": "^10.0.1",
+        "@types/node": "^24.13.2",
+        "@vitejs/plugin-vue": "^6.0.7",
+        "@vue/test-utils": "^2.4.11",
+        "@vue/tsconfig": "^0.9.1",
+        "eslint": "^10.7.0",
+        "eslint-config-prettier": "^10.1.8",
+        "eslint-plugin-prettier": "^5.5.6",
+        "eslint-plugin-vue": "^10.9.2",
+        "jsdom": "^29.1.1",
+        "prettier": "^3.9.5",
+        "typescript": "~6.0.2",
+        "typescript-eslint": "^8.63.0",
+        "vite": "^8.1.1",
+        "vite-plugin-vuetify": "^2.1.3",
+        "vitest": "^4.1.10",
+        "vue-tsc": "^3.3.5"
+    }
+}
