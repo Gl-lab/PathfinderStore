@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { getApiErrorMessages } from '@/api/errors'
-import { ancestryNames } from '@/features/characters/api'
+import { getAbilityLabel, getAncestryLabel } from '@/i18n/domain'
+import type { AbilityCode, AncestryCode } from '@/features/characters/api'
 import { createCharacter, getAncestries, type Ancestry } from '@/features/character-creation/api'
 
 const router = useRouter()
+const { t } = useI18n()
 const step = ref(1)
 const ancestries = ref<Ancestry[]>([])
 const isLoadingAncestries = ref(true)
@@ -15,17 +18,10 @@ const form = ref({
   name: '',
   concept: '',
   age: null as number | null,
-  ancestryType: null as number | null,
-  freeBoosts: [] as number[],
+  ancestryType: null as AncestryCode | null,
+  freeBoosts: [] as AbilityCode[],
 })
-const abilityLabels: Record<number, string> = {
-  1: 'Сила',
-  2: 'Ловкость',
-  3: 'Выносливость',
-  4: 'Интеллект',
-  5: 'Мудрость',
-  6: 'Харизма',
-}
+const abilityCodes: AbilityCode[] = ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma']
 const selectedAncestry = computed(
   () => ancestries.value.find((item) => item.type === form.value.ancestryType) ?? null,
 )
@@ -37,7 +33,7 @@ const fixedBoosts = computed(
     selectedAncestry.value?.abilityBoosts
       .filter((boost) => !boost.isFree)
       .map((boost) => boost.abilityType)
-      .filter((type): type is number => type !== null) ?? [],
+      .filter((type): type is AbilityCode => type !== null) ?? [],
 )
 const canContinue = computed(() => {
   if (step.value === 1)
@@ -50,18 +46,18 @@ const canContinue = computed(() => {
   return true
 })
 
-function selectAncestry(type: number | null): void {
+function selectAncestry(type: AncestryCode | null): void {
   form.value.ancestryType = type
   form.value.freeBoosts = []
 }
-function isBoostDisabled(type: number): boolean {
+function isBoostDisabled(type: AbilityCode): boolean {
   return (
     fixedBoosts.value.includes(type) ||
     (!form.value.freeBoosts.includes(type) && form.value.freeBoosts.length >= freeBoostSlots.value)
   )
 }
-function formatAbilities(types: number[]): string {
-  return types.map((type) => abilityLabels[type]).join(', ') || 'нет'
+function formatAbilities(types: AbilityCode[]): string {
+  return types.map(getAbilityLabel).join(', ') || t('wizard.none')
 }
 function next(): void {
   if (canContinue.value && step.value < 4) step.value += 1
@@ -106,16 +102,16 @@ onMounted(loadAncestries)
   <section class="wizard">
     <header>
       <div>
-        <p class="eyebrow">Новый герой</p>
-        <h1>Создание персонажа</h1>
-        <p>Сервер применит правила родословной и рассчитает итоговые характеристики.</p>
+        <p class="eyebrow">{{ t('wizard.eyebrow') }}</p>
+        <h1>{{ t('wizard.title') }}</h1>
+        <p>{{ t('wizard.lead') }}</p>
       </div>
-      <v-btn variant="text" to="/">Отмена</v-btn>
+      <v-btn variant="text" to="/">{{ t('common.cancel') }}</v-btn>
     </header>
     <v-progress-linear :model-value="step * 25" color="accent" height="8" rounded />
     <ol class="steps">
       <li
-        v-for="(item, index) in ['Основное', 'Родословная', 'Бусты', 'Проверка']"
+        v-for="(item, index) in [t('wizard.basic'), t('wizard.ancestry'), t('wizard.boosts'), t('wizard.review')]"
         :key="item"
         :class="{ active: step === index + 1, complete: step > index + 1 }"
       >
@@ -127,36 +123,36 @@ onMounted(loadAncestries)
     }}</v-alert
     ><v-card elevation="0" class="wizard-card"
       ><v-card-text v-if="isLoadingAncestries"
-        ><v-progress-circular indeterminate color="accent" /> Загружаем родословные…</v-card-text
+        ><v-progress-circular indeterminate color="accent" /> {{ t('wizard.loading') }}</v-card-text
       ><template v-else
         ><section v-if="step === 1">
-          <h2>Основное</h2>
-          <p class="hint">Укажите имя героя. Концепция и возраст необязательны.</p>
+          <h2>{{ t('wizard.basic') }}</h2>
+          <p class="hint">{{ t('wizard.lead') }}</p>
           <v-text-field
             v-model="form.name"
-            label="Имя персонажа"
-            :rules="[(value) => Boolean(value?.trim()) || 'Укажите имя']"
+            :label="t('wizard.name')"
+            :rules="[(value) => Boolean(value?.trim()) || t('wizard.nameRequired')]"
             required
           /><v-textarea
             v-model="form.concept"
-            label="Краткая концепция"
+            :label="t('wizard.concept')"
             counter="1000"
             maxlength="1000"
-            hint="Кем является ваш персонаж?"
+            :hint="t('wizard.conceptHint')"
             persistent-hint
-          /><v-text-field v-model.number="form.age" label="Возраст" type="number" min="1" />
+          /><v-text-field v-model.number="form.age" :label="t('wizard.age')" type="number" min="1" />
         </section>
         <section v-else-if="step === 2">
-          <h2>Родословная</h2>
-          <p class="hint">Выберите происхождение героя. Его правила определит сервер.</p>
+          <h2>{{ t('wizard.ancestry') }}</h2>
+          <p class="hint">{{ t('wizard.ancestryHint') }}</p>
           <v-radio-group :model-value="form.ancestryType" @update:model-value="selectAncestry"
             ><v-radio v-for="ancestry in ancestries" :key="ancestry.type" :value="ancestry.type"
               ><template #label
                 ><div>
-                  <strong>{{ ancestry.name || ancestryNames[ancestry.type] }}</strong>
+                  <strong>{{ getAncestryLabel(ancestry.type) }}</strong>
                   <p class="radio-detail">
-                    {{ ancestry.baseHitPoints }} HP · скорость {{ ancestry.baseSpeed }} ·
-                    {{ ancestry.abilityBoosts.filter((boost) => !boost.isFree).length }} фикс. буста
+                    {{ ancestry.baseHitPoints }} HP · {{ t('wizard.speed', { speed: ancestry.baseSpeed }) }} ·
+                    {{ t('wizard.fixedBoosts', { count: ancestry.abilityBoosts.filter((boost) => !boost.isFree).length }) }}
                   </p>
                 </div></template
               ></v-radio
@@ -164,47 +160,43 @@ onMounted(loadAncestries)
           >
         </section>
         <section v-else-if="step === 3 && selectedAncestry">
-          <h2>Свободные бусты</h2>
+          <h2>{{ t('wizard.selectedBoosts') }}</h2>
           <p class="hint">
-            Выберите {{ freeBoostSlots }}:
-            {{ freeBoostSlots === 1 ? 'характеристику' : 'разные характеристики' }}. Фиксированные
-            бусты: {{ formatAbilities(fixedBoosts) }}.
+            {{ t('wizard.freeBoostsHint', { count: freeBoostSlots, kind: freeBoostSlots === 1 ? t('wizard.oneAbility') : t('wizard.severalAbilities'), boosts: formatAbilities(fixedBoosts) }) }}
           </p>
           <v-checkbox
-            v-for="(label, type) in abilityLabels"
-            :key="type"
+            v-for="code in abilityCodes"
+            :key="code"
             v-model="form.freeBoosts"
-            :value="Number(type)"
-            :label="label"
-            :disabled="isBoostDisabled(Number(type))"
+            :value="code"
+            :label="getAbilityLabel(code)"
+            :disabled="isBoostDisabled(code)"
             hide-details
           />
         </section>
         <section v-else-if="selectedAncestry">
-          <h2>Проверка</h2>
+          <h2>{{ t('wizard.review') }}</h2>
           <v-list lines="two"
-            ><v-list-item title="Имя" :subtitle="form.name" /><v-list-item
-              title="Родословная"
-              :subtitle="
-                selectedAncestry.name || ancestryNames[selectedAncestry.type]
-              " /><v-list-item
-              title="Свободные бусты"
+            ><v-list-item :title="t('common.name')" :subtitle="form.name" /><v-list-item
+              :title="t('wizard.selectedAncestry')"
+              :subtitle="getAncestryLabel(selectedAncestry.type)" /><v-list-item
+              :title="t('wizard.selectedBoosts')"
               :subtitle="formatAbilities(form.freeBoosts)" /><v-list-item
               v-if="form.concept"
-              title="Концепция"
+              :title="t('wizard.selectedConcept')"
               :subtitle="form.concept" /></v-list
           ><v-alert type="info" variant="tonal"
-            >Итоговые характеристики рассчитывает сервер после создания.</v-alert
+            >{{ t('wizard.resultHint') }}</v-alert
           >
         </section></template
       ></v-card
     >
     <footer>
-      <v-btn variant="text" :disabled="step === 1 || isSubmitting" @click="previous">Назад</v-btn
+      <v-btn variant="text" :disabled="step === 1 || isSubmitting" @click="previous">{{ t('common.back') }}</v-btn
       ><v-spacer /><v-btn v-if="step < 4" color="primary" :disabled="!canContinue" @click="next"
-        >Далее</v-btn
+        >{{ t('common.next') }}</v-btn
       ><v-btn v-else color="accent" :loading="isSubmitting" @click="submit"
-        >Создать персонажа</v-btn
+        >{{ t('wizard.create') }}</v-btn
       >
     </footer>
   </section>

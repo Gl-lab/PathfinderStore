@@ -1,5 +1,14 @@
 import { http } from '@/api/http'
 
+export type AncestryCode = 'Gnome' | 'Goblin' | 'Dwarf' | 'Halfling' | 'Human' | 'Elf'
+export type AbilityCode =
+  | 'Strength'
+  | 'Dexterity'
+  | 'Constitution'
+  | 'Intelligence'
+  | 'Wisdom'
+  | 'Charisma'
+
 export interface Characteristic {
   value: number
   modifier: number
@@ -10,7 +19,7 @@ export interface Character {
   name: string
   concept: string | null
   age: number | null
-  ancestryType: number
+  ancestryType: AncestryCode
   characteristics: {
     strength: Characteristic
     dexterity: Characteristic
@@ -19,15 +28,6 @@ export interface Character {
     wisdom: Characteristic
     charisma: Characteristic
   }
-}
-
-export const ancestryNames: Record<number, string> = {
-  1: 'Гном',
-  2: 'Гоблин',
-  3: 'Дварф',
-  4: 'Полурослик',
-  5: 'Человек',
-  6: 'Эльф',
 }
 
 export async function getCharacters(): Promise<Character[]> {

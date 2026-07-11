@@ -1,8 +1,9 @@
 import axios from 'axios'
+import { i18n } from '@/i18n'
 
 export function getApiErrorMessages(error: unknown): string[] {
   if (!axios.isAxiosError(error)) {
-    return ['Не удалось подключиться к серверу. Повторите попытку позже.']
+    return [i18n.global.t('errors.connection')]
   }
 
   const responseData = error.response?.data
@@ -17,7 +18,7 @@ export function getApiErrorMessages(error: unknown): string[] {
         return item.value
       }
 
-      return 'Не удалось выполнить запрос.'
+      return i18n.global.t('errors.request')
     })
   }
 
@@ -26,8 +27,8 @@ export function getApiErrorMessages(error: unknown): string[] {
   }
 
   if (error.response?.status === 401) {
-    return ['Неверный логин или пароль.']
+    return [i18n.global.t('errors.invalidCredentials')]
   }
 
-  return ['Не удалось выполнить запрос. Повторите попытку позже.']
+  return [i18n.global.t('errors.request')]
 }

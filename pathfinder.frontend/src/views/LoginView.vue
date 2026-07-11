@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { getApiErrorMessages } from '@/api/errors'
 import { useAuthStore } from '@/features/auth/store'
 
 const auth = useAuthStore()
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const userNameOrEmail = ref('')
@@ -32,9 +34,9 @@ async function submit(): Promise<void> {
   <main class="auth-page">
     <v-card class="auth-card" elevation="0">
       <v-card-item>
-        <p class="eyebrow">Character Ledger</p>
-        <v-card-title>С возвращением</v-card-title>
-        <v-card-subtitle>Войдите, чтобы продолжить приключение.</v-card-subtitle>
+        <p class="eyebrow">{{ t('auth.ledger') }}</p>
+        <v-card-title>{{ t('auth.welcome') }}</v-card-title>
+        <v-card-subtitle>{{ t('auth.signInPrompt') }}</v-card-subtitle>
       </v-card-item>
       <v-card-text>
         <v-alert
@@ -48,26 +50,26 @@ async function submit(): Promise<void> {
         <v-form @submit.prevent="submit">
           <v-text-field
             v-model="userNameOrEmail"
-            label="Никнейм или эл. почта"
+            :label="t('auth.userNameOrEmail')"
             autocomplete="username"
             required
           />
           <v-text-field
             v-model="password"
-            label="Пароль"
+            :label="t('auth.password')"
             type="password"
             autocomplete="current-password"
             required
           />
           <v-btn type="submit" color="primary" block size="large" :loading="isSubmitting"
-            >Войти</v-btn
+            >{{ t('app.auth.signIn') }}</v-btn
           >
         </v-form>
       </v-card-text>
       <v-card-actions class="px-4 pb-5"
-        >Нет аккаунта?
+        >{{ t('auth.noAccount') }}
         <v-btn variant="text" color="primary" to="/register"
-          >Зарегистрироваться</v-btn
+          >{{ t('auth.register') }}</v-btn
         ></v-card-actions
       >
     </v-card>

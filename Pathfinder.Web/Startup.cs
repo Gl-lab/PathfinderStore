@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Text.Json.Serialization;
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -31,7 +32,12 @@ public class Startup( IConfiguration configuration )
         services.AddCharacterManagementApplicationServices();
         services.AddCharacterManagementInfrastructureServices();
 
-        services.AddControllers();
+        services.AddControllers()
+            .AddJsonOptions(
+                options =>
+                {
+                    options.JsonSerializerOptions.Converters.Add( new JsonStringEnumConverter() );
+                } );
 
         services.AddSwaggerGen( c =>
         {

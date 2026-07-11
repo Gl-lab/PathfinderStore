@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { getApiErrorMessages } from '@/api/errors'
 import { register } from '@/features/auth/api'
 
 const router = useRouter()
+const { t } = useI18n()
 const form = ref({
   userName: '',
   email: '',
@@ -19,7 +21,7 @@ const isSubmitting = ref(false)
 async function submit(): Promise<void> {
   errorMessages.value = []
   if (form.value.password !== form.value.passwordRepeat) {
-    errorMessages.value = ['Пароли не совпадают.']
+    errorMessages.value = [t('errors.passwordsMismatch')]
     return
   }
   isSubmitting.value = true
@@ -44,9 +46,9 @@ async function submit(): Promise<void> {
   <main class="auth-page">
     <v-card class="auth-card" elevation="0"
       ><v-card-item
-        ><p class="eyebrow">Character Ledger</p>
-        <v-card-title>Создайте аккаунт</v-card-title
-        ><v-card-subtitle>Он понадобится для сохранения персонажей.</v-card-subtitle></v-card-item
+        ><p class="eyebrow">{{ t('auth.ledger') }}</p>
+        <v-card-title>{{ t('auth.createAccount') }}</v-card-title
+        ><v-card-subtitle>{{ t('auth.registrationPrompt') }}</v-card-subtitle></v-card-item
       ><v-card-text
         ><v-alert
           v-for="message in errorMessages"
@@ -56,31 +58,31 @@ async function submit(): Promise<void> {
           class="mb-3"
           >{{ message }}</v-alert
         ><v-form @submit.prevent="submit"
-          ><v-text-field v-model="form.userName" label="Никнейм" required /><v-text-field
+          ><v-text-field v-model="form.userName" :label="t('auth.userName')" required /><v-text-field
             v-model="form.email"
-            label="Электронная почта"
+            :label="t('auth.email')"
             type="email"
             required
           /><v-row
-            ><v-col><v-text-field v-model="form.name" label="Имя" /></v-col
-            ><v-col><v-text-field v-model="form.surname" label="Фамилия" /></v-col></v-row
+            ><v-col><v-text-field v-model="form.name" :label="t('auth.firstName')" /></v-col
+            ><v-col><v-text-field v-model="form.surname" :label="t('auth.surname')" /></v-col></v-row
           ><v-text-field
             v-model="form.password"
-            label="Пароль"
+            :label="t('auth.password')"
             type="password"
             required
           /><v-text-field
             v-model="form.passwordRepeat"
-            label="Повтор пароля"
+            :label="t('auth.passwordRepeat')"
             type="password"
             required
           /><v-btn type="submit" color="primary" block size="large" :loading="isSubmitting"
-            >Зарегистрироваться</v-btn
+            >{{ t('auth.register') }}</v-btn
           ></v-form
         ></v-card-text
       ><v-card-actions class="px-4 pb-5"
-        >Уже есть аккаунт?
-        <v-btn variant="text" color="primary" to="/login">Войти</v-btn></v-card-actions
+        >{{ t('auth.hasAccount') }}
+        <v-btn variant="text" color="primary" to="/login">{{ t('app.auth.signIn') }}</v-btn></v-card-actions
       ></v-card
     >
   </main>

@@ -1,17 +1,17 @@
 import { http } from '@/api/http'
+import type { AbilityCode, AncestryCode } from '@/features/characters/api'
 
 export interface AncestryBoost {
-  abilityType: number | null
+  abilityType: AbilityCode | null
   isFree: boolean
 }
 
 export interface Ancestry {
-  type: number
-  name: string
+  type: AncestryCode
   abilityBoosts: AncestryBoost[]
-  abilityFlaws: number[]
+  abilityFlaws: AbilityCode[]
   baseHitPoints: number
-  size: number
+  size: string
   baseSpeed: number
   darkvision: boolean
   lowLightVision: boolean
@@ -21,8 +21,8 @@ export interface CreateCharacterRequest {
   name: string
   concept: string | null
   age: number | null
-  ancestryType: number
-  freeBoosts: number[]
+  ancestryType: AncestryCode
+  freeBoosts: AbilityCode[]
 }
 
 export async function getAncestries(): Promise<Ancestry[]> {

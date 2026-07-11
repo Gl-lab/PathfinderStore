@@ -6,7 +6,6 @@ namespace Pathfinder.CharacterManagement.Application.DTO;
 public class AncestryDto : BaseDto
 {
     public AncestryType Type { get; set; }
-    public string Name { get; set; }
     public IReadOnlyList<AncestryBoostDto> AbilityBoosts { get; set; }
     public IReadOnlyList<AbilityType> AbilityFlaws { get; set; }
     public int BaseHitPoints { get; set; }

@@ -12,19 +12,19 @@ const routes: RouteRecordRaw[] = [
     path: '/',
     name: 'characters',
     component: CharactersDashboardView,
-    meta: { title: 'Мои персонажи', requiresAuth: true },
+    meta: { title: 'routes.characters', requiresAuth: true },
   },
   {
     path: '/login',
     name: 'login',
     component: LoginView,
-    meta: { title: 'Вход' },
+    meta: { title: 'routes.login' },
   },
   {
     path: '/register',
     name: 'register',
     component: RegisterView,
-    meta: { title: 'Регистрация' },
+    meta: { title: 'routes.register' },
   },
   {
     path: '/characters',
@@ -34,19 +34,19 @@ const routes: RouteRecordRaw[] = [
     path: '/characters/:id(\\d+)',
     name: 'character-details',
     component: CharacterDetailsView,
-    meta: { title: 'Персонаж', requiresAuth: true },
+    meta: { title: 'routes.characterDetails', requiresAuth: true },
   },
   {
     path: '/characters/create',
     name: 'character-create',
     component: CharacterCreateView,
-    meta: { title: 'Создание персонажа', requiresAuth: true },
+    meta: { title: 'routes.characterCreate', requiresAuth: true },
   },
   {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
     component: NotFoundView,
-    meta: { title: 'Страница не найдена' },
+    meta: { title: 'routes.notFound' },
   },
 ]
 

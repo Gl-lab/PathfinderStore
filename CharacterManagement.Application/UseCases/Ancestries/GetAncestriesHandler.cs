@@ -19,7 +19,7 @@ public sealed class GetAncestriesHandler : IRequestHandler<GetAncestriesCommand,
         IReadOnlyCollection<AncestryDto> ancestries = _ancestryRepository
             .GetAll()
             .Select( Map )
-            .OrderBy( ancestry => ancestry.Name )
+            .OrderBy( ancestry => ancestry.Type )
             .ToList();
 
         return Task.FromResult( ancestries );
@@ -30,7 +30,6 @@ public sealed class GetAncestriesHandler : IRequestHandler<GetAncestriesCommand,
         return new AncestryDto
         {
             Type = ancestry.AncestryType,
-            Name = ancestry.AncestryType.ToString(),
             AbilityBoosts = ancestry.AbilityBoosts
                 .Select(
                     slot => new AncestryBoostDto

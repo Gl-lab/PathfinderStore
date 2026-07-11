@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { getApiErrorMessages } from '@/api/errors'
-import { ancestryNames, getCharacters, type Character } from '@/features/characters/api'
+import { getAncestryLabel } from '@/i18n/domain'
+import { getCharacters, type Character } from '@/features/characters/api'
 
 const router = useRouter()
+const { t } = useI18n()
 const characters = ref<Character[]>([])
 const errorMessages = ref<string[]>([])
 const isLoading = ref(true)
@@ -28,21 +31,21 @@ onMounted(loadCharacters)
   <section class="dashboard">
     <header class="dashboard__header">
       <div>
-        <p class="eyebrow">Ваше приключение</p>
-        <h1>Мои персонажи</h1>
+        <p class="eyebrow">{{ t('dashboard.eyebrow') }}</p>
+        <h1>{{ t('characters.title') }}</h1>
         <p class="dashboard__lead">
-          Соберите историю героя, сохраните его выборы и возвращайтесь к игре без лишних таблиц.
+          {{ t('dashboard.lead') }}
         </p>
       </div>
       <v-btn color="accent" size="large" prepend-icon="mdi-account-plus" to="/characters/create"
-        >Создать персонажа</v-btn
+        >{{ t('app.navigation.createCharacter') }}</v-btn
       >
     </header>
     <v-progress-linear v-if="isLoading" color="accent" indeterminate rounded />
     <v-alert v-for="message in errorMessages" :key="message" type="error" variant="tonal"
       >{{ message
       }}<template #append
-        ><v-btn variant="text" @click="loadCharacters">Повторить</v-btn></template
+        ><v-btn variant="text" @click="loadCharacters">{{ t('common.retry') }}</v-btn></template
       ></v-alert
     >
     <v-card
@@ -51,9 +54,9 @@ onMounted(loadCharacters)
       elevation="0"
       to="/characters/create"
       ><v-card-item prepend-icon="mdi-account-plus-outline"
-        ><v-card-title>Первый герой ждёт вас</v-card-title
+        ><v-card-title>{{ t('dashboard.emptyTitle') }}</v-card-title
         ><v-card-subtitle
-          >Создайте персонажа, чтобы начать вести его историю.</v-card-subtitle
+          >{{ t('dashboard.emptyText') }}</v-card-subtitle
         ></v-card-item
       ></v-card
     >
@@ -72,12 +75,10 @@ onMounted(loadCharacters)
               }}</span></v-avatar
             ></template
           ><v-card-title>{{ character.name }}</v-card-title
-          ><v-card-subtitle>{{
-            ancestryNames[character.ancestryType] ?? 'Родословная'
-          }}</v-card-subtitle></v-card-item
-        ><v-card-text>{{ character.concept || 'История ещё не написана.' }}</v-card-text
+          ><v-card-subtitle>{{ getAncestryLabel(character.ancestryType) }}</v-card-subtitle></v-card-item
+        ><v-card-text>{{ character.concept || t('characters.noConcept') }}</v-card-text
         ><v-card-actions
-          ><v-btn variant="text" color="primary">Открыть</v-btn></v-card-actions
+          ><v-btn variant="text" color="primary">{{ t('common.open') }}</v-btn></v-card-actions
         ></v-card
       >
     </div>

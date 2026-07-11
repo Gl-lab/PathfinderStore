@@ -2,11 +2,19 @@
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/features/auth/store'
+import { setLocale, type SupportedLocale } from '@/i18n'
+import { useI18n } from 'vue-i18n'
 
 const drawer = ref(true)
 const route = useRoute()
-const pageTitle = computed(() => route.meta.title ?? 'Pathfinder')
+const pageTitle = computed(() => t((route.meta.title as string) ?? 'app.productName'))
 const auth = useAuthStore()
+const { locale, t } = useI18n()
+const locales: SupportedLocale[] = ['ru', 'en']
+
+function changeLocale(value: SupportedLocale): void {
+  setLocale(value)
+}
 </script>
 
 <template>
@@ -17,8 +25,8 @@ const auth = useAuthStore()
           <v-icon icon="mdi-compass-rose" />
         </v-avatar>
         <div>
-          <p class="brand__title">Pathfinder</p>
-          <p class="brand__subtitle">Character Ledger</p>
+          <p class="brand__title">{{ t('app.productName') }}</p>
+          <p class="brand__subtitle">{{ t('app.productSubtitle') }}</p>
         </div>
       </div>
 
@@ -27,13 +35,13 @@ const auth = useAuthStore()
           v-if="auth.isAuthenticated"
           to="/"
           prepend-icon="mdi-account-group-outline"
-          title="Персонажи"
+          :title="t('app.navigation.characters')"
         />
         <v-list-item
           v-if="auth.isAuthenticated"
           to="/characters/create"
           prepend-icon="mdi-account-plus-outline"
-          title="Создать персонажа"
+          :title="t('app.navigation.createCharacter')"
         />
       </v-list>
 
@@ -45,9 +53,11 @@ const auth = useAuthStore()
             variant="tonal"
             prepend-icon="mdi-logout"
             @click="auth.signOut()"
-            >Выйти</v-btn
+            >{{ t('app.auth.signOut') }}</v-btn
           >
-          <v-btn v-else block variant="tonal" prepend-icon="mdi-login" to="/login">Войти</v-btn>
+          <v-btn v-else block variant="tonal" prepend-icon="mdi-login" to="/login">{{
+            t('app.auth.signIn')
+          }}</v-btn>
         </div>
       </template>
     </v-navigation-drawer>
@@ -55,6 +65,22 @@ const auth = useAuthStore()
     <v-app-bar class="app-bar" elevation="0">
       <v-app-bar-nav-icon class="d-md-none" @click="drawer = !drawer" />
       <v-app-bar-title>{{ pageTitle }}</v-app-bar-title>
+      <v-menu>
+        <template #activator="{ props }">
+          <v-btn v-bind="props" variant="text" prepend-icon="mdi-translate">{{
+            locale.toUpperCase()
+          }}</v-btn>
+        </template>
+        <v-list :aria-label="t('app.language')">
+          <v-list-item
+            v-for="item in locales"
+            :key="item"
+            :active="locale === item"
+            :title="t(`app.languageNames.${item}`)"
+            @click="changeLocale(item)"
+          />
+        </v-list>
+      </v-menu>
     </v-app-bar>
 
     <v-main>

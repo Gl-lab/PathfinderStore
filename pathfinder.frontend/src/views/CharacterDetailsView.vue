@@ -2,27 +2,29 @@
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getApiErrorMessages } from '@/api/errors'
+import { getAbilityLabel, getAncestryLabel } from '@/i18n/domain'
+import { useI18n } from 'vue-i18n'
 import {
-  ancestryNames,
   deleteCharacter,
   getCharacter,
   type Character,
 } from '@/features/characters/api'
 
 const route = useRoute()
+const { t } = useI18n()
 const router = useRouter()
 const character = ref<Character | null>(null)
 const errors = ref<string[]>([])
 const isLoading = ref(true)
 const isDeleting = ref(false)
 const confirmDelete = ref(false)
-const abilityLabels = {
-  strength: 'Сила',
-  dexterity: 'Ловкость',
-  constitution: 'Выносливость',
-  intelligence: 'Интеллект',
-  wisdom: 'Мудрость',
-  charisma: 'Харизма',
+const abilityCodes = {
+  strength: 'Strength',
+  dexterity: 'Dexterity',
+  constitution: 'Constitution',
+  intelligence: 'Intelligence',
+  wisdom: 'Wisdom',
+  charisma: 'Charisma',
 } as const
 async function load(): Promise<void> {
   isLoading.value = true
@@ -53,7 +55,7 @@ onMounted(load)
 
 <template>
   <section class="details">
-    <v-btn prepend-icon="mdi-arrow-left" variant="text" to="/">К персонажам</v-btn
+    <v-btn prepend-icon="mdi-arrow-left" variant="text" to="/">{{ t('app.navigation.characters') }}</v-btn
     ><v-progress-linear v-if="isLoading" color="accent" indeterminate rounded /><v-alert
       v-for="error in errors"
       :key="error"
@@ -63,7 +65,7 @@ onMounted(load)
     ><template v-if="character"
       ><header>
         <div>
-          <p class="eyebrow">{{ ancestryNames[character.ancestryType] ?? 'Персонаж' }}</p>
+          <p class="eyebrow">{{ getAncestryLabel(character.ancestryType) }}</p>
           <h1>{{ character.name }}</h1>
           <p v-if="character.concept">{{ character.concept }}</p>
         </div>
@@ -72,19 +74,19 @@ onMounted(load)
           variant="tonal"
           prepend-icon="mdi-delete-outline"
           @click="confirmDelete = true"
-          >Удалить</v-btn
+          >{{ t('common.delete') }}</v-btn
         >
       </header>
       <div class="stats">
         <v-card elevation="0"
-          ><v-card-item title="Детали" /><v-card-text
-            ><p v-if="character.age">Возраст: {{ character.age }}</p>
-            <p v-else>Возраст не указан</p></v-card-text
+          ><v-card-item :title="t('common.details')" /><v-card-text
+            ><p v-if="character.age">{{ t('characters.age', { age: character.age }) }}</p>
+            <p v-else>{{ t('characters.ageUnknown') }}</p></v-card-text
           ></v-card
         ><v-card elevation="0"
-          ><v-card-item title="Характеристики" /><v-card-text class="abilities"
-            ><div v-for="(label, key) in abilityLabels" :key="key">
-              <span>{{ label }}</span
+          ><v-card-item :title="t('characters.abilities')" /><v-card-text class="abilities"
+            ><div v-for="(code, key) in abilityCodes" :key="key">
+              <span>{{ getAbilityLabel(code) }}</span
               ><strong
                 >{{ character.characteristics[key].value }}
                 <small
@@ -98,12 +100,12 @@ onMounted(load)
       </div></template
     ><v-dialog v-model="confirmDelete" max-width="440"
       ><v-card
-        ><v-card-title>Удалить персонажа?</v-card-title
-        ><v-card-text>Это действие нельзя отменить.</v-card-text
+        ><v-card-title>{{ t('characters.deleteTitle') }}</v-card-title
+        ><v-card-text>{{ t('characters.deleteText') }}</v-card-text
         ><v-card-actions
-          ><v-spacer /><v-btn variant="text" @click="confirmDelete = false">Отмена</v-btn
+          ><v-spacer /><v-btn variant="text" @click="confirmDelete = false">{{ t('common.cancel') }}</v-btn
           ><v-btn color="error" :loading="isDeleting" @click="remove"
-            >Удалить</v-btn
+            >{{ t('common.delete') }}</v-btn
           ></v-card-actions
         ></v-card
       ></v-dialog

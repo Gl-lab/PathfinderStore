@@ -21,7 +21,7 @@ export async function login(request: LoginRequest): Promise<string> {
   const response = await http.post<LoginResponse>('/api/Login', request)
 
   if (!response.data.token) {
-    throw new Error('Сервер не вернул токен авторизации.')
+    throw new Error('Authorization token is missing.')
   }
 
   return response.data.token
