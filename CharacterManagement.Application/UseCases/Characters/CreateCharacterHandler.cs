@@ -31,7 +31,12 @@ public sealed class CreateCharacterHandler : IRequestHandler<CreateCharacterComm
             throw new CharacterManagementException( $"Account was not found for user {request.UserId}." );
         }
 
-        _characterBuilder.CreateCharacter( account.Id, request.Character.Name, request.Character.AncestryType );
+        _characterBuilder.CreateCharacter(
+            account.Id,
+            request.Character.Name,
+            request.Character.AncestryType,
+            request.Character.Concept,
+            request.Character.Age );
         _characterBuilder.SetAncestry( request.Character.AncestryType );
         _characterBuilder.ApplyFreeBoosts( request.Character.FreeBoosts );
 

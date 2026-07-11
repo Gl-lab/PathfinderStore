@@ -16,8 +16,10 @@ public class CharacterBuilder : ICharacterBuilder
     public void CreateCharacter(
         int accountId,
         string name,
-        AncestryType ancestryType ) =>
-        _draftCharacter = DraftCharacter.Create( accountId, name, ancestryType );
+        AncestryType ancestryType,
+        string? concept = null,
+        int? age = null ) =>
+        _draftCharacter = DraftCharacter.Create( accountId, name, ancestryType, concept, age );
 
     public void SetAncestry( AncestryType ancestryType )
     {

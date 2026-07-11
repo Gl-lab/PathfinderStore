@@ -11,6 +11,21 @@
         label="Имя"
         required
       ></v-text-field>
+      <v-textarea
+        v-model="newCharacter.concept"
+        :counter="1000"
+        :rules="conceptRules"
+        label="Краткая концепция"
+        hint="Необязательно: кем является ваш персонаж?"
+        persistent-hint
+      ></v-textarea>
+      <v-text-field
+        v-model.number="newCharacter.age"
+        :rules="ageRules"
+        label="Возраст"
+        type="number"
+        min="1"
+      ></v-text-field>
       <v-alert v-if="selectedAncestry" type="info" outlined dense class="mt-4">
         {{ ancestrySummary }}
       </v-alert>
@@ -69,6 +84,8 @@ export default {
       valid: true,
       newCharacter: {
         name: null,
+        concept: null,
+        age: null,
         ancestryType: 0,
         freeBoosts: []
       },
@@ -79,6 +96,18 @@ export default {
       nameRules: [
         v => !!v || "Name is required",
         v => (v && v.length <= 10) || "Name must be less than 10 characters"
+      ],
+      conceptRules: [
+        v =>
+          !v ||
+          v.trim().length <= 1000 ||
+          "Концепция не может быть длиннее 1000 символов"
+      ],
+      ageRules: [
+        v =>
+          !v ||
+          (Number.isInteger(v) && v > 0) ||
+          "Возраст должен быть положительным целым числом"
       ],
       errorText: ""
     };
@@ -152,6 +181,8 @@ export default {
       this.$refs.form.reset();
       this.selectedAncestry = null;
       this.newCharacter.ancestryType = 0;
+      this.newCharacter.concept = null;
+      this.newCharacter.age = null;
       this.newCharacter.freeBoosts = [];
       this.errorText = "";
       this.resultCode = 0;

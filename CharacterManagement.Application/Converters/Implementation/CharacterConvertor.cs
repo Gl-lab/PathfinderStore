@@ -15,6 +15,8 @@ public sealed class CharacterConvertor : ICharacterConvertor
         {
             Id = draftCharacter.Id,
             Name = draftCharacter.Name,
+            Concept = draftCharacter.Concept,
+            Age = draftCharacter.Age,
             AncestryType = draftCharacter.AncestryType,
             Characteristics = new GroupCharacteristicDto
             {

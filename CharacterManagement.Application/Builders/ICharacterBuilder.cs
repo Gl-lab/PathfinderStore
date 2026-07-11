@@ -7,7 +7,9 @@ public interface ICharacterBuilder
     void CreateCharacter(
         int accountId,
         string name,
-        AncestryType ancestryType );
+        AncestryType ancestryType,
+        string? concept = null,
+        int? age = null );
 
     void SetAncestry( AncestryType ancestryType );
     void SetBackground();

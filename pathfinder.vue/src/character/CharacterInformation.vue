@@ -6,6 +6,15 @@
       </v-btn>
     </template>
     <v-card-title>{{ character.name }}</v-card-title>
+    <v-card-subtitle v-if="character.concept">
+      {{ character.concept }}
+    </v-card-subtitle>
+    <v-list-item v-if="character.age">
+      <v-list-item-content>
+        <v-list-item-title>{{ character.age }}</v-list-item-title>
+        <v-list-item-subtitle>Возраст</v-list-item-subtitle>
+      </v-list-item-content>
+    </v-list-item>
     <v-list-item two-line>
       <v-list-item-content>
         <v-list-item-title>

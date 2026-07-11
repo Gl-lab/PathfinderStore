@@ -21,6 +21,8 @@ public class CharacterManagementDbContext( DbContextOptions<CharacterManagementD
             b.ToTable( "Character" );
 
             b.Property( x => x.Name ).HasMaxLength( 200 );
+            b.Property( x => x.Concept ).HasMaxLength( 1000 );
+            b.Property( x => x.Age );
             b.Property( x => x.AncestryType ).HasConversion<int>();
 
             b.Property( x => x.AppliedFreeBoosts )

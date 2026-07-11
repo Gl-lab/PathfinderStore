@@ -20,6 +20,8 @@ public sealed class CreateCharacterHandlerTests
         CreateCharacterRequestDto character = new CreateCharacterRequestDto
         {
             Name = "Thorin",
+            Concept = "A dwarf searching for a lost clanhold.",
+            Age = 78,
             AncestryType = AncestryType.Human,
             FreeBoosts = [ AbilityType.Strength, AbilityType.Intelligence ],
         };
@@ -33,6 +35,8 @@ public sealed class CreateCharacterHandlerTests
 
         Assert.NotNull( savedCharacter );
         Assert.Equal( character.Name, savedCharacter.Name );
+        Assert.Equal( character.Concept, savedCharacter.Concept );
+        Assert.Equal( character.Age, savedCharacter.Age );
         Assert.Equal( character.AncestryType, savedCharacter.AncestryType );
         Assert.Equal( account.Id, savedCharacter.AccountId );
         Assert.Equal( 12, savedCharacter.AbilityScores.Strength.Value );

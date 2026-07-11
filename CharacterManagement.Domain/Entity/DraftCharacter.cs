@@ -5,8 +5,12 @@ namespace Pathfinder.CharacterManagement.Domain.Entity;
 
 public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
 {
+    private const int ConceptMaxLength = 1000;
+
     public int AccountId { get; private set; }
     public string Name { get; private set; }
+    public string? Concept { get; private set; }
+    public int? Age { get; private set; }
     public AncestryType AncestryType { get; private set; }
     public AbilityScores AbilityScores { get; private set; }
     public IReadOnlyList<AbilityType> AppliedFreeBoosts { get; private set; } = [];
@@ -25,7 +29,9 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public static DraftCharacter Create(
         int accountId,
         string name,
-        AncestryType ancestryType )
+        AncestryType ancestryType,
+        string? concept = null,
+        int? age = null )
     {
         if ( accountId <= 0 )
         {
@@ -46,6 +52,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         {
             AccountId = accountId,
             Name = name.Trim(),
+            Concept = NormalizeConcept( concept ),
+            Age = NormalizeAge( age ),
             AncestryType = ancestryType,
             AbilityScores = AbilityScores.CreateDefault()
         };
@@ -65,6 +73,38 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
             Name = newName.Trim();
             EnsureInvariants();
         }
+    }
+
+    private static string? NormalizeConcept( string? concept )
+    {
+        if ( String.IsNullOrWhiteSpace( concept ) )
+        {
+            return null;
+        }
+
+        string normalizedConcept = concept.Trim();
+        if ( normalizedConcept.Length > ConceptMaxLength )
+        {
+            throw new CharacterManagementException( $"Character concept cannot exceed {ConceptMaxLength} characters" );
+        }
+
+        return normalizedConcept;
+    }
+
+    private static int? NormalizeAge( int? age )
+    {
+        if ( age is null )
+        {
+            return null;
+        }
+
+        if ( age <= 0 )
+        {
+            throw new CharacterManagementException( "Character age must be greater than zero" );
+        }
+
+        // TODO: validate the maximum age against the selected ancestry rules.
+        return age;
     }
 
     public void ChangeAncestryType( AncestryType ancestryType )
