@@ -14,6 +14,9 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public AncestryType AncestryType { get; private set; }
     public AbilityScores AbilityScores { get; private set; }
     public IReadOnlyList<AbilityType> AppliedFreeBoosts { get; private set; } = [];
+    public string? SelectedHeritageId { get; private set; }
+    public string? SelectedAncestryFeatId { get; private set; }
+    public bool HasCompleteAncestryPackage => !String.IsNullOrWhiteSpace( SelectedHeritageId ) && !String.IsNullOrWhiteSpace( SelectedAncestryFeatId );
 
     // Навигационные свойства для EF Core
     public Account Account { get; private set; }
@@ -107,63 +110,51 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         return age;
     }
 
-    public void ChangeAncestryType( AncestryType ancestryType )
-    {
-        if ( ancestryType == AncestryType.None )
-        {
-            throw new CharacterManagementException( "AncestryType must be specified" );
-        }
-
-        AncestryType = ancestryType;
-        EnsureInvariants();
-    }
-
     public void SetAncestry( Ancestry ancestry )
     {
         ArgumentNullException.ThrowIfNull( ancestry );
 
-        // Откат предыдущей расы если была установлена
         if ( _ancestry is not null )
         {
-            // Сначала откатываем free boosts
-            foreach ( AbilityType boost in AppliedFreeBoosts )
-            {
-                AbilityScores.RemoveAbilityBoost( boost );
-            }
-
-            // Откатываем fixed boosts
-            foreach ( AncestryBoostSlot slot in _ancestry.AbilityBoosts )
-            {
-                if ( slot is AncestryBoostSlot.FixedBoost fixedBoost )
-                {
-                    AbilityScores.RemoveAbilityBoost( fixedBoost.AbilityType );
-                }
-            }
-
-            // Отменяем флои
-            foreach ( AbilityType flaw in _ancestry.AbilityFlaws )
-            {
-                AbilityScores.RemoveAbilityFlaw( flaw );
-            }
-
-            AppliedFreeBoosts = [];
+            RemoveAncestryEffects( _ancestry );
         }
 
         _ancestry = ancestry;
         AncestryType = ancestry.AncestryType;
+        SelectedHeritageId = null;
+        SelectedAncestryFeatId = null;
+        ApplyAncestryEffects( ancestry );
 
-        foreach ( AncestryBoostSlot slot in ancestry.AbilityBoosts )
+        EnsureInvariants();
+    }
+
+    public void SetAncestryPackage(
+        Ancestry? currentAncestry,
+        Ancestry nextAncestry,
+        string heritageId,
+        string ancestryFeatId,
+        IAncestryChoiceAvailabilityPolicy availabilityPolicy )
+    {
+        ArgumentNullException.ThrowIfNull( nextAncestry );
+        ArgumentNullException.ThrowIfNull( availabilityPolicy );
+
+        Heritage heritage = GetHeritage( nextAncestry, heritageId );
+        AncestryFeat ancestryFeat = GetAncestryFeat( nextAncestry, ancestryFeatId );
+
+        ValidateCurrentAncestry( currentAncestry );
+        ValidateAncestryChoiceAvailability( heritage, ancestryFeat, availabilityPolicy );
+
+        Ancestry? appliedAncestry = currentAncestry ?? _ancestry;
+        if ( appliedAncestry is not null )
         {
-            if ( slot is AncestryBoostSlot.FixedBoost fixedBoost )
-            {
-                AbilityScores.ApplyAbilityBoost( fixedBoost.AbilityType );
-            }
+            RemoveAncestryEffects( appliedAncestry );
         }
 
-        foreach ( AbilityType flaw in ancestry.AbilityFlaws )
-        {
-            AbilityScores.ApplyAbilityFlaw( flaw );
-        }
+        _ancestry = nextAncestry;
+        AncestryType = nextAncestry.AncestryType;
+        SelectedHeritageId = heritage.Id;
+        SelectedAncestryFeatId = ancestryFeat.Id;
+        ApplyAncestryEffects( nextAncestry );
 
         EnsureInvariants();
     }
@@ -246,6 +237,123 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         if ( AbilityScores == null )
         {
             throw new CharacterManagementException( "Character must have ability scores" );
+        }
+    }
+
+    private static Heritage GetHeritage( Ancestry ancestry, string heritageId )
+    {
+        if ( String.IsNullOrWhiteSpace( heritageId ) )
+        {
+            throw new CharacterManagementException( "HeritageId must be specified." );
+        }
+
+        Heritage? heritage = ancestry.Heritages
+            .SingleOrDefault( item => item.Id == heritageId );
+
+        if ( heritage is null )
+        {
+            throw new CharacterManagementException( $"Heritage '{heritageId}' does not belong to {ancestry.AncestryType}." );
+        }
+
+        return heritage;
+    }
+
+    private static AncestryFeat GetAncestryFeat( Ancestry ancestry, string ancestryFeatId )
+    {
+        if ( String.IsNullOrWhiteSpace( ancestryFeatId ) )
+        {
+            throw new CharacterManagementException( "AncestryFeatId must be specified." );
+        }
+
+        AncestryFeat? ancestryFeat = ancestry.AncestryFeats
+            .SingleOrDefault( item => item.Id == ancestryFeatId );
+
+        if ( ancestryFeat is null )
+        {
+            throw new CharacterManagementException( $"Ancestry feat '{ancestryFeatId}' does not belong to {ancestry.AncestryType}." );
+        }
+
+        if ( ancestryFeat.Level != 1 )
+        {
+            throw new CharacterManagementException( $"Ancestry feat '{ancestryFeatId}' must have level 1." );
+        }
+
+        return ancestryFeat;
+    }
+
+    private void ValidateCurrentAncestry( Ancestry? currentAncestry )
+    {
+        if ( currentAncestry is null )
+        {
+            return;
+        }
+
+        if ( currentAncestry.AncestryType != AncestryType )
+        {
+            throw new CharacterManagementException( "Current ancestry does not match the character ancestry." );
+        }
+    }
+
+    private static void ValidateAncestryChoiceAvailability(
+        Heritage heritage,
+        AncestryFeat ancestryFeat,
+        IAncestryChoiceAvailabilityPolicy availabilityPolicy )
+    {
+        if ( !availabilityPolicy.IsAvailable( heritage ) )
+        {
+            throw new CharacterManagementException( $"Heritage '{heritage.Id}' is not available." );
+        }
+
+        if ( !availabilityPolicy.IsAvailable( ancestryFeat ) )
+        {
+            throw new CharacterManagementException( $"Ancestry feat '{ancestryFeat.Id}' is not available." );
+        }
+
+        if ( heritage.IncompatibleChoiceIds.Contains( ancestryFeat.Id ) ||
+             ancestryFeat.IncompatibleChoiceIds.Contains( heritage.Id ) )
+        {
+            throw new CharacterManagementException( $"Heritage '{heritage.Id}' and ancestry feat '{ancestryFeat.Id}' are incompatible." );
+        }
+    }
+
+    private void RemoveAncestryEffects( Ancestry ancestry )
+    {
+        foreach ( AbilityType boost in AppliedFreeBoosts )
+        {
+            AbilityScores.RemoveAbilityBoost( boost );
+        }
+
+        foreach ( AncestryBoostSlot slot in ancestry.AbilityBoosts )
+        {
+            if ( slot is AncestryBoostSlot.FixedBoost fixedBoost )
+            {
+                AbilityScores.RemoveAbilityBoost( fixedBoost.AbilityType );
+            }
+        }
+
+        foreach ( AbilityType flaw in ancestry.AbilityFlaws )
+        {
+            AbilityScores.RemoveAbilityFlaw( flaw );
+        }
+
+        AppliedFreeBoosts = [];
+        SelectedHeritageId = null;
+        SelectedAncestryFeatId = null;
+    }
+
+    private void ApplyAncestryEffects( Ancestry ancestry )
+    {
+        foreach ( AncestryBoostSlot slot in ancestry.AbilityBoosts )
+        {
+            if ( slot is AncestryBoostSlot.FixedBoost fixedBoost )
+            {
+                AbilityScores.ApplyAbilityBoost( fixedBoost.AbilityType );
+            }
+        }
+
+        foreach ( AbilityType flaw in ancestry.AbilityFlaws )
+        {
+            AbilityScores.ApplyAbilityFlaw( flaw );
         }
     }
 }

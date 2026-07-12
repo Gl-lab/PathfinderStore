@@ -9,6 +9,7 @@ using Pathfinder.CharacterManagement.Application.Converters.Implementation;
 using Pathfinder.CharacterManagement.Application.Services;
 using Pathfinder.CharacterManagement.Application.Services.Implementation;
 using Pathfinder.CharacterManagement.Application.UseCases.Characters;
+using Pathfinder.CharacterManagement.Domain.Entity;
 
 namespace Pathfinder.CharacterManagement.Application;
 
@@ -18,6 +19,7 @@ public static class DependencyInjection
     {
         services.AddScoped<ICharacterService, CharacterService>();
         services.AddScoped<ICharacterBuilder, CharacterBuilder>();
+        services.AddSingleton<IAncestryChoiceAvailabilityPolicy, CommonAncestryChoiceAvailabilityPolicy>();
         services.AddScoped<ICharacterConvertor, CharacterConvertor>();
         services.AddScoped<IAccountConvertor, AccountConvertor>();
         services.AddTransient<IValidator<CreateCharacterCommand>, CreateCharacterCommandValidator>();

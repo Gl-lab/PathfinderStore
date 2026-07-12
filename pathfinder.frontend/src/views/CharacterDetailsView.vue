@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getApiErrorMessages } from '@/api/errors'
-import { getAbilityLabel, getAncestryLabel } from '@/i18n/domain'
+import { getAbilityLabel, getAncestryChoiceLabel, getAncestryLabel, getLanguageLabel, getVisionLabel } from '@/i18n/domain'
 import { useI18n } from 'vue-i18n'
 import {
   deleteCharacter,
@@ -26,6 +26,16 @@ const abilityCodes = {
   wisdom: 'Wisdom',
   charisma: 'Charisma',
 } as const
+function formatChoiceId(id: string | null): string {
+  if (!id) return '—'
+
+  const fallback = id
+    .split('.')
+    .map((part) => part.replaceAll('_', ' '))
+    .join(': ')
+
+  return getAncestryChoiceLabel(id, fallback)
+}
 async function load(): Promise<void> {
   isLoading.value = true
   errors.value = []
@@ -83,6 +93,18 @@ onMounted(load)
             ><p v-if="character.age">{{ t('characters.age', { age: character.age }) }}</p>
             <p v-else>{{ t('characters.ageUnknown') }}</p></v-card-text
           ></v-card
+        ><v-card v-if="character.ancestryPackage" elevation="0"
+          ><v-card-item :title="t('characters.ancestryPackage')" /><v-card-text
+            ><p>{{ t('characters.heritage') }}: {{ formatChoiceId(character.ancestryPackage.selectedHeritageId) }}</p>
+            <p>{{ t('characters.ancestryFeat') }}: {{ formatChoiceId(character.ancestryPackage.selectedAncestryFeatId) }}</p>
+            <p>{{ t('characters.vision') }}: {{ getVisionLabel(character.ancestryPackage.effectiveVision) }}</p>
+            <p>{{ t('characters.baseHitPoints') }}: {{ character.ancestryPackage.effectiveBaseHitPoints }}</p>
+            <p v-if="character.ancestryPackage.startingLanguageIds.length">
+              {{ t('characters.languages') }}: {{ character.ancestryPackage.startingLanguageIds.map(getLanguageLabel).join(', ') }}
+            </p>
+            <p v-for="rule in character.ancestryPackage.grantedRules" :key="rule.ruleId">{{ rule.summary }}</p>
+          </v-card-text
+        ></v-card
         ><v-card elevation="0"
           ><v-card-item :title="t('characters.abilities')" /><v-card-text class="abilities"
             ><div v-for="(code, key) in abilityCodes" :key="key">

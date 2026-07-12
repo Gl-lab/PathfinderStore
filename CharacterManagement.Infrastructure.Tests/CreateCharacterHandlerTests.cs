@@ -23,6 +23,8 @@ public sealed class CreateCharacterHandlerTests
             Concept = "A dwarf searching for a lost clanhold.",
             Age = 78,
             AncestryType = AncestryType.Human,
+            HeritageId = "human.skilled",
+            AncestryFeatId = "human.cooperative_nature",
             FreeBoosts = [ AbilityType.Strength, AbilityType.Intelligence ],
         };
         CreateCharacterCommand command = new CreateCharacterCommand( account.UserId, character );
@@ -38,6 +40,8 @@ public sealed class CreateCharacterHandlerTests
         Assert.Equal( character.Concept, savedCharacter.Concept );
         Assert.Equal( character.Age, savedCharacter.Age );
         Assert.Equal( character.AncestryType, savedCharacter.AncestryType );
+        Assert.Equal( character.HeritageId, savedCharacter.SelectedHeritageId );
+        Assert.Equal( character.AncestryFeatId, savedCharacter.SelectedAncestryFeatId );
         Assert.Equal( account.Id, savedCharacter.AccountId );
         Assert.Equal( 12, savedCharacter.AbilityScores.Strength.Value );
         Assert.Equal( 12, savedCharacter.AbilityScores.Intelligence.Value );
@@ -74,6 +78,8 @@ public sealed class CreateCharacterHandlerTests
         {
             Name = "InvalidCharacter",
             AncestryType = AncestryType.Human,
+            HeritageId = "human.skilled",
+            AncestryFeatId = "human.cooperative_nature",
             FreeBoosts = [ AbilityType.Strength, AbilityType.Strength ],
         };
         CreateCharacterCommand command = new CreateCharacterCommand( account.UserId, character );

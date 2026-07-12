@@ -8,5 +8,7 @@ public class CreateCharacterRequestDto
     public string? Concept { get; set; }
     public int? Age { get; set; }
     public AncestryType AncestryType { get; set; }
+    public string HeritageId { get; set; }
+    public string AncestryFeatId { get; set; }
     public IReadOnlyList<AbilityType> FreeBoosts { get; set; } = [];
 }

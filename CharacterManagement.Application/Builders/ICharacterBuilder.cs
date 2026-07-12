@@ -12,6 +12,7 @@ public interface ICharacterBuilder
         int? age = null );
 
     void SetAncestry( AncestryType ancestryType );
+    void SetAncestryPackage( string heritageId, string ancestryFeatId );
     void SetBackground();
     void SetClass();
     void IncreaseAbilityScores( IEnumerable<AbilityType> increasedAbilityScores );

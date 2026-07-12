@@ -21,12 +21,11 @@
 
 - [`../20_domain/character_creation/domain_rules_mvp.md`](../20_domain/character_creation/domain_rules_mvp.md)
 - [`mvp_character_creation_backend.md`](mvp_character_creation_backend.md)
-- `../../pathfinder.vue/`
+- `../../pathfinder.frontend/`
 
 ## Next steps
 
-1. Проверить текущую структуру `pathfinder.vue`.
+1. Проверить текущую структуру `pathfinder.frontend`.
 2. Спроектировать минимальный wizard без расширения scope за пределы MVP.
 3. Подключить endpoints `GET /api/ancestries`, `POST /api/character`, `GET /api/character`.
 4. Добавить базовую клиентскую валидацию, не дублируя доменную истину вместо backend.
-

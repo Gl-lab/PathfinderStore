@@ -43,7 +43,7 @@ Frontend:
 ### Web
 
 - `Pathfinder.Web` — REST API, startup/configuration, controllers, authentication policies.
-- `pathfinder.vue` — Vue.js SPA, подключается к backend API.
+- `pathfinder.frontend` — Vue 3 + TypeScript SPA, подключается к backend API.
 
 ### CharacterManagement
 
@@ -117,8 +117,8 @@ Backend:
 
 Frontend:
 
-- проект: `pathfinder.vue`;
-- запуск: `npm run serve`;
+- проект: `pathfinder.frontend`;
+- запуск: `npm run dev`;
 - dev URL/port: `:8080`;
 - frontend подключается к backend на `:5001`.
 

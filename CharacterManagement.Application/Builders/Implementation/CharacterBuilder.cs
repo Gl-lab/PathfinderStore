@@ -7,10 +7,14 @@ public class CharacterBuilder : ICharacterBuilder
 {
     private DraftCharacter _draftCharacter;
     private readonly IAncestryRepository _ancestryRepository;
+    private readonly IAncestryChoiceAvailabilityPolicy _ancestryChoiceAvailabilityPolicy;
 
-    public CharacterBuilder( IAncestryRepository ancestryRepository )
+    public CharacterBuilder(
+        IAncestryRepository ancestryRepository,
+        IAncestryChoiceAvailabilityPolicy? ancestryChoiceAvailabilityPolicy = null )
     {
         _ancestryRepository = ancestryRepository;
+        _ancestryChoiceAvailabilityPolicy = ancestryChoiceAvailabilityPolicy ?? new CommonAncestryChoiceAvailabilityPolicy();
     }
 
     public void CreateCharacter(
@@ -30,6 +34,22 @@ public class CharacterBuilder : ICharacterBuilder
 
         Ancestry ancestry = _ancestryRepository.GetAncestry( ancestryType );
         _draftCharacter.SetAncestry( ancestry );
+    }
+
+    public void SetAncestryPackage( string heritageId, string ancestryFeatId )
+    {
+        if ( _draftCharacter is null )
+        {
+            throw new InvalidOperationException( "Character must be created before setting ancestry package." );
+        }
+
+        Ancestry ancestry = _ancestryRepository.GetAncestry( _draftCharacter.AncestryType );
+        _draftCharacter.SetAncestryPackage(
+            currentAncestry: null,
+            nextAncestry: ancestry,
+            heritageId,
+            ancestryFeatId,
+            _ancestryChoiceAvailabilityPolicy );
     }
 
     public void SetBackground() => throw new NotImplementedException();

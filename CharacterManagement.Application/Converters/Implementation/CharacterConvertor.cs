@@ -1,15 +1,25 @@
 using Pathfinder.CharacterManagement.Application.DTO;
+using Pathfinder.CharacterManagement.Application.Repositories;
 using Pathfinder.CharacterManagement.Domain.Entity;
 
 namespace Pathfinder.CharacterManagement.Application.Converters.Implementation;
 
 public sealed class CharacterConvertor : ICharacterConvertor
 {
+    private readonly IAncestryRepository _ancestryRepository;
+
+    public CharacterConvertor( IAncestryRepository? ancestryRepository = null )
+    {
+        _ancestryRepository = ancestryRepository;
+    }
+
     public DraftCharacter Convert( CharacterDto character ) => throw new NotSupportedException();
 
     public CharacterDto Convert( DraftCharacter draftCharacter )
     {
         ArgumentNullException.ThrowIfNull( draftCharacter );
+
+        Ancestry? ancestry = _ancestryRepository?.GetAncestry( draftCharacter.AncestryType );
 
         return new CharacterDto
         {
@@ -18,6 +28,7 @@ public sealed class CharacterConvertor : ICharacterConvertor
             Concept = draftCharacter.Concept,
             Age = draftCharacter.Age,
             AncestryType = draftCharacter.AncestryType,
+            AncestryPackage = ancestry is null ? null : AncestryDtoMapper.MapPackage( draftCharacter, ancestry ),
             Characteristics = new GroupCharacteristicDto
             {
                 Strength = Convert( draftCharacter.AbilityScores.Strength ),

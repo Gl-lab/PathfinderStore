@@ -19,8 +19,7 @@
 
 | Область | Статус | Где подтверждено |
 |---|---|---|
-| `Heritage` | Есть полный исследовательский документ | [`../../90_research/tempinfo/aon_player_core_ancestry_heritages.md`](../../90_research/tempinfo/aon_player_core_ancestry_heritages.md) |
-| `Ancestry Feats` (1st+ уровни) | Есть исследовательский каталог | [`../../90_research/tempinfo/aon_player_core_ancestry_feats.md`](../../90_research/tempinfo/aon_player_core_ancestry_feats.md) |
+| `Heritage` и ancestry feats 1 уровня | Есть нормативный нормализованный каталог для 6 базовых ancestry Player Core | [`ancestry_choices_player_core.md`](ancestry_choices_player_core.md) |
 | `Class Feats` | Есть исследовательский каталог | [`../../90_research/tempinfo/aon_player_core_class_feats.md`](../../90_research/tempinfo/aon_player_core_class_feats.md) |
 | `Ancestry` base data | Есть нормализованный документ по 6 ancestry | [`aon_player_core_ancestries_59_64.md`](aon_player_core_ancestries_59_64.md) |
 | `Classes`, `Backgrounds`, `Archetypes` | Есть источник-ориентированный сводный документ | [`aon_player_core_character_creation_sources.md`](aon_player_core_character_creation_sources.md) |

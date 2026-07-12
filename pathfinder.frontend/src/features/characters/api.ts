@@ -14,12 +14,25 @@ export interface Characteristic {
   modifier: number
 }
 
+export interface CharacterAncestryPackage {
+  selectedHeritageId: string | null
+  selectedAncestryFeatId: string | null
+  effectiveVision: string
+  effectiveBaseHitPoints: number
+  startingLanguageIds: string[]
+  grantedItems: { itemId: string; quantity: number }[]
+  grantedRules: { ruleId: string; effectKind: string; summary: string }[]
+  selectedEffects: { effectId: string; effectKind: string; summary: string }[]
+  deferredDependencies: string[]
+}
+
 export interface Character {
   id: number
   name: string
   concept: string | null
   age: number | null
   ancestryType: AncestryCode
+  ancestryPackage: CharacterAncestryPackage | null
   characteristics: {
     strength: Characteristic
     dexterity: Characteristic

@@ -17,6 +17,8 @@ public sealed class CreateCharacterCommandValidatorTests
             {
                 Name = "Thorin",
                 AncestryType = AncestryType.Human,
+                HeritageId = "human.skilled",
+                AncestryFeatId = "human.cooperative_nature",
                 FreeBoosts = [ AbilityType.Strength, AbilityType.Intelligence ],
             } );
 
@@ -49,6 +51,8 @@ public sealed class CreateCharacterCommandValidatorTests
             {
                 Name = "Thorin",
                 AncestryType = AncestryType.Human,
+                HeritageId = "human.skilled",
+                AncestryFeatId = "human.cooperative_nature",
                 FreeBoosts = [ AbilityType.Strength, AbilityType.Intelligence ],
             } );
 

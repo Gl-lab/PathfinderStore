@@ -34,6 +34,8 @@
 ## Catalogs
 
 - [aon_player_core_ancestries_59_64.md](aon_player_core_ancestries_59_64.md) — проверенный remastered-источник по 6 базовым ancestry из Archives of Nethys (`Player Core`).
+- [ancestry_choices_player_core.md](ancestry_choices_player_core.md) — нормализованный каталог heritage и ancestry feats 1 уровня для этих ancestry, включая зависимости эффектов от будущих подсистем.
+- [ancestry_package_design.md](ancestry_package_design.md) — утверждённое проектирование catalog, aggregate, persistence и API для полного ancestry-пакета задачи #43.
 - [aon_player_core_character_creation_sources.md](aon_player_core_character_creation_sources.md) — `Player Core`-источник по классам, background rules, archetype boundary и ancestry-derived стартовым предметам.
 - [background_catalog_core_rulebook.md](background_catalog_core_rulebook.md) — baseline-каталог backgrounds из Core Rulebook.
 - [skill_catalog_player_core.md](skill_catalog_player_core.md) — общий каталог skills Player Core.

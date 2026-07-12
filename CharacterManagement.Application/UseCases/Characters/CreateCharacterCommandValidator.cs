@@ -23,6 +23,12 @@ public sealed class CreateCharacterCommandValidator : AbstractValidator<CreateCh
                 RuleFor( command => command.Character.AncestryType )
                     .NotEqual( AncestryType.None );
 
+                RuleFor( command => command.Character.HeritageId )
+                    .NotEmpty();
+
+                RuleFor( command => command.Character.AncestryFeatId )
+                    .NotEmpty();
+
                 RuleFor( command => command.Character.FreeBoosts )
                     .NotNull();
             } );

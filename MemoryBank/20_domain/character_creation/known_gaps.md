@@ -25,8 +25,7 @@
 | `Background` baseline catalog | Есть baseline-каталог Core Rulebook | [background_catalog_core_rulebook.md](background_catalog_core_rulebook.md) |
 | `Skill list` | Есть отдельный каталог Player Core | [skill_catalog_player_core.md](skill_catalog_player_core.md) |
 | `Classes`, `Backgrounds`, `Archetypes` | Есть источник-ориентированный сводный документ | [aon_player_core_character_creation_sources.md](aon_player_core_character_creation_sources.md) |
-| `Heritage` | Есть research-документ | [../../90_research/tempinfo/aon_player_core_ancestry_heritages.md](../../90_research/tempinfo/aon_player_core_ancestry_heritages.md) |
-| `Ancestry Feats` | Есть research-каталог | [../../90_research/tempinfo/aon_player_core_ancestry_feats.md](../../90_research/tempinfo/aon_player_core_ancestry_feats.md) |
+| `Heritage` и ancestry feats 1 уровня | Есть нормативный нормализованный каталог для 6 ancestry Player Core | [ancestry_choices_player_core.md](ancestry_choices_player_core.md) |
 | `Class Feats` | Есть research-каталог | [../../90_research/tempinfo/aon_player_core_class_feats.md](../../90_research/tempinfo/aon_player_core_class_feats.md) |
 
 ## Частично готовые области
@@ -83,6 +82,12 @@
 Следующий ожидаемый документ:
 
 - `language_catalog.md`
+
+### Ancestry Choice Effects
+
+Heritage и ancestry feats 1 уровня уже каталогизированы, но их эффекты пока не исполняются доменом. Детальная матрица зависимостей находится в [ancestry_choices_player_core.md](ancestry_choices_player_core.md).
+
+В частности, необходимы будущие каталоги или rule engines для spells, classes/class feats, skills/Lore, weapons/inventory, languages, combat conditions и resistances. Задача #43 может хранить выбор и его декларативные effects, но не должна имитировать отсутствующие механики.
 
 ## Remastered Vs Current MVP
 

@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { getApiErrorMessages } from '@/api/errors'
-import { getAbilityLabel, getAncestryLabel } from '@/i18n/domain'
+import { getAbilityLabel, getAncestryChoiceLabel, getAncestryLabel } from '@/i18n/domain'
 import type { AbilityCode, AncestryCode } from '@/features/characters/api'
 import { createCharacter, getAncestries, type Ancestry } from '@/features/character-creation/api'
 
@@ -19,6 +19,8 @@ const form = ref({
   concept: '',
   age: null as number | null,
   ancestryType: null as AncestryCode | null,
+  heritageId: null as string | null,
+  ancestryFeatId: null as string | null,
   freeBoosts: [] as AbilityCode[],
 })
 const abilityCodes: AbilityCode[] = ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma']
@@ -35,19 +37,28 @@ const fixedBoosts = computed(
       .map((boost) => boost.abilityType)
       .filter((type): type is AbilityCode => type !== null) ?? [],
 )
+const selectedHeritage = computed(
+  () => selectedAncestry.value?.heritages.find((item) => item.id === form.value.heritageId) ?? null,
+)
+const selectedAncestryFeat = computed(
+  () => selectedAncestry.value?.ancestryFeats.find((item) => item.id === form.value.ancestryFeatId) ?? null,
+)
 const canContinue = computed(() => {
   if (step.value === 1)
     return (
       Boolean(form.value.name.trim()) &&
       (form.value.age === null || (Number.isInteger(form.value.age) && form.value.age > 0))
-    )
+  )
   if (step.value === 2) return selectedAncestry.value !== null
-  if (step.value === 3) return form.value.freeBoosts.length === freeBoostSlots.value
+  if (step.value === 3) return selectedHeritage.value !== null && selectedAncestryFeat.value !== null
+  if (step.value === 4) return form.value.freeBoosts.length === freeBoostSlots.value
   return true
 })
 
 function selectAncestry(type: AncestryCode | null): void {
   form.value.ancestryType = type
+  form.value.heritageId = null
+  form.value.ancestryFeatId = null
   form.value.freeBoosts = []
 }
 function isBoostDisabled(type: AbilityCode): boolean {
@@ -60,7 +71,7 @@ function formatAbilities(types: AbilityCode[]): string {
   return types.map(getAbilityLabel).join(', ') || t('wizard.none')
 }
 function next(): void {
-  if (canContinue.value && step.value < 4) step.value += 1
+  if (canContinue.value && step.value < 5) step.value += 1
 }
 function previous(): void {
   if (step.value > 1) step.value -= 1
@@ -75,6 +86,8 @@ async function submit(): Promise<void> {
       concept: form.value.concept.trim() || null,
       age: form.value.age,
       ancestryType: selectedAncestry.value.type,
+      heritageId: selectedHeritage.value?.id ?? '',
+      ancestryFeatId: selectedAncestryFeat.value?.id ?? '',
       freeBoosts: form.value.freeBoosts,
     })
     await router.replace('/')
@@ -108,10 +121,10 @@ onMounted(loadAncestries)
       </div>
       <v-btn variant="text" to="/">{{ t('common.cancel') }}</v-btn>
     </header>
-    <v-progress-linear :model-value="step * 25" color="accent" height="8" rounded />
+    <v-progress-linear :model-value="step * 20" color="accent" height="8" rounded />
     <ol class="steps">
       <li
-        v-for="(item, index) in [t('wizard.basic'), t('wizard.ancestry'), t('wizard.boosts'), t('wizard.review')]"
+        v-for="(item, index) in [t('wizard.basic'), t('wizard.ancestry'), t('wizard.choices'), t('wizard.boosts'), t('wizard.review')]"
         :key="item"
         :class="{ active: step === index + 1, complete: step > index + 1 }"
       >
@@ -160,6 +173,26 @@ onMounted(loadAncestries)
           >
         </section>
         <section v-else-if="step === 3 && selectedAncestry">
+          <h2>{{ t('wizard.choices') }}</h2>
+          <p class="hint">{{ t('wizard.choicesHint') }}</p>
+          <v-radio-group v-model="form.heritageId" :label="t('wizard.heritage')">
+            <v-radio
+              v-for="heritage in selectedAncestry.heritages"
+              :key="heritage.id"
+              :value="heritage.id"
+              :label="getAncestryChoiceLabel(heritage.id, heritage.name)"
+            />
+          </v-radio-group>
+          <v-radio-group v-model="form.ancestryFeatId" :label="t('wizard.ancestryFeat')">
+            <v-radio
+              v-for="feat in selectedAncestry.ancestryFeats"
+              :key="feat.id"
+              :value="feat.id"
+              :label="getAncestryChoiceLabel(feat.id, feat.name)"
+            />
+          </v-radio-group>
+        </section>
+        <section v-else-if="step === 4 && selectedAncestry">
           <h2>{{ t('wizard.selectedBoosts') }}</h2>
           <p class="hint">
             {{ t('wizard.freeBoostsHint', { count: freeBoostSlots, kind: freeBoostSlots === 1 ? t('wizard.oneAbility') : t('wizard.severalAbilities'), boosts: formatAbilities(fixedBoosts) }) }}
@@ -180,6 +213,10 @@ onMounted(loadAncestries)
             ><v-list-item :title="t('common.name')" :subtitle="form.name" /><v-list-item
               :title="t('wizard.selectedAncestry')"
               :subtitle="getAncestryLabel(selectedAncestry.type)" /><v-list-item
+              :title="t('wizard.heritage')"
+              :subtitle="selectedHeritage ? getAncestryChoiceLabel(selectedHeritage.id, selectedHeritage.name) : ''" /><v-list-item
+              :title="t('wizard.ancestryFeat')"
+              :subtitle="selectedAncestryFeat ? getAncestryChoiceLabel(selectedAncestryFeat.id, selectedAncestryFeat.name) : ''" /><v-list-item
               :title="t('wizard.selectedBoosts')"
               :subtitle="formatAbilities(form.freeBoosts)" /><v-list-item
               v-if="form.concept"
@@ -193,7 +230,7 @@ onMounted(loadAncestries)
     >
     <footer>
       <v-btn variant="text" :disabled="step === 1 || isSubmitting" @click="previous">{{ t('common.back') }}</v-btn
-      ><v-spacer /><v-btn v-if="step < 4" color="primary" :disabled="!canContinue" @click="next"
+      ><v-spacer /><v-btn v-if="step < 5" color="primary" :disabled="!canContinue" @click="next"
         >{{ t('common.next') }}</v-btn
       ><v-btn v-else color="accent" :loading="isSubmitting" @click="submit"
         >{{ t('wizard.create') }}</v-btn
@@ -230,7 +267,7 @@ h1 {
 }
 .steps {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 8px;
   padding: 0;
   margin: 0;

@@ -8,13 +8,56 @@ export interface AncestryBoost {
 
 export interface Ancestry {
   type: AncestryCode
+  name: string
   abilityBoosts: AncestryBoost[]
   abilityFlaws: AbilityCode[]
   baseHitPoints: number
   size: string
   baseSpeed: number
+  vision: VisionType
   darkvision: boolean
   lowLightVision: boolean
+  startingLanguageIds: string[]
+  grantedItems: GrantedItem[]
+  grantedRules: GrantedRule[]
+  heritages: Heritage[]
+  ancestryFeats: AncestryFeat[]
+}
+
+export type VisionType = 'None' | 'LowLight' | 'Darkvision'
+
+export interface AncestryEffect {
+  effectId: string
+  effectKind: string
+  summary: string
+  visionOverride: VisionType | null
+  baseHitPointsOverride: number | null
+}
+
+export interface Heritage {
+  id: string
+  name: string
+  rarity: 'Common' | 'Uncommon'
+  restrictions: string[]
+  incompatibleChoiceIds: string[]
+  effects: AncestryEffect[]
+  deferredDependencies: string[]
+}
+
+export interface AncestryFeat extends Heritage {
+  level: number
+  prerequisites: string[]
+}
+
+export interface GrantedItem {
+  itemId: string
+  quantity: number
+}
+
+export interface GrantedRule {
+  ruleId: string
+  effectKind: string
+  summary: string
 }
 
 export interface CreateCharacterRequest {
@@ -22,6 +65,8 @@ export interface CreateCharacterRequest {
   concept: string | null
   age: number | null
   ancestryType: AncestryCode
+  heritageId: string
+  ancestryFeatId: string
   freeBoosts: AbilityCode[]
 }
 
