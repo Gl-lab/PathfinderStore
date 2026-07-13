@@ -53,28 +53,11 @@
 
 ---
 
-## Проект
+## Контекст проекта
 
-**Pathfinder 2e Web App** — веб-приложение для игроков в Pathfinder 2e: создание и управление персонажами, инвентарь, магазин предметов. Проект учебный/хобби.
+Актуальный стек, структура solution, dev setup, API и статус модулей описаны только в [`MemoryBank/00_project/project_overview.md`](MemoryBank/00_project/project_overview.md).
 
-### Стек
-- **Backend:** ASP.NET Core 8, C# 12, PostgreSQL, EF Core 8 (Npgsql), JWT, MediatR, MassTransit
-- **Frontend:** Vue.js 2 + Vuetify 2, Vuex, Vue Router, Axios
-- **Архитектура:** Clean Architecture / DDD, bounded contexts
-
-### Структура (основные проекты)
-- `Pathfinder.Web` — REST API, точка входа, порт :5001 (dev)
-- `pathfinder.vue` — Vue.js SPA, `npm run serve` → :8080
-- `CharacterManagement.{Domain,Application,Infrastructure}` — создание/управление персонажами
-- `Store.{Domain,Application,Infrastructure}` — магазин/инвентарь
-- `Secure.{Domain,Application,Infrastructure}` — аутентификация и авторизация (ASP.NET Identity, JWT)
-- `Pathfinder.Utils` — базовые интерфейсы (IAggregateRoot, ValueObject)
-- `Infrasturture.Shared` — базовая реализация репозиториев
-- `Domain.Contracts` — события (UserRegisteredEvent)
-
-### Ключевые агрегаты
-- `DraftCharacter` (Aggregate Root) → `AbilityScores` (Value Object) → `Characteristic` (Value Object)
-- `User` → `Role` → `Permission` (RBAC)
+Не дублировать в этом файле изменчивые сведения о реализации и статусе задач: это приводит к рассинхронизации правил для агентов и проектной документации.
 
 ---
 

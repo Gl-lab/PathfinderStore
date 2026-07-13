@@ -2,234 +2,66 @@
 
 ## Назначение
 
-Этот документ описывает текущее состояние bounded context `CharacterManagement`: доменную модель, application/use cases, infrastructure, API и известные ограничения.
+`CharacterManagement` — bounded context пользовательских персонажей. Этот документ описывает текущую инженерную карту реализации; нормативные правила Pathfinder 2e находятся в [`../20_domain/character_creation/`](../20_domain/character_creation/).
 
-Если нужны нормативные правила Pathfinder 2e, читать не этот файл, а [`../20_domain/character_creation/`](../20_domain/character_creation/).
+## Граница контекста
 
-## Роль bounded context
+- `Secure.User` — источник пользователя и авторизации.
+- `CharacterManagement.Account` — локальная запись, связывающая пользователя с его персонажами.
+- `DraftCharacter` — aggregate root создаваемого персонажа.
 
-`CharacterManagement` отвечает за пользовательский контур персонажей:
+Связь `Secure.User.Id -> CharacterManagement.Account.UserId` должна быть уникальной. Исторические записи без `Account` обрабатываются отдельной задачей: [`task_32_account_backfill.md`](../30_task_notes/task_32_account_backfill.md).
 
-- локальный `Account`, связанный с пользователем из `Secure`;
-- создание персонажа в рамках MVP;
-- применение ancestry rules;
-- хранение draft characters;
-- чтение списка/карточки персонажей;
-- удаление персонажей.
+## Текущий character creation flow
 
-Граница между `Secure` и `CharacterManagement` сейчас важна: `Secure.User` является источником пользователей, а `CharacterManagement.Account` нужен для работы character API.
+Реализованный draft включает:
 
-## Domain
+- имя и базовые сведения;
+- Ancestry, heritage, ancestry feat, boosts/flaws и final free boosts;
+- Background: два boosts, trained general skill и Lore;
+- Class: key ability boost, base HP и стартовые proficiencies;
+- Rogue's Racket;
+- Cleric Doctrine и Deity package: divine skill, favored weapon proficiency, Divine Font и sanctification;
+- maximum HP первого уровня, вычисляемые из ancestry, class и Constitution modifier.
 
-### `Account`
+`AbilityScores` хранит шесть характеристик с базовым значением `10`; boost и flaw изменяют значение на `2`, а modifier вычисляется, а не хранится. Полные правила и границы незавершённых подсистем описаны в [`../20_domain/character_creation/README.md`](../20_domain/character_creation/README.md).
 
-Локальная модель аккаунта в `CharacterManagement`.
+## Application и infrastructure
 
-Связь:
+Слои `Domain`, `Application` и `Infrastructure` содержат aggregate, use cases/DTO/validators и EF Core persistence соответственно. `CharacterManagementDbContext` использует схему `character_management`; миграции расположены в `CharacterManagement.Infrastructure/Migrations`.
 
-- `Secure.User.Id` -> `CharacterManagement.Account.UserId`
-
-Текущий риск:
-
-- исторически или в seed-данных может существовать пользователь без `CharacterManagement.Account`.
-- актуальный блок работ по этому месту: Vikunja `#32`, [`../30_task_notes/task_32_account_backfill.md`](../30_task_notes/task_32_account_backfill.md).
-
-### `DraftCharacter`
-
-Агрегат персонажа.
-
-Содержит:
-
-- владельца через `Account`;
-- имя;
-- выбранный `AncestryType`;
-- итоговые `AbilityScores`;
-- применённые free boosts.
-
-Основные сценарии:
-
-- создание;
-- переименование;
-- установка ancestry;
-- применение/сброс free boosts;
-- проверка инвариантов.
-
-### `AbilityScores`
-
-Value object для шести характеристик:
-
-- `Strength`
-- `Dexterity`
-- `Constitution`
-- `Intelligence`
-- `Wisdom`
-- `Charisma`
-
-Правила:
-
-- базовое значение каждой характеристики — `10`;
-- boost применяет `+2`;
-- flaw применяет `-2`;
-- modifier вычисляется в `Characteristic`, а не хранится отдельно.
-
-### `Ancestry`
-
-Справочная доменная модель ancestry.
-
-Текущие поля:
-
-- `AncestryType`
-- `AbilityBoosts`
-- `AbilityFlaws`
-- `BaseHitPoints`
-- `Size`
-- `BaseSpeed`
-- `Darkvision`
-- `LowLightVision`
-
-Важно: текущая модель покрывает MVP, но ещё не хранит все remastered-поля вроде languages, granted items и granted rules.
-
-## Application
-
-### Создание и чтение персонажей
-
-Актуальные use cases:
-
-- `CreateCharacterCommand` / `CreateCharacterHandler`
-- `GetCharactersCommand` / `GetCharactersHandler`
-- `GetCharacterByIdCommand` / `GetCharacterByIdHandler`
-- `DeleteCharacterCommand` / `DeleteCharacterHandler`
-
-Создание персонажа идёт через `CharacterBuilder`:
-
-1. найти `Account` по `UserId`;
-2. создать `DraftCharacter`;
-3. применить ancestry;
-4. применить free boosts;
-5. добавить персонажа в `Account`;
-6. сохранить через `IUnitOfWork`.
-
-### Ancestry catalog
-
-Актуальные use cases:
-
-- `GetAncestriesCommand`
-- `GetAncestriesHandler`
-
-Данные берутся из `IAncestryRepository` и мапятся в `AncestryDto`.
-
-### Account lifecycle
-
-Актуальные use cases:
-
-- `CreateNewAccountCommand` / `CreateNewAccountHandler`
-- `EnsureAccountExistsCommand` / `EnsureAccountExistsHandler`
-
-`CreateNewAccountHandler` используется event flow регистрации. `EnsureAccountExistsHandler` поддерживает idempotent-сценарий создания аккаунта, но полноценный административный backfill ещё вынесен в задачу `#32`.
-
-### Что сознательно не реализовано в MVP
-
-`CharacterBuilder` содержит заглушечные методы для будущих этапов:
-
-- `SetBackground`
-- `SetClass`
-- `SetInventory`
-- `SetAlignment`
-- `SetDeity`
-- `SetAge`
-- `SetGender`
-
-Это не баг текущего MVP: `Background`, `Class`, skills, spells, equipment и narrative fields находятся вне текущего backend MVP.
-
-## Infrastructure
-
-### EF Core
-
-`CharacterManagementDbContext` содержит:
-
-- `Account`;
-- `DraftCharacter`;
-- owned `AbilityScores`;
-- jsonb mapping для `AppliedFreeBoosts`;
-- schema `character_management`.
-
-Миграции лежат в `CharacterManagement.Infrastructure/Migrations`.
-
-Для migrations читать [`../10_workflow/ef.md`](../10_workflow/ef.md).
-
-### Repositories
-
-Актуальные repositories:
-
-- `AccountRepository`
-- `CharacterRepository`
-- `AncestryRepository`
-
-`AncestryRepository` сейчас является hardcoded MVP-каталогом шести ancestry.
+Каталоги ancestry, backgrounds, classes, skills, racket, doctrines и deities доступны через application use cases и read-модели. Обновления aggregate, persistence, API и frontend выполняются одним vertical slice.
 
 ## Web API
 
-### `AncestriesController`
-
-Route:
+Все endpoints требуют authenticated user.
 
 - `GET /api/ancestries`
-
-Возвращает ancestry-каталог для текущего authenticated user.
-
-### `CharacterController`
-
-Route:
-
+- `GET /api/backgrounds`
+- `GET /api/classes`
+- `GET /api/classes/rogue/rackets`
+- `GET /api/classes/cleric/doctrines`
+- `GET /api/classes/cleric/deities`
+- `GET /api/skills`
 - `GET /api/character`
 - `GET /api/character/{characterId}`
 - `POST /api/character`
 - `DELETE /api/character/{characterId}`
 
-Контроллер:
-
-- берёт `UserId` из `ClaimTypes.NameIdentifier`;
-- вызывает MediatR use cases;
-- мапит validation/domain/data errors в HTTP responses.
-
-В контроллере всё ещё есть legacy item endpoints:
-
-- `GET /api/character/items`
-- `DELETE /api/character/items/drop`
-
-Их не считать частью Character Creation MVP.
+Legacy item endpoints в `CharacterController` не относятся к текущему character creation flow.
 
 ## Tests
 
-Текущие test projects:
+- `CharacterManagement.Domain.Tests` — инварианты aggregate и доменные правила.
+- `CharacterManagement.Infrastructure.Tests` — persistence, handlers и API-интеграция.
+- `pathfinder.frontend` — Vitest-покрытие wizard и отображения.
 
-- `CharacterManagement.Domain.Tests`
-- `CharacterManagement.Infrastructure.Tests`
+## Открытые границы
 
-Покрытые зоны:
+- skill feats, дополнительные class skills и progression proficiency;
+- domain choice, spell preparation и Divine Font slots;
+- spells, class features, equipment, languages и исполняемые ancestry effects;
+- расширенные derived statistics и состояние current/temporary HP;
+- remastered-поля ancestry: languages, granted items и granted rules.
 
-- domain rules для ancestry/free boosts;
-- command validators;
-- create/get/delete character use cases;
-- ancestry handler;
-- account creation scenarios;
-- controller scenarios.
-
-## Известные gaps
-
-- Frontend wizard создания персонажа ещё не реализован.
-- `Background` и `Class` не оформлены как C#-каталоги.
-- `Ancestry` модель пока не хранит languages, granted items, granted rules.
-- Есть расхождение между текущей MVP-моделью vision flags и remastered ancestry facts.
-- Нужно закрыть `Secure.User` -> `CharacterManagement.Account` backfill и уникальность `Account.UserId`.
-
-Подробные доменные gaps по Character Creation должны быть вынесены в `../20_domain/character_creation/known_gaps.md` на следующем этапе задачи `#40`.
-
-## Куда смотреть дальше
-
-- [`project_overview.md`](project_overview.md) — общий обзор проекта.
-- [`../20_domain/character_creation/domain_rules_mvp.md`](../20_domain/character_creation/domain_rules_mvp.md) — обязательные правила MVP.
-- [`../30_task_notes/mvp_character_creation_backend.md`](../30_task_notes/mvp_character_creation_backend.md) — статус backend MVP.
-- [`../30_task_notes/mvp_character_creation_frontend.md`](../30_task_notes/mvp_character_creation_frontend.md) — статус frontend MVP.
-- [`../30_task_notes/task_32_account_backfill.md`](../30_task_notes/task_32_account_backfill.md) — текущий backend фокус.
-
+Подробный список — в [`../20_domain/character_creation/known_gaps.md`](../20_domain/character_creation/known_gaps.md), а порядок последующих задач — в [`../30_task_notes/character_creation_near_term_roadmap.md`](../30_task_notes/character_creation_near_term_roadmap.md).

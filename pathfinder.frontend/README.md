@@ -1,5 +1,12 @@
-# Vue 3 + TypeScript + Vite
+# Pathfinder frontend
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+Vue 3 + TypeScript SPA для Pathfinder 2e Web App. Реализует wizard создания персонажа, список и карточку персонажа.
 
-Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
+## Команды
+
+- `npm run dev` — development server на порту `8080`;
+- `npm run build` — type-check и production build;
+- `npm run lint` — ESLint;
+- `npm run test` — Vitest.
+
+Backend должен быть доступен на `https://localhost:5001`. Полный контекст проекта и сценария создания персонажа находится в [../MemoryBank/00_project/project_overview.md](../MemoryBank/00_project/project_overview.md).

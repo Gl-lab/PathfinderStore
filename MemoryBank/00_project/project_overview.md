@@ -129,9 +129,10 @@ Frontend:
 Database:
 
 - PostgreSQL database: `Pathfinder`;
-- connection strings хранятся в user secrets;
+- connection strings передаются через user secrets или environment variables;
 - ключи: `DB:Secure`, `DB:CharacterManagement`;
-- JWT key хранится в user secrets как `Authentication:SecurityKey`.
+- JWT key передаётся через user secrets или environment variable `Authentication__SecurityKey`;
+- реальные секреты не должны попадать в tracked configuration files.
 
 Seed users:
 
@@ -147,6 +148,11 @@ Seed users:
 - Backend MVP создания персонажа реализован:
   - `GET /api/ancestries`;
   - `GET /api/backgrounds`;
+  - `GET /api/classes`;
+  - `GET /api/classes/rogue/rackets`;
+  - `GET /api/classes/cleric/doctrines`;
+  - `GET /api/classes/cleric/deities`;
+  - `GET /api/skills`;
   - `GET /api/character`;
   - `GET /api/character/{id}`;
   - `POST /api/character`;
@@ -155,7 +161,7 @@ Seed users:
 
 ### Текущий character creation focus
 
-Frontend MVP создания персонажа реализован на Vue 3. Текущий flow включает Ancestry package, ancestry boosts, Background package с двумя boosts и фактическим skill/Lore training, Class package с key ability boost и типизированными стартовыми proficiencies, а также отдельный пакет четырёх финальных свободных boosts. Стартовый pipeline характеристик завершён; maximum HP первого уровня вычисляется из effective ancestry HP, class HP и Constitution modifier. Background skill feat и остальные Class rules пока возвращаются декларативно и ожидают отдельные подсистемы.
+Frontend MVP создания персонажа реализован на Vue 3. Текущий flow включает Ancestry package, ancestry boosts, Background package с двумя boosts и фактическим skill/Lore training, Class package с key ability boost и типизированными стартовыми proficiencies, Rogue's Racket, Cleric Doctrine и Deity package, а также отдельный пакет четырёх финальных свободных boosts. Стартовый pipeline характеристик завершён; maximum HP первого уровня вычисляется из effective ancestry HP, class HP и Constitution modifier. Background skill feat, domain choice, spell preparation и остальные Class rules пока возвращаются декларативно или ожидают отдельные подсистемы.
 
 Смотреть:
 

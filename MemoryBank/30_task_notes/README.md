@@ -14,9 +14,15 @@ Vikunja остаётся источником истины по фактичес
 - связанные файлы;
 - next steps.
 
-## Заметки
+## Активный контекст
 
 - [`character_creation_near_term_roadmap.md`](character_creation_near_term_roadmap.md)
+- [`task_32_account_backfill.md`](task_32_account_backfill.md)
+- [`task_33_observability.md`](task_33_observability.md)
+- [`task_40_inventory.md`](task_40_inventory.md)
+
+## Завершённые или исторические implementation notes
+
 - [`class_skills_foundation_v1_implementation.md`](class_skills_foundation_v1_implementation.md)
 - [`ranger_hunters_edge_implementation.md`](ranger_hunters_edge_implementation.md)
 - [`druidic_order_implementation.md`](druidic_order_implementation.md)
@@ -34,9 +40,8 @@ Vikunja остаётся источником истины по фактичес
 - [`cleric_deity_implementation.md`](cleric_deity_implementation.md)
 - [`background_package_implementation.md`](background_package_implementation.md)
 - [`class_package_implementation.md`](class_package_implementation.md)
+- [`frontend_rewrite_plan.md`](frontend_rewrite_plan.md)
 - [`task_16_domain_rules.md`](task_16_domain_rules.md)
-- [`task_32_account_backfill.md`](task_32_account_backfill.md)
-- [`task_40_inventory.md`](task_40_inventory.md)
 - [`task_14_integration_test_context.md`](task_14_integration_test_context.md)
 - [`mvp_character_creation_backend.md`](mvp_character_creation_backend.md)
 - [`mvp_character_creation_frontend.md`](mvp_character_creation_frontend.md)
