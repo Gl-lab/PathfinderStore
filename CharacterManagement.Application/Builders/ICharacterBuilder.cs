@@ -13,7 +13,10 @@ public interface ICharacterBuilder
 
     void SetAncestry( AncestryType ancestryType );
     void SetAncestryPackage( string heritageId, string ancestryFeatId );
-    void SetBackground();
+    void SetBackground(
+        string backgroundId,
+        AbilityType restrictedBoost,
+        AbilityType freeBoost );
     void SetClass();
     void IncreaseAbilityScores( IEnumerable<AbilityType> increasedAbilityScores );
     void ApplyFreeBoosts( IEnumerable<AbilityType> freeBoosts );

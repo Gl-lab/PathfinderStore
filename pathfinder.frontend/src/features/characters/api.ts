@@ -26,6 +26,22 @@ export interface CharacterAncestryPackage {
   deferredDependencies: string[]
 }
 
+export interface CharacterBackgroundPackage {
+  backgroundId: string
+  name: string
+  restrictedBoost: AbilityCode
+  freeBoost: AbilityCode
+  grants: {
+    id: string
+    kind: string
+    name: string
+    summary: string
+    requiresChoice: boolean
+    options: string[]
+    deferredDependencies: string[]
+  }[]
+}
+
 export interface Character {
   id: number
   name: string
@@ -33,6 +49,7 @@ export interface Character {
   age: number | null
   ancestryType: AncestryCode
   ancestryPackage: CharacterAncestryPackage | null
+  backgroundPackage: CharacterBackgroundPackage | null
   characteristics: {
     strength: Characteristic
     dexterity: Characteristic

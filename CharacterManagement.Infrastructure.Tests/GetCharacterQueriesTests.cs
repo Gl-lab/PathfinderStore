@@ -1,4 +1,5 @@
 using Pathfinder.CharacterManagement.Application.Converters.Implementation;
+using Pathfinder.CharacterManagement.Application.Builders.Implementation;
 using Pathfinder.CharacterManagement.Application.DTO;
 using Pathfinder.CharacterManagement.Application.Exceptions;
 using Pathfinder.CharacterManagement.Application.UseCases.Characters;
@@ -41,6 +42,49 @@ public sealed class GetCharacterQueriesTests
         Assert.Equal( "Merisiel", result.Name );
         Assert.Equal( 10, result.Characteristics.Strength.Value );
         Assert.Null( result.Backpack );
+        Assert.Null( result.BackgroundPackage );
+    }
+
+    [Fact]
+    public async Task GetCharacterById_WhenCharacterHasBackground_ReturnsPersistedPackage()
+    {
+        await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
+        Account account = await CreateAccountAsync( dbContext, 402 );
+        AncestryRepository ancestryRepository = new AncestryRepository();
+        BackgroundRepository backgroundRepository = new BackgroundRepository();
+        CharacterBuilder builder = new CharacterBuilder(
+            ancestryRepository,
+            backgroundRepository: backgroundRepository );
+        builder.CreateCharacter( account.Id, "Kyra", AncestryType.Human );
+        builder.SetAncestryPackage( "human.skilled", "human.cooperative_nature" );
+        builder.ApplyFreeBoosts( [ AbilityType.Strength, AbilityType.Wisdom ] );
+        builder.SetBackground(
+            "background.acolyte",
+            AbilityType.Wisdom,
+            AbilityType.Charisma );
+        DraftCharacter draftCharacter = builder.Build();
+        dbContext.Character.Add( draftCharacter );
+        await dbContext.SaveChangesAsync();
+        dbContext.ChangeTracker.Clear();
+        CharacterRepository characterRepository = new CharacterRepository( dbContext );
+        CharacterConvertor characterConvertor = new CharacterConvertor(
+            ancestryRepository,
+            backgroundRepository );
+        GetCharacterByIdHandler handler = new GetCharacterByIdHandler(
+            characterRepository,
+            characterConvertor );
+
+        CharacterDto result = await handler.Handle(
+            new GetCharacterByIdCommand( account.UserId, draftCharacter.Id ),
+            CancellationToken.None );
+
+        Assert.NotNull( result.BackgroundPackage );
+        Assert.Equal( "background.acolyte", result.BackgroundPackage.BackgroundId );
+        Assert.Equal( AbilityType.Wisdom, result.BackgroundPackage.RestrictedBoost );
+        Assert.Equal( AbilityType.Charisma, result.BackgroundPackage.FreeBoost );
+        Assert.Equal( 14, result.Characteristics.Wisdom.Value );
+        Assert.Equal( 12, result.Characteristics.Charisma.Value );
+        Assert.Contains( result.BackgroundPackage.Grants, grant => grant.Id == "skill.religion" );
     }
 
     [Fact]

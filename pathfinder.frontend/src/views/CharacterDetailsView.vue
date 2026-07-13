@@ -2,7 +2,14 @@
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getApiErrorMessages } from '@/api/errors'
-import { getAbilityLabel, getAncestryChoiceLabel, getAncestryLabel, getLanguageLabel, getVisionLabel } from '@/i18n/domain'
+import {
+  getAbilityLabel,
+  getAncestryChoiceLabel,
+  getAncestryLabel,
+  getBackgroundLabel,
+  getLanguageLabel,
+  getVisionLabel,
+} from '@/i18n/domain'
 import { useI18n } from 'vue-i18n'
 import {
   deleteCharacter,
@@ -103,6 +110,24 @@ onMounted(load)
               {{ t('characters.languages') }}: {{ character.ancestryPackage.startingLanguageIds.map(getLanguageLabel).join(', ') }}
             </p>
             <p v-for="rule in character.ancestryPackage.grantedRules" :key="rule.ruleId">{{ rule.summary }}</p>
+          </v-card-text
+        ></v-card
+        ><v-card v-if="character.backgroundPackage" elevation="0"
+          ><v-card-item
+            :title="getBackgroundLabel(character.backgroundPackage.backgroundId, character.backgroundPackage.name)"
+            :subtitle="t('characters.backgroundPackage')"
+          /><v-card-text
+            ><p>
+              {{ t('characters.backgroundBoosts') }}:
+              {{ getAbilityLabel(character.backgroundPackage.restrictedBoost) }},
+              {{ getAbilityLabel(character.backgroundPackage.freeBoost) }}
+            </p>
+            <p><strong>{{ t('characters.backgroundGrants') }}</strong></p>
+            <ul>
+              <li v-for="grant in character.backgroundPackage.grants" :key="grant.id">
+                {{ grant.name }}
+              </li>
+            </ul>
           </v-card-text
         ></v-card
         ><v-card elevation="0"

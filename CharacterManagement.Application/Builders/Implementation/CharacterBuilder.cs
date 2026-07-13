@@ -1,5 +1,6 @@
 ﻿using Pathfinder.CharacterManagement.Application.Repositories;
 using Pathfinder.CharacterManagement.Domain.Entity;
+using Pathfinder.CharacterManagement.Domain.Exceptions;
 
 namespace Pathfinder.CharacterManagement.Application.Builders.Implementation;
 
@@ -8,13 +9,16 @@ public class CharacterBuilder : ICharacterBuilder
     private DraftCharacter _draftCharacter;
     private readonly IAncestryRepository _ancestryRepository;
     private readonly IAncestryChoiceAvailabilityPolicy _ancestryChoiceAvailabilityPolicy;
+    private readonly IBackgroundRepository? _backgroundRepository;
 
     public CharacterBuilder(
         IAncestryRepository ancestryRepository,
-        IAncestryChoiceAvailabilityPolicy? ancestryChoiceAvailabilityPolicy = null )
+        IAncestryChoiceAvailabilityPolicy? ancestryChoiceAvailabilityPolicy = null,
+        IBackgroundRepository? backgroundRepository = null )
     {
         _ancestryRepository = ancestryRepository;
         _ancestryChoiceAvailabilityPolicy = ancestryChoiceAvailabilityPolicy ?? new CommonAncestryChoiceAvailabilityPolicy();
+        _backgroundRepository = backgroundRepository;
     }
 
     public void CreateCharacter(
@@ -52,7 +56,33 @@ public class CharacterBuilder : ICharacterBuilder
             _ancestryChoiceAvailabilityPolicy );
     }
 
-    public void SetBackground() => throw new NotImplementedException();
+    public void SetBackground(
+        string backgroundId,
+        AbilityType restrictedBoost,
+        AbilityType freeBoost )
+    {
+        if ( _draftCharacter is null )
+        {
+            throw new InvalidOperationException( "Character must be created before setting background." );
+        }
+
+        if ( _backgroundRepository is null )
+        {
+            throw new InvalidOperationException( "Background repository is not configured." );
+        }
+
+        Background background;
+        try
+        {
+            background = _backgroundRepository.GetBackground( backgroundId );
+        }
+        catch ( ArgumentException exception )
+        {
+            throw new CharacterManagementException( exception.Message );
+        }
+
+        _draftCharacter.SetBackgroundPackage( background, restrictedBoost, freeBoost );
+    }
 
     public void SetClass() => throw new NotImplementedException();
 

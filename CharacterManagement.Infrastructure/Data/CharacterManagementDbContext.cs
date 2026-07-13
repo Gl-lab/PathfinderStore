@@ -26,6 +26,9 @@ public class CharacterManagementDbContext( DbContextOptions<CharacterManagementD
             b.Property( x => x.AncestryType ).HasConversion<int>();
             b.Property( x => x.SelectedHeritageId ).HasMaxLength( 100 );
             b.Property( x => x.SelectedAncestryFeatId ).HasMaxLength( 100 );
+            b.Property( x => x.SelectedBackgroundId ).HasMaxLength( 100 );
+            b.Property( x => x.SelectedBackgroundRestrictedBoost ).HasConversion<int>();
+            b.Property( x => x.SelectedBackgroundFreeBoost ).HasConversion<int>();
 
             b.Property( x => x.AppliedFreeBoosts )
                 .HasConversion(

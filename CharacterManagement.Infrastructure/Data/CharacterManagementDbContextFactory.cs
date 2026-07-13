@@ -14,7 +14,8 @@ public class CharacterManagementDbContextFactory : IDesignTimeDbContextFactory<C
         string configurationBasePath = ResolveConfigurationBasePath();
         IConfigurationRoot configuration = new ConfigurationBuilder()
             .SetBasePath( configurationBasePath )
-            .AddJsonFile( "appsettings.json", optional: false )
+            .AddJsonFile( "appsettings.json", optional: true )
+            .AddJsonFile( "appsettings.Sample.json", optional: true )
             .AddJsonFile( $"appsettings.{environmentName}.json", optional: true )
             .AddUserSecrets( "c3db048d-4a24-483f-9e9a-fe0cc5bbd832" )
             .AddEnvironmentVariables()
@@ -35,13 +36,13 @@ public class CharacterManagementDbContextFactory : IDesignTimeDbContextFactory<C
         while ( current is not null )
         {
             string candidate = Path.Combine( current.FullName, "Pathfinder.Web" );
-            if ( File.Exists( Path.Combine( candidate, "appsettings.json" ) ) )
+            if ( HasConfigurationFile( candidate ) )
             {
                 return candidate;
             }
 
-            if ( File.Exists( Path.Combine( current.FullName, "appsettings.json" ) )
-                && String.Equals( current.Name, "Pathfinder.Web", StringComparison.OrdinalIgnoreCase ) )
+            if ( HasConfigurationFile( current.FullName ) &&
+                 String.Equals( current.Name, "Pathfinder.Web", StringComparison.OrdinalIgnoreCase ) )
             {
                 return current.FullName;
             }
@@ -51,5 +52,11 @@ public class CharacterManagementDbContextFactory : IDesignTimeDbContextFactory<C
 
         throw new InvalidOperationException(
             "Could not locate the Pathfinder.Web configuration directory for design-time CharacterManagementDbContext creation." );
+    }
+
+    private static bool HasConfigurationFile( string directoryPath )
+    {
+        return File.Exists( Path.Combine( directoryPath, "appsettings.json" ) ) ||
+               File.Exists( Path.Combine( directoryPath, "appsettings.Sample.json" ) );
     }
 }

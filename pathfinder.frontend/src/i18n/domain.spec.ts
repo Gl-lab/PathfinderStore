@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { getAbilityLabel, getAncestryLabel } from '@/i18n/domain'
+import { getAbilityLabel, getAncestryLabel, getBackgroundLabel } from '@/i18n/domain'
 import { setLocale } from '@/i18n'
 
 afterEach(() => {
@@ -17,5 +17,13 @@ describe('domain localization helpers', () => {
     setLocale('en')
 
     expect(getAbilityLabel('Strength')).toBe('Strength')
+  })
+
+  it('localizes a background id and preserves an English fallback', () => {
+    setLocale('ru')
+    expect(getBackgroundLabel('background.acrobat', 'Acrobat')).toBe('Акробат')
+
+    setLocale('en')
+    expect(getBackgroundLabel('background.acrobat', 'Acrobat')).toBe('Acrobat')
   })
 })

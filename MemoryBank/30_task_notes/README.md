@@ -16,6 +16,7 @@ Vikunja остаётся источником истины по фактичес
 
 ## Заметки
 
+- [`background_package_implementation.md`](background_package_implementation.md)
 - [`task_16_domain_rules.md`](task_16_domain_rules.md)
 - [`task_32_account_backfill.md`](task_32_account_backfill.md)
 - [`task_40_inventory.md`](task_40_inventory.md)

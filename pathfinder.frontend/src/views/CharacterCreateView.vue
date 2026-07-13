@@ -3,15 +3,31 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { getApiErrorMessages } from '@/api/errors'
-import { getAbilityLabel, getAncestryChoiceLabel, getAncestryLabel } from '@/i18n/domain'
+import {
+  getAbilityLabel,
+  getAncestryChoiceLabel,
+  getAncestryLabel,
+  getBackgroundLabel,
+} from '@/i18n/domain'
 import type { AbilityCode, AncestryCode } from '@/features/characters/api'
-import { createCharacter, getAncestries, type Ancestry } from '@/features/character-creation/api'
+import {
+  createCharacter,
+  getAncestries,
+  getBackgrounds,
+  type Ancestry,
+  type Background,
+} from '@/features/character-creation/api'
+import {
+  getBackgroundFreeBoostOptions,
+  isBackgroundChoiceComplete,
+} from '@/features/character-creation/background'
 
 const router = useRouter()
 const { t } = useI18n()
 const step = ref(1)
 const ancestries = ref<Ancestry[]>([])
-const isLoadingAncestries = ref(true)
+const backgrounds = ref<Background[]>([])
+const isLoadingCatalogs = ref(true)
 const isSubmitting = ref(false)
 const errorMessages = ref<string[]>([])
 const form = ref({
@@ -22,6 +38,9 @@ const form = ref({
   heritageId: null as string | null,
   ancestryFeatId: null as string | null,
   freeBoosts: [] as AbilityCode[],
+  backgroundId: null as string | null,
+  backgroundRestrictedBoost: null as AbilityCode | null,
+  backgroundFreeBoost: null as AbilityCode | null,
 })
 const abilityCodes: AbilityCode[] = ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma']
 const selectedAncestry = computed(
@@ -43,6 +62,12 @@ const selectedHeritage = computed(
 const selectedAncestryFeat = computed(
   () => selectedAncestry.value?.ancestryFeats.find((item) => item.id === form.value.ancestryFeatId) ?? null,
 )
+const selectedBackground = computed(
+  () => backgrounds.value.find((item) => item.id === form.value.backgroundId) ?? null,
+)
+const backgroundFreeBoostOptions = computed(() =>
+  getBackgroundFreeBoostOptions(abilityCodes, form.value.backgroundRestrictedBoost),
+)
 const canContinue = computed(() => {
   if (step.value === 1)
     return (
@@ -52,6 +77,12 @@ const canContinue = computed(() => {
   if (step.value === 2) return selectedAncestry.value !== null
   if (step.value === 3) return selectedHeritage.value !== null && selectedAncestryFeat.value !== null
   if (step.value === 4) return form.value.freeBoosts.length === freeBoostSlots.value
+  if (step.value === 5)
+    return isBackgroundChoiceComplete(
+      selectedBackground.value,
+      form.value.backgroundRestrictedBoost,
+      form.value.backgroundFreeBoost,
+    )
   return true
 })
 
@@ -67,17 +98,32 @@ function isBoostDisabled(type: AbilityCode): boolean {
     (!form.value.freeBoosts.includes(type) && form.value.freeBoosts.length >= freeBoostSlots.value)
   )
 }
+function selectBackground(backgroundId: string | null): void {
+  form.value.backgroundId = backgroundId
+  form.value.backgroundRestrictedBoost = null
+  form.value.backgroundFreeBoost = null
+}
+function selectBackgroundRestrictedBoost(boost: AbilityCode | null): void {
+  form.value.backgroundRestrictedBoost = boost
+  if (form.value.backgroundFreeBoost === boost) form.value.backgroundFreeBoost = null
+}
 function formatAbilities(types: AbilityCode[]): string {
   return types.map(getAbilityLabel).join(', ') || t('wizard.none')
 }
 function next(): void {
-  if (canContinue.value && step.value < 5) step.value += 1
+  if (canContinue.value && step.value < 6) step.value += 1
 }
 function previous(): void {
   if (step.value > 1) step.value -= 1
 }
 async function submit(): Promise<void> {
-  if (!selectedAncestry.value) return
+  if (
+    !selectedAncestry.value ||
+    !selectedBackground.value ||
+    !form.value.backgroundRestrictedBoost ||
+    !form.value.backgroundFreeBoost
+  )
+    return
   errorMessages.value = []
   isSubmitting.value = true
   try {
@@ -89,6 +135,9 @@ async function submit(): Promise<void> {
       heritageId: selectedHeritage.value?.id ?? '',
       ancestryFeatId: selectedAncestryFeat.value?.id ?? '',
       freeBoosts: form.value.freeBoosts,
+      backgroundId: selectedBackground.value.id,
+      backgroundRestrictedBoost: form.value.backgroundRestrictedBoost,
+      backgroundFreeBoost: form.value.backgroundFreeBoost,
     })
     await router.replace('/')
   } catch (error) {
@@ -97,18 +146,23 @@ async function submit(): Promise<void> {
     isSubmitting.value = false
   }
 }
-async function loadAncestries(): Promise<void> {
-  isLoadingAncestries.value = true
+async function loadCatalogs(): Promise<void> {
+  isLoadingCatalogs.value = true
   errorMessages.value = []
   try {
-    ancestries.value = await getAncestries()
+    const [ancestryCatalog, backgroundCatalog] = await Promise.all([
+      getAncestries(),
+      getBackgrounds(),
+    ])
+    ancestries.value = ancestryCatalog
+    backgrounds.value = backgroundCatalog
   } catch (error) {
     errorMessages.value = getApiErrorMessages(error)
   } finally {
-    isLoadingAncestries.value = false
+    isLoadingCatalogs.value = false
   }
 }
-onMounted(loadAncestries)
+onMounted(loadCatalogs)
 </script>
 
 <template>
@@ -121,10 +175,10 @@ onMounted(loadAncestries)
       </div>
       <v-btn variant="text" to="/">{{ t('common.cancel') }}</v-btn>
     </header>
-    <v-progress-linear :model-value="step * 20" color="accent" height="8" rounded />
+    <v-progress-linear :model-value="(step / 6) * 100" color="accent" height="8" rounded />
     <ol class="steps">
       <li
-        v-for="(item, index) in [t('wizard.basic'), t('wizard.ancestry'), t('wizard.choices'), t('wizard.boosts'), t('wizard.review')]"
+        v-for="(item, index) in [t('wizard.basic'), t('wizard.ancestry'), t('wizard.choices'), t('wizard.boosts'), t('wizard.background'), t('wizard.review')]"
         :key="item"
         :class="{ active: step === index + 1, complete: step > index + 1 }"
       >
@@ -135,8 +189,8 @@ onMounted(loadAncestries)
       error
     }}</v-alert
     ><v-card elevation="0" class="wizard-card"
-      ><v-card-text v-if="isLoadingAncestries"
-        ><v-progress-circular indeterminate color="accent" /> {{ t('wizard.loading') }}</v-card-text
+      ><v-card-text v-if="isLoadingCatalogs"
+        ><v-progress-circular indeterminate color="accent" /> {{ t('wizard.loadingCatalogs') }}</v-card-text
       ><template v-else
         ><section v-if="step === 1">
           <h2>{{ t('wizard.basic') }}</h2>
@@ -207,6 +261,51 @@ onMounted(loadAncestries)
             hide-details
           />
         </section>
+        <section v-else-if="step === 5">
+          <h2>{{ t('wizard.background') }}</h2>
+          <p class="hint">{{ t('wizard.backgroundHint') }}</p>
+          <v-select
+            :model-value="form.backgroundId"
+            :items="backgrounds"
+            :item-title="(background) => getBackgroundLabel(background.id, background.name)"
+            item-value="id"
+            :label="t('wizard.background')"
+            @update:model-value="selectBackground"
+          />
+          <template v-if="selectedBackground">
+            <v-radio-group
+              :model-value="form.backgroundRestrictedBoost"
+              :label="t('wizard.backgroundRestrictedBoost')"
+              @update:model-value="selectBackgroundRestrictedBoost"
+            >
+              <v-radio
+                v-for="code in selectedBackground.restrictedBoostOptions"
+                :key="code"
+                :value="code"
+                :label="getAbilityLabel(code)"
+              />
+            </v-radio-group>
+            <v-radio-group
+              v-model="form.backgroundFreeBoost"
+              :label="t('wizard.backgroundFreeBoost')"
+            >
+              <v-radio
+                v-for="code in backgroundFreeBoostOptions"
+                :key="code"
+                :value="code"
+                :label="getAbilityLabel(code)"
+              />
+            </v-radio-group>
+            <v-list density="compact" :subheader="t('wizard.backgroundGrants')">
+              <v-list-item
+                v-for="grant in selectedBackground.grants"
+                :key="grant.id"
+                :title="grant.name"
+                :subtitle="grant.requiresChoice ? `${grant.summary} ${t('wizard.deferredChoice')}` : grant.summary"
+              />
+            </v-list>
+          </template>
+        </section>
         <section v-else-if="selectedAncestry">
           <h2>{{ t('wizard.review') }}</h2>
           <v-list lines="two"
@@ -219,6 +318,12 @@ onMounted(loadAncestries)
               :subtitle="selectedAncestryFeat ? getAncestryChoiceLabel(selectedAncestryFeat.id, selectedAncestryFeat.name) : ''" /><v-list-item
               :title="t('wizard.selectedBoosts')"
               :subtitle="formatAbilities(form.freeBoosts)" /><v-list-item
+              v-if="selectedBackground"
+              :title="t('wizard.background')"
+              :subtitle="getBackgroundLabel(selectedBackground.id, selectedBackground.name)" /><v-list-item
+              v-if="form.backgroundRestrictedBoost && form.backgroundFreeBoost"
+              :title="t('wizard.backgroundBoosts')"
+              :subtitle="formatAbilities([form.backgroundRestrictedBoost, form.backgroundFreeBoost])" /><v-list-item
               v-if="form.concept"
               :title="t('wizard.selectedConcept')"
               :subtitle="form.concept" /></v-list
@@ -230,7 +335,7 @@ onMounted(loadAncestries)
     >
     <footer>
       <v-btn variant="text" :disabled="step === 1 || isSubmitting" @click="previous">{{ t('common.back') }}</v-btn
-      ><v-spacer /><v-btn v-if="step < 5" color="primary" :disabled="!canContinue" @click="next"
+      ><v-spacer /><v-btn v-if="step < 6" color="primary" :disabled="!canContinue" @click="next"
         >{{ t('common.next') }}</v-btn
       ><v-btn v-else color="accent" :loading="isSubmitting" @click="submit"
         >{{ t('wizard.create') }}</v-btn
@@ -267,7 +372,7 @@ h1 {
 }
 .steps {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 8px;
   padding: 0;
   margin: 0;

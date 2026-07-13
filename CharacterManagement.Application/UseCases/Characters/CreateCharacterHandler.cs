@@ -31,6 +31,11 @@ public sealed class CreateCharacterHandler : IRequestHandler<CreateCharacterComm
             throw new CharacterManagementException( $"Account was not found for user {request.UserId}." );
         }
 
+        AbilityType backgroundRestrictedBoost = request.Character.BackgroundRestrictedBoost
+            ?? throw new CharacterManagementException( "Background restricted boost must be specified." );
+        AbilityType backgroundFreeBoost = request.Character.BackgroundFreeBoost
+            ?? throw new CharacterManagementException( "Background free boost must be specified." );
+
         _characterBuilder.CreateCharacter(
             account.Id,
             request.Character.Name,
@@ -39,6 +44,10 @@ public sealed class CreateCharacterHandler : IRequestHandler<CreateCharacterComm
             request.Character.Age );
         _characterBuilder.SetAncestryPackage( request.Character.HeritageId, request.Character.AncestryFeatId );
         _characterBuilder.ApplyFreeBoosts( request.Character.FreeBoosts );
+        _characterBuilder.SetBackground(
+            request.Character.BackgroundId,
+            backgroundRestrictedBoost,
+            backgroundFreeBoost );
 
         DraftCharacter draftCharacter = _characterBuilder.Build();
         account.AddDraftCharacter( draftCharacter );

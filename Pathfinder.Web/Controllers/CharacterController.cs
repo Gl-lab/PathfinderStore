@@ -137,6 +137,10 @@ public sealed class CharacterController : AuthorizedController
         {
             return BadRequest( MapErrorMessage( exception.Message ) );
         }
+        catch ( Pathfinder.CharacterManagement.Domain.Exceptions.CharacterManagementException exception )
+        {
+            return BadRequest( MapErrorMessage( exception.Message ) );
+        }
         catch ( DbUpdateException exception )
         {
             _logger.LogError( exception, "Failed to create a character in the database." );

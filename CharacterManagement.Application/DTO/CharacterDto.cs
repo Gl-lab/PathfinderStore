@@ -10,6 +10,7 @@ public class CharacterDto : BaseDto
     public int? Age { get; set; }
     public AncestryType AncestryType { get; set; }
     public CharacterAncestryPackageDto? AncestryPackage { get; set; }
+    public CharacterBackgroundPackageDto? BackgroundPackage { get; set; }
     public virtual BackpackDto? Backpack { get; set; }
     public virtual GroupCharacteristicDto Characteristics { get; set; }
 }

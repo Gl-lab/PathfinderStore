@@ -8,11 +8,10 @@
 
 ## Что не блокирует MVP
 
-Текущий MVP ограничен выбором имени, `Ancestry` и ancestry-based boosts/flaws.
+Текущий реализованный flow включает имя, `Ancestry`, ancestry package, ancestry boosts/flaws и `Background` с двумя boosts.
 
 Следующие gaps известны, но не блокируют текущий MVP:
 
-- `Background` не участвует в создании персонажа.
 - `Class` не участвует в создании персонажа.
 - Skills, spells, deity, equipment, languages и ancestry feats не участвуют в MVP flow.
 - Derived statistics шире `AbilityScores` не считаются как часть текущего MVP.
@@ -32,7 +31,9 @@
 
 ### Background
 
-Есть baseline-каталог Core Rulebook, но нет объединённого cross-source каталога.
+Baseline-каталог Core Rulebook реализован в C# и участвует в character creation. Skill, Lore и skill feat пока выдаются только как декларативные grants.
+
+Нет объединённого cross-source каталога и механизма фактического применения skill grants.
 
 Следующий ожидаемый документ:
 

@@ -26,6 +26,9 @@ public sealed class CreateCharacterHandlerTests
             HeritageId = "human.skilled",
             AncestryFeatId = "human.cooperative_nature",
             FreeBoosts = [ AbilityType.Strength, AbilityType.Intelligence ],
+            BackgroundId = "background.acrobat",
+            BackgroundRestrictedBoost = AbilityType.Dexterity,
+            BackgroundFreeBoost = AbilityType.Charisma,
         };
         CreateCharacterCommand command = new CreateCharacterCommand( account.UserId, character );
 
@@ -42,10 +45,14 @@ public sealed class CreateCharacterHandlerTests
         Assert.Equal( character.AncestryType, savedCharacter.AncestryType );
         Assert.Equal( character.HeritageId, savedCharacter.SelectedHeritageId );
         Assert.Equal( character.AncestryFeatId, savedCharacter.SelectedAncestryFeatId );
+        Assert.Equal( character.BackgroundId, savedCharacter.SelectedBackgroundId );
+        Assert.Equal( character.BackgroundRestrictedBoost, savedCharacter.SelectedBackgroundRestrictedBoost );
+        Assert.Equal( character.BackgroundFreeBoost, savedCharacter.SelectedBackgroundFreeBoost );
         Assert.Equal( account.Id, savedCharacter.AccountId );
         Assert.Equal( 12, savedCharacter.AbilityScores.Strength.Value );
         Assert.Equal( 12, savedCharacter.AbilityScores.Intelligence.Value );
-        Assert.Equal( 10, savedCharacter.AbilityScores.Dexterity.Value );
+        Assert.Equal( 12, savedCharacter.AbilityScores.Dexterity.Value );
+        Assert.Equal( 12, savedCharacter.AbilityScores.Charisma.Value );
     }
 
     [Fact]
@@ -81,6 +88,9 @@ public sealed class CreateCharacterHandlerTests
             HeritageId = "human.skilled",
             AncestryFeatId = "human.cooperative_nature",
             FreeBoosts = [ AbilityType.Strength, AbilityType.Strength ],
+            BackgroundId = "background.acrobat",
+            BackgroundRestrictedBoost = AbilityType.Dexterity,
+            BackgroundFreeBoost = AbilityType.Charisma,
         };
         CreateCharacterCommand command = new CreateCharacterCommand( account.UserId, character );
 
@@ -95,7 +105,10 @@ public sealed class CreateCharacterHandlerTests
     {
         AccountRepository accountRepository = new AccountRepository( dbContext );
         AncestryRepository ancestryRepository = new AncestryRepository();
-        CharacterBuilder characterBuilder = new CharacterBuilder( ancestryRepository );
+        BackgroundRepository backgroundRepository = new BackgroundRepository();
+        CharacterBuilder characterBuilder = new CharacterBuilder(
+            ancestryRepository,
+            backgroundRepository: backgroundRepository );
         TestUnitOfWork unitOfWork = new TestUnitOfWork( dbContext );
 
         return new CreateCharacterHandler( accountRepository, characterBuilder, unitOfWork );

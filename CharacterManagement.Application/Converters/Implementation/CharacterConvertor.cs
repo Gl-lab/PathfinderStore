@@ -6,11 +6,15 @@ namespace Pathfinder.CharacterManagement.Application.Converters.Implementation;
 
 public sealed class CharacterConvertor : ICharacterConvertor
 {
-    private readonly IAncestryRepository _ancestryRepository;
+    private readonly IAncestryRepository? _ancestryRepository;
+    private readonly IBackgroundRepository? _backgroundRepository;
 
-    public CharacterConvertor( IAncestryRepository? ancestryRepository = null )
+    public CharacterConvertor(
+        IAncestryRepository? ancestryRepository = null,
+        IBackgroundRepository? backgroundRepository = null )
     {
         _ancestryRepository = ancestryRepository;
+        _backgroundRepository = backgroundRepository;
     }
 
     public DraftCharacter Convert( CharacterDto character ) => throw new NotSupportedException();
@@ -20,6 +24,9 @@ public sealed class CharacterConvertor : ICharacterConvertor
         ArgumentNullException.ThrowIfNull( draftCharacter );
 
         Ancestry? ancestry = _ancestryRepository?.GetAncestry( draftCharacter.AncestryType );
+        Background? background = draftCharacter.SelectedBackgroundId is null
+            ? null
+            : _backgroundRepository?.GetBackground( draftCharacter.SelectedBackgroundId );
 
         return new CharacterDto
         {
@@ -29,6 +36,9 @@ public sealed class CharacterConvertor : ICharacterConvertor
             Age = draftCharacter.Age,
             AncestryType = draftCharacter.AncestryType,
             AncestryPackage = ancestry is null ? null : AncestryDtoMapper.MapPackage( draftCharacter, ancestry ),
+            BackgroundPackage = background is null
+                ? null
+                : BackgroundDtoMapper.MapPackage( draftCharacter, background ),
             Characteristics = new GroupCharacteristicDto
             {
                 Strength = Convert( draftCharacter.AbilityScores.Strength ),

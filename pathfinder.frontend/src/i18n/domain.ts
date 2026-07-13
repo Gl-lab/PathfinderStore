@@ -15,6 +15,12 @@ export function getAncestryChoiceLabel(id: string, fallback: string): string {
   return i18n.global.te(key) ? i18n.global.t(key) : fallback
 }
 
+export function getBackgroundLabel(id: string, fallback: string): string {
+  const key = `domain.background.${id.replace('background.', '')}`
+
+  return i18n.global.te(key) ? i18n.global.t(key) : fallback
+}
+
 export function getVisionLabel(vision: string): string {
   const key = `domain.vision.${vision}`
 

@@ -11,4 +11,7 @@ public class CreateCharacterRequestDto
     public string HeritageId { get; set; }
     public string AncestryFeatId { get; set; }
     public IReadOnlyList<AbilityType> FreeBoosts { get; set; } = [];
+    public string BackgroundId { get; set; } = String.Empty;
+    public AbilityType? BackgroundRestrictedBoost { get; set; }
+    public AbilityType? BackgroundFreeBoost { get; set; }
 }

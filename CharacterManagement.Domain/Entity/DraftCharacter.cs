@@ -16,7 +16,14 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public IReadOnlyList<AbilityType> AppliedFreeBoosts { get; private set; } = [];
     public string? SelectedHeritageId { get; private set; }
     public string? SelectedAncestryFeatId { get; private set; }
+    public string? SelectedBackgroundId { get; private set; }
+    public AbilityType? SelectedBackgroundRestrictedBoost { get; private set; }
+    public AbilityType? SelectedBackgroundFreeBoost { get; private set; }
     public bool HasCompleteAncestryPackage => !String.IsNullOrWhiteSpace( SelectedHeritageId ) && !String.IsNullOrWhiteSpace( SelectedAncestryFeatId );
+    public bool HasBackgroundBoostPackage =>
+        !String.IsNullOrWhiteSpace( SelectedBackgroundId ) &&
+        SelectedBackgroundRestrictedBoost.HasValue &&
+        SelectedBackgroundFreeBoost.HasValue;
 
     // Навигационные свойства для EF Core
     public Account Account { get; private set; }
@@ -211,6 +218,35 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         EnsureInvariants();
     }
 
+    public void SetBackgroundPackage(
+        Background background,
+        AbilityType restrictedBoost,
+        AbilityType freeBoost )
+    {
+        ArgumentNullException.ThrowIfNull( background );
+
+        if ( !background.RestrictedBoostOptions.Contains( restrictedBoost ) )
+        {
+            throw new CharacterManagementException(
+                $"Ability '{restrictedBoost}' is not a restricted boost option for background '{background.Id}'." );
+        }
+
+        if ( restrictedBoost == freeBoost )
+        {
+            throw new CharacterManagementException( "Background boosts must target different abilities." );
+        }
+
+        RemoveBackgroundEffects();
+
+        AbilityScores.ApplyAbilityBoost( restrictedBoost );
+        AbilityScores.ApplyAbilityBoost( freeBoost );
+        SelectedBackgroundId = background.Id;
+        SelectedBackgroundRestrictedBoost = restrictedBoost;
+        SelectedBackgroundFreeBoost = freeBoost;
+
+        EnsureInvariants();
+    }
+
     public void UpdateAbilityScore( AbilityType abilityType, int value )
     {
         if ( AbilityScores == null )
@@ -355,5 +391,22 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         {
             AbilityScores.ApplyAbilityFlaw( flaw );
         }
+    }
+
+    private void RemoveBackgroundEffects()
+    {
+        if ( SelectedBackgroundRestrictedBoost.HasValue )
+        {
+            AbilityScores.RemoveAbilityBoost( SelectedBackgroundRestrictedBoost.Value );
+        }
+
+        if ( SelectedBackgroundFreeBoost.HasValue )
+        {
+            AbilityScores.RemoveAbilityBoost( SelectedBackgroundFreeBoost.Value );
+        }
+
+        SelectedBackgroundId = null;
+        SelectedBackgroundRestrictedBoost = null;
+        SelectedBackgroundFreeBoost = null;
     }
 }

@@ -11,5 +11,6 @@ public static class DependencyInjection
         services.AddScoped<IAccountRepository, AccountRepository>();
         services.AddScoped<ICharacterRepository, CharacterRepository>();
         services.AddScoped<IAncestryRepository, AncestryRepository>();
+        services.AddScoped<IBackgroundRepository, BackgroundRepository>();
     }
 }

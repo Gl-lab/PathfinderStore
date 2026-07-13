@@ -31,6 +31,15 @@ public sealed class CreateCharacterCommandValidator : AbstractValidator<CreateCh
 
                 RuleFor( command => command.Character.FreeBoosts )
                     .NotNull();
+
+                RuleFor( command => command.Character.BackgroundId )
+                    .NotEmpty();
+
+                RuleFor( command => command.Character.BackgroundRestrictedBoost )
+                    .NotNull();
+
+                RuleFor( command => command.Character.BackgroundFreeBoost )
+                    .NotNull();
             } );
     }
 }

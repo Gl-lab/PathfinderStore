@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Pathfinder.CharacterManagement.Application.DTO;
 using Pathfinder.CharacterManagement.Application.Exceptions;
 using Pathfinder.CharacterManagement.Application.UseCases.Ancestries;
+using Pathfinder.CharacterManagement.Application.UseCases.Backgrounds;
 using Pathfinder.CharacterManagement.Application.UseCases.Characters;
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.Web.Controllers;
@@ -44,6 +45,31 @@ public sealed class ControllerTests
 
         OkObjectResult okResult = Assert.IsType<OkObjectResult>( actionResult.Result );
         IReadOnlyCollection<AncestryDto> payload = Assert.IsAssignableFrom<IReadOnlyCollection<AncestryDto>>( okResult.Value );
+        Assert.Same( expected, payload );
+    }
+
+    [Fact]
+    public async Task BackgroundsController_Get_ReturnsOkWithPayload()
+    {
+        IReadOnlyCollection<BackgroundDto> expected =
+        [
+            new BackgroundDto
+            {
+                Id = "background.acrobat",
+                Name = "Acrobat",
+                RestrictedBoostOptions = [ AbilityType.Strength, AbilityType.Dexterity ],
+                FreeBoostCount = 1,
+                Grants = [],
+            },
+        ];
+        TestMediator mediator = new TestMediator();
+        mediator.Register( new GetBackgroundsCommand(), expected );
+        BackgroundsController controller = new BackgroundsController( mediator );
+
+        ActionResult<IReadOnlyCollection<BackgroundDto>> actionResult = await controller.Get();
+
+        OkObjectResult okResult = Assert.IsType<OkObjectResult>( actionResult.Result );
+        IReadOnlyCollection<BackgroundDto> payload = Assert.IsAssignableFrom<IReadOnlyCollection<BackgroundDto>>( okResult.Value );
         Assert.Same( expected, payload );
     }
 
@@ -86,6 +112,28 @@ public sealed class ControllerTests
         BadRequestObjectResult badRequestResult = Assert.IsType<BadRequestObjectResult>( actionResult );
         IReadOnlyCollection<string> errors = Assert.IsAssignableFrom<IReadOnlyCollection<string>>( badRequestResult.Value );
         Assert.Contains( "'Name' must not be empty.", errors );
+    }
+
+    [Fact]
+    public async Task CharacterController_Create_WhenMediatorThrowsDomainException_ReturnsBadRequest()
+    {
+        TestMediator mediator = new TestMediator();
+        CreateCharacterRequestDto request = new CreateCharacterRequestDto
+        {
+            Name = "Thorin",
+            AncestryType = AncestryType.Human,
+            FreeBoosts = [ AbilityType.Strength, AbilityType.Intelligence ],
+        };
+        mediator.RegisterException<CreateCharacterCommand>(
+            new Pathfinder.CharacterManagement.Domain.Exceptions.CharacterManagementException(
+                "Background restricted boost is not allowed." ) );
+        CharacterController controller = CreateCharacterController( mediator, 77 );
+
+        ActionResult actionResult = await controller.Create( request );
+
+        BadRequestObjectResult badRequestResult = Assert.IsType<BadRequestObjectResult>( actionResult );
+        IReadOnlyCollection<string> errors = Assert.IsAssignableFrom<IReadOnlyCollection<string>>( badRequestResult.Value );
+        Assert.Contains( "Background restricted boost is not allowed.", errors );
     }
 
     [Fact]

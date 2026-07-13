@@ -60,6 +60,26 @@ export interface GrantedRule {
   summary: string
 }
 
+export type BackgroundGrantKind = 'SkillTraining' | 'LoreTraining' | 'SkillFeat'
+
+export interface BackgroundGrant {
+  id: string
+  kind: BackgroundGrantKind
+  name: string
+  summary: string
+  requiresChoice: boolean
+  options: string[]
+  deferredDependencies: string[]
+}
+
+export interface Background {
+  id: string
+  name: string
+  restrictedBoostOptions: AbilityCode[]
+  freeBoostCount: number
+  grants: BackgroundGrant[]
+}
+
 export interface CreateCharacterRequest {
   name: string
   concept: string | null
@@ -68,10 +88,17 @@ export interface CreateCharacterRequest {
   heritageId: string
   ancestryFeatId: string
   freeBoosts: AbilityCode[]
+  backgroundId: string
+  backgroundRestrictedBoost: AbilityCode
+  backgroundFreeBoost: AbilityCode
 }
 
 export async function getAncestries(): Promise<Ancestry[]> {
   return (await http.get<Ancestry[]>('/api/ancestries')).data
+}
+
+export async function getBackgrounds(): Promise<Background[]> {
+  return (await http.get<Background[]>('/api/backgrounds')).data
 }
 
 export async function createCharacter(request: CreateCharacterRequest): Promise<void> {

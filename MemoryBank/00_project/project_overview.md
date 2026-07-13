@@ -26,11 +26,13 @@ Backend:
 
 Frontend:
 
-- Vue.js 2
-- Vuetify 2
-- Vuex
-- Vue Router
+- Vue 3 + TypeScript
+- Vite
+- Vuetify 3
+- Pinia
+- Vue Router 4
 - Axios
+- Vitest
 
 Архитектурный стиль:
 
@@ -95,6 +97,7 @@ Store сейчас не является активным направление
 - создание персонажа;
 - ancestry-каталог;
 - применение ancestry boosts/flaws/free boosts;
+- background-каталог и применение background boosts;
 - список, карточку и удаление персонажей.
 
 Ключевая модель: `Account -> DraftCharacter -> AbilityScores -> Characteristic`.
@@ -142,28 +145,21 @@ Seed users:
 - `CharacterManagement.Infrastructure` подключён к `Pathfinder.Web`.
 - Backend MVP создания персонажа реализован:
   - `GET /api/ancestries`;
+  - `GET /api/backgrounds`;
   - `GET /api/character`;
   - `GET /api/character/{id}`;
   - `POST /api/character`;
   - `DELETE /api/character/{id}`;
   - domain/application/infrastructure тесты для ключевых сценариев.
 
-### Активный backend-фокус
+### Текущий character creation focus
 
-Согласованное начальное состояние `Secure.User` и `CharacterManagement.Account` обеспечивается seed-аккаунтами для системных пользователей и идемпотентной синхронизацией новых регистраций.
-
-Смотреть:
-
-- Vikunja `#32`
-- [`../30_task_notes/task_32_account_backfill.md`](../30_task_notes/task_32_account_backfill.md)
-
-### Активный frontend-фокус
-
-Frontend MVP создания персонажа ещё не реализован.
+Frontend MVP создания персонажа реализован на Vue 3. Текущий flow включает Ancestry package, ancestry boosts и Background package с двумя boosts. Skill, Lore и skill feat от Background пока возвращаются декларативно и ожидают отдельную Skill subsystem.
 
 Смотреть:
 
 - [`../30_task_notes/mvp_character_creation_frontend.md`](../30_task_notes/mvp_character_creation_frontend.md)
+- [`../30_task_notes/background_package_implementation.md`](../30_task_notes/background_package_implementation.md)
 
 ## Как работать с этим обзором
 
