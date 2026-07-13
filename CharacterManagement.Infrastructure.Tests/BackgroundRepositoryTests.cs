@@ -17,6 +17,51 @@ public sealed class BackgroundRepositoryTests
         Assert.All( backgrounds, background => Assert.Equal( 2, background.RestrictedBoostOptions.Count ) );
         Assert.All( backgrounds, background => Assert.Equal( 1, background.FreeBoostCount ) );
         Assert.All( backgrounds, background => Assert.Equal( 3, background.Grants.Count ) );
+        Assert.All( backgrounds, background =>
+        {
+            Assert.Equal( background.Grants.Count, background.Grants.Select( grant => grant.Id ).Distinct().Count() );
+            Assert.Single( background.Grants, grant => grant.Kind == BackgroundGrantKind.SkillTraining );
+            Assert.Single( background.Grants, grant => grant.Kind == BackgroundGrantKind.LoreTraining );
+            Assert.Single( background.Grants, grant => grant.Kind == BackgroundGrantKind.SkillFeat );
+        } );
+    }
+
+    [Fact]
+    public void GetBackground_FixedGrants_SeparateGrantAndTargetIds()
+    {
+        BackgroundRepository repository = new BackgroundRepository();
+
+        Background background = repository.GetBackground( "background.acrobat" );
+        BackgroundGrantDescriptor skill = background.Grants
+            .Single( grant => grant.Kind == BackgroundGrantKind.SkillTraining );
+        BackgroundGrantDescriptor lore = background.Grants
+            .Single( grant => grant.Kind == BackgroundGrantKind.LoreTraining );
+
+        Assert.Equal( "background.acrobat.skill", skill.Id );
+        Assert.Equal( "skill.acrobatics", skill.TargetId );
+        Assert.False( skill.RequiresChoice );
+        Assert.Equal( "background.acrobat.lore", lore.Id );
+        Assert.Equal( "lore.circus", lore.TargetId );
+    }
+
+    [Fact]
+    public void GetBackground_FiniteAndOpenChoices_AreExplicit()
+    {
+        BackgroundRepository repository = new BackgroundRepository();
+
+        Background guard = repository.GetBackground( "background.guard" );
+        BackgroundGrantDescriptor guardLore = guard.Grants
+            .Single( grant => grant.Kind == BackgroundGrantKind.LoreTraining );
+        Background emissary = repository.GetBackground( "background.emissary" );
+        BackgroundGrantDescriptor emissaryLore = emissary.Grants
+            .Single( grant => grant.Kind == BackgroundGrantKind.LoreTraining );
+
+        Assert.True( guardLore.RequiresChoice );
+        Assert.False( guardLore.AllowsCustomLore );
+        Assert.Equal( [ "lore.legal", "lore.warfare" ], guardLore.Options.Select( option => option.Id ) );
+        Assert.True( emissaryLore.RequiresChoice );
+        Assert.True( emissaryLore.AllowsCustomLore );
+        Assert.Empty( emissaryLore.Options );
     }
 
     [Fact]
@@ -39,5 +84,33 @@ public sealed class BackgroundRepositoryTests
 
         Assert.Throws<ArgumentOutOfRangeException>( () =>
             repository.GetBackground( "background.unknown" ) );
+    }
+
+    [Fact]
+    public void GetAll_EveryBackgroundTrainingGrantCanBeResolved()
+    {
+        BackgroundRepository backgroundRepository = new BackgroundRepository();
+        SkillRepository skillRepository = new SkillRepository();
+
+        foreach ( Background background in backgroundRepository.GetAll() )
+        {
+            IReadOnlyList<BackgroundTrainingChoice> choices = background.Grants
+                .Where( grant =>
+                    grant.RequiresChoice &&
+                    ( ( grant.Kind == BackgroundGrantKind.SkillTraining ) ||
+                      ( grant.Kind == BackgroundGrantKind.LoreTraining ) ) )
+                .Select( grant => grant.AllowsCustomLore
+                    ? new BackgroundTrainingChoice( grant.Id, null, "Test Terrain" )
+                    : new BackgroundTrainingChoice( grant.Id, grant.Options.First().Id, null ) )
+                .ToList();
+
+            BackgroundTrainingResult result = BackgroundTrainingResolver.Resolve(
+                background,
+                choices,
+                skillRepository.GetAll() );
+
+            Assert.Single( result.Skills );
+            Assert.Single( result.Lore );
+        }
     }
 }

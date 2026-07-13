@@ -60,6 +60,8 @@ public sealed class CreateCharacterHandlerTests
         Assert.Equal( character.ClassId, savedCharacter.SelectedClassId );
         Assert.Equal( character.ClassKeyAbility, savedCharacter.SelectedClassKeyAbility );
         Assert.Equal( character.FinalFreeBoosts, savedCharacter.AppliedFinalFreeBoosts );
+        Assert.Equal( "skill.acrobatics", Assert.Single( savedCharacter.TrainedSkills ).SkillId );
+        Assert.Equal( "lore.circus", Assert.Single( savedCharacter.TrainedLore ).LoreId );
         Assert.Equal( account.Id, savedCharacter.AccountId );
         Assert.Equal( 16, savedCharacter.AbilityScores.Strength.Value );
         Assert.Equal( 12, savedCharacter.AbilityScores.Intelligence.Value );
@@ -87,6 +89,58 @@ public sealed class CreateCharacterHandlerTests
 
         int characterCount = await dbContext.Character.CountAsync();
         Assert.Equal( 0, characterCount );
+    }
+
+    [Fact]
+    public async Task Handle_BackgroundChoices_PersistsSelectedSkillAndCustomLore()
+    {
+        await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
+        Account account = await CreateAccountAsync( dbContext, 54, "Lini", "Greenbriar" );
+        CreateCharacterHandler handler = CreateHandler( dbContext );
+        CreateCharacterRequestDto character = new CreateCharacterRequestDto
+        {
+            Name = "Lini",
+            AncestryType = AncestryType.Human,
+            HeritageId = "human.skilled",
+            AncestryFeatId = "human.cooperative_nature",
+            FreeBoosts = [ AbilityType.Intelligence, AbilityType.Wisdom ],
+            BackgroundId = "background.hermit",
+            BackgroundRestrictedBoost = AbilityType.Intelligence,
+            BackgroundFreeBoost = AbilityType.Wisdom,
+            BackgroundTrainingChoices =
+            [
+                new BackgroundTrainingChoice(
+                    "background.hermit.skill",
+                    "skill.occultism",
+                    null ),
+                new BackgroundTrainingChoice(
+                    "background.hermit.lore",
+                    null,
+                    "Ancient Forest" ),
+            ],
+            ClassId = "class.druid",
+            ClassKeyAbility = AbilityType.Wisdom,
+            FinalFreeBoosts =
+            [
+                AbilityType.Strength,
+                AbilityType.Dexterity,
+                AbilityType.Constitution,
+                AbilityType.Wisdom,
+            ],
+        };
+
+        await handler.Handle(
+            new CreateCharacterCommand( account.UserId, character ),
+            CancellationToken.None );
+        dbContext.ChangeTracker.Clear();
+
+        DraftCharacter savedCharacter = await dbContext.Character
+            .AsNoTracking()
+            .SingleAsync( entity => entity.AccountId == account.Id );
+        Assert.Equal( "skill.occultism", Assert.Single( savedCharacter.TrainedSkills ).SkillId );
+        TrainedLore lore = Assert.Single( savedCharacter.TrainedLore );
+        Assert.Equal( "lore.custom.ancient_forest", lore.LoreId );
+        Assert.Equal( "Ancient Forest Lore", lore.Name );
     }
 
     [Fact]
@@ -133,7 +187,8 @@ public sealed class CreateCharacterHandlerTests
         CharacterBuilder characterBuilder = new CharacterBuilder(
             ancestryRepository,
             backgroundRepository: backgroundRepository,
-            characterClassRepository: characterClassRepository );
+            characterClassRepository: characterClassRepository,
+            skillRepository: new SkillRepository() );
         TestUnitOfWork unitOfWork = new TestUnitOfWork( dbContext );
 
         return new CreateCharacterHandler( accountRepository, characterBuilder, unitOfWork );

@@ -51,7 +51,8 @@ public sealed class CreateCharacterHandler : IRequestHandler<CreateCharacterComm
         _characterBuilder.SetBackground(
             request.Character.BackgroundId,
             backgroundRestrictedBoost,
-            backgroundFreeBoost );
+            backgroundFreeBoost,
+            request.Character.BackgroundTrainingChoices );
         _characterBuilder.SetClass( request.Character.ClassId, classKeyAbility );
         _characterBuilder.SetFinalFreeBoosts( finalFreeBoosts );
 

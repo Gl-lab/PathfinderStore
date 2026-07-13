@@ -155,7 +155,7 @@ Seed users:
 
 ### Текущий character creation focus
 
-Frontend MVP создания персонажа реализован на Vue 3. Текущий flow включает Ancestry package, ancestry boosts, Background package с двумя boosts, Class package с key ability boost и отдельный пакет четырёх финальных свободных boosts. Стартовый pipeline характеристик завершён; maximum HP первого уровня вычисляется из effective ancestry HP, class HP и Constitution modifier. Background grants и Class rules пока возвращаются декларативно и ожидают отдельные подсистемы.
+Frontend MVP создания персонажа реализован на Vue 3. Текущий flow включает Ancestry package, ancestry boosts, Background package с двумя boosts и фактическим skill/Lore training, Class package с key ability boost и отдельный пакет четырёх финальных свободных boosts. Стартовый pipeline характеристик завершён; maximum HP первого уровня вычисляется из effective ancestry HP, class HP и Constitution modifier. Background skill feat и Class rules пока возвращаются декларативно и ожидают отдельные подсистемы.
 
 Смотреть:
 

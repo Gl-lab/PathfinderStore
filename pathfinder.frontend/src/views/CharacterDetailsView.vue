@@ -162,6 +162,22 @@ onMounted(load)
             </ul>
           </v-card-text
         ></v-card
+        ><v-card
+          v-if="character.training.skills.length || character.training.lore.length"
+          elevation="0"
+        >
+          <v-card-item :title="t('characters.training')" />
+          <v-card-text>
+            <p v-if="character.training.skills.length">
+              <strong>{{ t('characters.trainedSkills') }}:</strong>
+              {{ character.training.skills.map((skill) => skill.name).join(', ') }}
+            </p>
+            <p v-if="character.training.lore.length">
+              <strong>{{ t('characters.trainedLore') }}:</strong>
+              {{ character.training.lore.map((lore) => lore.name).join(', ') }}
+            </p>
+          </v-card-text>
+        </v-card
         ><v-card v-if="character.classPackage" elevation="0"
           ><v-card-item
             :title="getCharacterClassLabel(character.classPackage.classId, character.classPackage.name)"

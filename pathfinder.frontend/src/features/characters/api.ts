@@ -37,7 +37,9 @@ export interface CharacterBackgroundPackage {
     name: string
     summary: string
     requiresChoice: boolean
-    options: string[]
+    allowsCustomLore: boolean
+    targetId: string | null
+    options: { id: string; name: string }[]
     deferredDependencies: string[]
   }[]
 }
@@ -68,6 +70,21 @@ export interface CharacterDerivedStatistics {
   hitPoints: CharacterHitPoints
 }
 
+export interface CharacterTraining {
+  skills: {
+    id: string
+    name: string
+    keyAbility: AbilityCode | null
+    sourceGrantId: string
+  }[]
+  lore: {
+    id: string
+    name: string
+    keyAbility: AbilityCode
+    sourceGrantId: string
+  }[]
+}
+
 export interface Character {
   id: number
   name: string
@@ -79,6 +96,7 @@ export interface Character {
   classPackage: CharacterClassPackage | null
   finalFreeBoosts: AbilityCode[]
   derivedStatistics: CharacterDerivedStatistics | null
+  training: CharacterTraining
   characteristics: {
     strength: Characteristic
     dexterity: Characteristic

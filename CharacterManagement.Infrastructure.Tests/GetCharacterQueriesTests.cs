@@ -46,6 +46,8 @@ public sealed class GetCharacterQueriesTests
         Assert.Null( result.ClassPackage );
         Assert.Empty( result.FinalFreeBoosts );
         Assert.Null( result.DerivedStatistics );
+        Assert.Empty( result.Training.Skills );
+        Assert.Empty( result.Training.Lore );
     }
 
     [Fact]
@@ -59,7 +61,8 @@ public sealed class GetCharacterQueriesTests
         CharacterBuilder builder = new CharacterBuilder(
             ancestryRepository,
             backgroundRepository: backgroundRepository,
-            characterClassRepository: characterClassRepository );
+            characterClassRepository: characterClassRepository,
+            skillRepository: new SkillRepository() );
         builder.CreateCharacter( account.Id, "Kyra", AncestryType.Human );
         builder.SetAncestryPackage( "human.skilled", "human.cooperative_nature" );
         builder.ApplyFreeBoosts( [ AbilityType.Strength, AbilityType.Wisdom ] );
@@ -83,7 +86,8 @@ public sealed class GetCharacterQueriesTests
         CharacterConvertor characterConvertor = new CharacterConvertor(
             ancestryRepository,
             backgroundRepository,
-            characterClassRepository );
+            characterClassRepository,
+            new SkillRepository() );
         GetCharacterByIdHandler handler = new GetCharacterByIdHandler(
             characterRepository,
             characterConvertor );
@@ -97,7 +101,14 @@ public sealed class GetCharacterQueriesTests
         Assert.Equal( AbilityType.Wisdom, result.BackgroundPackage.RestrictedBoost );
         Assert.Equal( AbilityType.Charisma, result.BackgroundPackage.FreeBoost );
         Assert.Equal( 12, result.Characteristics.Charisma.Value );
-        Assert.Contains( result.BackgroundPackage.Grants, grant => grant.Id == "skill.religion" );
+        Assert.Contains( result.BackgroundPackage.Grants, grant => grant.TargetId == "skill.religion" );
+        CharacterSkillTrainingDto trainedSkill = Assert.Single( result.Training.Skills );
+        Assert.Equal( "skill.religion", trainedSkill.Id );
+        Assert.Equal( "Religion", trainedSkill.Name );
+        Assert.Equal( AbilityType.Wisdom, trainedSkill.KeyAbility );
+        CharacterLoreTrainingDto trainedLore = Assert.Single( result.Training.Lore );
+        Assert.Equal( "lore.scribing", trainedLore.Id );
+        Assert.Equal( "Scribing Lore", trainedLore.Name );
         Assert.NotNull( result.ClassPackage );
         Assert.Equal( "class.cleric", result.ClassPackage.ClassId );
         Assert.Equal( 8, result.ClassPackage.BaseHitPoints );
@@ -204,7 +215,8 @@ public sealed class GetCharacterQueriesTests
             new CharacterConvertor(
                 ancestryRepository,
                 backgroundRepository,
-                characterClassRepository ) );
+                characterClassRepository,
+                new SkillRepository() ) );
 
         IReadOnlyCollection<CharacterDto> result = await handler.Handle(
             new GetCharactersCommand( account.UserId ),
@@ -213,6 +225,8 @@ public sealed class GetCharacterQueriesTests
         CharacterDto character = Assert.Single( result );
         Assert.NotNull( character.DerivedStatistics );
         Assert.Equal( 21, character.DerivedStatistics.HitPoints.Maximum );
+        Assert.Equal( "skill.intimidation", Assert.Single( character.Training.Skills ).Id );
+        Assert.Equal( "lore.warfare", Assert.Single( character.Training.Lore ).Id );
     }
 
     [Fact]
@@ -285,7 +299,8 @@ public sealed class GetCharacterQueriesTests
         CharacterConvertor characterConvertor = new CharacterConvertor(
             ancestryRepository,
             backgroundRepository,
-            characterClassRepository );
+            characterClassRepository,
+            new SkillRepository() );
 
         return new GetCharacterByIdHandler( characterRepository, characterConvertor );
     }
@@ -298,7 +313,8 @@ public sealed class GetCharacterQueriesTests
         return new CharacterBuilder(
             ancestryRepository,
             backgroundRepository: backgroundRepository,
-            characterClassRepository: characterClassRepository );
+            characterClassRepository: characterClassRepository,
+            skillRepository: new SkillRepository() );
     }
 
     private static async Task<Account> CreateAccountAsync( CharacterManagementDbContext dbContext, int userId )

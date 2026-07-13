@@ -9,15 +9,17 @@
 - Новый SPA реализован на Vue 3, TypeScript, Vite, Vuetify 3 и Pinia.
 - Реализованы вход, регистрация и хранение сессии.
 - Главная страница показывает список персонажей.
-- Wizard поддерживает имя, концепцию, возраст, Ancestry, heritage, ancestry feat, ancestry free boosts, Background boosts, Class, key ability boost и четыре финальных свободных boosts.
+- Wizard поддерживает имя, концепцию, возраст, Ancestry, heritage, ancestry feat, ancestry free boosts, Background boosts и skill/Lore choices, Class, key ability boost и четыре финальных свободных boosts.
 - Реализованы карточка и удаление персонажа.
 - Есть единая обработка API errors, русская и английская локализация.
 - Добавлены frontend tests для доменной локализации, Background, Class и final free boost choices.
 - Dashboard показывает maximum HP, карточка персонажа — maximum HP и breakdown ancestry/class/Constitution.
+- Background step разрешает fixed, finite-choice и open Lore grants; review/details показывают фактический training.
 
 ## Что не готово
 
-- Фактическое применение skills, Lore и skill feat от Background ожидает отдельную Skill subsystem.
+- Skill feat от Background пока не применяется.
+- Class skills, higher proficiency ranks и replacement choices при cross-source duplicate training пока не реализованы.
 - Class proficiencies, features, spells и mandatory choices отображаются декларативно, но не выбираются.
 - Нет полноценного e2e test suite с реальным backend и PostgreSQL.
 
@@ -29,5 +31,5 @@
 
 ## Next steps
 
-1. Отдельными задачами реализовать Skill subsystem и зависимые Class flows.
+1. Следующей задачей типизировать Class proficiencies и подключить class skill grants.
 2. Добавить e2e-покрытие основного пользовательского сценария.

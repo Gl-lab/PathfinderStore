@@ -59,7 +59,15 @@ public static class BackgroundDtoMapper
             Name = grant.Name,
             Summary = grant.Summary,
             RequiresChoice = grant.RequiresChoice,
-            Options = grant.Options.ToList(),
+            AllowsCustomLore = grant.AllowsCustomLore,
+            TargetId = grant.TargetId,
+            Options = grant.Options
+                .Select( option => new BackgroundGrantOptionDto
+                {
+                    Id = option.Id,
+                    Name = option.Name,
+                } )
+                .ToList(),
             DeferredDependencies = grant.DeferredDependencies.ToList(),
         };
     }

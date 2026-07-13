@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest'
 import type { AbilityCode } from '@/features/characters/api'
 import type { Background } from '@/features/character-creation/api'
 import {
+  createBackgroundTrainingChoices,
+  getBackgroundTrainingLabels,
   getBackgroundFreeBoostOptions,
   isBackgroundChoiceComplete,
+  isBackgroundTrainingComplete,
 } from '@/features/character-creation/background'
 
 const acrobat: Background = {
@@ -12,6 +15,40 @@ const acrobat: Background = {
   restrictedBoostOptions: ['Strength', 'Dexterity'],
   freeBoostCount: 1,
   grants: [],
+}
+
+const hermit: Background = {
+  id: 'background.hermit',
+  name: 'Hermit',
+  restrictedBoostOptions: ['Constitution', 'Intelligence'],
+  freeBoostCount: 1,
+  grants: [
+    {
+      id: 'background.hermit.skill',
+      kind: 'SkillTraining',
+      name: 'Hermit skill',
+      summary: 'Choose Nature or Occultism.',
+      requiresChoice: true,
+      allowsCustomLore: false,
+      targetId: null,
+      options: [
+        { id: 'skill.nature', name: 'Nature' },
+        { id: 'skill.occultism', name: 'Occultism' },
+      ],
+      deferredDependencies: [],
+    },
+    {
+      id: 'background.hermit.lore',
+      kind: 'LoreTraining',
+      name: 'Terrain Lore',
+      summary: 'Choose terrain Lore.',
+      requiresChoice: true,
+      allowsCustomLore: true,
+      targetId: null,
+      options: [],
+      deferredDependencies: [],
+    },
+  ],
 }
 
 describe('background choice', () => {
@@ -34,5 +71,27 @@ describe('background choice', () => {
       'Strength',
       'Intelligence',
     ])
+  })
+
+  it('requires every skill and Lore choice', () => {
+    const choices = createBackgroundTrainingChoices(hermit)
+
+    expect(isBackgroundTrainingComplete(hermit, choices)).toBe(false)
+    choices[0].targetId = 'skill.nature'
+    choices[1].customLoreTopic = 'Forest'
+
+    expect(isBackgroundTrainingComplete(hermit, choices)).toBe(true)
+    expect(getBackgroundTrainingLabels(hermit, choices)).toEqual(['Nature', 'Forest Lore'])
+
+    choices[1].customLoreTopic = 'Forest Lore'
+    expect(getBackgroundTrainingLabels(hermit, choices)).toEqual(['Nature', 'Forest Lore'])
+  })
+
+  it('rejects a target outside the grant options', () => {
+    const choices = createBackgroundTrainingChoices(hermit)
+    choices[0].targetId = 'skill.arcana'
+    choices[1].customLoreTopic = 'Forest'
+
+    expect(isBackgroundTrainingComplete(hermit, choices)).toBe(false)
   })
 })

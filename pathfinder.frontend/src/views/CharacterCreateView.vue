@@ -18,11 +18,15 @@ import {
   getCharacterClasses,
   type Ancestry,
   type Background,
+  type BackgroundTrainingChoice,
   type CharacterClass,
 } from '@/features/character-creation/api'
 import {
   getBackgroundFreeBoostOptions,
+  createBackgroundTrainingChoices,
+  getBackgroundTrainingLabels,
   isBackgroundChoiceComplete,
+  isBackgroundTrainingComplete,
 } from '@/features/character-creation/background'
 import { isCharacterClassChoiceComplete } from '@/features/character-creation/characterClass'
 import {
@@ -51,6 +55,7 @@ const form = ref({
   backgroundId: null as string | null,
   backgroundRestrictedBoost: null as AbilityCode | null,
   backgroundFreeBoost: null as AbilityCode | null,
+  backgroundTrainingChoices: [] as BackgroundTrainingChoice[],
   classId: null as string | null,
   classKeyAbility: null as AbilityCode | null,
   finalFreeBoosts: [] as AbilityCode[],
@@ -114,6 +119,9 @@ const canContinue = computed(() => {
       selectedBackground.value,
       form.value.backgroundRestrictedBoost,
       form.value.backgroundFreeBoost,
+    ) && isBackgroundTrainingComplete(
+      selectedBackground.value,
+      form.value.backgroundTrainingChoices,
     )
   if (step.value === 6)
     return isCharacterClassChoiceComplete(
@@ -141,6 +149,24 @@ function selectBackground(backgroundId: string | null): void {
   form.value.backgroundId = backgroundId
   form.value.backgroundRestrictedBoost = null
   form.value.backgroundFreeBoost = null
+  const background = backgrounds.value.find((item) => item.id === backgroundId) ?? null
+  form.value.backgroundTrainingChoices = createBackgroundTrainingChoices(background)
+}
+
+function getBackgroundTrainingChoice(grantId: string): BackgroundTrainingChoice | undefined {
+  return form.value.backgroundTrainingChoices.find((choice) => choice.grantId === grantId)
+}
+function selectBackgroundTrainingTarget(grantId: string, targetId: string | null): void {
+  const choice = getBackgroundTrainingChoice(grantId)
+  if (!choice) return
+  choice.targetId = targetId
+  choice.customLoreTopic = null
+}
+function setBackgroundLoreTopic(grantId: string, topic: string): void {
+  const choice = getBackgroundTrainingChoice(grantId)
+  if (!choice) return
+  choice.targetId = null
+  choice.customLoreTopic = topic
 }
 function selectBackgroundRestrictedBoost(boost: AbilityCode | null): void {
   form.value.backgroundRestrictedBoost = boost
@@ -193,6 +219,10 @@ async function submit(): Promise<void> {
       backgroundId: selectedBackground.value.id,
       backgroundRestrictedBoost: form.value.backgroundRestrictedBoost,
       backgroundFreeBoost: form.value.backgroundFreeBoost,
+      backgroundTrainingChoices: form.value.backgroundTrainingChoices.map((choice) => ({
+        ...choice,
+        customLoreTopic: choice.customLoreTopic?.trim() || null,
+      })),
       classId: selectedCharacterClass.value.id,
       classKeyAbility: form.value.classKeyAbility,
       finalFreeBoosts: form.value.finalFreeBoosts,
@@ -356,14 +386,34 @@ onMounted(loadCatalogs)
                 :label="getAbilityLabel(code)"
               />
             </v-radio-group>
-            <v-list density="compact" :subheader="t('wizard.backgroundGrants')">
-              <v-list-item
-                v-for="grant in selectedBackground.grants"
-                :key="grant.id"
-                :title="grant.name"
-                :subtitle="grant.requiresChoice ? `${grant.summary} ${t('wizard.deferredChoice')}` : grant.summary"
-              />
-            </v-list>
+            <div class="background-training">
+              <h3>{{ t('wizard.backgroundTraining') }}</h3>
+              <template v-for="grant in selectedBackground.grants" :key="grant.id">
+                <v-select
+                  v-if="grant.requiresChoice && !grant.allowsCustomLore && (grant.kind === 'SkillTraining' || grant.kind === 'LoreTraining')"
+                  :model-value="getBackgroundTrainingChoice(grant.id)?.targetId"
+                  :items="grant.options"
+                  item-title="name"
+                  item-value="id"
+                  :label="grant.name"
+                  @update:model-value="selectBackgroundTrainingTarget(grant.id, $event)"
+                />
+                <v-text-field
+                  v-else-if="grant.allowsCustomLore && grant.kind === 'LoreTraining'"
+                  :model-value="getBackgroundTrainingChoice(grant.id)?.customLoreTopic"
+                  :label="grant.name"
+                  :hint="grant.summary"
+                  maxlength="100"
+                  persistent-hint
+                  @update:model-value="setBackgroundLoreTopic(grant.id, $event)"
+                />
+                <v-list-item
+                  v-else
+                  :title="grant.name"
+                  :subtitle="grant.kind === 'SkillFeat' ? `${grant.summary} ${t('wizard.deferredFeat')}` : grant.summary"
+                />
+              </template>
+            </div>
           </template>
         </section>
         <section v-else-if="step === 6">
@@ -432,6 +482,9 @@ onMounted(loadCatalogs)
               v-if="form.backgroundRestrictedBoost && form.backgroundFreeBoost"
               :title="t('wizard.backgroundBoosts')"
               :subtitle="formatAbilities([form.backgroundRestrictedBoost, form.backgroundFreeBoost])" /><v-list-item
+              v-if="selectedBackground"
+              :title="t('wizard.backgroundTraining')"
+              :subtitle="getBackgroundTrainingLabels(selectedBackground, form.backgroundTrainingChoices).join(', ')" /><v-list-item
               v-if="selectedCharacterClass"
               :title="t('classUi.characterClass')"
               :subtitle="getCharacterClassLabel(selectedCharacterClass.id, selectedCharacterClass.name)" /><v-list-item

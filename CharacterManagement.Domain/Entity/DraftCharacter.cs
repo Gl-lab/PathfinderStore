@@ -22,6 +22,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public string? SelectedClassId { get; private set; }
     public AbilityType? SelectedClassKeyAbility { get; private set; }
     public IReadOnlyList<AbilityType> AppliedFinalFreeBoosts { get; private set; } = [];
+    public IReadOnlyList<TrainedSkill> TrainedSkills { get; private set; } = [];
+    public IReadOnlyList<TrainedLore> TrainedLore { get; private set; } = [];
     public bool HasCompleteAncestryPackage => !String.IsNullOrWhiteSpace( SelectedHeritageId ) && !String.IsNullOrWhiteSpace( SelectedAncestryFeatId );
     public bool HasBackgroundBoostPackage =>
         !String.IsNullOrWhiteSpace( SelectedBackgroundId ) &&
@@ -230,7 +232,9 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public void SetBackgroundPackage(
         Background background,
         AbilityType restrictedBoost,
-        AbilityType freeBoost )
+        AbilityType freeBoost,
+        IReadOnlyList<BackgroundTrainingChoice>? trainingChoices = null,
+        IReadOnlyCollection<SkillDefinition>? skillCatalog = null )
     {
         ArgumentNullException.ThrowIfNull( background );
 
@@ -245,6 +249,11 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
             throw new CharacterManagementException( "Background boosts must target different abilities." );
         }
 
+        BackgroundTrainingResult training = BackgroundTrainingResolver.Resolve(
+            background,
+            trainingChoices ?? [],
+            skillCatalog ?? [] );
+
         RemoveBackgroundEffects();
 
         AbilityScores.ApplyAbilityBoost( restrictedBoost );
@@ -252,6 +261,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         SelectedBackgroundId = background.Id;
         SelectedBackgroundRestrictedBoost = restrictedBoost;
         SelectedBackgroundFreeBoost = freeBoost;
+        TrainedSkills = training.Skills.ToArray();
+        TrainedLore = training.Lore.ToArray();
 
         EnsureInvariants();
     }
@@ -488,6 +499,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         SelectedBackgroundId = null;
         SelectedBackgroundRestrictedBoost = null;
         SelectedBackgroundFreeBoost = null;
+        TrainedSkills = [];
+        TrainedLore = [];
     }
 
     private void RemoveClassEffects()

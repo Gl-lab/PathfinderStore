@@ -19,6 +19,14 @@ public sealed class BackgroundGrantDto
     public string Name { get; set; } = String.Empty;
     public string Summary { get; set; } = String.Empty;
     public bool RequiresChoice { get; set; }
-    public IReadOnlyList<string> Options { get; set; } = [];
+    public bool AllowsCustomLore { get; set; }
+    public string? TargetId { get; set; }
+    public IReadOnlyList<BackgroundGrantOptionDto> Options { get; set; } = [];
     public IReadOnlyList<BackgroundDependencyType> DeferredDependencies { get; set; } = [];
+}
+
+public sealed class BackgroundGrantOptionDto
+{
+    public string Id { get; set; } = String.Empty;
+    public string Name { get; set; } = String.Empty;
 }

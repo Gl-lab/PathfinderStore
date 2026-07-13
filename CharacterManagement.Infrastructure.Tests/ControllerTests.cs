@@ -12,6 +12,7 @@ using Pathfinder.CharacterManagement.Application.UseCases.Ancestries;
 using Pathfinder.CharacterManagement.Application.UseCases.Backgrounds;
 using Pathfinder.CharacterManagement.Application.UseCases.CharacterClasses;
 using Pathfinder.CharacterManagement.Application.UseCases.Characters;
+using Pathfinder.CharacterManagement.Application.UseCases.Skills;
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.Web.Controllers;
 
@@ -95,6 +96,29 @@ public sealed class ControllerTests
 
         OkObjectResult okResult = Assert.IsType<OkObjectResult>( actionResult.Result );
         IReadOnlyCollection<CharacterClassDto> payload = Assert.IsAssignableFrom<IReadOnlyCollection<CharacterClassDto>>( okResult.Value );
+        Assert.Same( expected, payload );
+    }
+
+    [Fact]
+    public async Task SkillsController_Get_ReturnsOkWithPayload()
+    {
+        IReadOnlyCollection<SkillDto> expected =
+        [
+            new SkillDto
+            {
+                Id = "skill.nature",
+                Name = "Nature",
+                KeyAbility = AbilityType.Wisdom,
+            },
+        ];
+        TestMediator mediator = new TestMediator();
+        mediator.Register( new GetSkillsCommand(), expected );
+        SkillsController controller = new SkillsController( mediator );
+
+        ActionResult<IReadOnlyCollection<SkillDto>> actionResult = await controller.Get();
+
+        OkObjectResult okResult = Assert.IsType<OkObjectResult>( actionResult.Result );
+        IReadOnlyCollection<SkillDto> payload = Assert.IsAssignableFrom<IReadOnlyCollection<SkillDto>>( okResult.Value );
         Assert.Same( expected, payload );
     }
 

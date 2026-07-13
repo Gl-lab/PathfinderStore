@@ -53,7 +53,8 @@
 - `AbilityScores` — шесть базовых значений характеристик: `Strength`, `Dexterity`, `Constitution`, `Intelligence`, `Wisdom`, `Charisma`.
 - `Characteristic.Modifier` — вычисляемый модификатор характеристики по формуле `(Value - 10) / 2`.
 - `Ancestry` — игровая сущность PF2e, которая в текущем проекте определяет стартовые повышения, понижения, размер, скорость, базовые HP и зрение.
-- `Background` — источник двух стартовых boosts и декларативных дополнительных grants; boost package входит в текущий MVP.
+- `Background` — источник двух стартовых boosts, trained general skill, trained Lore и пока декларативного skill feat.
+- `SkillDefinition` — catalog entry одного из 16 general skills со stable id и key ability; Lore моделируется отдельными subcategories.
 - `Class` — источник key ability boost, class HP и декларативных proficiencies/features; class package входит в текущий MVP.
 - `Final free boosts` — отдельный завершающий пакет четырёх boosts, распределённых по разным характеристикам.
 - `CharacterHitPoints` — вычисляемый breakdown maximum HP первого уровня из ancestry HP, class HP и Constitution modifier; в БД не хранится.

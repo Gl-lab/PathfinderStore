@@ -14,6 +14,7 @@ public class CreateCharacterRequestDto
     public string BackgroundId { get; set; } = String.Empty;
     public AbilityType? BackgroundRestrictedBoost { get; set; }
     public AbilityType? BackgroundFreeBoost { get; set; }
+    public IReadOnlyList<BackgroundTrainingChoice> BackgroundTrainingChoices { get; set; } = [];
     public string ClassId { get; set; } = String.Empty;
     public AbilityType? ClassKeyAbility { get; set; }
     public IReadOnlyList<AbilityType>? FinalFreeBoosts { get; set; }

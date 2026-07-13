@@ -11,17 +11,20 @@ public class CharacterBuilder : ICharacterBuilder
     private readonly IAncestryChoiceAvailabilityPolicy _ancestryChoiceAvailabilityPolicy;
     private readonly IBackgroundRepository? _backgroundRepository;
     private readonly ICharacterClassRepository? _characterClassRepository;
+    private readonly ISkillRepository? _skillRepository;
 
     public CharacterBuilder(
         IAncestryRepository ancestryRepository,
         IAncestryChoiceAvailabilityPolicy? ancestryChoiceAvailabilityPolicy = null,
         IBackgroundRepository? backgroundRepository = null,
-        ICharacterClassRepository? characterClassRepository = null )
+        ICharacterClassRepository? characterClassRepository = null,
+        ISkillRepository? skillRepository = null )
     {
         _ancestryRepository = ancestryRepository;
         _ancestryChoiceAvailabilityPolicy = ancestryChoiceAvailabilityPolicy ?? new CommonAncestryChoiceAvailabilityPolicy();
         _backgroundRepository = backgroundRepository;
         _characterClassRepository = characterClassRepository;
+        _skillRepository = skillRepository;
     }
 
     public void CreateCharacter(
@@ -62,7 +65,8 @@ public class CharacterBuilder : ICharacterBuilder
     public void SetBackground(
         string backgroundId,
         AbilityType restrictedBoost,
-        AbilityType freeBoost )
+        AbilityType freeBoost,
+        IReadOnlyList<BackgroundTrainingChoice>? trainingChoices = null )
     {
         if ( _draftCharacter is null )
         {
@@ -84,7 +88,17 @@ public class CharacterBuilder : ICharacterBuilder
             throw new CharacterManagementException( exception.Message );
         }
 
-        _draftCharacter.SetBackgroundPackage( background, restrictedBoost, freeBoost );
+        if ( ( background.Grants.Count > 0 ) && ( _skillRepository is null ) )
+        {
+            throw new InvalidOperationException( "Skill repository is not configured." );
+        }
+
+        _draftCharacter.SetBackgroundPackage(
+            background,
+            restrictedBoost,
+            freeBoost,
+            trainingChoices,
+            _skillRepository?.GetAll() ?? [] );
     }
 
     public void SetClass( string characterClassId, AbilityType keyAbility )

@@ -16,7 +16,8 @@ public interface ICharacterBuilder
     void SetBackground(
         string backgroundId,
         AbilityType restrictedBoost,
-        AbilityType freeBoost );
+        AbilityType freeBoost,
+        IReadOnlyList<BackgroundTrainingChoice>? trainingChoices = null );
     void SetClass( string characterClassId, AbilityType keyAbility );
     void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts );
     void IncreaseAbilityScores( IEnumerable<AbilityType> increasedAbilityScores );

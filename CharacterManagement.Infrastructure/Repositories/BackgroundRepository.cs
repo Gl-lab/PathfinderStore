@@ -112,13 +112,30 @@ public sealed class BackgroundRepository : IBackgroundRepository
         AbilityType secondRestrictedBoost,
         params BackgroundGrantDescriptor[] grants )
     {
+        IReadOnlyList<BackgroundGrantDescriptor> normalizedGrants = grants
+            .Select( grant => String.IsNullOrWhiteSpace( grant.Id )
+                ? grant with { Id = $"background.{id}.{GetGrantSuffix( grant.Kind )}" }
+                : grant )
+            .ToList();
+
         return new Background(
             $"background.{id}",
             name,
             new SourceReference( "Core Rulebook", page ),
             [ firstRestrictedBoost, secondRestrictedBoost ],
             1,
-            grants );
+            normalizedGrants );
+    }
+
+    private static string GetGrantSuffix( BackgroundGrantKind kind )
+    {
+        return kind switch
+        {
+            BackgroundGrantKind.SkillTraining => "skill",
+            BackgroundGrantKind.LoreTraining => "lore",
+            BackgroundGrantKind.SkillFeat => "skill_feat",
+            _ => throw new ArgumentOutOfRangeException( nameof( kind ), kind, null )
+        };
     }
 
     private static BackgroundGrantDescriptor Skill( string id, string name )
@@ -149,17 +166,19 @@ public sealed class BackgroundRepository : IBackgroundRepository
     }
 
     private static BackgroundGrantDescriptor Grant(
-        string id,
+        string targetId,
         BackgroundGrantKind kind,
         string name,
         string summary )
     {
         return new BackgroundGrantDescriptor(
-            id,
+            String.Empty,
             kind,
             name,
             summary,
             false,
+            false,
+            targetId,
             [],
             Dependencies( kind ) );
     }
@@ -177,8 +196,25 @@ public sealed class BackgroundRepository : IBackgroundRepository
             name,
             summary,
             true,
-            options,
+            ( kind == BackgroundGrantKind.LoreTraining ) && ( options.Length == 0 ),
+            null,
+            options
+                .Select( option => new BackgroundGrantOption( option, GetOptionName( option ) ) )
+                .ToList(),
             Dependencies( kind ) );
+    }
+
+    private static string GetOptionName( string optionId )
+    {
+        string value = optionId[( optionId.IndexOf( '.', StringComparison.Ordinal ) + 1 )..];
+        string name = String.Join(
+            " ",
+            value
+                .Split( '_', StringSplitOptions.RemoveEmptyEntries )
+                .Select( part => Char.ToUpperInvariant( part[ 0 ] ) + part[ 1..] ) );
+        return optionId.StartsWith( "lore.", StringComparison.Ordinal )
+            ? $"{name} Lore"
+            : name;
     }
 
     private static IReadOnlyList<BackgroundDependencyType> Dependencies( BackgroundGrantKind kind )
@@ -187,14 +223,10 @@ public sealed class BackgroundRepository : IBackgroundRepository
         {
             BackgroundGrantKind.SkillTraining =>
             [
-                BackgroundDependencyType.SkillCatalog,
-                BackgroundDependencyType.ProficiencyRules,
                 BackgroundDependencyType.ClassCatalog
             ],
             BackgroundGrantKind.LoreTraining =>
             [
-                BackgroundDependencyType.LoreCatalog,
-                BackgroundDependencyType.ProficiencyRules,
                 BackgroundDependencyType.ClassCatalog
             ],
             BackgroundGrantKind.SkillFeat => [ BackgroundDependencyType.SkillFeatCatalog ],

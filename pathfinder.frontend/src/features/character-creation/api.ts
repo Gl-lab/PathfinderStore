@@ -68,8 +68,22 @@ export interface BackgroundGrant {
   name: string
   summary: string
   requiresChoice: boolean
-  options: string[]
+  allowsCustomLore: boolean
+  targetId: string | null
+  options: { id: string; name: string }[]
   deferredDependencies: string[]
+}
+
+export interface BackgroundTrainingChoice {
+  grantId: string
+  targetId: string | null
+  customLoreTopic: string | null
+}
+
+export interface Skill {
+  id: string
+  name: string
+  keyAbility: AbilityCode
 }
 
 export interface Background {
@@ -112,6 +126,7 @@ export interface CreateCharacterRequest {
   backgroundId: string
   backgroundRestrictedBoost: AbilityCode
   backgroundFreeBoost: AbilityCode
+  backgroundTrainingChoices: BackgroundTrainingChoice[]
   classId: string
   classKeyAbility: AbilityCode
   finalFreeBoosts: AbilityCode[]
@@ -127,6 +142,10 @@ export async function getBackgrounds(): Promise<Background[]> {
 
 export async function getCharacterClasses(): Promise<CharacterClass[]> {
   return (await http.get<CharacterClass[]>('/api/classes')).data
+}
+
+export async function getSkills(): Promise<Skill[]> {
+  return (await http.get<Skill[]>('/api/skills')).data
 }
 
 export async function createCharacter(request: CreateCharacterRequest): Promise<void> {

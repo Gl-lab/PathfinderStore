@@ -58,6 +58,32 @@ public class CharacterManagementDbContext( DbContextOptions<CharacterManagementD
                     c => c.Aggregate( 0, ( h, v ) => HashCode.Combine( h, v ) ),
                     c => c.ToList() ) );
 
+            b.Property( x => x.TrainedSkills )
+                .HasConversion(
+                    value => JsonSerializer.Serialize( value.ToList(), (JsonSerializerOptions?)null ),
+                    value => String.IsNullOrEmpty( value )
+                        ? (IReadOnlyList<TrainedSkill>)Array.Empty<TrainedSkill>()
+                        : (IReadOnlyList<TrainedSkill>)( JsonSerializer.Deserialize<List<TrainedSkill>>( value, (JsonSerializerOptions?)null ) ?? new List<TrainedSkill>() ) )
+                .HasColumnType( "jsonb" )
+                .HasDefaultValueSql( "'[]'::jsonb" )
+                .Metadata.SetValueComparer( new ValueComparer<IReadOnlyList<TrainedSkill>>(
+                    ( first, second ) => first != null && second != null && first.SequenceEqual( second ),
+                    collection => collection.Aggregate( 0, ( hash, item ) => HashCode.Combine( hash, item ) ),
+                    collection => collection.ToList() ) );
+
+            b.Property( x => x.TrainedLore )
+                .HasConversion(
+                    value => JsonSerializer.Serialize( value.ToList(), (JsonSerializerOptions?)null ),
+                    value => String.IsNullOrEmpty( value )
+                        ? (IReadOnlyList<TrainedLore>)Array.Empty<TrainedLore>()
+                        : (IReadOnlyList<TrainedLore>)( JsonSerializer.Deserialize<List<TrainedLore>>( value, (JsonSerializerOptions?)null ) ?? new List<TrainedLore>() ) )
+                .HasColumnType( "jsonb" )
+                .HasDefaultValueSql( "'[]'::jsonb" )
+                .Metadata.SetValueComparer( new ValueComparer<IReadOnlyList<TrainedLore>>(
+                    ( first, second ) => first != null && second != null && first.SequenceEqual( second ),
+                    collection => collection.Aggregate( 0, ( hash, item ) => HashCode.Combine( hash, item ) ),
+                    collection => collection.ToList() ) );
+
             b.OwnsOne( x => x.AbilityScores, ab =>
             {
                 ab.Ignore( a => a.MaxPortableWeight );

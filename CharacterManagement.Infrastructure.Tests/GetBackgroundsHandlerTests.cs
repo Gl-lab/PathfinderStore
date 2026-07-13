@@ -35,8 +35,8 @@ public sealed class GetBackgroundsHandlerTests
 
         Assert.Equal( [ AbilityType.Strength, AbilityType.Dexterity ], acrobat.RestrictedBoostOptions );
         Assert.Equal( 1, acrobat.FreeBoostCount );
-        Assert.Contains( acrobat.Grants, grant => grant.Id == "skill.acrobatics" );
-        Assert.Contains( acrobat.Grants, grant => grant.Id == "lore.circus" );
-        Assert.Contains( acrobat.Grants, grant => grant.Id == "skill_feat.steady_balance" );
+        Assert.Contains( acrobat.Grants, grant => grant.TargetId == "skill.acrobatics" );
+        Assert.Contains( acrobat.Grants, grant => grant.TargetId == "lore.circus" );
+        Assert.Contains( acrobat.Grants, grant => grant.TargetId == "skill_feat.steady_balance" );
     }
 }
