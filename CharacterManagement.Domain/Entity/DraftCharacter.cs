@@ -19,11 +19,16 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public string? SelectedBackgroundId { get; private set; }
     public AbilityType? SelectedBackgroundRestrictedBoost { get; private set; }
     public AbilityType? SelectedBackgroundFreeBoost { get; private set; }
+    public string? SelectedClassId { get; private set; }
+    public AbilityType? SelectedClassKeyAbility { get; private set; }
     public bool HasCompleteAncestryPackage => !String.IsNullOrWhiteSpace( SelectedHeritageId ) && !String.IsNullOrWhiteSpace( SelectedAncestryFeatId );
     public bool HasBackgroundBoostPackage =>
         !String.IsNullOrWhiteSpace( SelectedBackgroundId ) &&
         SelectedBackgroundRestrictedBoost.HasValue &&
         SelectedBackgroundFreeBoost.HasValue;
+    public bool HasClassBoostPackage =>
+        !String.IsNullOrWhiteSpace( SelectedClassId ) &&
+        SelectedClassKeyAbility.HasValue;
 
     // Навигационные свойства для EF Core
     public Account Account { get; private set; }
@@ -247,6 +252,30 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         EnsureInvariants();
     }
 
+    public void SetClassPackage( CharacterClass characterClass, AbilityType keyAbility )
+    {
+        ArgumentNullException.ThrowIfNull( characterClass );
+
+        if ( !HasBackgroundBoostPackage )
+        {
+            throw new CharacterManagementException( "Background package must be set before class package." );
+        }
+
+        if ( !characterClass.KeyAbilityOptions.Contains( keyAbility ) )
+        {
+            throw new CharacterManagementException(
+                $"Ability '{keyAbility}' is not a key ability option for class '{characterClass.Id}'." );
+        }
+
+        RemoveClassEffects();
+
+        AbilityScores.ApplyAbilityBoost( keyAbility );
+        SelectedClassId = characterClass.Id;
+        SelectedClassKeyAbility = keyAbility;
+
+        EnsureInvariants();
+    }
+
     public void UpdateAbilityScore( AbilityType abilityType, int value )
     {
         if ( AbilityScores == null )
@@ -408,5 +437,16 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         SelectedBackgroundId = null;
         SelectedBackgroundRestrictedBoost = null;
         SelectedBackgroundFreeBoost = null;
+    }
+
+    private void RemoveClassEffects()
+    {
+        if ( SelectedClassKeyAbility.HasValue )
+        {
+            AbilityScores.RemoveAbilityBoost( SelectedClassKeyAbility.Value );
+        }
+
+        SelectedClassId = null;
+        SelectedClassKeyAbility = null;
     }
 }

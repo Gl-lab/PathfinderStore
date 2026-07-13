@@ -42,6 +42,21 @@ export interface CharacterBackgroundPackage {
   }[]
 }
 
+export interface CharacterClassPackage {
+  classId: string
+  name: string
+  baseHitPoints: number
+  keyAbility: AbilityCode
+  rules: {
+    id: string
+    kind: string
+    name: string
+    summary: string
+    requiresChoice: boolean
+    deferredDependencies: string[]
+  }[]
+}
+
 export interface Character {
   id: number
   name: string
@@ -50,6 +65,7 @@ export interface Character {
   ancestryType: AncestryCode
   ancestryPackage: CharacterAncestryPackage | null
   backgroundPackage: CharacterBackgroundPackage | null
+  classPackage: CharacterClassPackage | null
   characteristics: {
     strength: Characteristic
     dexterity: Characteristic

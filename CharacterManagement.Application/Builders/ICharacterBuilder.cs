@@ -17,7 +17,7 @@ public interface ICharacterBuilder
         string backgroundId,
         AbilityType restrictedBoost,
         AbilityType freeBoost );
-    void SetClass();
+    void SetClass( string characterClassId, AbilityType keyAbility );
     void IncreaseAbilityScores( IEnumerable<AbilityType> increasedAbilityScores );
     void ApplyFreeBoosts( IEnumerable<AbilityType> freeBoosts );
     void SetInventory();

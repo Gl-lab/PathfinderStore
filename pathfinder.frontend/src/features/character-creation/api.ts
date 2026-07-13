@@ -80,6 +80,27 @@ export interface Background {
   grants: BackgroundGrant[]
 }
 
+export type SpellTradition = 'Arcane' | 'Divine' | 'Occult' | 'Primal'
+
+export interface CharacterClassRule {
+  id: string
+  kind: string
+  name: string
+  summary: string
+  requiresChoice: boolean
+  deferredDependencies: string[]
+}
+
+export interface CharacterClass {
+  id: string
+  name: string
+  baseHitPoints: number
+  keyAbilityOptions: AbilityCode[]
+  spellTradition: SpellTradition | null
+  rules: CharacterClassRule[]
+  deferredDependencies: string[]
+}
+
 export interface CreateCharacterRequest {
   name: string
   concept: string | null
@@ -91,6 +112,8 @@ export interface CreateCharacterRequest {
   backgroundId: string
   backgroundRestrictedBoost: AbilityCode
   backgroundFreeBoost: AbilityCode
+  classId: string
+  classKeyAbility: AbilityCode
 }
 
 export async function getAncestries(): Promise<Ancestry[]> {
@@ -99,6 +122,10 @@ export async function getAncestries(): Promise<Ancestry[]> {
 
 export async function getBackgrounds(): Promise<Background[]> {
   return (await http.get<Background[]>('/api/backgrounds')).data
+}
+
+export async function getCharacterClasses(): Promise<CharacterClass[]> {
+  return (await http.get<CharacterClass[]>('/api/classes')).data
 }
 
 export async function createCharacter(request: CreateCharacterRequest): Promise<void> {

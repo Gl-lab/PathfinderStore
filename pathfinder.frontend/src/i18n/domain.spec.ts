@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { getAbilityLabel, getAncestryLabel, getBackgroundLabel } from '@/i18n/domain'
+import {
+  getAbilityLabel,
+  getAncestryLabel,
+  getBackgroundLabel,
+  getCharacterClassLabel,
+} from '@/i18n/domain'
 import { setLocale } from '@/i18n'
 
 afterEach(() => {
@@ -25,5 +30,13 @@ describe('domain localization helpers', () => {
 
     setLocale('en')
     expect(getBackgroundLabel('background.acrobat', 'Acrobat')).toBe('Acrobat')
+  })
+
+  it('localizes a class id and preserves an English fallback', () => {
+    setLocale('ru')
+    expect(getCharacterClassLabel('class.fighter', 'Fighter')).toBe('Воин')
+
+    setLocale('en')
+    expect(getCharacterClassLabel('class.fighter', 'Fighter')).toBe('Fighter')
   })
 })

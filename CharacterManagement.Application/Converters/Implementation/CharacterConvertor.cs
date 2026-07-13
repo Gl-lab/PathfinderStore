@@ -8,13 +8,16 @@ public sealed class CharacterConvertor : ICharacterConvertor
 {
     private readonly IAncestryRepository? _ancestryRepository;
     private readonly IBackgroundRepository? _backgroundRepository;
+    private readonly ICharacterClassRepository? _characterClassRepository;
 
     public CharacterConvertor(
         IAncestryRepository? ancestryRepository = null,
-        IBackgroundRepository? backgroundRepository = null )
+        IBackgroundRepository? backgroundRepository = null,
+        ICharacterClassRepository? characterClassRepository = null )
     {
         _ancestryRepository = ancestryRepository;
         _backgroundRepository = backgroundRepository;
+        _characterClassRepository = characterClassRepository;
     }
 
     public DraftCharacter Convert( CharacterDto character ) => throw new NotSupportedException();
@@ -27,6 +30,9 @@ public sealed class CharacterConvertor : ICharacterConvertor
         Background? background = draftCharacter.SelectedBackgroundId is null
             ? null
             : _backgroundRepository?.GetBackground( draftCharacter.SelectedBackgroundId );
+        CharacterClass? characterClass = draftCharacter.SelectedClassId is null
+            ? null
+            : _characterClassRepository?.GetCharacterClass( draftCharacter.SelectedClassId );
 
         return new CharacterDto
         {
@@ -39,6 +45,9 @@ public sealed class CharacterConvertor : ICharacterConvertor
             BackgroundPackage = background is null
                 ? null
                 : BackgroundDtoMapper.MapPackage( draftCharacter, background ),
+            ClassPackage = characterClass is null
+                ? null
+                : CharacterClassDtoMapper.MapPackage( draftCharacter, characterClass ),
             Characteristics = new GroupCharacteristicDto
             {
                 Strength = Convert( draftCharacter.AbilityScores.Strength ),

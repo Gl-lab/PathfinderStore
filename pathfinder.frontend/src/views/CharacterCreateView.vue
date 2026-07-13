@@ -8,25 +8,30 @@ import {
   getAncestryChoiceLabel,
   getAncestryLabel,
   getBackgroundLabel,
+  getCharacterClassLabel,
 } from '@/i18n/domain'
 import type { AbilityCode, AncestryCode } from '@/features/characters/api'
 import {
   createCharacter,
   getAncestries,
   getBackgrounds,
+  getCharacterClasses,
   type Ancestry,
   type Background,
+  type CharacterClass,
 } from '@/features/character-creation/api'
 import {
   getBackgroundFreeBoostOptions,
   isBackgroundChoiceComplete,
 } from '@/features/character-creation/background'
+import { isCharacterClassChoiceComplete } from '@/features/character-creation/characterClass'
 
 const router = useRouter()
 const { t } = useI18n()
 const step = ref(1)
 const ancestries = ref<Ancestry[]>([])
 const backgrounds = ref<Background[]>([])
+const characterClasses = ref<CharacterClass[]>([])
 const isLoadingCatalogs = ref(true)
 const isSubmitting = ref(false)
 const errorMessages = ref<string[]>([])
@@ -41,6 +46,8 @@ const form = ref({
   backgroundId: null as string | null,
   backgroundRestrictedBoost: null as AbilityCode | null,
   backgroundFreeBoost: null as AbilityCode | null,
+  classId: null as string | null,
+  classKeyAbility: null as AbilityCode | null,
 })
 const abilityCodes: AbilityCode[] = ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma']
 const selectedAncestry = computed(
@@ -65,6 +72,9 @@ const selectedAncestryFeat = computed(
 const selectedBackground = computed(
   () => backgrounds.value.find((item) => item.id === form.value.backgroundId) ?? null,
 )
+const selectedCharacterClass = computed(
+  () => characterClasses.value.find((item) => item.id === form.value.classId) ?? null,
+)
 const backgroundFreeBoostOptions = computed(() =>
   getBackgroundFreeBoostOptions(abilityCodes, form.value.backgroundRestrictedBoost),
 )
@@ -82,6 +92,11 @@ const canContinue = computed(() => {
       selectedBackground.value,
       form.value.backgroundRestrictedBoost,
       form.value.backgroundFreeBoost,
+    )
+  if (step.value === 6)
+    return isCharacterClassChoiceComplete(
+      selectedCharacterClass.value,
+      form.value.classKeyAbility,
     )
   return true
 })
@@ -107,11 +122,15 @@ function selectBackgroundRestrictedBoost(boost: AbilityCode | null): void {
   form.value.backgroundRestrictedBoost = boost
   if (form.value.backgroundFreeBoost === boost) form.value.backgroundFreeBoost = null
 }
+function selectCharacterClass(classId: string | null): void {
+  form.value.classId = classId
+  form.value.classKeyAbility = null
+}
 function formatAbilities(types: AbilityCode[]): string {
   return types.map(getAbilityLabel).join(', ') || t('wizard.none')
 }
 function next(): void {
-  if (canContinue.value && step.value < 6) step.value += 1
+  if (canContinue.value && step.value < 7) step.value += 1
 }
 function previous(): void {
   if (step.value > 1) step.value -= 1
@@ -120,8 +139,10 @@ async function submit(): Promise<void> {
   if (
     !selectedAncestry.value ||
     !selectedBackground.value ||
+    !selectedCharacterClass.value ||
     !form.value.backgroundRestrictedBoost ||
-    !form.value.backgroundFreeBoost
+    !form.value.backgroundFreeBoost ||
+    !form.value.classKeyAbility
   )
     return
   errorMessages.value = []
@@ -138,6 +159,8 @@ async function submit(): Promise<void> {
       backgroundId: selectedBackground.value.id,
       backgroundRestrictedBoost: form.value.backgroundRestrictedBoost,
       backgroundFreeBoost: form.value.backgroundFreeBoost,
+      classId: selectedCharacterClass.value.id,
+      classKeyAbility: form.value.classKeyAbility,
     })
     await router.replace('/')
   } catch (error) {
@@ -150,12 +173,14 @@ async function loadCatalogs(): Promise<void> {
   isLoadingCatalogs.value = true
   errorMessages.value = []
   try {
-    const [ancestryCatalog, backgroundCatalog] = await Promise.all([
+    const [ancestryCatalog, backgroundCatalog, classCatalog] = await Promise.all([
       getAncestries(),
       getBackgrounds(),
+      getCharacterClasses(),
     ])
     ancestries.value = ancestryCatalog
     backgrounds.value = backgroundCatalog
+    characterClasses.value = classCatalog
   } catch (error) {
     errorMessages.value = getApiErrorMessages(error)
   } finally {
@@ -175,10 +200,10 @@ onMounted(loadCatalogs)
       </div>
       <v-btn variant="text" to="/">{{ t('common.cancel') }}</v-btn>
     </header>
-    <v-progress-linear :model-value="(step / 6) * 100" color="accent" height="8" rounded />
+    <v-progress-linear :model-value="(step / 7) * 100" color="accent" height="8" rounded />
     <ol class="steps">
       <li
-        v-for="(item, index) in [t('wizard.basic'), t('wizard.ancestry'), t('wizard.choices'), t('wizard.boosts'), t('wizard.background'), t('wizard.review')]"
+        v-for="(item, index) in [t('wizard.basic'), t('wizard.ancestry'), t('wizard.choices'), t('wizard.boosts'), t('wizard.background'), t('classUi.characterClass'), t('wizard.review')]"
         :key="item"
         :class="{ active: step === index + 1, complete: step > index + 1 }"
       >
@@ -306,7 +331,40 @@ onMounted(loadCatalogs)
             </v-list>
           </template>
         </section>
-        <section v-else-if="selectedAncestry">
+        <section v-else-if="step === 6">
+          <h2>{{ t('classUi.characterClass') }}</h2>
+          <p class="hint">{{ t('classUi.hint') }}</p>
+          <v-select
+            :model-value="form.classId"
+            :items="characterClasses"
+            :item-title="(characterClass) => getCharacterClassLabel(characterClass.id, characterClass.name)"
+            item-value="id"
+            :label="t('classUi.characterClass')"
+            @update:model-value="selectCharacterClass"
+          />
+          <template v-if="selectedCharacterClass">
+            <p>
+              {{ t('classUi.baseHitPoints') }}: {{ selectedCharacterClass.baseHitPoints }}
+            </p>
+            <v-radio-group v-model="form.classKeyAbility" :label="t('classUi.keyAbility')">
+              <v-radio
+                v-for="code in selectedCharacterClass.keyAbilityOptions"
+                :key="code"
+                :value="code"
+                :label="getAbilityLabel(code)"
+              />
+            </v-radio-group>
+            <v-list density="compact" :subheader="t('classUi.rules')">
+              <v-list-item
+                v-for="rule in selectedCharacterClass.rules"
+                :key="rule.id"
+                :title="rule.name"
+                :subtitle="rule.requiresChoice ? `${rule.summary} ${t('classUi.deferredChoice')}` : rule.summary"
+              />
+            </v-list>
+          </template>
+        </section>
+        <section v-else-if="step === 7 && selectedAncestry">
           <h2>{{ t('wizard.review') }}</h2>
           <v-list lines="two"
             ><v-list-item :title="t('common.name')" :subtitle="form.name" /><v-list-item
@@ -324,6 +382,12 @@ onMounted(loadCatalogs)
               v-if="form.backgroundRestrictedBoost && form.backgroundFreeBoost"
               :title="t('wizard.backgroundBoosts')"
               :subtitle="formatAbilities([form.backgroundRestrictedBoost, form.backgroundFreeBoost])" /><v-list-item
+              v-if="selectedCharacterClass"
+              :title="t('classUi.characterClass')"
+              :subtitle="getCharacterClassLabel(selectedCharacterClass.id, selectedCharacterClass.name)" /><v-list-item
+              v-if="form.classKeyAbility"
+              :title="t('classUi.keyAbility')"
+              :subtitle="getAbilityLabel(form.classKeyAbility)" /><v-list-item
               v-if="form.concept"
               :title="t('wizard.selectedConcept')"
               :subtitle="form.concept" /></v-list
@@ -335,7 +399,7 @@ onMounted(loadCatalogs)
     >
     <footer>
       <v-btn variant="text" :disabled="step === 1 || isSubmitting" @click="previous">{{ t('common.back') }}</v-btn
-      ><v-spacer /><v-btn v-if="step < 6" color="primary" :disabled="!canContinue" @click="next"
+      ><v-spacer /><v-btn v-if="step < 7" color="primary" :disabled="!canContinue" @click="next"
         >{{ t('common.next') }}</v-btn
       ><v-btn v-else color="accent" :loading="isSubmitting" @click="submit"
         >{{ t('wizard.create') }}</v-btn
@@ -372,7 +436,7 @@ h1 {
 }
 .steps {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(7, 1fr);
   gap: 8px;
   padding: 0;
   margin: 0;

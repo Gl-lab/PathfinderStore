@@ -7,6 +7,7 @@ import {
   getAncestryChoiceLabel,
   getAncestryLabel,
   getBackgroundLabel,
+  getCharacterClassLabel,
   getLanguageLabel,
   getVisionLabel,
 } from '@/i18n/domain'
@@ -126,6 +127,24 @@ onMounted(load)
             <ul>
               <li v-for="grant in character.backgroundPackage.grants" :key="grant.id">
                 {{ grant.name }}
+              </li>
+            </ul>
+          </v-card-text
+        ></v-card
+        ><v-card v-if="character.classPackage" elevation="0"
+          ><v-card-item
+            :title="getCharacterClassLabel(character.classPackage.classId, character.classPackage.name)"
+            :subtitle="t('classUi.package')"
+          /><v-card-text
+            ><p>{{ t('classUi.baseHitPoints') }}: {{ character.classPackage.baseHitPoints }}</p>
+            <p>
+              {{ t('classUi.keyAbility') }}:
+              {{ getAbilityLabel(character.classPackage.keyAbility) }}
+            </p>
+            <p><strong>{{ t('classUi.rules') }}</strong></p>
+            <ul>
+              <li v-for="rule in character.classPackage.rules" :key="rule.id">
+                {{ rule.name }}
               </li>
             </ul>
           </v-card-text

@@ -43,18 +43,21 @@ public sealed class GetCharacterQueriesTests
         Assert.Equal( 10, result.Characteristics.Strength.Value );
         Assert.Null( result.Backpack );
         Assert.Null( result.BackgroundPackage );
+        Assert.Null( result.ClassPackage );
     }
 
     [Fact]
-    public async Task GetCharacterById_WhenCharacterHasBackground_ReturnsPersistedPackage()
+    public async Task GetCharacterById_WhenCharacterHasBackgroundAndClass_ReturnsPersistedPackages()
     {
         await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
         Account account = await CreateAccountAsync( dbContext, 402 );
         AncestryRepository ancestryRepository = new AncestryRepository();
         BackgroundRepository backgroundRepository = new BackgroundRepository();
+        CharacterClassRepository characterClassRepository = new CharacterClassRepository();
         CharacterBuilder builder = new CharacterBuilder(
             ancestryRepository,
-            backgroundRepository: backgroundRepository );
+            backgroundRepository: backgroundRepository,
+            characterClassRepository: characterClassRepository );
         builder.CreateCharacter( account.Id, "Kyra", AncestryType.Human );
         builder.SetAncestryPackage( "human.skilled", "human.cooperative_nature" );
         builder.ApplyFreeBoosts( [ AbilityType.Strength, AbilityType.Wisdom ] );
@@ -62,6 +65,7 @@ public sealed class GetCharacterQueriesTests
             "background.acolyte",
             AbilityType.Wisdom,
             AbilityType.Charisma );
+        builder.SetClass( "class.cleric", AbilityType.Wisdom );
         DraftCharacter draftCharacter = builder.Build();
         dbContext.Character.Add( draftCharacter );
         await dbContext.SaveChangesAsync();
@@ -69,7 +73,8 @@ public sealed class GetCharacterQueriesTests
         CharacterRepository characterRepository = new CharacterRepository( dbContext );
         CharacterConvertor characterConvertor = new CharacterConvertor(
             ancestryRepository,
-            backgroundRepository );
+            backgroundRepository,
+            characterClassRepository );
         GetCharacterByIdHandler handler = new GetCharacterByIdHandler(
             characterRepository,
             characterConvertor );
@@ -82,9 +87,14 @@ public sealed class GetCharacterQueriesTests
         Assert.Equal( "background.acolyte", result.BackgroundPackage.BackgroundId );
         Assert.Equal( AbilityType.Wisdom, result.BackgroundPackage.RestrictedBoost );
         Assert.Equal( AbilityType.Charisma, result.BackgroundPackage.FreeBoost );
-        Assert.Equal( 14, result.Characteristics.Wisdom.Value );
         Assert.Equal( 12, result.Characteristics.Charisma.Value );
         Assert.Contains( result.BackgroundPackage.Grants, grant => grant.Id == "skill.religion" );
+        Assert.NotNull( result.ClassPackage );
+        Assert.Equal( "class.cleric", result.ClassPackage.ClassId );
+        Assert.Equal( 8, result.ClassPackage.BaseHitPoints );
+        Assert.Equal( AbilityType.Wisdom, result.ClassPackage.KeyAbility );
+        Assert.Equal( 16, result.Characteristics.Wisdom.Value );
+        Assert.Contains( result.ClassPackage.Rules, rule => rule.Id == "class_choice.cleric.deity" );
     }
 
     [Fact]

@@ -23,6 +23,8 @@ public sealed class CreateCharacterCommandValidatorTests
                 BackgroundId = "background.acrobat",
                 BackgroundRestrictedBoost = AbilityType.Dexterity,
                 BackgroundFreeBoost = AbilityType.Charisma,
+                ClassId = "class.fighter",
+                ClassKeyAbility = AbilityType.Strength,
             } );
 
         Assert.Throws<ValidationException>( () => validator.ValidateAndThrow( command ) );
@@ -60,6 +62,8 @@ public sealed class CreateCharacterCommandValidatorTests
                 BackgroundId = "background.acrobat",
                 BackgroundRestrictedBoost = AbilityType.Dexterity,
                 BackgroundFreeBoost = AbilityType.Charisma,
+                ClassId = "class.fighter",
+                ClassKeyAbility = AbilityType.Strength,
             } );
 
         validator.ValidateAndThrow( command );
@@ -102,6 +106,31 @@ public sealed class CreateCharacterCommandValidatorTests
             BackgroundFreeBoost = omitRestrictedBoost ? AbilityType.Charisma : null,
         };
         CreateCharacterCommand command = new CreateCharacterCommand( 42, character );
+
+        Assert.Throws<ValidationException>( () => validator.ValidateAndThrow( command ) );
+    }
+
+    [Theory]
+    [InlineData( true )]
+    [InlineData( false )]
+    public void Validate_WhenClassChoiceFieldIsMissing_ThrowsValidationException( bool omitClassId )
+    {
+        CreateCharacterCommandValidator validator = new CreateCharacterCommandValidator();
+        CreateCharacterCommand command = new CreateCharacterCommand(
+            42,
+            new CreateCharacterRequestDto
+            {
+                Name = "Thorin",
+                AncestryType = AncestryType.Human,
+                HeritageId = "human.skilled",
+                AncestryFeatId = "human.cooperative_nature",
+                FreeBoosts = [ AbilityType.Strength, AbilityType.Intelligence ],
+                BackgroundId = "background.acrobat",
+                BackgroundRestrictedBoost = AbilityType.Dexterity,
+                BackgroundFreeBoost = AbilityType.Charisma,
+                ClassId = omitClassId ? String.Empty : "class.fighter",
+                ClassKeyAbility = omitClassId ? AbilityType.Strength : null,
+            } );
 
         Assert.Throws<ValidationException>( () => validator.ValidateAndThrow( command ) );
     }

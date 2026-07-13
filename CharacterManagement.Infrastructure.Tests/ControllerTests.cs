@@ -10,6 +10,7 @@ using Pathfinder.CharacterManagement.Application.DTO;
 using Pathfinder.CharacterManagement.Application.Exceptions;
 using Pathfinder.CharacterManagement.Application.UseCases.Ancestries;
 using Pathfinder.CharacterManagement.Application.UseCases.Backgrounds;
+using Pathfinder.CharacterManagement.Application.UseCases.CharacterClasses;
 using Pathfinder.CharacterManagement.Application.UseCases.Characters;
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.Web.Controllers;
@@ -70,6 +71,30 @@ public sealed class ControllerTests
 
         OkObjectResult okResult = Assert.IsType<OkObjectResult>( actionResult.Result );
         IReadOnlyCollection<BackgroundDto> payload = Assert.IsAssignableFrom<IReadOnlyCollection<BackgroundDto>>( okResult.Value );
+        Assert.Same( expected, payload );
+    }
+
+    [Fact]
+    public async Task ClassesController_Get_ReturnsOkWithPayload()
+    {
+        IReadOnlyCollection<CharacterClassDto> expected =
+        [
+            new CharacterClassDto
+            {
+                Id = "class.fighter",
+                Name = "Fighter",
+                BaseHitPoints = 10,
+                KeyAbilityOptions = [ AbilityType.Strength, AbilityType.Dexterity ],
+            },
+        ];
+        TestMediator mediator = new TestMediator();
+        mediator.Register( new GetCharacterClassesCommand(), expected );
+        ClassesController controller = new ClassesController( mediator );
+
+        ActionResult<IReadOnlyCollection<CharacterClassDto>> actionResult = await controller.Get();
+
+        OkObjectResult okResult = Assert.IsType<OkObjectResult>( actionResult.Result );
+        IReadOnlyCollection<CharacterClassDto> payload = Assert.IsAssignableFrom<IReadOnlyCollection<CharacterClassDto>>( okResult.Value );
         Assert.Same( expected, payload );
     }
 

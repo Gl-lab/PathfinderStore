@@ -10,15 +10,18 @@ public class CharacterBuilder : ICharacterBuilder
     private readonly IAncestryRepository _ancestryRepository;
     private readonly IAncestryChoiceAvailabilityPolicy _ancestryChoiceAvailabilityPolicy;
     private readonly IBackgroundRepository? _backgroundRepository;
+    private readonly ICharacterClassRepository? _characterClassRepository;
 
     public CharacterBuilder(
         IAncestryRepository ancestryRepository,
         IAncestryChoiceAvailabilityPolicy? ancestryChoiceAvailabilityPolicy = null,
-        IBackgroundRepository? backgroundRepository = null )
+        IBackgroundRepository? backgroundRepository = null,
+        ICharacterClassRepository? characterClassRepository = null )
     {
         _ancestryRepository = ancestryRepository;
         _ancestryChoiceAvailabilityPolicy = ancestryChoiceAvailabilityPolicy ?? new CommonAncestryChoiceAvailabilityPolicy();
         _backgroundRepository = backgroundRepository;
+        _characterClassRepository = characterClassRepository;
     }
 
     public void CreateCharacter(
@@ -84,7 +87,30 @@ public class CharacterBuilder : ICharacterBuilder
         _draftCharacter.SetBackgroundPackage( background, restrictedBoost, freeBoost );
     }
 
-    public void SetClass() => throw new NotImplementedException();
+    public void SetClass( string characterClassId, AbilityType keyAbility )
+    {
+        if ( _draftCharacter is null )
+        {
+            throw new InvalidOperationException( "Character must be created before setting class." );
+        }
+
+        if ( _characterClassRepository is null )
+        {
+            throw new InvalidOperationException( "Character class repository is not configured." );
+        }
+
+        CharacterClass characterClass;
+        try
+        {
+            characterClass = _characterClassRepository.GetCharacterClass( characterClassId );
+        }
+        catch ( ArgumentException exception )
+        {
+            throw new CharacterManagementException( exception.Message );
+        }
+
+        _draftCharacter.SetClassPackage( characterClass, keyAbility );
+    }
 
     public void IncreaseAbilityScores( IEnumerable<AbilityType> increasedAbilityTypes )
     {

@@ -154,7 +154,7 @@ Seed users:
 
 ### Текущий character creation focus
 
-Frontend MVP создания персонажа реализован на Vue 3. Текущий flow включает Ancestry package, ancestry boosts и Background package с двумя boosts. Skill, Lore и skill feat от Background пока возвращаются декларативно и ожидают отдельную Skill subsystem.
+Frontend MVP создания персонажа реализован на Vue 3. Текущий flow включает Ancestry package, ancestry boosts, Background package с двумя boosts и Class package с key ability boost. Background grants и Class rules пока возвращаются декларативно и ожидают отдельные подсистемы.
 
 Смотреть:
 

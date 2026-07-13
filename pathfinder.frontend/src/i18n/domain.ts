@@ -21,6 +21,12 @@ export function getBackgroundLabel(id: string, fallback: string): string {
   return i18n.global.te(key) ? i18n.global.t(key) : fallback
 }
 
+export function getCharacterClassLabel(id: string, fallback: string): string {
+  const key = `classUi.names.${id.replace('class.', '')}`
+
+  return i18n.global.te(key) ? i18n.global.t(key) : fallback
+}
+
 export function getVisionLabel(vision: string): string {
   const key = `domain.vision.${vision}`
 

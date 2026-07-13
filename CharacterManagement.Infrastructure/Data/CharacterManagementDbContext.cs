@@ -29,6 +29,8 @@ public class CharacterManagementDbContext( DbContextOptions<CharacterManagementD
             b.Property( x => x.SelectedBackgroundId ).HasMaxLength( 100 );
             b.Property( x => x.SelectedBackgroundRestrictedBoost ).HasConversion<int>();
             b.Property( x => x.SelectedBackgroundFreeBoost ).HasConversion<int>();
+            b.Property( x => x.SelectedClassId ).HasMaxLength( 100 );
+            b.Property( x => x.SelectedClassKeyAbility ).HasConversion<int>();
 
             b.Property( x => x.AppliedFreeBoosts )
                 .HasConversion(

@@ -29,6 +29,8 @@ public sealed class CreateCharacterHandlerTests
             BackgroundId = "background.acrobat",
             BackgroundRestrictedBoost = AbilityType.Dexterity,
             BackgroundFreeBoost = AbilityType.Charisma,
+            ClassId = "class.fighter",
+            ClassKeyAbility = AbilityType.Strength,
         };
         CreateCharacterCommand command = new CreateCharacterCommand( account.UserId, character );
 
@@ -48,8 +50,10 @@ public sealed class CreateCharacterHandlerTests
         Assert.Equal( character.BackgroundId, savedCharacter.SelectedBackgroundId );
         Assert.Equal( character.BackgroundRestrictedBoost, savedCharacter.SelectedBackgroundRestrictedBoost );
         Assert.Equal( character.BackgroundFreeBoost, savedCharacter.SelectedBackgroundFreeBoost );
+        Assert.Equal( character.ClassId, savedCharacter.SelectedClassId );
+        Assert.Equal( character.ClassKeyAbility, savedCharacter.SelectedClassKeyAbility );
         Assert.Equal( account.Id, savedCharacter.AccountId );
-        Assert.Equal( 12, savedCharacter.AbilityScores.Strength.Value );
+        Assert.Equal( 14, savedCharacter.AbilityScores.Strength.Value );
         Assert.Equal( 12, savedCharacter.AbilityScores.Intelligence.Value );
         Assert.Equal( 12, savedCharacter.AbilityScores.Dexterity.Value );
         Assert.Equal( 12, savedCharacter.AbilityScores.Charisma.Value );
@@ -91,6 +95,8 @@ public sealed class CreateCharacterHandlerTests
             BackgroundId = "background.acrobat",
             BackgroundRestrictedBoost = AbilityType.Dexterity,
             BackgroundFreeBoost = AbilityType.Charisma,
+            ClassId = "class.fighter",
+            ClassKeyAbility = AbilityType.Strength,
         };
         CreateCharacterCommand command = new CreateCharacterCommand( account.UserId, character );
 
@@ -106,9 +112,11 @@ public sealed class CreateCharacterHandlerTests
         AccountRepository accountRepository = new AccountRepository( dbContext );
         AncestryRepository ancestryRepository = new AncestryRepository();
         BackgroundRepository backgroundRepository = new BackgroundRepository();
+        CharacterClassRepository characterClassRepository = new CharacterClassRepository();
         CharacterBuilder characterBuilder = new CharacterBuilder(
             ancestryRepository,
-            backgroundRepository: backgroundRepository );
+            backgroundRepository: backgroundRepository,
+            characterClassRepository: characterClassRepository );
         TestUnitOfWork unitOfWork = new TestUnitOfWork( dbContext );
 
         return new CreateCharacterHandler( accountRepository, characterBuilder, unitOfWork );
