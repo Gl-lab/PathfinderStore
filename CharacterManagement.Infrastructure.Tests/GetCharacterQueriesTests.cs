@@ -1,7 +1,7 @@
-using Pathfinder.CharacterManagement.Application.Converters.Implementation;
 using Pathfinder.CharacterManagement.Application.Builders.Implementation;
 using Pathfinder.CharacterManagement.Application.DTO;
 using Pathfinder.CharacterManagement.Application.Exceptions;
+using Pathfinder.CharacterManagement.Application.Features.Characters.Queries.Mapping;
 using Pathfinder.CharacterManagement.Application.UseCases.Characters;
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.CharacterManagement.Domain.Rules.Training;
@@ -95,7 +95,7 @@ public sealed class GetCharacterQueriesTests
         await dbContext.SaveChangesAsync();
         dbContext.ChangeTracker.Clear();
         CharacterRepository characterRepository = new CharacterRepository( dbContext );
-        CharacterConvertor characterConvertor = new CharacterConvertor(
+        CharacterDetailsDtoMapper characterDetailsDtoMapper = new CharacterDetailsDtoMapper(
             ancestryRepository,
             backgroundRepository,
             characterClassRepository,
@@ -104,7 +104,7 @@ public sealed class GetCharacterQueriesTests
             deityRepository: deityRepository );
         GetCharacterByIdHandler handler = new GetCharacterByIdHandler(
             characterRepository,
-            characterConvertor );
+            characterDetailsDtoMapper );
 
         CharacterDto result = await handler.Handle(
             new GetCharacterByIdCommand( account.UserId, draftCharacter.Id ),
@@ -748,7 +748,7 @@ public sealed class GetCharacterQueriesTests
         dbContext.ChangeTracker.Clear();
         GetCharactersHandler handler = new GetCharactersHandler(
             new CharacterRepository( dbContext ),
-            new CharacterConvertor(
+            new CharacterDetailsDtoMapper(
                 ancestryRepository,
                 backgroundRepository,
                 characterClassRepository,
@@ -783,9 +783,9 @@ public sealed class GetCharacterQueriesTests
             AbilityType.Strength,
             AbilityType.Constitution );
         builder.SetClass( "class.fighter", AbilityType.Strength );
-        CharacterConvertor converter = new CharacterConvertor();
+        CharacterDetailsDtoMapper mapper = new CharacterDetailsDtoMapper();
 
-        Assert.Throws<InvalidOperationException>( () => converter.Convert( builder.Build() ) );
+        Assert.Throws<InvalidOperationException>( () => mapper.Convert( builder.Build() ) );
     }
 
     [Fact]
@@ -843,9 +843,9 @@ public sealed class GetCharacterQueriesTests
     private static GetCharactersHandler CreateListHandler( CharacterManagementDbContext dbContext )
     {
         CharacterRepository characterRepository = new CharacterRepository( dbContext );
-        CharacterConvertor characterConvertor = new CharacterConvertor();
+        CharacterDetailsDtoMapper characterDetailsDtoMapper = new CharacterDetailsDtoMapper();
 
-        return new GetCharactersHandler( characterRepository, characterConvertor );
+        return new GetCharactersHandler( characterRepository, characterDetailsDtoMapper );
     }
 
     private static GetCharacterByIdHandler CreateByIdHandler(
@@ -855,13 +855,13 @@ public sealed class GetCharacterQueriesTests
         CharacterClassRepository? characterClassRepository = null )
     {
         CharacterRepository characterRepository = new CharacterRepository( dbContext );
-        CharacterConvertor characterConvertor = new CharacterConvertor(
+        CharacterDetailsDtoMapper characterDetailsDtoMapper = new CharacterDetailsDtoMapper(
             ancestryRepository,
             backgroundRepository,
             characterClassRepository,
             new SkillRepository() );
 
-        return new GetCharacterByIdHandler( characterRepository, characterConvertor );
+        return new GetCharacterByIdHandler( characterRepository, characterDetailsDtoMapper );
     }
 
     private static CharacterBuilder CreateBuilder(

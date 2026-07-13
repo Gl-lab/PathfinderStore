@@ -1,10 +1,11 @@
+using Pathfinder.CharacterManagement.Application.Converters;
 using Pathfinder.CharacterManagement.Application.DTO;
 using Pathfinder.CharacterManagement.Application.Repositories;
 using Pathfinder.CharacterManagement.Domain.Entity;
 
-namespace Pathfinder.CharacterManagement.Application.Converters.Implementation;
+namespace Pathfinder.CharacterManagement.Application.Features.Characters.Queries.Mapping;
 
-public sealed class CharacterConvertor : ICharacterConvertor
+public sealed class CharacterDetailsDtoMapper
 {
     private readonly IAncestryRepository? _ancestryRepository;
     private readonly IBackgroundRepository? _backgroundRepository;
@@ -20,7 +21,7 @@ public sealed class CharacterConvertor : ICharacterConvertor
     private readonly IClericDoctrineRepository? _clericDoctrineRepository;
     private readonly IDeityRepository? _deityRepository;
 
-    public CharacterConvertor(
+    public CharacterDetailsDtoMapper(
         IAncestryRepository? ancestryRepository = null,
         IBackgroundRepository? backgroundRepository = null,
         ICharacterClassRepository? characterClassRepository = null,

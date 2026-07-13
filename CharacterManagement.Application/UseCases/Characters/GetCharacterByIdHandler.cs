@@ -1,7 +1,7 @@
 using MediatR;
-using Pathfinder.CharacterManagement.Application.Converters;
 using Pathfinder.CharacterManagement.Application.DTO;
 using Pathfinder.CharacterManagement.Application.Exceptions;
+using Pathfinder.CharacterManagement.Application.Features.Characters.Queries.Mapping;
 using Pathfinder.CharacterManagement.Application.Repositories;
 using Pathfinder.CharacterManagement.Domain.Entity;
 
@@ -9,15 +9,15 @@ namespace Pathfinder.CharacterManagement.Application.UseCases.Characters;
 
 public sealed class GetCharacterByIdHandler : IRequestHandler<GetCharacterByIdCommand, CharacterDto>
 {
-    private readonly ICharacterConvertor _characterConvertor;
+    private readonly CharacterDetailsDtoMapper _characterDetailsDtoMapper;
     private readonly ICharacterRepository _characterRepository;
 
     public GetCharacterByIdHandler(
         ICharacterRepository characterRepository,
-        ICharacterConvertor characterConvertor )
+        CharacterDetailsDtoMapper characterDetailsDtoMapper )
     {
         _characterRepository = characterRepository;
-        _characterConvertor = characterConvertor;
+        _characterDetailsDtoMapper = characterDetailsDtoMapper;
     }
 
     public async Task<CharacterDto> Handle( GetCharacterByIdCommand request, CancellationToken cancellationToken )
@@ -28,6 +28,6 @@ public sealed class GetCharacterByIdHandler : IRequestHandler<GetCharacterByIdCo
             throw new CharacterManagementException( $"Character {request.CharacterId} was not found for current user." );
         }
 
-        return _characterConvertor.Convert( draftCharacter );
+        return _characterDetailsDtoMapper.Convert( draftCharacter );
     }
 }

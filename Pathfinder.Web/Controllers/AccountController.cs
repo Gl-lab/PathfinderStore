@@ -24,14 +24,6 @@ public class AccountController : BaseController
         _mediator = mediator;
     }
 
-    // [HttpGet]
-    // [Authorize(Policy = DefaultPermissions.PermissionNameForMemberAccess)]
-    // public async Task<ActionResult<AccountDto>> Get()
-    // {
-    //     AccountDto result = await _mediator.Send(new GetCurrentAccountCommand());
-    //     return Ok(result);
-    // }
-
     [HttpPost( "/api/[action]" )]
     public async Task<ActionResult<LoginOutput>> Login( [FromBody] LoginInput input )
     {
@@ -109,22 +101,4 @@ public class AccountController : BaseController
         return Ok();
     }
 
-    //
-    // [Authorize(Policy = DefaultPermissions.PermissionNameForMemberAccess)]
-    // [HttpPost]
-    // [Route("[action]")]
-    // public async Task<ActionResult> CreateCharacter(CharacterDto newCharacter)
-    // {
-    //     await _mediator.Send(new CreateCharacterCommand(newCharacter));
-    //     return Ok();
-    // }
-
-    // [Authorize(Policy = DefaultPermissions.PermissionNameForMemberAccess)]
-    // [HttpDelete]
-    // [Route("[action]")]
-    // public async Task<ActionResult> DeleteCharacter(int deletedCharacterId)
-    // {
-    //     await _mediator.Send(new DeleteCharacterCommand(deletedCharacterId));
-    //     return Ok();
-    // }
 }
