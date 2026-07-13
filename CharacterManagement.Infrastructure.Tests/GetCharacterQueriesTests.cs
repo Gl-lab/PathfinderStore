@@ -143,8 +143,8 @@ public sealed class GetCharacterQueriesTests
         Assert.Contains(
             result.Proficiencies,
             proficiency =>
-                ( proficiency.TargetId == "proficiency.save.will" ) &&
-                ( proficiency.Rank == ProficiencyRank.Expert ) );
+                proficiency.TargetId == "proficiency.save.will" &&
+                proficiency.Rank == ProficiencyRank.Expert );
         Assert.Contains(
             result.Proficiencies,
             proficiency => proficiency.TargetId == "proficiency.class_dc.cleric" );

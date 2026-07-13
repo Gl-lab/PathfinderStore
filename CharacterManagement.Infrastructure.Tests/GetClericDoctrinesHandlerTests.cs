@@ -23,8 +23,8 @@ public sealed class GetClericDoctrinesHandlerTests
         Assert.Equal( 3, warpriest.ProficiencyGrants.Count );
         Assert.Contains(
             warpriest.ProficiencyGrants,
-            grant => ( grant.TargetId == ProficiencyTargets.Fortitude.Id ) &&
-                     ( grant.Rank == ProficiencyRank.Expert ) );
+            grant => grant.TargetId == ProficiencyTargets.Fortitude.Id &&
+                     grant.Rank == ProficiencyRank.Expert );
         Assert.Contains(
             warpriest.Effects,
             effect => effect.Id == "cleric_doctrine.warpriest.effect.deadly_simplicity" );

@@ -62,7 +62,10 @@ import {
   isBackgroundChoiceComplete,
   isBackgroundTrainingComplete,
 } from '@/features/character-creation/background'
-import { isCharacterClassChoiceComplete } from '@/features/character-creation/characterClass'
+import {
+  getAutomaticallySelectedKeyAbility,
+  isCharacterClassChoiceComplete,
+} from '@/features/character-creation/characterClass'
 import {
   createRogueTrainingChoices,
   getResolvedRogueTarget,
@@ -230,6 +233,13 @@ const selectedClericDoctrine = computed(
 const selectedDeity = computed(
   () => deities.value.find((item) => item.id === form.value.deityId) ?? null,
 )
+const classKeyAbilityOptions = computed(() => {
+  if (!selectedCharacterClass.value) return []
+
+  return selectedCharacterClass.value.id === 'class.rogue'
+    ? getRogueKeyAbilities(selectedRogueRacket.value)
+    : selectedCharacterClass.value.keyAbilityOptions
+})
 const eligibleDeities = computed(() => deities.value.filter((deity) => deity.canGrantClericPowers))
 const effectiveClassProficiencies = computed(() =>
   [
@@ -258,7 +268,6 @@ const backgroundLoreIds = computed(() => {
     })
     .filter((id): id is string => Boolean(id))
 })
-const rogueKeyAbilities = computed(() => getRogueKeyAbilities(selectedRogueRacket.value))
 const backgroundFreeBoostOptions = computed(() =>
   getBackgroundFreeBoostOptions(abilityCodes, form.value.backgroundRestrictedBoost),
 )
@@ -417,7 +426,10 @@ function selectBackgroundRestrictedBoost(boost: AbilityCode | null): void {
 }
 function selectCharacterClass(classId: string | null): void {
   form.value.classId = classId
-  form.value.classKeyAbility = null
+  const characterClass = characterClasses.value.find((item) => item.id === classId) ?? null
+  form.value.classKeyAbility = getAutomaticallySelectedKeyAbility(
+    characterClass?.keyAbilityOptions ?? [],
+  )
   form.value.rogueRacketId = null
   form.value.rogueTrainingChoices = []
   form.value.huntersEdgeId = null
@@ -456,10 +468,9 @@ function selectWitchPatron(witchPatronId: string | null): void {
 }
 function selectRogueRacket(racketId: string | null): void {
   form.value.rogueRacketId = racketId
-  form.value.classKeyAbility = null
-  form.value.rogueTrainingChoices = createRogueTrainingChoices(
-    rogueRackets.value.find((item) => item.id === racketId) ?? null,
-  )
+  const racket = rogueRackets.value.find((item) => item.id === racketId) ?? null
+  form.value.classKeyAbility = getAutomaticallySelectedKeyAbility(getRogueKeyAbilities(racket))
+  form.value.rogueTrainingChoices = createRogueTrainingChoices(racket)
   resetClassTrainingTargets()
 }
 function getRogueChoice(grantId: string): RogueTrainingChoice | undefined {
@@ -719,7 +730,7 @@ watch(
     ><v-card elevation="0" class="wizard-card"
       ><v-card-text v-if="isLoadingCatalogs"
         ><v-progress-circular indeterminate color="accent" /> {{ t('wizard.loadingCatalogs') }}</v-card-text
-      ><template v-else
+      ><v-card-text v-else
         ><section v-if="step === 1">
           <h2>{{ t('wizard.basic') }}</h2>
           <p class="hint">{{ t('wizard.lead') }}</p>
@@ -1061,16 +1072,21 @@ watch(
                 {{ t('classUi.deferredDeityBenefits') }}
               </v-alert>
             </template>
-            <v-radio-group v-model="form.classKeyAbility" :label="t('classUi.keyAbility')">
+            <v-radio-group
+              v-if="classKeyAbilityOptions.length > 1"
+              v-model="form.classKeyAbility"
+              :label="t('classUi.keyAbility')"
+            >
               <v-radio
-                v-for="code in selectedCharacterClass.id === 'class.rogue'
-                  ? rogueKeyAbilities
-                  : selectedCharacterClass.keyAbilityOptions"
+                v-for="code in classKeyAbilityOptions"
                 :key="code"
                 :value="code"
                 :label="getAbilityLabel(code)"
               />
             </v-radio-group>
+            <p v-else-if="form.classKeyAbility">
+              {{ t('classUi.keyAbility') }}: {{ getAbilityLabel(form.classKeyAbility) }}
+            </p>
             <div v-if="selectedRogueRacket" class="rogue-training">
               <h3>{{ t('classUi.rogueTraining') }}</h3>
               <template v-for="grant in getRogueGrants(selectedRogueRacket)" :key="grant.id">
@@ -1303,7 +1319,7 @@ watch(
               <strong>{{ abilityScoresAfterFinal[code] }}</strong>
             </div>
           </div>
-        </section></template
+        </section></v-card-text
       ></v-card
     >
     <footer>

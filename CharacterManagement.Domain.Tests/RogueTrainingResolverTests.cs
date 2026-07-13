@@ -50,8 +50,8 @@ public sealed class RogueTrainingResolverTests
             existing );
 
         Assert.Contains( result.Skills, skill =>
-            ( skill.SkillId == "skill.athletics" ) &&
-            ( skill.SourceGrantId == "rogue_racket.thief.skill.thievery" ) );
+            skill.SkillId == "skill.athletics" &&
+            skill.SourceGrantId == "rogue_racket.thief.skill.thievery" );
     }
 
     [Fact]

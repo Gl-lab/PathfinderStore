@@ -91,7 +91,7 @@ public sealed class Background
             }
             else if ( String.IsNullOrWhiteSpace( grant.TargetId ) ||
                       grant.AllowsCustomLore ||
-                      ( grant.Options.Count > 0 ) )
+                      grant.Options.Count > 0 )
             {
                 throw new ArgumentException( "Fixed background grant must define only its target id.", nameof( grants ) );
             }
@@ -109,7 +109,7 @@ public sealed class Background
 
         if ( grant.AllowsCustomLore )
         {
-            if ( ( grant.Kind != BackgroundGrantKind.LoreTraining ) || ( grant.Options.Count > 0 ) )
+            if ( grant.Kind != BackgroundGrantKind.LoreTraining || grant.Options.Count > 0 )
             {
                 throw new ArgumentException( "Open choice is supported only for Lore without fixed options.", nameof( grants ) );
             }

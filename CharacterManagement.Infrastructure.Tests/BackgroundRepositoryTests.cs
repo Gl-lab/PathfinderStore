@@ -97,8 +97,8 @@ public sealed class BackgroundRepositoryTests
             IReadOnlyList<BackgroundTrainingChoice> choices = background.Grants
                 .Where( grant =>
                     grant.RequiresChoice &&
-                    ( ( grant.Kind == BackgroundGrantKind.SkillTraining ) ||
-                      ( grant.Kind == BackgroundGrantKind.LoreTraining ) ) )
+                    ( grant.Kind == BackgroundGrantKind.SkillTraining ||
+                      grant.Kind == BackgroundGrantKind.LoreTraining ) )
                 .Select( grant => grant.AllowsCustomLore
                     ? new BackgroundTrainingChoice( grant.Id, null, "Test Terrain" )
                     : new BackgroundTrainingChoice( grant.Id, grant.Options.First().Id, null ) )

@@ -78,7 +78,7 @@ public static class RogueTrainingResolver
     {
         if ( !grant.RequiresChoice )
         {
-            if ( ( choice is not null ) && !String.IsNullOrWhiteSpace( choice.SelectedSkillId ) )
+            if ( choice is not null && !String.IsNullOrWhiteSpace( choice.SelectedSkillId ) )
             {
                 throw new CharacterManagementException(
                     $"Fixed Rogue grant '{grant.Id}' does not accept a selected skill." );
@@ -87,7 +87,7 @@ public static class RogueTrainingResolver
             return grant.TargetId!;
         }
 
-        if ( ( choice is null ) || String.IsNullOrWhiteSpace( choice.SelectedSkillId ) )
+        if ( choice is null || String.IsNullOrWhiteSpace( choice.SelectedSkillId ) )
         {
             throw new CharacterManagementException(
                 $"Rogue grant '{grant.Id}' requires one catalog option." );

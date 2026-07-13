@@ -228,11 +228,11 @@ public sealed class CreateCharacterHandlerTests
             .SingleAsync( entity => entity.AccountId == account.Id );
         Assert.Equal( "rogue_racket.thief", savedCharacter.SelectedRogueRacketId );
         Assert.Contains( savedCharacter.TrainedSkills, skill =>
-            ( skill.SkillId == "skill.stealth" ) &&
-            ( skill.SourceGrantId == "class.rogue.skill.stealth" ) );
+            skill.SkillId == "skill.stealth" &&
+            skill.SourceGrantId == "class.rogue.skill.stealth" );
         Assert.Contains( savedCharacter.TrainedSkills, skill =>
-            ( skill.SkillId == "skill.thievery" ) &&
-            ( skill.SourceGrantId == "rogue_racket.thief.skill.thievery" ) );
+            skill.SkillId == "skill.thievery" &&
+            skill.SourceGrantId == "rogue_racket.thief.skill.thievery" );
     }
 
     [Fact]

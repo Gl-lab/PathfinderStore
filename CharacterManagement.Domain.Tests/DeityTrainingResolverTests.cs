@@ -61,8 +61,8 @@ public sealed class DeityTrainingResolverTests
             proficiency => proficiency.Target.Id == "proficiency.attack.weapon.longsword" );
         Assert.Contains(
             result,
-            proficiency => ( proficiency.Target.Id == ProficiencyTargets.Fortitude.Id ) &&
-                           ( proficiency.Rank == ProficiencyRank.Expert ) );
+            proficiency => proficiency.Target.Id == ProficiencyTargets.Fortitude.Id &&
+                           proficiency.Rank == ProficiencyRank.Expert );
     }
 
     private static Deity CreateDeity()

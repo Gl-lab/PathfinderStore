@@ -105,7 +105,7 @@ public sealed record LoreTopic
         {
             if ( Char.IsLetterOrDigit( character ) )
             {
-                if ( hasSeparator && ( result.Length > 0 ) )
+                if ( hasSeparator && result.Length > 0 )
                 {
                     result.Append( '_' );
                 }

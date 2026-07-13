@@ -39,8 +39,8 @@ public sealed class GetCharacterClassesHandlerTests
         Assert.Contains(
             fighter.InitialProficiencies,
             proficiency =>
-                ( proficiency.TargetId == ProficiencyTargets.SimpleWeapons.Id ) &&
-                ( proficiency.Rank == ProficiencyRank.Expert ) );
+                proficiency.TargetId == ProficiencyTargets.SimpleWeapons.Id &&
+                proficiency.Rank == ProficiencyRank.Expert );
         Assert.Contains( fighter.Rules, rule => rule.Kind == CharacterClassRuleKind.ClassFeatChoice );
         Assert.Equal( 3, fighter.AdditionalSkillCountBase );
         ClassSkillGrantDto skillGrant = Assert.Single( fighter.InitialSkillGrants );

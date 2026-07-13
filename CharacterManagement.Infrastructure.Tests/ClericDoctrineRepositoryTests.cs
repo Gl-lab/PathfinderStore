@@ -43,8 +43,8 @@ public sealed class ClericDoctrineRepositoryTests
         Assert.Equal( 3, doctrine.ProficiencyGrants.Count );
         Assert.Contains(
             doctrine.ProficiencyGrants,
-            grant => ( grant.Target.Id == ProficiencyTargets.Fortitude.Id ) &&
-                     ( grant.Rank == ProficiencyRank.Expert ) );
+            grant => grant.Target.Id == ProficiencyTargets.Fortitude.Id &&
+                     grant.Rank == ProficiencyRank.Expert );
         Assert.Contains(
             doctrine.ProficiencyGrants,
             grant => grant.Target.Id == ProficiencyTargets.LightArmor.Id );
@@ -90,12 +90,12 @@ public sealed class ClericDoctrineRepositoryTests
         Assert.Equal( 2, warpriestFortitude.SourceGrantIds.Count );
         Assert.Contains(
             warpriestProficiencies,
-            item => ( item.Target.Id == ProficiencyTargets.LightArmor.Id ) &&
-                    ( item.Rank == ProficiencyRank.Trained ) );
+            item => item.Target.Id == ProficiencyTargets.LightArmor.Id &&
+                    item.Rank == ProficiencyRank.Trained );
         Assert.Contains(
             warpriestProficiencies,
-            item => ( item.Target.Id == ProficiencyTargets.MediumArmor.Id ) &&
-                    ( item.Rank == ProficiencyRank.Trained ) );
+            item => item.Target.Id == ProficiencyTargets.MediumArmor.Id &&
+                    item.Rank == ProficiencyRank.Trained );
         Assert.Equal(
             warpriestProficiencies.Count,
             warpriestProficiencies.Select( item => item.Target.Id ).Distinct().Count() );

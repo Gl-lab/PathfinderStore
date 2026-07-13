@@ -90,7 +90,7 @@ public sealed class RogueSkillGrantDescriptor
         }
 
         if ( options.Any( option => String.IsNullOrWhiteSpace( option ) ) ||
-             ( options.Distinct( StringComparer.Ordinal ).Count() != options.Count ) )
+             options.Distinct( StringComparer.Ordinal ).Count() != options.Count )
         {
             throw new ArgumentException( "Rogue skill grant options must be non-empty and unique.", nameof( options ) );
         }

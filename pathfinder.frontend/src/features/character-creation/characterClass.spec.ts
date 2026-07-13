@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import type { CharacterClass } from '@/features/character-creation/api'
-import { isCharacterClassChoiceComplete } from '@/features/character-creation/characterClass'
+import {
+  getAutomaticallySelectedKeyAbility,
+  isCharacterClassChoiceComplete,
+} from '@/features/character-creation/characterClass'
 
 const fighter: CharacterClass = {
   id: 'class.fighter',
@@ -16,6 +19,11 @@ const fighter: CharacterClass = {
 }
 
 describe('class choice', () => {
+  it('automatically selects the only key ability', () => {
+    expect(getAutomaticallySelectedKeyAbility(['Intelligence'])).toBe('Intelligence')
+    expect(getAutomaticallySelectedKeyAbility(['Strength', 'Dexterity'])).toBeNull()
+  })
+
   it('accepts an allowed key ability', () => {
     expect(isCharacterClassChoiceComplete(fighter, 'Strength')).toBe(true)
   })

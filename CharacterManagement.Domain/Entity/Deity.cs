@@ -79,21 +79,21 @@ public sealed class Deity
 
         if ( canGrantClericPowers &&
              ( String.IsNullOrWhiteSpace( divineSkillId ) ||
-               ( favoredWeapons.Count == 0 ) ||
-               ( divineFontOptions.Count == 0 ) ||
-               ( primaryDomainIds.Count == 0 ) ) )
+               favoredWeapons.Count == 0 ||
+               divineFontOptions.Count == 0 ||
+               primaryDomainIds.Count == 0 ) )
         {
             throw new ArgumentException( "A Cleric deity must define all devotee benefits." );
         }
 
         if ( !canGrantClericPowers &&
              ( !String.IsNullOrWhiteSpace( divineSkillId ) ||
-               ( favoredWeapons.Count > 0 ) ||
-               ( divineFontOptions.Count > 0 ) ||
-               ( sanctificationOptions.Count > 0 ) ||
+               favoredWeapons.Count > 0 ||
+               divineFontOptions.Count > 0 ||
+               sanctificationOptions.Count > 0 ||
                requiredSanctification.HasValue ||
-               ( primaryDomainIds.Count > 0 ) ||
-               ( grantedSpells.Count > 0 ) ) )
+               primaryDomainIds.Count > 0 ||
+               grantedSpells.Count > 0 ) )
         {
             throw new ArgumentException( "A non-Cleric faith cannot define devotee benefits." );
         }

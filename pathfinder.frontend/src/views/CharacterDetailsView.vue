@@ -116,25 +116,41 @@ onMounted(load)
           ></v-card-item>
           <v-card-text>
             <strong class="hit-points-card__maximum">
-              {{ character.derivedStatistics.hitPoints.maximum }}
+              {{
+                t('characters.hitPointsValue', {
+                  value: character.derivedStatistics.hitPoints.maximum,
+                })
+              }}
             </strong>
             <dl class="hit-points-card__breakdown">
               <div>
                 <dt>{{ t('characters.hitPointsAncestry') }}</dt>
-                <dd>{{ character.derivedStatistics.hitPoints.ancestry }}</dd>
+                <dd>
+                  {{
+                    t('characters.hitPointsValue', {
+                      value: character.derivedStatistics.hitPoints.ancestry,
+                    })
+                  }}
+                </dd>
               </div>
               <div>
                 <dt>{{ t('characters.hitPointsClass') }}</dt>
-                <dd>{{ character.derivedStatistics.hitPoints.class }}</dd>
+                <dd>
+                  {{
+                    t('characters.hitPointsValue', {
+                      value: character.derivedStatistics.hitPoints.class,
+                    })
+                  }}
+                </dd>
               </div>
               <div>
                 <dt>{{ t('characters.hitPointsConstitution') }}</dt>
                 <dd>
-                  {{
-                    formatSignedModifier(
+                  {{ t('characters.hitPointsValue', {
+                    value: formatSignedModifier(
                       character.derivedStatistics.hitPoints.constitutionModifier,
-                    )
-                  }}
+                    ),
+                  }) }}
                 </dd>
               </div>
             </dl>
@@ -408,6 +424,9 @@ h1 {
 }
 .stats .v-card {
   border: 1px solid rgb(var(--v-theme-surface-variant));
+}
+.stats .v-card-text ul {
+  padding-inline-start: 1.25rem;
 }
 .hit-points-card__maximum {
   display: block;

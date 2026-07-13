@@ -196,7 +196,7 @@ public sealed class BackgroundRepository : IBackgroundRepository
             name,
             summary,
             true,
-            ( kind == BackgroundGrantKind.LoreTraining ) && ( options.Length == 0 ),
+            kind == BackgroundGrantKind.LoreTraining && options.Length == 0,
             null,
             options
                 .Select( option => new BackgroundGrantOption( option, GetOptionName( option ) ) )

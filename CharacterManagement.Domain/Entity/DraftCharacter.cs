@@ -312,17 +312,17 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         }
 
         bool isRogue = characterClass.Id == "class.rogue";
-        if ( isRogue && ( rogueRacket is null ) )
+        if ( isRogue && rogueRacket is null )
         {
             throw new CharacterManagementException( "Rogue class requires a Rogue's Racket." );
         }
 
-        if ( !isRogue && ( rogueRacket is not null ) )
+        if ( !isRogue && rogueRacket is not null )
         {
             throw new CharacterManagementException( "Rogue's Racket can only be selected for the Rogue class." );
         }
 
-        if ( !isRogue && ( rogueTrainingChoices?.Count > 0 ) )
+        if ( !isRogue && rogueTrainingChoices?.Count > 0 )
         {
             throw new CharacterManagementException( "Rogue training choices can only be selected for the Rogue class." );
         }
@@ -400,22 +400,22 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         }
 
         bool isCleric = characterClass.Id == "class.cleric";
-        if ( isCleric && ( clericDoctrine is null ) )
+        if ( isCleric && clericDoctrine is null )
         {
             throw new CharacterManagementException( "Cleric class requires a Doctrine." );
         }
 
-        if ( !isCleric && ( clericDoctrine is not null ) )
+        if ( !isCleric && clericDoctrine is not null )
         {
             throw new CharacterManagementException( "Cleric Doctrine can only be selected for the Cleric class." );
         }
 
-        if ( isCleric && ( deity is null ) )
+        if ( isCleric && deity is null )
         {
             throw new CharacterManagementException( "Cleric class requires a Deity." );
         }
 
-        if ( isCleric && ( deity is not null ) && !deity.CanGrantClericPowers )
+        if ( isCleric && deity is not null && !deity.CanGrantClericPowers )
         {
             throw new CharacterManagementException( $"Deity '{deity.Id}' cannot grant Cleric powers." );
         }
@@ -427,7 +427,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
 
         if ( isCleric &&
              divineFont.HasValue &&
-             ( deity is not null ) &&
+             deity is not null &&
              !deity.DivineFontOptions.Contains( divineFont.Value ) )
         {
             throw new CharacterManagementException(
@@ -435,8 +435,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         }
 
         if ( isCleric &&
-             ( deity?.RequiredSanctification is DivineSanctification requiredSanctification ) &&
-             ( divineSanctification != requiredSanctification ) )
+             deity?.RequiredSanctification is DivineSanctification requiredSanctification &&
+             divineSanctification != requiredSanctification )
         {
             throw new CharacterManagementException(
                 $"Deity '{deity.Id}' requires {requiredSanctification} sanctification." );
@@ -444,7 +444,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
 
         if ( isCleric &&
              divineSanctification.HasValue &&
-             ( deity is not null ) &&
+             deity is not null &&
              !deity.SanctificationOptions.Contains( divineSanctification.Value ) )
         {
             throw new CharacterManagementException(
@@ -452,7 +452,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         }
 
         if ( !isCleric &&
-             ( ( deity is not null ) ||
+             ( deity is not null ||
                divineFont.HasValue ||
                divineSanctification.HasValue ||
                !String.IsNullOrWhiteSpace( deitySkillReplacementId ) ) )

@@ -32,7 +32,7 @@ public sealed class DraftCharacterConceptTests
     [Fact]
     public void Create_WithTooLongConcept_ThrowsDomainException()
     {
-        string concept = new String( 'a', 1001 );
+        string concept = new( 'a', 1001 );
 
         Assert.Throws<CharacterManagementException>( () => DraftCharacter.Create(
             1,

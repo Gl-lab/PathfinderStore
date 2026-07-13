@@ -12,7 +12,7 @@ public static class CharacterTrainingDtoMapper
     {
         ArgumentNullException.ThrowIfNull( character );
 
-        if ( ( character.TrainedSkills.Count > 0 ) && ( skillRepository is null ) )
+        if ( character.TrainedSkills.Count > 0 && skillRepository is null )
         {
             throw new InvalidOperationException( "Skill repository is required to map trained skills." );
         }

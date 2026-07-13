@@ -20,11 +20,11 @@ public static class BackgroundTrainingResolver
 
         IReadOnlyList<BackgroundGrantDescriptor> trainingGrants = background.Grants
             .Where( grant =>
-                ( grant.Kind == BackgroundGrantKind.SkillTraining ) ||
-                ( grant.Kind == BackgroundGrantKind.LoreTraining ) )
+                grant.Kind == BackgroundGrantKind.SkillTraining ||
+                grant.Kind == BackgroundGrantKind.LoreTraining )
             .ToList();
         if ( trainingGrants.Any( grant => grant.Kind == BackgroundGrantKind.SkillTraining ) &&
-             ( generalSkills.Count == 0 ) )
+             generalSkills.Count == 0 )
         {
             throw new CharacterManagementException( "Skill catalog is required to resolve background training." );
         }
