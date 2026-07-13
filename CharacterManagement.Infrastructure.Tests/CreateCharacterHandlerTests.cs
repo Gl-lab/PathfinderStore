@@ -3,6 +3,7 @@ using Pathfinder.CharacterManagement.Application.Builders.Implementation;
 using Pathfinder.CharacterManagement.Application.DTO;
 using Pathfinder.CharacterManagement.Application.UseCases.Characters;
 using Pathfinder.CharacterManagement.Domain.Entity;
+using Pathfinder.CharacterManagement.Domain.Rules.Training;
 using Pathfinder.CharacterManagement.Infrastructure.Data;
 using Pathfinder.CharacterManagement.Infrastructure.Repositories;
 using CharacterManagement.Infrastructure.Tests.TestSupport;

@@ -1,6 +1,7 @@
 using Pathfinder.CharacterManagement.Application.DTO;
 using Pathfinder.CharacterManagement.Application.Repositories;
 using Pathfinder.CharacterManagement.Domain.Entity;
+using Pathfinder.CharacterManagement.Domain.Rules.Training;
 
 namespace Pathfinder.CharacterManagement.Application.Converters;
 

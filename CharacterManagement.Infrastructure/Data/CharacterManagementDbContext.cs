@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Pathfinder.CharacterManagement.Domain.Entity;
+using Pathfinder.CharacterManagement.Domain.Rules.Training;
 
 namespace Pathfinder.CharacterManagement.Infrastructure.Data;
 

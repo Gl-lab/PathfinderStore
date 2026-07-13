@@ -2,6 +2,7 @@ using Pathfinder.CharacterManagement.Application.Builders.Implementation;
 using Pathfinder.CharacterManagement.Application.Repositories;
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.CharacterManagement.Domain.Exceptions;
+using Pathfinder.CharacterManagement.Domain.Rules.Training;
 
 namespace CharacterManagement.Domain.Tests;
 

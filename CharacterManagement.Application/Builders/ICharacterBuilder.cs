@@ -1,4 +1,5 @@
 ﻿using Pathfinder.CharacterManagement.Domain.Entity;
+using Pathfinder.CharacterManagement.Domain.Rules.Training;
 
 namespace Pathfinder.CharacterManagement.Application.Builders;
 
