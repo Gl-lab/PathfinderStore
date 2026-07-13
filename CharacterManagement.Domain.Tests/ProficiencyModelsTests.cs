@@ -5,6 +5,23 @@ namespace CharacterManagement.Domain.Tests;
 public sealed class ProficiencyModelsTests
 {
     [Fact]
+    public void Resolve_MultipleSources_ReturnsOneHighestRankPerTarget()
+    {
+        IReadOnlyList<EffectiveProficiency> result = ProficiencyResolver.Resolve(
+        [
+            new ProficiencyGrant( ProficiencyTargets.MediumArmor, ProficiencyRank.Trained, "class.source" ),
+            new ProficiencyGrant( ProficiencyTargets.MediumArmor, ProficiencyRank.Expert, "racket.source" ),
+            new ProficiencyGrant( ProficiencyTargets.Perception, ProficiencyRank.Trained, "class.source" ),
+        ] );
+
+        EffectiveProficiency armor = Assert.Single( result.Where( item =>
+            item.Target.Id == ProficiencyTargets.MediumArmor.Id ) );
+        Assert.Equal( ProficiencyRank.Expert, armor.Rank );
+        Assert.Equal( [ "class.source", "racket.source" ], armor.SourceGrantIds );
+        Assert.Equal( 2, result.Count );
+    }
+
+    [Fact]
     public void Ranks_HaveExpectedProgressionOrder()
     {
         Assert.True( ProficiencyRank.Untrained < ProficiencyRank.Trained );

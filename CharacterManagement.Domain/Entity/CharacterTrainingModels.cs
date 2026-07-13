@@ -17,3 +17,11 @@ public sealed record TrainedLore(
 public sealed record BackgroundTrainingResult(
     IReadOnlyList<TrainedSkill> Skills,
     IReadOnlyList<TrainedLore> Lore );
+
+public sealed record RogueTrainingChoice(
+    string GrantId,
+    string? SelectedSkillId,
+    string? ReplacementSkillId );
+
+public sealed record RogueTrainingResult(
+    IReadOnlyList<TrainedSkill> Skills );

@@ -9,4 +9,5 @@ public sealed class ProficiencyDto
     public ProficiencyCategory Category { get; set; }
     public ProficiencyRank Rank { get; set; }
     public string SourceGrantId { get; set; } = String.Empty;
+    public IReadOnlyList<string> SourceGrantIds { get; set; } = [];
 }

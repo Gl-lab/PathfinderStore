@@ -116,6 +116,29 @@ export interface CharacterClass {
   deferredDependencies: string[]
 }
 
+export interface RogueSkillGrant {
+  id: string
+  targetId: string | null
+  options: string[]
+  requiresChoice: boolean
+}
+
+export interface RogueRacket {
+  id: string
+  name: string
+  alternativeKeyAbility: AbilityCode | null
+  skillGrants: RogueSkillGrant[]
+  proficiencyGrants: Proficiency[]
+  effects: { id: string; name: string; summary: string }[]
+  deferredDependencies: string[]
+}
+
+export interface RogueTrainingChoice {
+  grantId: string
+  selectedSkillId: string | null
+  replacementSkillId: string | null
+}
+
 export interface CreateCharacterRequest {
   name: string
   concept: string | null
@@ -130,6 +153,8 @@ export interface CreateCharacterRequest {
   backgroundTrainingChoices: BackgroundTrainingChoice[]
   classId: string
   classKeyAbility: AbilityCode
+  rogueRacketId: string | null
+  rogueTrainingChoices: RogueTrainingChoice[]
   finalFreeBoosts: AbilityCode[]
 }
 
@@ -143,6 +168,10 @@ export async function getBackgrounds(): Promise<Background[]> {
 
 export async function getCharacterClasses(): Promise<CharacterClass[]> {
   return (await http.get<CharacterClass[]>('/api/classes')).data
+}
+
+export async function getRogueRackets(): Promise<RogueRacket[]> {
+  return (await http.get<RogueRacket[]>('/api/classes/rogue/rackets')).data
 }
 
 export async function getSkills(): Promise<Skill[]> {

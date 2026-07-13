@@ -25,10 +25,15 @@ import {
   getAncestries,
   getBackgrounds,
   getCharacterClasses,
+  getRogueRackets,
+  getSkills,
   type Ancestry,
   type Background,
   type BackgroundTrainingChoice,
   type CharacterClass,
+  type RogueRacket,
+  type RogueTrainingChoice,
+  type Skill,
 } from '@/features/character-creation/api'
 import {
   getBackgroundFreeBoostOptions,
@@ -38,6 +43,14 @@ import {
   isBackgroundTrainingComplete,
 } from '@/features/character-creation/background'
 import { isCharacterClassChoiceComplete } from '@/features/character-creation/characterClass'
+import {
+  createRogueTrainingChoices,
+  getResolvedRogueTarget,
+  getRogueGrants,
+  getRogueKeyAbilities,
+  isRogueRacketChoiceComplete,
+  requiresRogueReplacement,
+} from '@/features/character-creation/rogueRacket'
 import {
   calculateAbilityScorePreview,
   isFinalFreeBoostDisabled,
@@ -50,6 +63,8 @@ const step = ref(1)
 const ancestries = ref<Ancestry[]>([])
 const backgrounds = ref<Background[]>([])
 const characterClasses = ref<CharacterClass[]>([])
+const rogueRackets = ref<RogueRacket[]>([])
+const skills = ref<Skill[]>([])
 const isLoadingCatalogs = ref(true)
 const isSubmitting = ref(false)
 const errorMessages = ref<string[]>([])
@@ -67,6 +82,8 @@ const form = ref({
   backgroundTrainingChoices: [] as BackgroundTrainingChoice[],
   classId: null as string | null,
   classKeyAbility: null as AbilityCode | null,
+  rogueRacketId: null as string | null,
+  rogueTrainingChoices: [] as RogueTrainingChoice[],
   finalFreeBoosts: [] as AbilityCode[],
 })
 const abilityCodes: AbilityCode[] = ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma']
@@ -95,6 +112,20 @@ const selectedBackground = computed(
 const selectedCharacterClass = computed(
   () => characterClasses.value.find((item) => item.id === form.value.classId) ?? null,
 )
+const selectedRogueRacket = computed(
+  () => rogueRackets.value.find((item) => item.id === form.value.rogueRacketId) ?? null,
+)
+const backgroundSkillIds = computed(() => {
+  if (!selectedBackground.value) return []
+  return selectedBackground.value.grants
+    .filter((grant) => grant.kind === 'SkillTraining')
+    .map((grant) => {
+      if (!grant.requiresChoice) return grant.targetId
+      return form.value.backgroundTrainingChoices.find((choice) => choice.grantId === grant.id)?.targetId ?? null
+    })
+    .filter((id): id is string => id !== null)
+})
+const rogueKeyAbilities = computed(() => getRogueKeyAbilities(selectedRogueRacket.value))
 const backgroundFreeBoostOptions = computed(() =>
   getBackgroundFreeBoostOptions(abilityCodes, form.value.backgroundRestrictedBoost),
 )
@@ -133,10 +164,15 @@ const canContinue = computed(() => {
       form.value.backgroundTrainingChoices,
     )
   if (step.value === 6)
-    return isCharacterClassChoiceComplete(
-      selectedCharacterClass.value,
-      form.value.classKeyAbility,
-    )
+    return selectedCharacterClass.value?.id === 'class.rogue'
+      ? isRogueRacketChoiceComplete(
+          selectedRogueRacket.value,
+          form.value.classKeyAbility,
+          form.value.rogueTrainingChoices,
+          backgroundSkillIds.value,
+          skills.value,
+        )
+      : isCharacterClassChoiceComplete(selectedCharacterClass.value, form.value.classKeyAbility)
   if (step.value === 7)
     return isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts)
   return true
@@ -184,6 +220,31 @@ function selectBackgroundRestrictedBoost(boost: AbilityCode | null): void {
 function selectCharacterClass(classId: string | null): void {
   form.value.classId = classId
   form.value.classKeyAbility = null
+  form.value.rogueRacketId = null
+  form.value.rogueTrainingChoices = []
+}
+function selectRogueRacket(racketId: string | null): void {
+  form.value.rogueRacketId = racketId
+  form.value.classKeyAbility = null
+  form.value.rogueTrainingChoices = createRogueTrainingChoices(
+    rogueRackets.value.find((item) => item.id === racketId) ?? null,
+  )
+}
+function getRogueChoice(grantId: string): RogueTrainingChoice | undefined {
+  return form.value.rogueTrainingChoices.find((choice) => choice.grantId === grantId)
+}
+function getSkillName(skillId: string | null): string {
+  return skills.value.find((skill) => skill.id === skillId)?.name ?? skillId ?? ''
+}
+function getReplacementOptions(grantId: string): Skill[] {
+  const used = new Set([
+    ...backgroundSkillIds.value,
+    ...getRogueGrants(selectedRogueRacket.value)
+      .filter((grant) => grant.id !== grantId)
+      .map((grant) => getResolvedRogueTarget(grant, form.value.rogueTrainingChoices))
+      .filter((id): id is string => id !== null),
+  ])
+  return skills.value.filter((skill) => !used.has(skill.id))
 }
 function isFinalBoostDisabled(type: AbilityCode): boolean {
   return isFinalFreeBoostDisabled(type, form.value.finalFreeBoosts)
@@ -240,6 +301,8 @@ async function submit(): Promise<void> {
       })),
       classId: selectedCharacterClass.value.id,
       classKeyAbility: form.value.classKeyAbility,
+      rogueRacketId: form.value.rogueRacketId,
+      rogueTrainingChoices: form.value.rogueTrainingChoices,
       finalFreeBoosts: form.value.finalFreeBoosts,
     })
     await router.replace('/')
@@ -253,14 +316,18 @@ async function loadCatalogs(): Promise<void> {
   isLoadingCatalogs.value = true
   errorMessages.value = []
   try {
-    const [ancestryCatalog, backgroundCatalog, classCatalog] = await Promise.all([
+    const [ancestryCatalog, backgroundCatalog, classCatalog, racketCatalog, skillCatalog] = await Promise.all([
       getAncestries(),
       getBackgrounds(),
       getCharacterClasses(),
+      getRogueRackets(),
+      getSkills(),
     ])
     ancestries.value = ancestryCatalog
     backgrounds.value = backgroundCatalog
     characterClasses.value = classCatalog
+    rogueRackets.value = racketCatalog
+    skills.value = skillCatalog
   } catch (error) {
     errorMessages.value = getApiErrorMessages(error)
   } finally {
@@ -446,14 +513,54 @@ onMounted(loadCatalogs)
             <p>
               {{ t('classUi.baseHitPoints') }}: {{ selectedCharacterClass.baseHitPoints }}
             </p>
+            <v-select
+              v-if="selectedCharacterClass.id === 'class.rogue'"
+              :model-value="form.rogueRacketId"
+              :items="rogueRackets"
+              item-title="name"
+              item-value="id"
+              :label="t('classUi.rogueRacket')"
+              @update:model-value="selectRogueRacket"
+            />
             <v-radio-group v-model="form.classKeyAbility" :label="t('classUi.keyAbility')">
               <v-radio
-                v-for="code in selectedCharacterClass.keyAbilityOptions"
+                v-for="code in selectedCharacterClass.id === 'class.rogue'
+                  ? rogueKeyAbilities
+                  : selectedCharacterClass.keyAbilityOptions"
                 :key="code"
                 :value="code"
                 :label="getAbilityLabel(code)"
               />
             </v-radio-group>
+            <div v-if="selectedRogueRacket" class="rogue-training">
+              <h3>{{ t('classUi.rogueTraining') }}</h3>
+              <template v-for="grant in getRogueGrants(selectedRogueRacket)" :key="grant.id">
+                <v-select
+                  v-if="grant.requiresChoice"
+                  :model-value="getRogueChoice(grant.id)?.selectedSkillId"
+                  :items="grant.options"
+                  :item-title="getSkillName"
+                  :label="t('classUi.racketSkill')"
+                  @update:model-value="(value) => { const choice = getRogueChoice(grant.id); if (choice) { choice.selectedSkillId = value; choice.replacementSkillId = null } }"
+                />
+                <p v-else>{{ getSkillName(grant.targetId) }}</p>
+                <v-select
+                  v-if="requiresRogueReplacement(grant.id, selectedRogueRacket, form.rogueTrainingChoices, backgroundSkillIds)"
+                  :model-value="getRogueChoice(grant.id)?.replacementSkillId"
+                  :items="getReplacementOptions(grant.id)"
+                  item-title="name"
+                  item-value="id"
+                  :label="t('classUi.replacementSkill')"
+                  @update:model-value="(value) => { const choice = getRogueChoice(grant.id); if (choice) choice.replacementSkillId = value }"
+                />
+              </template>
+              <v-alert
+                v-for="effect in selectedRogueRacket.effects"
+                :key="effect.id"
+                type="info"
+                variant="tonal"
+              >{{ effect.name }}: {{ effect.summary }}</v-alert>
+            </div>
             <v-list density="compact" :subheader="t('classUi.initialProficiencies')">
               <v-list-item
                 v-for="group in groupProficiencies(selectedCharacterClass.initialProficiencies)"
@@ -514,6 +621,9 @@ onMounted(loadCatalogs)
               v-if="form.classKeyAbility"
               :title="t('classUi.keyAbility')"
               :subtitle="getAbilityLabel(form.classKeyAbility)" /><v-list-item
+              v-if="selectedRogueRacket"
+              :title="t('classUi.rogueRacket')"
+              :subtitle="selectedRogueRacket.name" /><v-list-item
               v-if="selectedCharacterClass"
               :title="t('classUi.initialProficiencies')"
               :subtitle="groupProficiencies(selectedCharacterClass.initialProficiencies).map((group) => getProficiencyCategoryLabel(group.category)).join(', ')" /><v-list-item

@@ -114,6 +114,96 @@ public sealed class ClassPackageTests
         Assert.Equal( 14, character.AbilityScores.Dexterity.Value );
     }
 
+    [Fact]
+    public void SetClassPackage_Rogue_AppliesRacketKeyAbilityAndTraining()
+    {
+        DraftCharacter character = CreateCharacter();
+        CharacterClass rogue = CreateClass( "class.rogue", AbilityType.Dexterity );
+        RogueRacket ruffian = CreateRacket(
+            "ruffian",
+            AbilityType.Strength,
+            new RogueSkillGrantDescriptor(
+                "rogue_racket.ruffian.skill.intimidation",
+                "skill.intimidation",
+                [] ) );
+
+        character.SetClassPackage(
+            rogue,
+            AbilityType.Strength,
+            ruffian,
+            [],
+            CreateSkills() );
+
+        Assert.Equal( ruffian.Id, character.SelectedRogueRacketId );
+        Assert.Equal( 12, character.AbilityScores.Strength.Value );
+        Assert.Contains( character.TrainedSkills, skill => skill.SkillId == "skill.stealth" );
+        Assert.Contains( character.TrainedSkills, skill => skill.SkillId == "skill.intimidation" );
+    }
+
+    [Fact]
+    public void SetClassPackage_RogueWithoutRacket_AndNonRogueWithRacket_Throw()
+    {
+        DraftCharacter character = CreateCharacter();
+        CharacterClass rogue = CreateClass( "class.rogue", AbilityType.Dexterity );
+        CharacterClass fighter = CreateClass( "class.fighter", AbilityType.Strength );
+        RogueRacket thief = CreateRacket(
+            "thief",
+            null,
+            new RogueSkillGrantDescriptor(
+                "rogue_racket.thief.skill.thievery",
+                "skill.thievery",
+                [] ) );
+
+        Assert.Throws<CharacterManagementException>( () =>
+            character.SetClassPackage( rogue, AbilityType.Dexterity ) );
+        Assert.Throws<CharacterManagementException>( () =>
+            character.SetClassPackage( fighter, AbilityType.Strength, thief ) );
+    }
+
+    [Fact]
+    public void SetClassPackage_ReplacingRogueWithFighter_RemovesOnlyRogueTraining()
+    {
+        DraftCharacter character = CreateCharacter();
+        CharacterClass rogue = CreateClass( "class.rogue", AbilityType.Dexterity );
+        CharacterClass fighter = CreateClass( "class.fighter", AbilityType.Strength );
+        RogueRacket thief = CreateRacket(
+            "thief",
+            null,
+            new RogueSkillGrantDescriptor(
+                "rogue_racket.thief.skill.thievery",
+                "skill.thievery",
+                [] ) );
+        character.SetClassPackage(
+            rogue,
+            AbilityType.Dexterity,
+            thief,
+            [],
+            CreateSkills() );
+
+        character.SetClassPackage( fighter, AbilityType.Strength );
+
+        Assert.Null( character.SelectedRogueRacketId );
+        Assert.DoesNotContain( character.TrainedSkills, skill =>
+            skill.SourceGrantId.StartsWith( "class.rogue.", StringComparison.Ordinal ) ||
+            skill.SourceGrantId.StartsWith( "rogue_racket.", StringComparison.Ordinal ) );
+    }
+
+    [Fact]
+    public void SetBackgroundPackage_AfterClassPackage_ThrowsWithoutRemovingClassEffects()
+    {
+        DraftCharacter character = CreateCharacter();
+        CharacterClass fighter = CreateClass( "class.fighter", AbilityType.Strength );
+        character.SetClassPackage( fighter, AbilityType.Strength );
+
+        Assert.Throws<CharacterManagementException>( () => character.SetBackgroundPackage(
+            CreateBackground(),
+            AbilityType.Dexterity,
+            AbilityType.Intelligence ) );
+
+        Assert.Equal( fighter.Id, character.SelectedClassId );
+        Assert.Equal( 12, character.AbilityScores.Strength.Value );
+    }
+
     private static DraftCharacter CreateCharacter()
     {
         DraftCharacter character = CreateCharacterWithoutBackground();
@@ -172,6 +262,33 @@ public sealed class ClassPackageTests
             null,
             [],
             [] );
+    }
+
+    private static RogueRacket CreateRacket(
+        string id,
+        AbilityType? alternativeKeyAbility,
+        params RogueSkillGrantDescriptor[] skillGrants )
+    {
+        return new RogueRacket(
+            $"rogue_racket.{id}",
+            id,
+            new SourceReference( "Player Core", 166 ),
+            alternativeKeyAbility,
+            skillGrants,
+            [],
+            [],
+            [] );
+    }
+
+    private static IReadOnlyCollection<SkillDefinition> CreateSkills()
+    {
+        SourceReference source = new SourceReference( "Player Core", 227 );
+        return
+        [
+            new SkillDefinition( "skill.intimidation", "Intimidation", AbilityType.Charisma, source ),
+            new SkillDefinition( "skill.stealth", "Stealth", AbilityType.Dexterity, source ),
+            new SkillDefinition( "skill.thievery", "Thievery", AbilityType.Dexterity, source ),
+        ];
     }
 
     private sealed class StubAncestryRepository : IAncestryRepository

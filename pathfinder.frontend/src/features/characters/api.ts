@@ -23,6 +23,7 @@ export interface Proficiency {
   category: ProficiencyCategory
   rank: ProficiencyRank
   sourceGrantId: string
+  sourceGrantIds?: string[]
 }
 
 export interface Characteristic {
@@ -65,6 +66,12 @@ export interface CharacterClassPackage {
   name: string
   baseHitPoints: number
   keyAbility: AbilityCode
+  rogueRacket: {
+    id: string
+    name: string
+    alternativeKeyAbility: AbilityCode | null
+    effects: { id: string; name: string; summary: string }[]
+  } | null
   rules: {
     id: string
     kind: string

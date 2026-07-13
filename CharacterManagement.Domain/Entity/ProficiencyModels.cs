@@ -93,6 +93,31 @@ public sealed record ProficiencyGrant
     }
 }
 
+public sealed record EffectiveProficiency(
+    ProficiencyTarget Target,
+    ProficiencyRank Rank,
+    IReadOnlyList<string> SourceGrantIds );
+
+public static class ProficiencyResolver
+{
+    public static IReadOnlyList<EffectiveProficiency> Resolve(
+        IEnumerable<ProficiencyGrant> grants )
+    {
+        ArgumentNullException.ThrowIfNull( grants );
+
+        return grants
+            .GroupBy( grant => grant.Target.Id, StringComparer.Ordinal )
+            .Select( group => new EffectiveProficiency(
+                group.First().Target,
+                group.Max( grant => grant.Rank ),
+                group
+                    .Select( grant => grant.SourceGrantId )
+                    .Distinct( StringComparer.Ordinal )
+                    .ToArray() ) )
+            .ToArray();
+    }
+}
+
 public static class ProficiencyTargets
 {
     public static ProficiencyTarget Perception { get; } = new ProficiencyTarget(

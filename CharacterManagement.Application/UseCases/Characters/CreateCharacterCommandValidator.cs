@@ -50,6 +50,23 @@ public sealed class CreateCharacterCommandValidator : AbstractValidator<CreateCh
                 RuleFor( command => command.Character.ClassKeyAbility )
                     .NotNull();
 
+                RuleFor( command => command.Character.RogueTrainingChoices )
+                    .NotNull();
+
+                When(
+                    command => command.Character.ClassId == "class.rogue",
+                    () => RuleFor( command => command.Character.RogueRacketId ).NotEmpty() );
+
+                When(
+                    command => command.Character.ClassId != "class.rogue",
+                    () =>
+                    {
+                        RuleFor( command => command.Character.RogueRacketId )
+                            .Empty();
+                        RuleFor( command => command.Character.RogueTrainingChoices )
+                            .Empty();
+                    } );
+
                 RuleFor( command => command.Character.FinalFreeBoosts )
                     .Cascade( CascadeMode.Stop )
                     .NotNull()

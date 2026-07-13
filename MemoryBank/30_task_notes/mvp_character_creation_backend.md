@@ -44,7 +44,7 @@
 
 ## Next steps
 
-1. Реализовывать обязательные class choices отдельными flows, начиная с Rogue's Racket.
+1. Продолжать обязательные class choices отдельными flows; Rogue's Racket реализован.
 2. Добавить cross-source proficiency resolver вместе с первым дополнительным источником grants или level-up progression.
 3. Не применять feats, class features, spells, deity и equipment без соответствующих каталогов и доменных решений.
 4. При изменении character creation сверяться с `../20_domain/character_creation/domain_rules_target_full.md` и актуальными catalog documents.

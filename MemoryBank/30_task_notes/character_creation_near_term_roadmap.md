@@ -85,7 +85,7 @@ Skill increases, выбор дополнительных trained skills от Int
 
 ### 5. Обязательные class choices
 
-Следующая задача: [Rogue's Racket Implementation Plan](rogue_racket_implementation.md). План зафиксирован, реализация не начата.
+Следующая задача: [Rogue's Racket Implementation Plan](rogue_racket_implementation.md). Реализованы четыре Player Core racket, key ability, training/replacement, Ruffian proficiency, persistence, API и frontend; code review завершён без открытых замечаний.
 
 После появления общего proficiency/choice foundation разделить обязательные развилки классов на небольшие самостоятельные задачи.
 

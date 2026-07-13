@@ -32,6 +32,6 @@
 
 ## Next steps
 
-1. Добавлять обязательные class choices отдельными flows, начиная с Rogue's Racket.
+1. Добавлять следующие обязательные class choices отдельными flows; Rogue's Racket реализован.
 2. Подключить class skills отдельной задачей с replacement flow для повторного training.
 3. Добавить e2e-покрытие основного пользовательского сценария.

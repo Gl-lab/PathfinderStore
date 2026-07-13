@@ -134,8 +134,9 @@ GET /api/classes/rogue/rackets
   "rogueRacketId": "rogue_racket.mastermind",
   "rogueTrainingChoices": [
     {
-      "grantId": "rogue_racket.mastermind.knowledge_skill",
-      "targetId": "skill.arcana"
+      "grantId": "rogue_racket.mastermind.skill.knowledge",
+      "selectedSkillId": "skill.arcana",
+      "replacementSkillId": null
     }
   ]
 }
@@ -202,4 +203,8 @@ Legacy-персонаж Rogue без racket остаётся читаемым, �
 ## Статус
 
 - план и предварительная граница задачи зафиксированы;
-- реализация не начата.
+- этап 1 завершён: stable ids и duplicate replacement contract нормализованы в [`../20_domain/character_creation/rogue_rackets_player_core.md`](../20_domain/character_creation/rogue_rackets_player_core.md);
+- этапы 2–8 завершены: реализованы каталог, training/proficiency resolvers, aggregate/builder, API/read-model, EF migration и frontend flow;
+- миграция `AddRogueRacket` создана через `dotnet ef`;
+- проверки после review: Domain 86/86, Infrastructure 83/83, frontend 23/23, production build и lint проходят;
+- этап 10 завершён: code review выявил и закрыл риск очистки class/racket training при поздней замене Background; открытых замечаний нет.

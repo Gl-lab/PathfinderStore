@@ -42,13 +42,33 @@ public static class CharacterClassDtoMapper
                 Category = grant.Target.Category,
                 Rank = grant.Rank,
                 SourceGrantId = grant.SourceGrantId,
+                SourceGrantIds = [ grant.SourceGrantId ],
+            } )
+            .ToList();
+    }
+
+    public static IReadOnlyList<ProficiencyDto> MapProficiencies(
+        IReadOnlyList<EffectiveProficiency> proficiencies )
+    {
+        ArgumentNullException.ThrowIfNull( proficiencies );
+
+        return proficiencies
+            .Select( proficiency => new ProficiencyDto
+            {
+                TargetId = proficiency.Target.Id,
+                Name = proficiency.Target.Name,
+                Category = proficiency.Target.Category,
+                Rank = proficiency.Rank,
+                SourceGrantId = proficiency.SourceGrantIds.First(),
+                SourceGrantIds = proficiency.SourceGrantIds,
             } )
             .ToList();
     }
 
     public static CharacterClassPackageDto MapPackage(
         DraftCharacter character,
-        CharacterClass characterClass )
+        CharacterClass characterClass,
+        RogueRacket? rogueRacket = null )
     {
         ArgumentNullException.ThrowIfNull( character );
         ArgumentNullException.ThrowIfNull( characterClass );
@@ -64,6 +84,7 @@ public static class CharacterClassDtoMapper
             Name = characterClass.Name,
             BaseHitPoints = characterClass.BaseHitPoints,
             KeyAbility = character.SelectedClassKeyAbility!.Value,
+            RogueRacket = rogueRacket is null ? null : RogueRacketDtoMapper.MapPackage( rogueRacket ),
             Rules = characterClass.Rules
                 .Select( Map )
                 .ToList(),

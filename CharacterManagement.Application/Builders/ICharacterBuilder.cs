@@ -18,7 +18,11 @@ public interface ICharacterBuilder
         AbilityType restrictedBoost,
         AbilityType freeBoost,
         IReadOnlyList<BackgroundTrainingChoice>? trainingChoices = null );
-    void SetClass( string characterClassId, AbilityType keyAbility );
+    void SetClass(
+        string characterClassId,
+        AbilityType keyAbility,
+        string? rogueRacketId = null,
+        IReadOnlyList<RogueTrainingChoice>? rogueTrainingChoices = null );
     void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts );
     void IncreaseAbilityScores( IEnumerable<AbilityType> increasedAbilityScores );
     void ApplyFreeBoosts( IEnumerable<AbilityType> freeBoosts );

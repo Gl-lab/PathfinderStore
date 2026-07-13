@@ -201,6 +201,15 @@ onMounted(load)
               {{ t('classUi.keyAbility') }}:
               {{ getAbilityLabel(character.classPackage.keyAbility) }}
             </p>
+            <template v-if="character.classPackage.rogueRacket">
+              <p>
+                {{ t('classUi.rogueRacket') }}: {{ character.classPackage.rogueRacket.name }}
+              </p>
+              <p
+                v-for="effect in character.classPackage.rogueRacket.effects"
+                :key="effect.id"
+              >{{ effect.name }}: {{ effect.summary }}</p>
+            </template>
             <p><strong>{{ t('classUi.rules') }}</strong></p>
             <ul>
               <li v-for="rule in character.classPackage.rules" :key="rule.id">

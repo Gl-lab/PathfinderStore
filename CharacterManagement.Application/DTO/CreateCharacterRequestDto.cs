@@ -17,5 +17,7 @@ public class CreateCharacterRequestDto
     public IReadOnlyList<BackgroundTrainingChoice> BackgroundTrainingChoices { get; set; } = [];
     public string ClassId { get; set; } = String.Empty;
     public AbilityType? ClassKeyAbility { get; set; }
+    public string? RogueRacketId { get; set; }
+    public IReadOnlyList<RogueTrainingChoice> RogueTrainingChoices { get; set; } = [];
     public IReadOnlyList<AbilityType>? FinalFreeBoosts { get; set; }
 }

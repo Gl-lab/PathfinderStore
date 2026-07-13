@@ -8,5 +8,6 @@ public sealed class CharacterClassPackageDto
     public string Name { get; set; } = String.Empty;
     public int BaseHitPoints { get; set; }
     public AbilityType KeyAbility { get; set; }
+    public RogueRacketPackageDto? RogueRacket { get; set; }
     public IReadOnlyList<CharacterClassRuleDto> Rules { get; set; } = [];
 }

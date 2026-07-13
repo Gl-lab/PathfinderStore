@@ -10,17 +10,20 @@ public sealed class CharacterConvertor : ICharacterConvertor
     private readonly IBackgroundRepository? _backgroundRepository;
     private readonly ICharacterClassRepository? _characterClassRepository;
     private readonly ISkillRepository? _skillRepository;
+    private readonly IRogueRacketRepository? _rogueRacketRepository;
 
     public CharacterConvertor(
         IAncestryRepository? ancestryRepository = null,
         IBackgroundRepository? backgroundRepository = null,
         ICharacterClassRepository? characterClassRepository = null,
-        ISkillRepository? skillRepository = null )
+        ISkillRepository? skillRepository = null,
+        IRogueRacketRepository? rogueRacketRepository = null )
     {
         _ancestryRepository = ancestryRepository;
         _backgroundRepository = backgroundRepository;
         _characterClassRepository = characterClassRepository;
         _skillRepository = skillRepository;
+        _rogueRacketRepository = rogueRacketRepository;
     }
 
     public DraftCharacter Convert( CharacterDto character ) => throw new NotSupportedException();
@@ -34,6 +37,7 @@ public sealed class CharacterConvertor : ICharacterConvertor
             ? null
             : _backgroundRepository?.GetBackground( draftCharacter.SelectedBackgroundId );
         CharacterClass? characterClass = ResolveCharacterClass( draftCharacter );
+        RogueRacket? rogueRacket = ResolveRogueRacket( draftCharacter );
 
         return new CharacterDto
         {
@@ -48,7 +52,7 @@ public sealed class CharacterConvertor : ICharacterConvertor
                 : BackgroundDtoMapper.MapPackage( draftCharacter, background ),
             ClassPackage = characterClass is null
                 ? null
-                : CharacterClassDtoMapper.MapPackage( draftCharacter, characterClass ),
+                : CharacterClassDtoMapper.MapPackage( draftCharacter, characterClass, rogueRacket ),
             FinalFreeBoosts = draftCharacter.AppliedFinalFreeBoosts.ToArray(),
             DerivedStatistics = ancestry is null || characterClass is null
                 ? null
@@ -59,7 +63,8 @@ public sealed class CharacterConvertor : ICharacterConvertor
             Training = CharacterTrainingDtoMapper.Map( draftCharacter, _skillRepository ),
             Proficiencies = characterClass is null
                 ? []
-                : CharacterClassDtoMapper.MapProficiencies( characterClass.InitialProficiencies ),
+                : CharacterClassDtoMapper.MapProficiencies( ProficiencyResolver.Resolve(
+                    characterClass.InitialProficiencies.Concat( rogueRacket?.ProficiencyGrants ?? [] ) ) ),
             Characteristics = new GroupCharacteristicDto
             {
                 Strength = Convert( draftCharacter.AbilityScores.Strength ),
@@ -72,6 +77,22 @@ public sealed class CharacterConvertor : ICharacterConvertor
             },
             Backpack = null,
         };
+    }
+
+    private RogueRacket? ResolveRogueRacket( DraftCharacter character )
+    {
+        if ( character.SelectedRogueRacketId is null )
+        {
+            return null;
+        }
+
+        if ( _rogueRacketRepository is null )
+        {
+            throw new InvalidOperationException(
+                "Rogue racket repository is required to map a selected Rogue's Racket." );
+        }
+
+        return _rogueRacketRepository.GetRogueRacket( character.SelectedRogueRacketId );
     }
 
     private CharacterClass? ResolveCharacterClass( DraftCharacter character )

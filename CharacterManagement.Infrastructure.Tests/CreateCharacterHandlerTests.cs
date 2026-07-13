@@ -144,6 +144,51 @@ public sealed class CreateCharacterHandlerTests
     }
 
     [Fact]
+    public async Task Handle_Rogue_PersistsRacketAndResolvedTraining()
+    {
+        await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
+        Account account = await CreateAccountAsync( dbContext, 55, "Merisiel", "Shadow" );
+        CreateCharacterHandler handler = CreateHandler( dbContext );
+        CreateCharacterRequestDto character = new CreateCharacterRequestDto
+        {
+            Name = "Merisiel",
+            AncestryType = AncestryType.Human,
+            HeritageId = "human.skilled",
+            AncestryFeatId = "human.cooperative_nature",
+            FreeBoosts = [ AbilityType.Dexterity, AbilityType.Intelligence ],
+            BackgroundId = "background.acrobat",
+            BackgroundRestrictedBoost = AbilityType.Dexterity,
+            BackgroundFreeBoost = AbilityType.Charisma,
+            ClassId = "class.rogue",
+            ClassKeyAbility = AbilityType.Dexterity,
+            RogueRacketId = "rogue_racket.thief",
+            FinalFreeBoosts =
+            [
+                AbilityType.Strength,
+                AbilityType.Constitution,
+                AbilityType.Intelligence,
+                AbilityType.Wisdom,
+            ],
+        };
+
+        await handler.Handle(
+            new CreateCharacterCommand( account.UserId, character ),
+            CancellationToken.None );
+        dbContext.ChangeTracker.Clear();
+
+        DraftCharacter savedCharacter = await dbContext.Character
+            .AsNoTracking()
+            .SingleAsync( entity => entity.AccountId == account.Id );
+        Assert.Equal( "rogue_racket.thief", savedCharacter.SelectedRogueRacketId );
+        Assert.Contains( savedCharacter.TrainedSkills, skill =>
+            ( skill.SkillId == "skill.stealth" ) &&
+            ( skill.SourceGrantId == "class.rogue.skill.stealth" ) );
+        Assert.Contains( savedCharacter.TrainedSkills, skill =>
+            ( skill.SkillId == "skill.thievery" ) &&
+            ( skill.SourceGrantId == "rogue_racket.thief.skill.thievery" ) );
+    }
+
+    [Fact]
     public async Task Handle_DuplicateFreeBoosts_ThrowsAndDoesNotPersistCharacter()
     {
         await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
@@ -188,7 +233,8 @@ public sealed class CreateCharacterHandlerTests
             ancestryRepository,
             backgroundRepository: backgroundRepository,
             characterClassRepository: characterClassRepository,
-            skillRepository: new SkillRepository() );
+            skillRepository: new SkillRepository(),
+            rogueRacketRepository: new RogueRacketRepository() );
         TestUnitOfWork unitOfWork = new TestUnitOfWork( dbContext );
 
         return new CreateCharacterHandler( accountRepository, characterBuilder, unitOfWork );

@@ -12,19 +12,22 @@ public class CharacterBuilder : ICharacterBuilder
     private readonly IBackgroundRepository? _backgroundRepository;
     private readonly ICharacterClassRepository? _characterClassRepository;
     private readonly ISkillRepository? _skillRepository;
+    private readonly IRogueRacketRepository? _rogueRacketRepository;
 
     public CharacterBuilder(
         IAncestryRepository ancestryRepository,
         IAncestryChoiceAvailabilityPolicy? ancestryChoiceAvailabilityPolicy = null,
         IBackgroundRepository? backgroundRepository = null,
         ICharacterClassRepository? characterClassRepository = null,
-        ISkillRepository? skillRepository = null )
+        ISkillRepository? skillRepository = null,
+        IRogueRacketRepository? rogueRacketRepository = null )
     {
         _ancestryRepository = ancestryRepository;
         _ancestryChoiceAvailabilityPolicy = ancestryChoiceAvailabilityPolicy ?? new CommonAncestryChoiceAvailabilityPolicy();
         _backgroundRepository = backgroundRepository;
         _characterClassRepository = characterClassRepository;
         _skillRepository = skillRepository;
+        _rogueRacketRepository = rogueRacketRepository;
     }
 
     public void CreateCharacter(
@@ -101,7 +104,11 @@ public class CharacterBuilder : ICharacterBuilder
             _skillRepository?.GetAll() ?? [] );
     }
 
-    public void SetClass( string characterClassId, AbilityType keyAbility )
+    public void SetClass(
+        string characterClassId,
+        AbilityType keyAbility,
+        string? rogueRacketId = null,
+        IReadOnlyList<RogueTrainingChoice>? rogueTrainingChoices = null )
     {
         if ( _draftCharacter is null )
         {
@@ -123,7 +130,35 @@ public class CharacterBuilder : ICharacterBuilder
             throw new CharacterManagementException( exception.Message );
         }
 
-        _draftCharacter.SetClassPackage( characterClass, keyAbility );
+        RogueRacket? racket = null;
+        if ( !String.IsNullOrWhiteSpace( rogueRacketId ) )
+        {
+            if ( _rogueRacketRepository is null )
+            {
+                throw new InvalidOperationException( "Rogue racket repository is not configured." );
+            }
+
+            try
+            {
+                racket = _rogueRacketRepository.GetRogueRacket( rogueRacketId );
+            }
+            catch ( ArgumentException exception )
+            {
+                throw new CharacterManagementException( exception.Message );
+            }
+        }
+
+        if ( ( characterClass.Id == "class.rogue" ) && ( _skillRepository is null ) )
+        {
+            throw new InvalidOperationException( "Skill repository is not configured." );
+        }
+
+        _draftCharacter.SetClassPackage(
+            characterClass,
+            keyAbility,
+            racket,
+            rogueTrainingChoices,
+            _skillRepository?.GetAll() ?? [] );
     }
 
     public void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts )

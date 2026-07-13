@@ -21,6 +21,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public AbilityType? SelectedBackgroundFreeBoost { get; private set; }
     public string? SelectedClassId { get; private set; }
     public AbilityType? SelectedClassKeyAbility { get; private set; }
+    public string? SelectedRogueRacketId { get; private set; }
     public IReadOnlyList<AbilityType> AppliedFinalFreeBoosts { get; private set; } = [];
     public IReadOnlyList<TrainedSkill> TrainedSkills { get; private set; } = [];
     public IReadOnlyList<TrainedLore> TrainedLore { get; private set; } = [];
@@ -238,6 +239,12 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     {
         ArgumentNullException.ThrowIfNull( background );
 
+        if ( HasClassBoostPackage )
+        {
+            throw new CharacterManagementException(
+                "Background package cannot be replaced after class package has been applied." );
+        }
+
         if ( !background.RestrictedBoostOptions.Contains( restrictedBoost ) )
         {
             throw new CharacterManagementException(
@@ -267,7 +274,12 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         EnsureInvariants();
     }
 
-    public void SetClassPackage( CharacterClass characterClass, AbilityType keyAbility )
+    public void SetClassPackage(
+        CharacterClass characterClass,
+        AbilityType keyAbility,
+        RogueRacket? rogueRacket = null,
+        IReadOnlyList<RogueTrainingChoice>? rogueTrainingChoices = null,
+        IReadOnlyCollection<SkillDefinition>? skillCatalog = null )
     {
         ArgumentNullException.ThrowIfNull( characterClass );
 
@@ -276,10 +288,45 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
             throw new CharacterManagementException( "Background package must be set before class package." );
         }
 
-        if ( !characterClass.KeyAbilityOptions.Contains( keyAbility ) )
+        bool isRogue = characterClass.Id == "class.rogue";
+        if ( isRogue && ( rogueRacket is null ) )
+        {
+            throw new CharacterManagementException( "Rogue class requires a Rogue's Racket." );
+        }
+
+        if ( !isRogue && ( rogueRacket is not null ) )
+        {
+            throw new CharacterManagementException( "Rogue's Racket can only be selected for the Rogue class." );
+        }
+
+        if ( !isRogue && ( rogueTrainingChoices?.Count > 0 ) )
+        {
+            throw new CharacterManagementException( "Rogue training choices can only be selected for the Rogue class." );
+        }
+
+        List<AbilityType> allowedKeyAbilities = characterClass.KeyAbilityOptions.ToList();
+        if ( rogueRacket?.AlternativeKeyAbility is AbilityType alternativeKeyAbility )
+        {
+            allowedKeyAbilities.Add( alternativeKeyAbility );
+        }
+
+        if ( !allowedKeyAbilities.Contains( keyAbility ) )
         {
             throw new CharacterManagementException(
                 $"Ability '{keyAbility}' is not a key ability option for class '{characterClass.Id}'." );
+        }
+
+        RogueTrainingResult? rogueTraining = null;
+        if ( rogueRacket is not null )
+        {
+            IReadOnlyList<TrainedSkill> backgroundTraining = TrainedSkills
+                .Where( training => training.SourceGrantId.StartsWith( "background.", StringComparison.Ordinal ) )
+                .ToArray();
+            rogueTraining = RogueTrainingResolver.Resolve(
+                rogueRacket,
+                rogueTrainingChoices ?? [],
+                skillCatalog ?? [],
+                backgroundTraining );
         }
 
         RemoveClassEffects();
@@ -287,6 +334,11 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         AbilityScores.ApplyAbilityBoost( keyAbility );
         SelectedClassId = characterClass.Id;
         SelectedClassKeyAbility = keyAbility;
+        SelectedRogueRacketId = rogueRacket?.Id;
+        if ( rogueTraining is not null )
+        {
+            TrainedSkills = rogueTraining.Skills.ToArray();
+        }
 
         EnsureInvariants();
     }
@@ -512,6 +564,12 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
 
         SelectedClassId = null;
         SelectedClassKeyAbility = null;
+        SelectedRogueRacketId = null;
+        TrainedSkills = TrainedSkills
+            .Where( training =>
+                !training.SourceGrantId.StartsWith( "class.", StringComparison.Ordinal ) &&
+                !training.SourceGrantId.StartsWith( "rogue_racket.", StringComparison.Ordinal ) )
+            .ToArray();
     }
 
     private void RemoveFinalFreeBoostEffects()

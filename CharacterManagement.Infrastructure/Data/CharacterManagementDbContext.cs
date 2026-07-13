@@ -31,6 +31,7 @@ public class CharacterManagementDbContext( DbContextOptions<CharacterManagementD
             b.Property( x => x.SelectedBackgroundFreeBoost ).HasConversion<int>();
             b.Property( x => x.SelectedClassId ).HasMaxLength( 100 );
             b.Property( x => x.SelectedClassKeyAbility ).HasConversion<int>();
+            b.Property( x => x.SelectedRogueRacketId ).HasMaxLength( 100 );
 
             b.Property( x => x.AppliedFreeBoosts )
                 .HasConversion(
