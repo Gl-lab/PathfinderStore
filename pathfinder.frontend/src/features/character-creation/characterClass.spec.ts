@@ -7,6 +7,7 @@ const fighter: CharacterClass = {
   name: 'Fighter',
   baseHitPoints: 10,
   keyAbilityOptions: ['Strength', 'Dexterity'],
+  initialProficiencies: [],
   spellTradition: null,
   rules: [],
   deferredDependencies: [],

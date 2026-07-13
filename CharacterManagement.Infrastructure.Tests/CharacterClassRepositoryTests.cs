@@ -17,7 +17,38 @@ public sealed class CharacterClassRepositoryTests
             characterClasses.Count,
             characterClasses.Select( characterClass => characterClass.Id ).Distinct().Count() );
         Assert.All( characterClasses, characterClass => Assert.NotEmpty( characterClass.KeyAbilityOptions ) );
+        Assert.All( characterClasses, characterClass => Assert.NotEmpty( characterClass.InitialProficiencies ) );
+        Assert.All( characterClasses, characterClass => Assert.Equal(
+            characterClass.InitialProficiencies.Count,
+            characterClass.InitialProficiencies
+                .Select( grant => grant.Target.Id )
+                .Distinct( StringComparer.Ordinal )
+                .Count() ) );
         Assert.All( characterClasses, characterClass => Assert.NotEmpty( characterClass.Rules ) );
+    }
+
+    [Theory]
+    [InlineData( "class.bard", 10 )]
+    [InlineData( "class.cleric", 8 )]
+    [InlineData( "class.druid", 10 )]
+    [InlineData( "class.fighter", 13 )]
+    [InlineData( "class.ranger", 11 )]
+    [InlineData( "class.rogue", 10 )]
+    [InlineData( "class.witch", 8 )]
+    [InlineData( "class.wizard", 8 )]
+    public void GetCharacterClass_ReturnsCompleteInitialProficiencyMatrix(
+        string characterClassId,
+        int expectedGrantCount )
+    {
+        CharacterClassRepository repository = new CharacterClassRepository();
+
+        CharacterClass characterClass = repository.GetCharacterClass( characterClassId );
+
+        Assert.Equal( expectedGrantCount, characterClass.InitialProficiencies.Count );
+        ProficiencyGrant classDc = Assert.Single( characterClass.InitialProficiencies
+            .Where( grant => grant.Target.Category == ProficiencyCategory.ClassDc ) );
+        Assert.Equal( ProficiencyRank.Trained, classDc.Rank );
+        Assert.Equal( $"{characterClass.Id}.initial_proficiencies", classDc.SourceGrantId );
     }
 
     [Fact]
@@ -31,6 +62,15 @@ public sealed class CharacterClassRepositoryTests
         Assert.Equal(
             [ AbilityType.Strength, AbilityType.Dexterity ],
             fighter.KeyAbilityOptions );
+        Assert.Equal(
+            ProficiencyRank.Expert,
+            GetRank( fighter, ProficiencyTargets.SimpleWeapons.Id ) );
+        Assert.Equal(
+            ProficiencyRank.Trained,
+            GetRank( fighter, ProficiencyTargets.AdvancedWeapons.Id ) );
+        Assert.Equal(
+            ProficiencyRank.Trained,
+            GetRank( fighter, ProficiencyTargets.HeavyArmor.Id ) );
     }
 
     [Fact]
@@ -51,5 +91,12 @@ public sealed class CharacterClassRepositoryTests
 
         Assert.Throws<ArgumentOutOfRangeException>( () =>
             repository.GetCharacterClass( "class.unknown" ) );
+    }
+
+    private static ProficiencyRank GetRank( CharacterClass characterClass, string targetId )
+    {
+        return Assert.Single( characterClass.InitialProficiencies
+                .Where( grant => grant.Target.Id == targetId ) )
+            .Rank;
     }
 }

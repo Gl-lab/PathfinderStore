@@ -48,6 +48,7 @@ public sealed class GetCharacterQueriesTests
         Assert.Null( result.DerivedStatistics );
         Assert.Empty( result.Training.Skills );
         Assert.Empty( result.Training.Lore );
+        Assert.Empty( result.Proficiencies );
     }
 
     [Fact]
@@ -113,6 +114,15 @@ public sealed class GetCharacterQueriesTests
         Assert.Equal( "class.cleric", result.ClassPackage.ClassId );
         Assert.Equal( 8, result.ClassPackage.BaseHitPoints );
         Assert.Equal( AbilityType.Wisdom, result.ClassPackage.KeyAbility );
+        Assert.Equal( 8, result.Proficiencies.Count );
+        Assert.Contains(
+            result.Proficiencies,
+            proficiency =>
+                ( proficiency.TargetId == "proficiency.save.will" ) &&
+                ( proficiency.Rank == ProficiencyRank.Expert ) );
+        Assert.Contains(
+            result.Proficiencies,
+            proficiency => proficiency.TargetId == "proficiency.class_dc.cleric" );
         Assert.Equal( 18, result.Characteristics.Wisdom.Value );
         Assert.Contains( result.ClassPackage.Rules, rule => rule.Id == "class_choice.cleric.deity" );
         Assert.Equal(
@@ -227,6 +237,29 @@ public sealed class GetCharacterQueriesTests
         Assert.Equal( 21, character.DerivedStatistics.HitPoints.Maximum );
         Assert.Equal( "skill.intimidation", Assert.Single( character.Training.Skills ).Id );
         Assert.Equal( "lore.warfare", Assert.Single( character.Training.Lore ).Id );
+    }
+
+    [Fact]
+    public void Convert_WhenCharacterHasClassAndClassRepositoryIsMissing_Throws()
+    {
+        AncestryRepository ancestryRepository = new AncestryRepository();
+        BackgroundRepository backgroundRepository = new BackgroundRepository();
+        CharacterClassRepository characterClassRepository = new CharacterClassRepository();
+        CharacterBuilder builder = CreateBuilder(
+            ancestryRepository,
+            backgroundRepository,
+            characterClassRepository );
+        builder.CreateCharacter( 1, "Valeros", AncestryType.Human );
+        builder.SetAncestryPackage( "human.skilled", "human.cooperative_nature" );
+        builder.ApplyFreeBoosts( [ AbilityType.Strength, AbilityType.Constitution ] );
+        builder.SetBackground(
+            "background.warrior",
+            AbilityType.Strength,
+            AbilityType.Constitution );
+        builder.SetClass( "class.fighter", AbilityType.Strength );
+        CharacterConvertor converter = new CharacterConvertor();
+
+        Assert.Throws<InvalidOperationException>( () => converter.Convert( builder.Build() ) );
     }
 
     [Fact]

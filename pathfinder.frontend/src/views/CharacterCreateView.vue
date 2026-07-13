@@ -10,7 +10,16 @@ import {
   getBackgroundLabel,
   getCharacterClassLabel,
 } from '@/i18n/domain'
-import type { AbilityCode, AncestryCode } from '@/features/characters/api'
+import type {
+  AbilityCode,
+  AncestryCode,
+  ProficiencyCategory,
+  ProficiencyRank,
+} from '@/features/characters/api'
+import {
+  formatProficiency,
+  groupProficiencies,
+} from '@/features/characters/proficiencies'
 import {
   createCharacter,
   getAncestries,
@@ -184,6 +193,12 @@ function formatFinalBoostScore(type: AbilityCode): string {
     before: abilityScoresBeforeFinal.value[type],
     after: abilityScoresAfterFinal.value[type],
   })
+}
+function getProficiencyRankLabel(rank: ProficiencyRank): string {
+  return t(`proficiencies.ranks.${rank}`)
+}
+function getProficiencyCategoryLabel(category: ProficiencyCategory): string {
+  return t(`proficiencies.categories.${category}`)
 }
 function formatAbilities(types: AbilityCode[]): string {
   return types.map(getAbilityLabel).join(', ') || t('wizard.none')
@@ -439,6 +454,14 @@ onMounted(loadCatalogs)
                 :label="getAbilityLabel(code)"
               />
             </v-radio-group>
+            <v-list density="compact" :subheader="t('classUi.initialProficiencies')">
+              <v-list-item
+                v-for="group in groupProficiencies(selectedCharacterClass.initialProficiencies)"
+                :key="group.category"
+                :title="getProficiencyCategoryLabel(group.category)"
+                :subtitle="group.items.map((item) => formatProficiency(item, getProficiencyRankLabel)).join(', ')"
+              />
+            </v-list>
             <v-list density="compact" :subheader="t('classUi.rules')">
               <v-list-item
                 v-for="rule in selectedCharacterClass.rules"
@@ -491,6 +514,9 @@ onMounted(loadCatalogs)
               v-if="form.classKeyAbility"
               :title="t('classUi.keyAbility')"
               :subtitle="getAbilityLabel(form.classKeyAbility)" /><v-list-item
+              v-if="selectedCharacterClass"
+              :title="t('classUi.initialProficiencies')"
+              :subtitle="groupProficiencies(selectedCharacterClass.initialProficiencies).map((group) => getProficiencyCategoryLabel(group.category)).join(', ')" /><v-list-item
               :title="t('wizard.finalFreeBoosts')"
               :subtitle="formatAbilities(form.finalFreeBoosts)" /><v-list-item
               v-if="form.concept"

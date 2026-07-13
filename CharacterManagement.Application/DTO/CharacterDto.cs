@@ -15,6 +15,7 @@ public class CharacterDto : BaseDto
     public IReadOnlyList<AbilityType> FinalFreeBoosts { get; set; } = [];
     public CharacterDerivedStatisticsDto? DerivedStatistics { get; set; }
     public CharacterTrainingDto Training { get; set; } = new CharacterTrainingDto();
+    public IReadOnlyList<ProficiencyDto> Proficiencies { get; set; } = [];
     public virtual BackpackDto? Backpack { get; set; }
     public virtual GroupCharacteristicDto Characteristics { get; set; }
 }

@@ -228,6 +228,12 @@ public sealed class CharacterHitPointsTests
             SourceReference.Unknown,
             baseHitPoints,
             [ AbilityType.Intelligence ],
+            [
+                new ProficiencyGrant(
+                    ProficiencyTargets.Perception,
+                    ProficiencyRank.Trained,
+                    $"{id}.initial_proficiencies" ),
+            ],
             null,
             [],
             [] );

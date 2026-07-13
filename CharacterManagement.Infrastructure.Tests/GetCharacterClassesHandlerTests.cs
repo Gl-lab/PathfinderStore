@@ -35,7 +35,12 @@ public sealed class GetCharacterClassesHandlerTests
 
         Assert.Equal( 10, fighter.BaseHitPoints );
         Assert.Equal( [ AbilityType.Strength, AbilityType.Dexterity ], fighter.KeyAbilityOptions );
-        Assert.Contains( fighter.Rules, rule => rule.Kind == CharacterClassRuleKind.InitialProficiencies );
+        Assert.Equal( 13, fighter.InitialProficiencies.Count );
+        Assert.Contains(
+            fighter.InitialProficiencies,
+            proficiency =>
+                ( proficiency.TargetId == ProficiencyTargets.SimpleWeapons.Id ) &&
+                ( proficiency.Rank == ProficiencyRank.Expert ) );
         Assert.Contains( fighter.Rules, rule => rule.Kind == CharacterClassRuleKind.ClassFeatChoice );
     }
 }

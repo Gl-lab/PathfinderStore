@@ -10,7 +10,6 @@ public enum SpellTradition
 
 public enum CharacterClassRuleKind
 {
-    InitialProficiencies,
     AdditionalSkills,
     GrantedFeature,
     MandatoryChoice,

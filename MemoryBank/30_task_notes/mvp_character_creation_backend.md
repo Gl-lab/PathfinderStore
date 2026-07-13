@@ -17,13 +17,14 @@
 - Maximum HP первого уровня вычисляется на чтении из effective ancestry HP, class HP и Constitution modifier и не дублируется в БД.
 - Есть типизированный каталог 16 general skills и endpoint `GET /api/skills`.
 - Background fixed/finite/open grants фактически применяют trained skill и Lore; training сохраняется и возвращается read-моделью.
+- Class catalog содержит typed baseline для Perception, saves, attacks, defenses и class DC; grants вычисляются из сохранённого class id и возвращаются read-моделью.
 - Есть unit и integration tests по ключевым backend-сценариям.
 
 ## Что не готово
 
 - Background skill feat пока представлен декларативно и не применяется к персонажу.
 - Class skills, higher proficiency ranks и duplicate replacement между разными sources пока не применяются.
-- Class proficiencies, features, spells и mandatory choices представлены декларативно и не применяются к персонажу.
+- Class skills, spell proficiencies, features, spells и mandatory choices представлены декларативно и не применяются к персонажу.
 - Текущий MVP не покрывает equipment, spells, deity, current/temporary HP и derived statistics шире maximum HP.
 - Есть отдельный актуальный блок по расхождению `Secure.User` и `CharacterManagement.Account`: см. [`task_32_account_backfill.md`](task_32_account_backfill.md).
 
@@ -43,7 +44,8 @@
 
 ## Next steps
 
-1. Типизировать starting proficiencies Class следующим vertical slice и переиспользовать stable skill identities.
-2. Не применять feats, class features, spells, deity и equipment без соответствующих каталогов и доменных решений.
-3. При изменении character creation сверяться с `../20_domain/character_creation/domain_rules_target_full.md` и актуальными catalog documents.
+1. Реализовывать обязательные class choices отдельными flows, начиная с Rogue's Racket.
+2. Добавить cross-source proficiency resolver вместе с первым дополнительным источником grants или level-up progression.
+3. Не применять feats, class features, spells, deity и equipment без соответствующих каталогов и доменных решений.
+4. При изменении character creation сверяться с `../20_domain/character_creation/domain_rules_target_full.md` и актуальными catalog documents.
 

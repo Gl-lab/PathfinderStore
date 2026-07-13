@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getApiErrorMessages } from '@/api/errors'
 import {
@@ -16,8 +16,14 @@ import {
   deleteCharacter,
   getCharacter,
   type Character,
+  type ProficiencyCategory,
+  type ProficiencyRank,
 } from '@/features/characters/api'
 import { formatSignedModifier } from '@/features/characters/hitPoints'
+import {
+  formatProficiency,
+  groupProficiencies,
+} from '@/features/characters/proficiencies'
 
 const route = useRoute()
 const { t } = useI18n()
@@ -27,6 +33,7 @@ const errors = ref<string[]>([])
 const isLoading = ref(true)
 const isDeleting = ref(false)
 const confirmDelete = ref(false)
+const proficiencyGroups = computed(() => groupProficiencies(character.value?.proficiencies ?? []))
 const abilityCodes = {
   strength: 'Strength',
   dexterity: 'Dexterity',
@@ -44,6 +51,12 @@ function formatChoiceId(id: string | null): string {
     .join(': ')
 
   return getAncestryChoiceLabel(id, fallback)
+}
+function getProficiencyRankLabel(rank: ProficiencyRank): string {
+  return t(`proficiencies.ranks.${rank}`)
+}
+function getProficiencyCategoryLabel(category: ProficiencyCategory): string {
+  return t(`proficiencies.categories.${category}`)
 }
 async function load(): Promise<void> {
   isLoading.value = true
@@ -196,6 +209,21 @@ onMounted(load)
             </ul>
           </v-card-text
         ></v-card
+        ><v-card v-if="proficiencyGroups.length" elevation="0"
+          ><v-card-item :title="t('classUi.initialProficiencies')" /><v-card-text
+            ><section
+              v-for="group in proficiencyGroups"
+              :key="group.category"
+              class="proficiency-group"
+            >
+              <strong>{{ getProficiencyCategoryLabel(group.category) }}</strong>
+              <ul>
+                <li v-for="proficiency in group.items" :key="proficiency.targetId">
+                  {{ formatProficiency(proficiency, getProficiencyRankLabel) }}
+                </li>
+              </ul>
+            </section></v-card-text
+          ></v-card
         ><v-card v-if="character.finalFreeBoosts.length" elevation="0"
           ><v-card-item :title="t('characters.finalFreeBoosts')" /><v-card-text
             ><p>{{ character.finalFreeBoosts.map(getAbilityLabel).join(', ') }}</p></v-card-text
@@ -282,6 +310,12 @@ h1 {
 .hit-points-card__breakdown dd {
   margin: 0;
   font-weight: 700;
+}
+.proficiency-group + .proficiency-group {
+  margin-top: 12px;
+}
+.proficiency-group ul {
+  margin: 4px 0 0;
 }
 .abilities {
   display: grid;

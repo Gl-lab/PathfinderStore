@@ -1,5 +1,5 @@
 import { http } from '@/api/http'
-import type { AbilityCode, AncestryCode } from '@/features/characters/api'
+import type { AbilityCode, AncestryCode, Proficiency } from '@/features/characters/api'
 
 export interface AncestryBoost {
   abilityType: AbilityCode | null
@@ -110,6 +110,7 @@ export interface CharacterClass {
   name: string
   baseHitPoints: number
   keyAbilityOptions: AbilityCode[]
+  initialProficiencies: Proficiency[]
   spellTradition: SpellTradition | null
   rules: CharacterClassRule[]
   deferredDependencies: string[]

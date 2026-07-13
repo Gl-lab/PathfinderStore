@@ -33,9 +33,7 @@ public sealed class CharacterConvertor : ICharacterConvertor
         Background? background = draftCharacter.SelectedBackgroundId is null
             ? null
             : _backgroundRepository?.GetBackground( draftCharacter.SelectedBackgroundId );
-        CharacterClass? characterClass = draftCharacter.SelectedClassId is null
-            ? null
-            : _characterClassRepository?.GetCharacterClass( draftCharacter.SelectedClassId );
+        CharacterClass? characterClass = ResolveCharacterClass( draftCharacter );
 
         return new CharacterDto
         {
@@ -59,6 +57,9 @@ public sealed class CharacterConvertor : ICharacterConvertor
                     ancestry,
                     characterClass ),
             Training = CharacterTrainingDtoMapper.Map( draftCharacter, _skillRepository ),
+            Proficiencies = characterClass is null
+                ? []
+                : CharacterClassDtoMapper.MapProficiencies( characterClass.InitialProficiencies ),
             Characteristics = new GroupCharacteristicDto
             {
                 Strength = Convert( draftCharacter.AbilityScores.Strength ),
@@ -71,6 +72,22 @@ public sealed class CharacterConvertor : ICharacterConvertor
             },
             Backpack = null,
         };
+    }
+
+    private CharacterClass? ResolveCharacterClass( DraftCharacter character )
+    {
+        if ( character.SelectedClassId is null )
+        {
+            return null;
+        }
+
+        if ( _characterClassRepository is null )
+        {
+            throw new InvalidOperationException(
+                "Character class repository is required to map class proficiencies." );
+        }
+
+        return _characterClassRepository.GetCharacterClass( character.SelectedClassId );
     }
 
     private static CharacteristicDto Convert( Characteristic characteristic )

@@ -272,6 +272,12 @@ public sealed class FinalFreeBoostPackageTests
             new SourceReference( "Player Core", 1 ),
             8,
             [ keyAbility ],
+            [
+                new ProficiencyGrant(
+                    ProficiencyTargets.Perception,
+                    ProficiencyRank.Trained,
+                    "class.test.initial_proficiencies" ),
+            ],
             null,
             [],
             [] );

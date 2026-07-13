@@ -163,6 +163,12 @@ public sealed class ClassPackageTests
             new SourceReference( "Player Core", 1 ),
             8,
             keyAbilities,
+            [
+                new ProficiencyGrant(
+                    ProficiencyTargets.Perception,
+                    ProficiencyRank.Trained,
+                    $"{id}.initial_proficiencies" ),
+            ],
             null,
             [],
             [] );

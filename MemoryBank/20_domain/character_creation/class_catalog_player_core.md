@@ -6,6 +6,8 @@
 
 Нормализация сверена 2026-07-13 со страницами Archives of Nethys, перечисленными в [`aon_player_core_character_creation_sources.md`](aon_player_core_character_creation_sources.md), по workflow [`../../10_workflow/aon_elasticsearch_usage.md`](../../10_workflow/aon_elasticsearch_usage.md).
 
+Типизированная матрица Perception, saves, attacks, defenses и class DC вынесена в [`class_proficiencies_player_core.md`](class_proficiencies_player_core.md).
+
 ## Граница
 
 Каталог позволяет:

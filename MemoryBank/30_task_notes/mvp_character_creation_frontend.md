@@ -15,12 +15,13 @@
 - Добавлены frontend tests для доменной локализации, Background, Class и final free boost choices.
 - Dashboard показывает maximum HP, карточка персонажа — maximum HP и breakdown ancestry/class/Constitution.
 - Background step разрешает fixed, finite-choice и open Lore grants; review/details показывают фактический training.
+- Class step и review показывают категории typed starting proficiencies; карточка группирует targets и локализованные ranks.
 
 ## Что не готово
 
 - Skill feat от Background пока не применяется.
 - Class skills, higher proficiency ranks и replacement choices при cross-source duplicate training пока не реализованы.
-- Class proficiencies, features, spells и mandatory choices отображаются декларативно, но не выбираются.
+- Class skills, spell proficiencies, features, spells и mandatory choices отображаются декларативно, но не выбираются.
 - Нет полноценного e2e test suite с реальным backend и PostgreSQL.
 
 ## Связанные файлы
@@ -31,5 +32,6 @@
 
 ## Next steps
 
-1. Следующей задачей типизировать Class proficiencies и подключить class skill grants.
-2. Добавить e2e-покрытие основного пользовательского сценария.
+1. Добавлять обязательные class choices отдельными flows, начиная с Rogue's Racket.
+2. Подключить class skills отдельной задачей с replacement flow для повторного training.
+3. Добавить e2e-покрытие основного пользовательского сценария.

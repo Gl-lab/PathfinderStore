@@ -20,12 +20,30 @@ public static class CharacterClassDtoMapper
             },
             BaseHitPoints = characterClass.BaseHitPoints,
             KeyAbilityOptions = characterClass.KeyAbilityOptions.ToList(),
+            InitialProficiencies = MapProficiencies( characterClass.InitialProficiencies ),
             SpellTradition = characterClass.SpellTradition,
             Rules = characterClass.Rules
                 .Select( Map )
                 .ToList(),
             DeferredDependencies = characterClass.DeferredDependencies.ToList(),
         };
+    }
+
+    public static IReadOnlyList<ProficiencyDto> MapProficiencies(
+        IReadOnlyList<ProficiencyGrant> proficiencies )
+    {
+        ArgumentNullException.ThrowIfNull( proficiencies );
+
+        return proficiencies
+            .Select( grant => new ProficiencyDto
+            {
+                TargetId = grant.Target.Id,
+                Name = grant.Target.Name,
+                Category = grant.Target.Category,
+                Rank = grant.Rank,
+                SourceGrantId = grant.SourceGrantId,
+            } )
+            .ToList();
     }
 
     public static CharacterClassPackageDto MapPackage(

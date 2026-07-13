@@ -34,7 +34,6 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
             Create(
                 "bard", "Bard", 94, 8, [ AbilityType.Charisma ], SpellTradition.Occult,
                 [
-                    Proficiencies( "bard", "Expert Perception; trained Fortitude and Reflex; expert Will; trained Occultism, Performance, weapons, defenses, bard class DC, and spell attack/DC." ),
                     AdditionalSkills( "bard", 4 ),
                     Spellcasting( "bard", "Occult spellcasting, spell repertoire, and composition spells." ),
                     Choice( "bard.muse", "Muse", "Choose a muse that grants a bard feat and a spell.", CharacterClassDependencyType.ClassChoiceCatalog )
@@ -43,7 +42,6 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
             Create(
                 "cleric", "Cleric", 108, 8, [ AbilityType.Wisdom ], SpellTradition.Divine,
                 [
-                    Proficiencies( "cleric", "Trained Perception, Fortitude, and Reflex; expert Will; trained Religion, weapons, defenses, cleric class DC, and spell attack/DC; deity and doctrine modify training." ),
                     AdditionalSkills( "cleric", 2 ),
                     Spellcasting( "cleric", "Divine spellcasting and Divine Font." ),
                     Choice( "cleric.deity", "Deity", "Choose a deity that determines a skill, favored weapon, and spells.", CharacterClassDependencyType.DeityCatalog ),
@@ -53,7 +51,6 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
             Create(
                 "druid", "Druid", 122, 8, [ AbilityType.Wisdom ], SpellTradition.Primal,
                 [
-                    Proficiencies( "druid", "Trained Perception, Fortitude, and Reflex; expert Will; trained Nature, weapons, and defenses; order determines an additional skill." ),
                     AdditionalSkills( "druid", 2 ),
                     Spellcasting( "druid", "Primal spellcasting." ),
                     Feature( "druid.features", "Druid Features", "Anathema, Shield Block, Voice of Nature, and Wildsong." ),
@@ -63,7 +60,6 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
             Create(
                 "fighter", "Fighter", 136, 10, [ AbilityType.Strength, AbilityType.Dexterity ], null,
                 [
-                    Proficiencies( "fighter", "Expert Perception, Fortitude, and Reflex; trained Will; expert simple and martial weapons; trained advanced weapons, armor, and defenses." ),
                     AdditionalSkills( "fighter", 3 ),
                     Feature( "fighter.features", "Fighter Features", "Reactive Strike and Shield Block." ),
                     ClassFeat( "fighter.feat", "Fighter Feat" )
@@ -72,7 +68,6 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
             Create(
                 "ranger", "Ranger", 152, 10, [ AbilityType.Strength, AbilityType.Dexterity ], null,
                 [
-                    Proficiencies( "ranger", "Expert Perception, Fortitude, and Reflex; trained Will; trained Nature, Survival, weapons, defenses, and ranger class DC." ),
                     AdditionalSkills( "ranger", 4 ),
                     Feature( "ranger.hunt_prey", "Hunt Prey", "Grants the Hunt Prey class feature." ),
                     Choice( "ranger.hunters_edge", "Hunter's Edge", "Choose a Hunter's Edge.", CharacterClassDependencyType.ClassChoiceCatalog ),
@@ -82,7 +77,6 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
             Create(
                 "rogue", "Rogue", 164, 8, [ AbilityType.Dexterity ], null,
                 [
-                    Proficiencies( "rogue", "Expert Perception, Reflex, and Will; trained Fortitude, Stealth, weapons, defenses, and rogue class DC; racket modifies skills." ),
                     AdditionalSkills( "rogue", 7 ),
                     Feature( "rogue.features", "Rogue Features", "Sneak Attack 1d6 and Surprise Attack." ),
                     Choice( "rogue.racket", "Rogue's Racket", "Choose a racket that can change skills and the available key ability.", CharacterClassDependencyType.RogueRacketCatalog ),
@@ -93,7 +87,6 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
             Create(
                 "witch", "Witch", 178, 6, [ AbilityType.Intelligence ], null,
                 [
-                    Proficiencies( "witch", "Trained Perception, Fortitude, and Reflex; expert Will; trained weapons, defenses, witch class DC, and spell attack/DC; patron determines a skill." ),
                     AdditionalSkills( "witch", 3 ),
                     Spellcasting( "witch", "Spell tradition and spellcasting depend on the patron." ),
                     Feature( "witch.familiar", "Familiar", "Grants a familiar and familiar spell rules." ),
@@ -103,7 +96,6 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
             Create(
                 "wizard", "Wizard", 192, 6, [ AbilityType.Intelligence ], SpellTradition.Arcane,
                 [
-                    Proficiencies( "wizard", "Trained Perception, Fortitude, and Reflex; expert Will; trained Arcana, weapons, defenses, wizard class DC, and spell attack/DC." ),
                     AdditionalSkills( "wizard", 2 ),
                     Spellcasting( "wizard", "Arcane spellcasting." ),
                     Feature( "wizard.arcane_bond", "Arcane Bond", "Grants the Arcane Bond class feature." ),
@@ -130,20 +122,117 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
             new SourceReference( "Player Core", page ),
             baseHitPoints,
             keyAbilityOptions,
+            InitialProficiencies( id, name ),
             spellTradition,
             rules,
             dependencies );
     }
 
-    private static CharacterClassRuleDescriptor Proficiencies( string id, string summary )
+    private static IReadOnlyList<ProficiencyGrant> InitialProficiencies( string id, string name )
     {
-        return Rule(
-            $"class.{id}.initial_proficiencies",
-            CharacterClassRuleKind.InitialProficiencies,
-            "Initial Proficiencies",
-            summary,
-            false,
-            CharacterClassDependencyType.ProficiencyRules );
+        IReadOnlyList<(ProficiencyTarget Target, ProficiencyRank Rank)> definitions = id switch
+        {
+            "bard" =>
+            [
+                ( ProficiencyTargets.Perception, ProficiencyRank.Expert ),
+                ( ProficiencyTargets.Fortitude, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.Reflex, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.Will, ProficiencyRank.Expert ),
+                ( ProficiencyTargets.SimpleWeapons, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.MartialWeapons, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.UnarmedAttacks, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.UnarmoredDefense, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.LightArmor, ProficiencyRank.Trained ),
+            ],
+            "cleric" =>
+            [
+                ( ProficiencyTargets.Perception, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.Fortitude, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.Reflex, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.Will, ProficiencyRank.Expert ),
+                ( ProficiencyTargets.SimpleWeapons, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.UnarmedAttacks, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.UnarmoredDefense, ProficiencyRank.Trained ),
+            ],
+            "druid" =>
+            [
+                ( ProficiencyTargets.Perception, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.Fortitude, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.Reflex, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.Will, ProficiencyRank.Expert ),
+                ( ProficiencyTargets.SimpleWeapons, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.UnarmedAttacks, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.UnarmoredDefense, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.LightArmor, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.MediumArmor, ProficiencyRank.Trained ),
+            ],
+            "fighter" =>
+            [
+                ( ProficiencyTargets.Perception, ProficiencyRank.Expert ),
+                ( ProficiencyTargets.Fortitude, ProficiencyRank.Expert ),
+                ( ProficiencyTargets.Reflex, ProficiencyRank.Expert ),
+                ( ProficiencyTargets.Will, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.SimpleWeapons, ProficiencyRank.Expert ),
+                ( ProficiencyTargets.MartialWeapons, ProficiencyRank.Expert ),
+                ( ProficiencyTargets.AdvancedWeapons, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.UnarmedAttacks, ProficiencyRank.Expert ),
+                ( ProficiencyTargets.UnarmoredDefense, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.LightArmor, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.MediumArmor, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.HeavyArmor, ProficiencyRank.Trained ),
+            ],
+            "ranger" =>
+            [
+                ( ProficiencyTargets.Perception, ProficiencyRank.Expert ),
+                ( ProficiencyTargets.Fortitude, ProficiencyRank.Expert ),
+                ( ProficiencyTargets.Reflex, ProficiencyRank.Expert ),
+                ( ProficiencyTargets.Will, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.SimpleWeapons, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.MartialWeapons, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.UnarmedAttacks, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.UnarmoredDefense, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.LightArmor, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.MediumArmor, ProficiencyRank.Trained ),
+            ],
+            "rogue" =>
+            [
+                ( ProficiencyTargets.Perception, ProficiencyRank.Expert ),
+                ( ProficiencyTargets.Fortitude, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.Reflex, ProficiencyRank.Expert ),
+                ( ProficiencyTargets.Will, ProficiencyRank.Expert ),
+                ( ProficiencyTargets.SimpleWeapons, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.MartialWeapons, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.UnarmedAttacks, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.UnarmoredDefense, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.LightArmor, ProficiencyRank.Trained ),
+            ],
+            "witch" or "wizard" =>
+            [
+                ( ProficiencyTargets.Perception, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.Fortitude, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.Reflex, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.Will, ProficiencyRank.Expert ),
+                ( ProficiencyTargets.SimpleWeapons, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.UnarmedAttacks, ProficiencyRank.Trained ),
+                ( ProficiencyTargets.UnarmoredDefense, ProficiencyRank.Trained ),
+            ],
+            _ => throw new ArgumentOutOfRangeException( nameof( id ), $"Unknown character class '{id}'." ),
+        };
+
+        string sourceGrantId = $"class.{id}.initial_proficiencies";
+        List<ProficiencyGrant> grants = definitions
+            .Select( definition => new ProficiencyGrant(
+                definition.Target,
+                definition.Rank,
+                sourceGrantId ) )
+            .ToList();
+
+        grants.Add( new ProficiencyGrant(
+            ProficiencyTargets.ClassDc( $"class.{id}", name ),
+            ProficiencyRank.Trained,
+            sourceGrantId ) );
+
+        return grants;
     }
 
     private static CharacterClassRuleDescriptor AdditionalSkills( string id, int baseCount )

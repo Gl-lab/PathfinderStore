@@ -20,6 +20,8 @@ Vikunja остаётся источником истины по фактичес
 - [`final_free_boosts_implementation.md`](final_free_boosts_implementation.md)
 - [`hit_points_v1_implementation.md`](hit_points_v1_implementation.md)
 - [`skills_lore_foundation_implementation.md`](skills_lore_foundation_implementation.md)
+- [`class_proficiency_foundation_implementation.md`](class_proficiency_foundation_implementation.md)
+- [`rogue_racket_implementation.md`](rogue_racket_implementation.md)
 - [`background_package_implementation.md`](background_package_implementation.md)
 - [`class_package_implementation.md`](class_package_implementation.md)
 - [`task_16_domain_rules.md`](task_16_domain_rules.md)

@@ -9,6 +9,22 @@ export type AbilityCode =
   | 'Wisdom'
   | 'Charisma'
 
+export type ProficiencyRank = 'Untrained' | 'Trained' | 'Expert' | 'Master' | 'Legendary'
+export type ProficiencyCategory =
+  | 'Perception'
+  | 'SavingThrow'
+  | 'Attack'
+  | 'Defense'
+  | 'ClassDc'
+
+export interface Proficiency {
+  targetId: string
+  name: string
+  category: ProficiencyCategory
+  rank: ProficiencyRank
+  sourceGrantId: string
+}
+
 export interface Characteristic {
   value: number
   modifier: number
@@ -97,6 +113,7 @@ export interface Character {
   finalFreeBoosts: AbilityCode[]
   derivedStatistics: CharacterDerivedStatistics | null
   training: CharacterTraining
+  proficiencies: Proficiency[]
   characteristics: {
     strength: Characteristic
     dexterity: Characteristic
