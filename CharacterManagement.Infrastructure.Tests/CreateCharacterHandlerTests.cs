@@ -207,6 +207,9 @@ public sealed class CreateCharacterHandlerTests
             ClassId = "class.cleric",
             ClassKeyAbility = AbilityType.Wisdom,
             ClericDoctrineId = "cleric_doctrine.warpriest",
+            DeityId = "deity.iomedae",
+            DivineFont = DivineFont.Heal,
+            DivineSanctification = DivineSanctification.Holy,
             FinalFreeBoosts =
             [
                 AbilityType.Strength,
@@ -225,6 +228,9 @@ public sealed class CreateCharacterHandlerTests
             .AsNoTracking()
             .SingleAsync( entity => entity.AccountId == account.Id );
         Assert.Equal( "cleric_doctrine.warpriest", savedCharacter.SelectedClericDoctrineId );
+        Assert.Equal( "deity.iomedae", savedCharacter.SelectedDeityId );
+        Assert.Equal( DivineFont.Heal, savedCharacter.SelectedDivineFont );
+        Assert.Equal( DivineSanctification.Holy, savedCharacter.SelectedDivineSanctification );
     }
 
     [Fact]
@@ -274,7 +280,8 @@ public sealed class CreateCharacterHandlerTests
             characterClassRepository: characterClassRepository,
             skillRepository: new SkillRepository(),
             rogueRacketRepository: new RogueRacketRepository(),
-            clericDoctrineRepository: new ClericDoctrineRepository() );
+            clericDoctrineRepository: new ClericDoctrineRepository(),
+            deityRepository: new DeityRepository() );
         TestUnitOfWork unitOfWork = new TestUnitOfWork( dbContext );
 
         return new CreateCharacterHandler( accountRepository, characterBuilder, unitOfWork );

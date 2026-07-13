@@ -23,6 +23,9 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public AbilityType? SelectedClassKeyAbility { get; private set; }
     public string? SelectedRogueRacketId { get; private set; }
     public string? SelectedClericDoctrineId { get; private set; }
+    public string? SelectedDeityId { get; private set; }
+    public DivineFont? SelectedDivineFont { get; private set; }
+    public DivineSanctification? SelectedDivineSanctification { get; private set; }
     public IReadOnlyList<AbilityType> AppliedFinalFreeBoosts { get; private set; } = [];
     public IReadOnlyList<TrainedSkill> TrainedSkills { get; private set; } = [];
     public IReadOnlyList<TrainedLore> TrainedLore { get; private set; } = [];
@@ -281,7 +284,11 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         RogueRacket? rogueRacket = null,
         IReadOnlyList<RogueTrainingChoice>? rogueTrainingChoices = null,
         IReadOnlyCollection<SkillDefinition>? skillCatalog = null,
-        ClericDoctrine? clericDoctrine = null )
+        ClericDoctrine? clericDoctrine = null,
+        Deity? deity = null,
+        DivineFont? divineFont = null,
+        DivineSanctification? divineSanctification = null,
+        string? deitySkillReplacementId = null )
     {
         ArgumentNullException.ThrowIfNull( characterClass );
 
@@ -317,6 +324,56 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
             throw new CharacterManagementException( "Cleric Doctrine can only be selected for the Cleric class." );
         }
 
+        if ( isCleric && ( deity is null ) )
+        {
+            throw new CharacterManagementException( "Cleric class requires a Deity." );
+        }
+
+        if ( isCleric && ( deity is not null ) && !deity.CanGrantClericPowers )
+        {
+            throw new CharacterManagementException( $"Deity '{deity.Id}' cannot grant Cleric powers." );
+        }
+
+        if ( isCleric && !divineFont.HasValue )
+        {
+            throw new CharacterManagementException( "Cleric class requires a Divine Font." );
+        }
+
+        if ( isCleric &&
+             divineFont.HasValue &&
+             ( deity is not null ) &&
+             !deity.DivineFontOptions.Contains( divineFont.Value ) )
+        {
+            throw new CharacterManagementException(
+                $"Divine Font '{divineFont}' is not allowed for deity '{deity.Id}'." );
+        }
+
+        if ( isCleric &&
+             ( deity?.RequiredSanctification is DivineSanctification requiredSanctification ) &&
+             ( divineSanctification != requiredSanctification ) )
+        {
+            throw new CharacterManagementException(
+                $"Deity '{deity.Id}' requires {requiredSanctification} sanctification." );
+        }
+
+        if ( isCleric &&
+             divineSanctification.HasValue &&
+             ( deity is not null ) &&
+             !deity.SanctificationOptions.Contains( divineSanctification.Value ) )
+        {
+            throw new CharacterManagementException(
+                $"Sanctification '{divineSanctification}' is not allowed for deity '{deity.Id}'." );
+        }
+
+        if ( !isCleric &&
+             ( ( deity is not null ) ||
+               divineFont.HasValue ||
+               divineSanctification.HasValue ||
+               !String.IsNullOrWhiteSpace( deitySkillReplacementId ) ) )
+        {
+            throw new CharacterManagementException( "Deity class choices can only be selected for the Cleric class." );
+        }
+
         List<AbilityType> allowedKeyAbilities = characterClass.KeyAbilityOptions.ToList();
         if ( rogueRacket?.AlternativeKeyAbility is AbilityType alternativeKeyAbility )
         {
@@ -342,6 +399,19 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
                 backgroundTraining );
         }
 
+        IReadOnlyList<TrainedSkill>? deityTraining = null;
+        if ( deity is not null )
+        {
+            IReadOnlyList<TrainedSkill> backgroundTraining = TrainedSkills
+                .Where( training => training.SourceGrantId.StartsWith( "background.", StringComparison.Ordinal ) )
+                .ToArray();
+            deityTraining = DeityTrainingResolver.Resolve(
+                deity,
+                deitySkillReplacementId,
+                skillCatalog ?? [],
+                backgroundTraining );
+        }
+
         RemoveClassEffects();
 
         AbilityScores.ApplyAbilityBoost( keyAbility );
@@ -349,9 +419,16 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         SelectedClassKeyAbility = keyAbility;
         SelectedRogueRacketId = rogueRacket?.Id;
         SelectedClericDoctrineId = clericDoctrine?.Id;
+        SelectedDeityId = deity?.Id;
+        SelectedDivineFont = divineFont;
+        SelectedDivineSanctification = divineSanctification;
         if ( rogueTraining is not null )
         {
             TrainedSkills = rogueTraining.Skills.ToArray();
+        }
+        else if ( deityTraining is not null )
+        {
+            TrainedSkills = deityTraining.ToArray();
         }
 
         EnsureInvariants();
@@ -580,10 +657,14 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         SelectedClassKeyAbility = null;
         SelectedRogueRacketId = null;
         SelectedClericDoctrineId = null;
+        SelectedDeityId = null;
+        SelectedDivineFont = null;
+        SelectedDivineSanctification = null;
         TrainedSkills = TrainedSkills
             .Where( training =>
                 !training.SourceGrantId.StartsWith( "class.", StringComparison.Ordinal ) &&
-                !training.SourceGrantId.StartsWith( "rogue_racket.", StringComparison.Ordinal ) )
+                !training.SourceGrantId.StartsWith( "rogue_racket.", StringComparison.Ordinal ) &&
+                !training.SourceGrantId.StartsWith( "deity.", StringComparison.Ordinal ) )
             .ToArray();
     }
 

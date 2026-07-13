@@ -69,7 +69,8 @@ public static class CharacterClassDtoMapper
         DraftCharacter character,
         CharacterClass characterClass,
         RogueRacket? rogueRacket = null,
-        ClericDoctrine? clericDoctrine = null )
+        ClericDoctrine? clericDoctrine = null,
+        Deity? deity = null )
     {
         ArgumentNullException.ThrowIfNull( character );
         ArgumentNullException.ThrowIfNull( characterClass );
@@ -89,6 +90,7 @@ public static class CharacterClassDtoMapper
             ClericDoctrine = clericDoctrine is null
                 ? null
                 : ClericDoctrineDtoMapper.MapPackage( clericDoctrine ),
+            Deity = deity is null ? null : DeityDtoMapper.MapPackage( character, deity ),
             Rules = characterClass.Rules
                 .Select( Map )
                 .ToList(),

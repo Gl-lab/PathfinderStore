@@ -12,6 +12,7 @@ public sealed class CharacterConvertor : ICharacterConvertor
     private readonly ISkillRepository? _skillRepository;
     private readonly IRogueRacketRepository? _rogueRacketRepository;
     private readonly IClericDoctrineRepository? _clericDoctrineRepository;
+    private readonly IDeityRepository? _deityRepository;
 
     public CharacterConvertor(
         IAncestryRepository? ancestryRepository = null,
@@ -19,7 +20,8 @@ public sealed class CharacterConvertor : ICharacterConvertor
         ICharacterClassRepository? characterClassRepository = null,
         ISkillRepository? skillRepository = null,
         IRogueRacketRepository? rogueRacketRepository = null,
-        IClericDoctrineRepository? clericDoctrineRepository = null )
+        IClericDoctrineRepository? clericDoctrineRepository = null,
+        IDeityRepository? deityRepository = null )
     {
         _ancestryRepository = ancestryRepository;
         _backgroundRepository = backgroundRepository;
@@ -27,6 +29,7 @@ public sealed class CharacterConvertor : ICharacterConvertor
         _skillRepository = skillRepository;
         _rogueRacketRepository = rogueRacketRepository;
         _clericDoctrineRepository = clericDoctrineRepository;
+        _deityRepository = deityRepository;
     }
 
     public DraftCharacter Convert( CharacterDto character ) => throw new NotSupportedException();
@@ -42,6 +45,7 @@ public sealed class CharacterConvertor : ICharacterConvertor
         CharacterClass? characterClass = ResolveCharacterClass( draftCharacter );
         RogueRacket? rogueRacket = ResolveRogueRacket( draftCharacter );
         ClericDoctrine? clericDoctrine = ResolveClericDoctrine( draftCharacter );
+        Deity? deity = ResolveDeity( draftCharacter );
 
         return new CharacterDto
         {
@@ -60,7 +64,8 @@ public sealed class CharacterConvertor : ICharacterConvertor
                     draftCharacter,
                     characterClass,
                     rogueRacket,
-                    clericDoctrine ),
+                    clericDoctrine,
+                    deity ),
             FinalFreeBoosts = draftCharacter.AppliedFinalFreeBoosts.ToArray(),
             DerivedStatistics = ancestry is null || characterClass is null
                 ? null
@@ -74,7 +79,8 @@ public sealed class CharacterConvertor : ICharacterConvertor
                 : CharacterClassDtoMapper.MapProficiencies( ProficiencyResolver.Resolve(
                     characterClass.InitialProficiencies
                         .Concat( rogueRacket?.ProficiencyGrants ?? [] )
-                        .Concat( clericDoctrine?.ProficiencyGrants ?? [] ) ) ),
+                        .Concat( clericDoctrine?.ProficiencyGrants ?? [] )
+                        .Concat( deity?.ProficiencyGrants ?? [] ) ) ),
             Characteristics = new GroupCharacteristicDto
             {
                 Strength = Convert( draftCharacter.AbilityScores.Strength ),
@@ -119,6 +125,22 @@ public sealed class CharacterConvertor : ICharacterConvertor
         }
 
         return _clericDoctrineRepository.GetClericDoctrine( character.SelectedClericDoctrineId );
+    }
+
+    private Deity? ResolveDeity( DraftCharacter character )
+    {
+        if ( character.SelectedDeityId is null )
+        {
+            return null;
+        }
+
+        if ( _deityRepository is null )
+        {
+            throw new InvalidOperationException(
+                "Deity repository is required to map a selected deity." );
+        }
+
+        return _deityRepository.GetDeity( character.SelectedDeityId );
     }
 
     private CharacterClass? ResolveCharacterClass( DraftCharacter character )

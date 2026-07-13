@@ -16,5 +16,6 @@ public static class DependencyInjection
         services.AddScoped<ICharacterClassRepository, CharacterClassRepository>();
         services.AddScoped<IRogueRacketRepository, RogueRacketRepository>();
         services.AddScoped<IClericDoctrineRepository, ClericDoctrineRepository>();
+        services.AddScoped<IDeityRepository, DeityRepository>();
     }
 }

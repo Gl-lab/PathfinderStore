@@ -189,6 +189,11 @@ public sealed class CreateCharacterCommandValidatorTests
             ? AbilityType.Wisdom
             : AbilityType.Strength;
         character.ClericDoctrineId = clericDoctrineId;
+        character.DeityId = classId == "class.cleric" ? "deity.iomedae" : null;
+        character.DivineFont = classId == "class.cleric" ? DivineFont.Heal : null;
+        character.DivineSanctification = classId == "class.cleric"
+            ? DivineSanctification.Holy
+            : null;
 
         Assert.Throws<ValidationException>( () => validator.ValidateAndThrow(
             new CreateCharacterCommand( 42, character ) ) );
@@ -202,6 +207,9 @@ public sealed class CreateCharacterCommandValidatorTests
         character.ClassId = "class.cleric";
         character.ClassKeyAbility = AbilityType.Wisdom;
         character.ClericDoctrineId = "cleric_doctrine.cloistered";
+        character.DeityId = "deity.iomedae";
+        character.DivineFont = DivineFont.Heal;
+        character.DivineSanctification = DivineSanctification.Holy;
 
         validator.ValidateAndThrow( new CreateCharacterCommand( 42, character ) );
     }

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Pathfinder.CharacterManagement.Application.DTO;
 using Pathfinder.CharacterManagement.Application.UseCases.ClericDoctrines;
 using Pathfinder.CharacterManagement.Application.UseCases.CharacterClasses;
+using Pathfinder.CharacterManagement.Application.UseCases.Deities;
 using Pathfinder.CharacterManagement.Application.UseCases.RogueRackets;
 using Pathfinder.Web.Controllers.Base;
 
@@ -47,5 +48,14 @@ public sealed class ClassesController : AuthorizedController
         IReadOnlyCollection<ClericDoctrineDto> doctrines = await _mediator.Send(
             new GetClericDoctrinesCommand() );
         return Ok( doctrines );
+    }
+
+    [HttpGet( "cleric/deities" )]
+    [ProducesResponseType( typeof( IReadOnlyCollection<DeityDto> ), StatusCodes.Status200OK )]
+    [ProducesResponseType( StatusCodes.Status401Unauthorized )]
+    public async Task<ActionResult<IReadOnlyCollection<DeityDto>>> GetDeities()
+    {
+        IReadOnlyCollection<DeityDto> deities = await _mediator.Send( new GetDeitiesCommand() );
+        return Ok( deities );
     }
 }

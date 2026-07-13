@@ -154,6 +154,26 @@ export interface ClericDoctrine {
   deferredDependencies: string[]
 }
 
+export type DivineFont = 'Heal' | 'Harm'
+export type DivineSanctification = 'Holy' | 'Unholy'
+
+export interface Deity {
+  id: string
+  name: string
+  canGrantClericPowers: boolean
+  divineSkillId: string | null
+  favoredWeapons: {
+    id: string
+    name: string
+    category: 'Simple' | 'Martial' | 'Advanced' | 'Unarmed'
+  }[]
+  divineFontOptions: DivineFont[]
+  sanctificationOptions: DivineSanctification[]
+  requiredSanctification: DivineSanctification | null
+  primaryDomainIds: string[]
+  grantedSpells: { rank: number; id: string; name: string }[]
+}
+
 export interface CreateCharacterRequest {
   name: string
   concept: string | null
@@ -171,6 +191,10 @@ export interface CreateCharacterRequest {
   rogueRacketId: string | null
   rogueTrainingChoices: RogueTrainingChoice[]
   clericDoctrineId: string | null
+  deityId: string | null
+  divineFont: DivineFont | null
+  divineSanctification: DivineSanctification | null
+  deitySkillReplacementId: string | null
   finalFreeBoosts: AbilityCode[]
 }
 
@@ -192,6 +216,10 @@ export async function getRogueRackets(): Promise<RogueRacket[]> {
 
 export async function getClericDoctrines(): Promise<ClericDoctrine[]> {
   return (await http.get<ClericDoctrine[]>('/api/classes/cleric/doctrines')).data
+}
+
+export async function getDeities(): Promise<Deity[]> {
+  return (await http.get<Deity[]>('/api/classes/cleric/deities')).data
 }
 
 export async function getSkills(): Promise<Skill[]> {

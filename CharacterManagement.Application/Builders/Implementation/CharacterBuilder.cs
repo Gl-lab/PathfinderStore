@@ -14,6 +14,7 @@ public class CharacterBuilder : ICharacterBuilder
     private readonly ISkillRepository? _skillRepository;
     private readonly IRogueRacketRepository? _rogueRacketRepository;
     private readonly IClericDoctrineRepository? _clericDoctrineRepository;
+    private readonly IDeityRepository? _deityRepository;
 
     public CharacterBuilder(
         IAncestryRepository ancestryRepository,
@@ -22,7 +23,8 @@ public class CharacterBuilder : ICharacterBuilder
         ICharacterClassRepository? characterClassRepository = null,
         ISkillRepository? skillRepository = null,
         IRogueRacketRepository? rogueRacketRepository = null,
-        IClericDoctrineRepository? clericDoctrineRepository = null )
+        IClericDoctrineRepository? clericDoctrineRepository = null,
+        IDeityRepository? deityRepository = null )
     {
         _ancestryRepository = ancestryRepository;
         _ancestryChoiceAvailabilityPolicy = ancestryChoiceAvailabilityPolicy ?? new CommonAncestryChoiceAvailabilityPolicy();
@@ -31,6 +33,7 @@ public class CharacterBuilder : ICharacterBuilder
         _skillRepository = skillRepository;
         _rogueRacketRepository = rogueRacketRepository;
         _clericDoctrineRepository = clericDoctrineRepository;
+        _deityRepository = deityRepository;
     }
 
     public void CreateCharacter(
@@ -112,7 +115,11 @@ public class CharacterBuilder : ICharacterBuilder
         AbilityType keyAbility,
         string? rogueRacketId = null,
         IReadOnlyList<RogueTrainingChoice>? rogueTrainingChoices = null,
-        string? clericDoctrineId = null )
+        string? clericDoctrineId = null,
+        string? deityId = null,
+        DivineFont? divineFont = null,
+        DivineSanctification? divineSanctification = null,
+        string? deitySkillReplacementId = null )
     {
         if ( _draftCharacter is null )
         {
@@ -170,7 +177,26 @@ public class CharacterBuilder : ICharacterBuilder
             }
         }
 
-        if ( ( characterClass.Id == "class.rogue" ) && ( _skillRepository is null ) )
+        Deity? deity = null;
+        if ( !String.IsNullOrWhiteSpace( deityId ) )
+        {
+            if ( _deityRepository is null )
+            {
+                throw new InvalidOperationException( "Deity repository is not configured." );
+            }
+
+            try
+            {
+                deity = _deityRepository.GetDeity( deityId );
+            }
+            catch ( ArgumentException exception )
+            {
+                throw new CharacterManagementException( exception.Message );
+            }
+        }
+
+        if ( ( ( characterClass.Id == "class.rogue" ) || ( deity is not null ) ) &&
+             ( _skillRepository is null ) )
         {
             throw new InvalidOperationException( "Skill repository is not configured." );
         }
@@ -181,7 +207,11 @@ public class CharacterBuilder : ICharacterBuilder
             racket,
             rogueTrainingChoices,
             _skillRepository?.GetAll() ?? [],
-            doctrine );
+            doctrine,
+            deity,
+            divineFont,
+            divineSanctification,
+            deitySkillReplacementId );
     }
 
     public void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts )

@@ -26,6 +26,7 @@ import {
   getBackgrounds,
   getCharacterClasses,
   getClericDoctrines,
+  getDeities,
   getRogueRackets,
   getSkills,
   type Ancestry,
@@ -33,6 +34,9 @@ import {
   type BackgroundTrainingChoice,
   type CharacterClass,
   type ClericDoctrine,
+  type Deity,
+  type DivineFont,
+  type DivineSanctification,
   type RogueRacket,
   type RogueTrainingChoice,
   type Skill,
@@ -58,6 +62,11 @@ import {
   isClericDoctrineChoiceComplete,
 } from '@/features/character-creation/clericDoctrine'
 import {
+  getDeityProficiencies,
+  isDeityChoiceComplete,
+  requiresDeitySkillReplacement,
+} from '@/features/character-creation/deity'
+import {
   calculateAbilityScorePreview,
   isFinalFreeBoostDisabled,
   isFinalFreeBoostSelectionComplete,
@@ -71,6 +80,7 @@ const backgrounds = ref<Background[]>([])
 const characterClasses = ref<CharacterClass[]>([])
 const rogueRackets = ref<RogueRacket[]>([])
 const clericDoctrines = ref<ClericDoctrine[]>([])
+const deities = ref<Deity[]>([])
 const skills = ref<Skill[]>([])
 const isLoadingCatalogs = ref(true)
 const isSubmitting = ref(false)
@@ -92,6 +102,10 @@ const form = ref({
   rogueRacketId: null as string | null,
   rogueTrainingChoices: [] as RogueTrainingChoice[],
   clericDoctrineId: null as string | null,
+  deityId: null as string | null,
+  divineFont: null as DivineFont | null,
+  divineSanctification: null as DivineSanctification | null,
+  deitySkillReplacementId: null as string | null,
   finalFreeBoosts: [] as AbilityCode[],
 })
 const abilityCodes: AbilityCode[] = ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma']
@@ -126,8 +140,15 @@ const selectedRogueRacket = computed(
 const selectedClericDoctrine = computed(
   () => clericDoctrines.value.find((item) => item.id === form.value.clericDoctrineId) ?? null,
 )
+const selectedDeity = computed(
+  () => deities.value.find((item) => item.id === form.value.deityId) ?? null,
+)
+const eligibleDeities = computed(() => deities.value.filter((deity) => deity.canGrantClericPowers))
 const effectiveClassProficiencies = computed(() =>
-  getEffectiveClassProficiencies(selectedCharacterClass.value, selectedClericDoctrine.value),
+  [
+    ...getEffectiveClassProficiencies(selectedCharacterClass.value, selectedClericDoctrine.value),
+    ...getDeityProficiencies(selectedDeity.value),
+  ],
 )
 const backgroundSkillIds = computed(() => {
   if (!selectedBackground.value) return []
@@ -180,6 +201,15 @@ const canContinue = computed(() => {
   if (step.value === 6)
     return (
       isClericDoctrineChoiceComplete(selectedCharacterClass.value, selectedClericDoctrine.value) &&
+      isDeityChoiceComplete(
+        selectedCharacterClass.value,
+        selectedDeity.value,
+        form.value.divineFont,
+        form.value.divineSanctification,
+        form.value.deitySkillReplacementId,
+        backgroundSkillIds.value,
+        skills.value,
+      ) &&
       (selectedCharacterClass.value?.id === 'class.rogue'
         ? isRogueRacketChoiceComplete(
           selectedRogueRacket.value,
@@ -213,6 +243,7 @@ function selectBackground(backgroundId: string | null): void {
   form.value.backgroundFreeBoost = null
   const background = backgrounds.value.find((item) => item.id === backgroundId) ?? null
   form.value.backgroundTrainingChoices = createBackgroundTrainingChoices(background)
+  form.value.deitySkillReplacementId = null
 }
 
 function getBackgroundTrainingChoice(grantId: string): BackgroundTrainingChoice | undefined {
@@ -223,6 +254,7 @@ function selectBackgroundTrainingTarget(grantId: string, targetId: string | null
   if (!choice) return
   choice.targetId = targetId
   choice.customLoreTopic = null
+  form.value.deitySkillReplacementId = null
 }
 function setBackgroundLoreTopic(grantId: string, topic: string): void {
   const choice = getBackgroundTrainingChoice(grantId)
@@ -240,6 +272,17 @@ function selectCharacterClass(classId: string | null): void {
   form.value.rogueRacketId = null
   form.value.rogueTrainingChoices = []
   form.value.clericDoctrineId = null
+  form.value.deityId = null
+  form.value.divineFont = null
+  form.value.divineSanctification = null
+  form.value.deitySkillReplacementId = null
+}
+function selectDeity(deityId: string | null): void {
+  form.value.deityId = deityId
+  const deity = deities.value.find((item) => item.id === deityId) ?? null
+  form.value.divineFont = deity?.divineFontOptions.length === 1 ? deity.divineFontOptions[0] : null
+  form.value.divineSanctification = deity?.requiredSanctification ?? null
+  form.value.deitySkillReplacementId = null
 }
 function selectRogueRacket(racketId: string | null): void {
   form.value.rogueRacketId = racketId
@@ -263,6 +306,9 @@ function getReplacementOptions(grantId: string): Skill[] {
       .filter((id): id is string => id !== null),
   ])
   return skills.value.filter((skill) => !used.has(skill.id))
+}
+function getDeityReplacementOptions(): Skill[] {
+  return skills.value.filter((skill) => !backgroundSkillIds.value.includes(skill.id))
 }
 function isFinalBoostDisabled(type: AbilityCode): boolean {
   return isFinalFreeBoostDisabled(type, form.value.finalFreeBoosts)
@@ -297,6 +343,15 @@ async function submit(): Promise<void> {
     !form.value.backgroundFreeBoost ||
     !form.value.classKeyAbility ||
     !isClericDoctrineChoiceComplete(selectedCharacterClass.value, selectedClericDoctrine.value) ||
+    !isDeityChoiceComplete(
+      selectedCharacterClass.value,
+      selectedDeity.value,
+      form.value.divineFont,
+      form.value.divineSanctification,
+      form.value.deitySkillReplacementId,
+      backgroundSkillIds.value,
+      skills.value,
+    ) ||
     !isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts)
   )
     return
@@ -323,6 +378,10 @@ async function submit(): Promise<void> {
       rogueRacketId: form.value.rogueRacketId,
       rogueTrainingChoices: form.value.rogueTrainingChoices,
       clericDoctrineId: form.value.clericDoctrineId,
+      deityId: form.value.deityId,
+      divineFont: form.value.divineFont,
+      divineSanctification: form.value.divineSanctification,
+      deitySkillReplacementId: form.value.deitySkillReplacementId,
       finalFreeBoosts: form.value.finalFreeBoosts,
     })
     await router.replace('/')
@@ -336,12 +395,13 @@ async function loadCatalogs(): Promise<void> {
   isLoadingCatalogs.value = true
   errorMessages.value = []
   try {
-    const [ancestryCatalog, backgroundCatalog, classCatalog, racketCatalog, doctrineCatalog, skillCatalog] = await Promise.all([
+    const [ancestryCatalog, backgroundCatalog, classCatalog, racketCatalog, doctrineCatalog, deityCatalog, skillCatalog] = await Promise.all([
       getAncestries(),
       getBackgrounds(),
       getCharacterClasses(),
       getRogueRackets(),
       getClericDoctrines(),
+      getDeities(),
       getSkills(),
     ])
     ancestries.value = ancestryCatalog
@@ -349,6 +409,7 @@ async function loadCatalogs(): Promise<void> {
     characterClasses.value = classCatalog
     rogueRackets.value = racketCatalog
     clericDoctrines.value = doctrineCatalog
+    deities.value = deityCatalog
     skills.value = skillCatalog
   } catch (error) {
     errorMessages.value = getApiErrorMessages(error)
@@ -552,6 +613,59 @@ onMounted(loadCatalogs)
               item-value="id"
               :label="t('classUi.clericDoctrine')"
             />
+            <template v-if="selectedCharacterClass.id === 'class.cleric'">
+              <v-select
+                :model-value="form.deityId"
+                :items="eligibleDeities"
+                item-title="name"
+                item-value="id"
+                :label="t('classUi.deity')"
+                @update:model-value="selectDeity"
+              />
+              <v-radio-group
+                v-if="selectedDeity"
+                v-model="form.divineFont"
+                :label="t('classUi.divineFont')"
+              >
+                <v-radio
+                  v-for="font in selectedDeity.divineFontOptions"
+                  :key="font"
+                  :value="font"
+                  :label="t(`classUi.divineFonts.${font}`)"
+                />
+              </v-radio-group>
+              <v-radio-group
+                v-if="selectedDeity && selectedDeity.sanctificationOptions.length > 0"
+                v-model="form.divineSanctification"
+                :label="t('classUi.sanctification')"
+              >
+                <v-radio
+                  v-for="sanctification in selectedDeity.sanctificationOptions"
+                  :key="sanctification"
+                  :value="sanctification"
+                  :label="t(`classUi.sanctifications.${sanctification}`)"
+                />
+              </v-radio-group>
+              <v-select
+                v-if="requiresDeitySkillReplacement(selectedDeity, backgroundSkillIds)"
+                v-model="form.deitySkillReplacementId"
+                :items="getDeityReplacementOptions()"
+                item-title="name"
+                item-value="id"
+                :label="t('classUi.deitySkillReplacement')"
+                :hint="t('classUi.deitySkillConflict', { skill: getSkillName(selectedDeity?.divineSkillId ?? null) })"
+                persistent-hint
+              />
+              <v-alert v-if="selectedDeity" type="info" variant="tonal">
+                {{ t('classUi.divineSkill') }}: {{ getSkillName(selectedDeity.divineSkillId) }}.
+                {{ t('classUi.favoredWeapon') }}:
+                {{ selectedDeity.favoredWeapons.map((weapon) => weapon.name).join(', ') }}.
+                {{ t('classUi.domains') }}: {{ selectedDeity.primaryDomainIds.join(', ') }}.
+                {{ t('classUi.grantedSpells') }}:
+                {{ selectedDeity.grantedSpells.map((spell) => `${spell.rank}: ${spell.name}`).join(', ') }}.
+                {{ t('classUi.deferredDeityBenefits') }}
+              </v-alert>
+            </template>
             <v-radio-group v-model="form.classKeyAbility" :label="t('classUi.keyAbility')">
               <v-radio
                 v-for="code in selectedCharacterClass.id === 'class.rogue'
@@ -665,6 +779,15 @@ onMounted(loadCatalogs)
               v-if="selectedClericDoctrine"
               :title="t('classUi.clericDoctrine')"
               :subtitle="selectedClericDoctrine.name" /><v-list-item
+              v-if="selectedDeity"
+              :title="t('classUi.deity')"
+              :subtitle="selectedDeity.name" /><v-list-item
+              v-if="selectedDeity && form.divineFont"
+              :title="t('classUi.divineFont')"
+              :subtitle="t(`classUi.divineFonts.${form.divineFont}`)" /><v-list-item
+              v-if="selectedDeity"
+              :title="t('classUi.domains')"
+              :subtitle="selectedDeity.primaryDomainIds.join(', ')" /><v-list-item
               v-if="selectedCharacterClass"
               :title="t('classUi.initialProficiencies')"
               :subtitle="groupProficiencies(effectiveClassProficiencies).map((group) => getProficiencyCategoryLabel(group.category)).join(', ')" /><v-list-item

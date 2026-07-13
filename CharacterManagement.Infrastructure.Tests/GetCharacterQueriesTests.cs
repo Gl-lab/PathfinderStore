@@ -60,12 +60,14 @@ public sealed class GetCharacterQueriesTests
         BackgroundRepository backgroundRepository = new BackgroundRepository();
         CharacterClassRepository characterClassRepository = new CharacterClassRepository();
         ClericDoctrineRepository clericDoctrineRepository = new ClericDoctrineRepository();
+        DeityRepository deityRepository = new DeityRepository();
         CharacterBuilder builder = new CharacterBuilder(
             ancestryRepository,
             backgroundRepository: backgroundRepository,
             characterClassRepository: characterClassRepository,
             skillRepository: new SkillRepository(),
-            clericDoctrineRepository: clericDoctrineRepository );
+            clericDoctrineRepository: clericDoctrineRepository,
+            deityRepository: deityRepository );
         builder.CreateCharacter( account.Id, "Kyra", AncestryType.Human );
         builder.SetAncestryPackage( "human.skilled", "human.cooperative_nature" );
         builder.ApplyFreeBoosts( [ AbilityType.Strength, AbilityType.Wisdom ] );
@@ -76,7 +78,10 @@ public sealed class GetCharacterQueriesTests
         builder.SetClass(
             "class.cleric",
             AbilityType.Wisdom,
-            clericDoctrineId: "cleric_doctrine.cloistered" );
+            clericDoctrineId: "cleric_doctrine.cloistered",
+            deityId: "deity.iomedae",
+            divineFont: DivineFont.Heal,
+            divineSanctification: DivineSanctification.Holy );
         builder.SetFinalFreeBoosts(
             [
                 AbilityType.Strength,
@@ -94,7 +99,8 @@ public sealed class GetCharacterQueriesTests
             backgroundRepository,
             characterClassRepository,
             new SkillRepository(),
-            clericDoctrineRepository: clericDoctrineRepository );
+            clericDoctrineRepository: clericDoctrineRepository,
+            deityRepository: deityRepository );
         GetCharacterByIdHandler handler = new GetCharacterByIdHandler(
             characterRepository,
             characterConvertor );
@@ -109,7 +115,9 @@ public sealed class GetCharacterQueriesTests
         Assert.Equal( AbilityType.Charisma, result.BackgroundPackage.FreeBoost );
         Assert.Equal( 12, result.Characteristics.Charisma.Value );
         Assert.Contains( result.BackgroundPackage.Grants, grant => grant.TargetId == "skill.religion" );
-        CharacterSkillTrainingDto trainedSkill = Assert.Single( result.Training.Skills );
+        CharacterSkillTrainingDto trainedSkill = Assert.Single(
+            result.Training.Skills,
+            skill => skill.Id == "skill.religion" );
         Assert.Equal( "skill.religion", trainedSkill.Id );
         Assert.Equal( "Religion", trainedSkill.Name );
         Assert.Equal( AbilityType.Wisdom, trainedSkill.KeyAbility );
@@ -122,7 +130,15 @@ public sealed class GetCharacterQueriesTests
         Assert.Equal( AbilityType.Wisdom, result.ClassPackage.KeyAbility );
         Assert.NotNull( result.ClassPackage.ClericDoctrine );
         Assert.Equal( "cleric_doctrine.cloistered", result.ClassPackage.ClericDoctrine.Id );
-        Assert.Equal( 8, result.Proficiencies.Count );
+        Assert.NotNull( result.ClassPackage.Deity );
+        Assert.Equal( "deity.iomedae", result.ClassPackage.Deity.Id );
+        Assert.Equal( DivineFont.Heal, result.ClassPackage.Deity.DivineFont );
+        Assert.Equal( DivineSanctification.Holy, result.ClassPackage.Deity.Sanctification );
+        Assert.Equal( "skill.intimidation", result.ClassPackage.Deity.DivineSkillId );
+        Assert.Equal( 9, result.Proficiencies.Count );
+        Assert.Contains(
+            result.Proficiencies,
+            proficiency => proficiency.TargetId == "proficiency.attack.weapon.longsword" );
         Assert.Contains(
             result.Proficiencies,
             proficiency =>
@@ -133,6 +149,7 @@ public sealed class GetCharacterQueriesTests
             proficiency => proficiency.TargetId == "proficiency.class_dc.cleric" );
         Assert.Equal( 18, result.Characteristics.Wisdom.Value );
         Assert.Contains( result.ClassPackage.Rules, rule => rule.Id == "class_choice.cleric.deity" );
+        Assert.Contains( result.Training.Skills, skill => skill.Id == "skill.intimidation" );
         Assert.Equal(
             [
                 AbilityType.Strength,
@@ -177,6 +194,7 @@ public sealed class GetCharacterQueriesTests
         Assert.NotNull( result.ClassPackage );
         Assert.Equal( "class.cleric", result.ClassPackage.ClassId );
         Assert.Null( result.ClassPackage.ClericDoctrine );
+        Assert.Null( result.ClassPackage.Deity );
         Assert.Contains(
             result.Proficiencies,
             proficiency => proficiency.TargetId == ProficiencyTargets.Fortitude.Id );

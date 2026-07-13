@@ -83,6 +83,17 @@ export interface CharacterClassPackage {
     }[]
     deferredDependencies: string[]
   } | null
+  deity: {
+    id: string
+    name: string
+    divineSkillId: string
+    divineSkillReplacementId: string | null
+    favoredWeapons: { id: string; name: string; category: string }[]
+    divineFont: 'Heal' | 'Harm'
+    sanctification: 'Holy' | 'Unholy' | null
+    primaryDomainIds: string[]
+    grantedSpells: { rank: number; id: string; name: string }[]
+  } | null
   rules: {
     id: string
     kind: string

@@ -10,5 +10,6 @@ public sealed class CharacterClassPackageDto
     public AbilityType KeyAbility { get; set; }
     public RogueRacketPackageDto? RogueRacket { get; set; }
     public ClericDoctrinePackageDto? ClericDoctrine { get; set; }
+    public DeityPackageDto? Deity { get; set; }
     public IReadOnlyList<CharacterClassRuleDto> Rules { get; set; } = [];
 }

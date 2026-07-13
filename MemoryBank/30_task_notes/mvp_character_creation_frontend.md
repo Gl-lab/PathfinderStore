@@ -16,7 +16,7 @@
 - Dashboard показывает maximum HP, карточка персонажа — maximum HP и breakdown ancestry/class/Constitution.
 - Background step разрешает fixed, finite-choice и open Lore grants; review/details показывают фактический training.
 - Class step и review показывают категории typed starting proficiencies; карточка группирует targets и локализованные ranks.
-- Wizard поддерживает обязательные Rogue's Racket и Cleric Doctrine; Doctrine preview объединяет class/doctrine proficiencies, а review/details показывают выбор и deferred effects.
+- Wizard поддерживает обязательные Rogue's Racket, Cleric Doctrine и Deity; preview объединяет class/doctrine/deity proficiencies, обрабатывает replacement divine skill, а review/details показывают выбор и декларативные deity benefits.
 
 ## Что не готово
 
@@ -33,6 +33,6 @@
 
 ## Next steps
 
-1. Следующий Cleric flow — типизированный Deity catalog и обязательный Deity choice без строковой заглушки.
-2. Подключить class skills отдельной задачей с replacement flow для повторного training.
+1. Следующий Cleric flow — domain choice либо spell preparation/Divine Font slots как отдельная задача.
+2. Подключить остальные обязательные class choices отдельными задачами.
 3. Добавить e2e-покрытие основного пользовательского сценария.

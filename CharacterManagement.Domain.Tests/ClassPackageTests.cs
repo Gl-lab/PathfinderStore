@@ -120,11 +120,14 @@ public sealed class ClassPackageTests
         Ancestry ancestry = CreateAncestry();
         CharacterClass cleric = CreateClass( "class.cleric", AbilityType.Wisdom );
         ClericDoctrine doctrine = CreateDoctrine( "cloistered" );
+        Deity deity = CreateDeity();
         CharacterBuilder builder = new CharacterBuilder(
             new StubAncestryRepository( ancestry ),
             backgroundRepository: new StubBackgroundRepository( CreateBackground() ),
             characterClassRepository: new StubCharacterClassRepository( cleric ),
-            clericDoctrineRepository: new StubClericDoctrineRepository( doctrine ) );
+            skillRepository: new StubSkillRepository( CreateSkills() ),
+            clericDoctrineRepository: new StubClericDoctrineRepository( doctrine ),
+            deityRepository: new StubDeityRepository( deity ) );
         builder.CreateCharacter( 1, "Tester", AncestryType.Human );
         builder.SetAncestry( AncestryType.Human );
         builder.ApplyFreeBoosts( [ AbilityType.Intelligence, AbilityType.Wisdom ] );
@@ -136,7 +139,9 @@ public sealed class ClassPackageTests
         builder.SetClass(
             cleric.Id,
             AbilityType.Wisdom,
-            clericDoctrineId: doctrine.Id );
+            clericDoctrineId: doctrine.Id,
+            deityId: deity.Id,
+            divineFont: DivineFont.Heal );
 
         Assert.Equal( doctrine.Id, builder.Build().SelectedClericDoctrineId );
     }
@@ -221,6 +226,7 @@ public sealed class ClassPackageTests
         DraftCharacter character = CreateCharacter();
         CharacterClass cleric = CreateClass( "class.cleric", AbilityType.Wisdom );
         ClericDoctrine doctrine = CreateDoctrine( "warpriest" );
+        Deity deity = CreateDeity();
 
         Assert.Throws<CharacterManagementException>( () =>
             character.SetClassPackage( cleric, AbilityType.Wisdom ) );
@@ -228,7 +234,10 @@ public sealed class ClassPackageTests
         character.SetClassPackage(
             cleric,
             AbilityType.Wisdom,
-            clericDoctrine: doctrine );
+            skillCatalog: CreateSkills(),
+            clericDoctrine: doctrine,
+            deity: deity,
+            divineFont: DivineFont.Heal );
 
         Assert.Equal( doctrine.Id, character.SelectedClericDoctrineId );
         Assert.Equal( 14, character.AbilityScores.Wisdom.Value );
@@ -241,10 +250,14 @@ public sealed class ClassPackageTests
         CharacterClass cleric = CreateClass( "class.cleric", AbilityType.Wisdom );
         CharacterClass fighter = CreateClass( "class.fighter", AbilityType.Strength );
         ClericDoctrine doctrine = CreateDoctrine( "cloistered" );
+        Deity deity = CreateDeity();
         character.SetClassPackage(
             cleric,
             AbilityType.Wisdom,
-            clericDoctrine: doctrine );
+            skillCatalog: CreateSkills(),
+            clericDoctrine: doctrine,
+            deity: deity,
+            divineFont: DivineFont.Heal );
 
         Assert.Throws<CharacterManagementException>( () =>
             character.SetClassPackage(
@@ -267,7 +280,10 @@ public sealed class ClassPackageTests
         character.SetClassPackage(
             cleric,
             AbilityType.Wisdom,
-            clericDoctrine: CreateDoctrine( "warpriest" ) );
+            skillCatalog: CreateSkills(),
+            clericDoctrine: CreateDoctrine( "warpriest" ),
+            deity: CreateDeity(),
+            divineFont: DivineFont.Heal );
 
         character.SetClassPackage( fighter, AbilityType.Strength );
 
@@ -379,6 +395,22 @@ public sealed class ClassPackageTests
             [] );
     }
 
+    private static Deity CreateDeity()
+    {
+        return new Deity(
+            "deity.test",
+            "Test Deity",
+            new SourceReference( "Player Core", 35 ),
+            true,
+            "skill.intimidation",
+            [ new DeityFavoredWeapon( "weapon.longsword", "Longsword", FavoredWeaponCategory.Martial ) ],
+            [ DivineFont.Heal ],
+            [],
+            null,
+            [ "domain.truth" ],
+            [] );
+    }
+
     private static IReadOnlyCollection<SkillDefinition> CreateSkills()
     {
         SourceReference source = new SourceReference( "Player Core", 227 );
@@ -444,5 +476,33 @@ public sealed class ClassPackageTests
         public IReadOnlyCollection<ClericDoctrine> GetAll() => [ _doctrine ];
 
         public ClericDoctrine GetClericDoctrine( string clericDoctrineId ) => _doctrine;
+    }
+
+    private sealed class StubDeityRepository : IDeityRepository
+    {
+        private readonly Deity _deity;
+
+        public StubDeityRepository( Deity deity )
+        {
+            _deity = deity;
+        }
+
+        public IReadOnlyCollection<Deity> GetAll() => [ _deity ];
+
+        public Deity GetDeity( string deityId ) => _deity;
+    }
+
+    private sealed class StubSkillRepository : ISkillRepository
+    {
+        private readonly IReadOnlyCollection<SkillDefinition> _skills;
+
+        public StubSkillRepository( IReadOnlyCollection<SkillDefinition> skills )
+        {
+            _skills = skills;
+        }
+
+        public IReadOnlyCollection<SkillDefinition> GetAll() => _skills;
+
+        public SkillDefinition GetSkill( string skillId ) => _skills.Single( skill => skill.Id == skillId );
     }
 }

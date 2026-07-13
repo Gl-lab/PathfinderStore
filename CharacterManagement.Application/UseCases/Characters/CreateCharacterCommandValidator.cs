@@ -69,11 +69,23 @@ public sealed class CreateCharacterCommandValidator : AbstractValidator<CreateCh
 
                 When(
                     command => command.Character.ClassId == "class.cleric",
-                    () => RuleFor( command => command.Character.ClericDoctrineId ).NotEmpty() );
+                    () =>
+                    {
+                        RuleFor( command => command.Character.ClericDoctrineId ).NotEmpty();
+                        RuleFor( command => command.Character.DeityId ).NotEmpty();
+                        RuleFor( command => command.Character.DivineFont ).NotNull();
+                    } );
 
                 When(
                     command => command.Character.ClassId != "class.cleric",
-                    () => RuleFor( command => command.Character.ClericDoctrineId ).Empty() );
+                    () =>
+                    {
+                        RuleFor( command => command.Character.ClericDoctrineId ).Empty();
+                        RuleFor( command => command.Character.DeityId ).Empty();
+                        RuleFor( command => command.Character.DivineFont ).Empty();
+                        RuleFor( command => command.Character.DivineSanctification ).Empty();
+                        RuleFor( command => command.Character.DeitySkillReplacementId ).Empty();
+                    } );
 
                 RuleFor( command => command.Character.FinalFreeBoosts )
                     .Cascade( CascadeMode.Stop )

@@ -19,7 +19,8 @@
 - Background fixed/finite/open grants фактически применяют trained skill и Lore; training сохраняется и возвращается read-моделью.
 - Class catalog содержит typed baseline для Perception, saves, attacks, defenses и class DC; grants вычисляются из сохранённого class id и возвращаются read-моделью.
 - Общий proficiency resolver объединяет grants из class baseline и class choice sources по максимальному rank с сохранением source ids.
-- Rogue's Racket и Cleric Doctrine реализованы как обязательные class choices: каталоги, validation, persistence, API/read-модель и поддержанные typed grants.
+- Rogue's Racket, Cleric Doctrine и Deity реализованы как обязательные class choices: каталоги, validation, persistence, API/read-модель и поддержанные typed grants.
+- Player Core Deity catalog содержит 22 записи; 21 доступна Cleric. Divine skill, replacement training, favored weapon proficiency, Divine Font и sanctification применяются фактически, domains/granted spells возвращаются декларативно.
 - Есть unit и integration tests по ключевым backend-сценариям.
 
 ## Что не готово
@@ -27,7 +28,7 @@
 - Background skill feat пока представлен декларативно и не применяется к персонажу.
 - Общий выбор дополнительных Class skills и level-up proficiency progression пока не реализованы.
 - Spell proficiencies, большинство features/spells и ещё не реализованные mandatory choices представлены декларативно.
-- Текущий MVP не покрывает equipment, spells, deity, current/temporary HP и derived statistics шире maximum HP.
+- Текущий MVP не покрывает equipment, spell preparation, domain choice, current/temporary HP и derived statistics шире maximum HP.
 - Есть отдельный актуальный блок по расхождению `Secure.User` и `CharacterManagement.Account`: см. [`task_32_account_backfill.md`](task_32_account_backfill.md).
 
 ## Связанные файлы
@@ -46,8 +47,8 @@
 
 ## Next steps
 
-1. Следующий Cleric flow — `Player Core Deity Catalog + Cleric Deity Choice`; не добавлять свободную строковую заглушку Deity.
+1. Следующий Cleric flow — domain choice либо spell preparation/Divine Font slots как отдельная задача.
 2. Продолжать остальные обязательные class choices отдельными flows.
-3. Не применять feats, class features, spells, deity и equipment без соответствующих каталогов и доменных решений.
+3. Не применять feats, class features, spells и equipment без соответствующих каталогов и доменных решений.
 4. При изменении character creation сверяться с `../20_domain/character_creation/domain_rules_target_full.md` и актуальными catalog documents.
 

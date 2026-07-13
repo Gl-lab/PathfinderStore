@@ -219,6 +219,29 @@ onMounted(load)
                 :key="effect.id"
               >{{ effect.name }}: {{ effect.summary }} {{ t('classUi.deferredEffect') }}</p>
             </template>
+            <template v-if="character.classPackage.deity">
+              <p>{{ t('classUi.deity') }}: {{ character.classPackage.deity.name }}</p>
+              <p>
+                {{ t('classUi.divineFont') }}:
+                {{ t(`classUi.divineFonts.${character.classPackage.deity.divineFont}`) }}
+              </p>
+              <p v-if="character.classPackage.deity.sanctification">
+                {{ t('classUi.sanctification') }}:
+                {{ t(`classUi.sanctifications.${character.classPackage.deity.sanctification}`) }}
+              </p>
+              <p>
+                {{ t('classUi.favoredWeapon') }}:
+                {{ character.classPackage.deity.favoredWeapons.map((weapon) => weapon.name).join(', ') }}
+              </p>
+              <p>
+                {{ t('classUi.domains') }}:
+                {{ character.classPackage.deity.primaryDomainIds.join(', ') }}
+              </p>
+              <p>
+                {{ t('classUi.grantedSpells') }}:
+                {{ character.classPackage.deity.grantedSpells.map((spell) => `${spell.rank}: ${spell.name}`).join(', ') }}
+              </p>
+            </template>
             <p><strong>{{ t('classUi.rules') }}</strong></p>
             <ul>
               <li v-for="rule in character.classPackage.rules" :key="rule.id">

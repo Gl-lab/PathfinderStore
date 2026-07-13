@@ -20,5 +20,9 @@ public class CreateCharacterRequestDto
     public string? RogueRacketId { get; set; }
     public IReadOnlyList<RogueTrainingChoice> RogueTrainingChoices { get; set; } = [];
     public string? ClericDoctrineId { get; set; }
+    public string? DeityId { get; set; }
+    public DivineFont? DivineFont { get; set; }
+    public DivineSanctification? DivineSanctification { get; set; }
+    public string? DeitySkillReplacementId { get; set; }
     public IReadOnlyList<AbilityType>? FinalFreeBoosts { get; set; }
 }
