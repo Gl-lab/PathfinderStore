@@ -57,6 +57,17 @@ export interface CharacterClassPackage {
   }[]
 }
 
+export interface CharacterHitPoints {
+  maximum: number
+  ancestry: number
+  class: number
+  constitutionModifier: number
+}
+
+export interface CharacterDerivedStatistics {
+  hitPoints: CharacterHitPoints
+}
+
 export interface Character {
   id: number
   name: string
@@ -67,6 +78,7 @@ export interface Character {
   backgroundPackage: CharacterBackgroundPackage | null
   classPackage: CharacterClassPackage | null
   finalFreeBoosts: AbilityCode[]
+  derivedStatistics: CharacterDerivedStatistics | null
   characteristics: {
     strength: Characteristic
     dexterity: Characteristic

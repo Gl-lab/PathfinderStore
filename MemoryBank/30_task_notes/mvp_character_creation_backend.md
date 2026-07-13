@@ -14,13 +14,14 @@
 - Есть API endpoints для Ancestry, Background, Class и characters.
 - Домен применяет ancestry fixed boosts/flaws/free boosts, два background boosts, отдельный class key ability boost и отдельный обратимый пакет четырёх final free boosts.
 - Выборы Background, Class и final free boosts сохраняются в БД и возвращаются в character read-модели.
+- Maximum HP первого уровня вычисляется на чтении из effective ancestry HP, class HP и Constitution modifier и не дублируется в БД.
 - Есть unit и integration tests по ключевым backend-сценариям.
 
 ## Что не готово
 
 - Background grants для skills, Lore и skill feats пока представлены декларативно и не применяются к персонажу.
 - Class proficiencies, features, spells и mandatory choices представлены декларативно и не применяются к персонажу.
-- Текущий MVP не покрывает equipment, spells, deity и полноценные derived statistics.
+- Текущий MVP не покрывает equipment, spells, deity, current/temporary HP и derived statistics шире maximum HP.
 - Есть отдельный актуальный блок по расхождению `Secure.User` и `CharacterManagement.Account`: см. [`task_32_account_backfill.md`](task_32_account_backfill.md).
 
 ## Связанные файлы
@@ -39,7 +40,7 @@
 
 ## Next steps
 
-1. Добавить Hit Points как следующий vertical slice; ability modifiers уже вычисляются из scores.
-2. Не применять skills, Lore, feats, class features, spells, deity и equipment без соответствующих каталогов и доменных решений.
+1. Типизировать skills/Lore и применить background grants следующим vertical slice.
+2. Не применять feats, class features, spells, deity и equipment без соответствующих каталогов и доменных решений.
 3. При изменении character creation сверяться с `../20_domain/character_creation/domain_rules_target_full.md` и актуальными catalog documents.
 

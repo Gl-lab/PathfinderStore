@@ -1,3 +1,5 @@
+using Pathfinder.CharacterManagement.Domain.Exceptions;
+
 namespace Pathfinder.CharacterManagement.Domain.Entity;
 
 public sealed class Ancestry
@@ -51,6 +53,57 @@ public sealed class Ancestry
         GrantedRules = grantedRules ?? [];
         Heritages = heritages ?? [];
         AncestryFeats = ancestryFeats ?? [];
+    }
+
+    public int GetEffectiveBaseHitPoints( string? heritageId, string? ancestryFeatId )
+    {
+        List<AncestryEffectDescriptor> selectedEffects = [];
+
+        if ( !String.IsNullOrWhiteSpace( heritageId ) )
+        {
+            Heritage? heritage = Heritages
+                .SingleOrDefault( item => item.Id == heritageId );
+            if ( heritage is null )
+            {
+                throw new CharacterManagementException(
+                    $"Heritage '{heritageId}' does not belong to {AncestryType}." );
+            }
+
+            selectedEffects.AddRange( heritage.Effects );
+        }
+
+        if ( !String.IsNullOrWhiteSpace( ancestryFeatId ) )
+        {
+            AncestryFeat? ancestryFeat = AncestryFeats
+                .SingleOrDefault( item => item.Id == ancestryFeatId );
+            if ( ancestryFeat is null )
+            {
+                throw new CharacterManagementException(
+                    $"Ancestry feat '{ancestryFeatId}' does not belong to {AncestryType}." );
+            }
+
+            selectedEffects.AddRange( ancestryFeat.Effects );
+        }
+
+        int[] hitPointOverrides = selectedEffects
+            .Where( effect => effect.BaseHitPointsOverride.HasValue )
+            .Select( effect => effect.BaseHitPointsOverride!.Value )
+            .Distinct()
+            .ToArray();
+
+        if ( hitPointOverrides.Any( hitPoints => hitPoints <= 0 ) )
+        {
+            throw new CharacterManagementException(
+                $"Selected ancestry choices define a non-positive base hit point override for {AncestryType}." );
+        }
+
+        if ( hitPointOverrides.Length > 1 )
+        {
+            throw new CharacterManagementException(
+                $"Selected ancestry choices define conflicting base hit point overrides for {AncestryType}." );
+        }
+
+        return hitPointOverrides.SingleOrDefault( BaseHitPoints );
     }
 
     private static VisionType ResolveLegacyVision( bool darkvision, bool lowLightVision )

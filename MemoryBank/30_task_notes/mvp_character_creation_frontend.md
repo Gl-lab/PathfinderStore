@@ -13,6 +13,7 @@
 - Реализованы карточка и удаление персонажа.
 - Есть единая обработка API errors, русская и английская локализация.
 - Добавлены frontend tests для доменной локализации, Background, Class и final free boost choices.
+- Dashboard показывает maximum HP, карточка персонажа — maximum HP и breakdown ancestry/class/Constitution.
 
 ## Что не готово
 
@@ -28,6 +29,5 @@
 
 ## Next steps
 
-1. Отобразить Hit Points после появления backend derived-statistics slice; ability modifiers уже есть в карточке.
-2. Отдельными задачами реализовать зависимые Class flows и Skill subsystem.
-3. Добавить e2e-покрытие основного пользовательского сценария.
+1. Отдельными задачами реализовать Skill subsystem и зависимые Class flows.
+2. Добавить e2e-покрытие основного пользовательского сценария.

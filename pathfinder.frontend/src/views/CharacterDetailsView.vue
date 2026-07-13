@@ -17,6 +17,7 @@ import {
   getCharacter,
   type Character,
 } from '@/features/characters/api'
+import { formatSignedModifier } from '@/features/characters/hitPoints'
 
 const route = useRoute()
 const { t } = useI18n()
@@ -96,6 +97,36 @@ onMounted(load)
         >
       </header>
       <div class="stats">
+        <v-card v-if="character.derivedStatistics" elevation="0" class="hit-points-card"
+          ><v-card-item :title="t('characters.maximumHitPoints')"
+            ><template #prepend><v-icon color="error" icon="mdi-heart-pulse" /></template
+          ></v-card-item>
+          <v-card-text>
+            <strong class="hit-points-card__maximum">
+              {{ character.derivedStatistics.hitPoints.maximum }}
+            </strong>
+            <dl class="hit-points-card__breakdown">
+              <div>
+                <dt>{{ t('characters.hitPointsAncestry') }}</dt>
+                <dd>{{ character.derivedStatistics.hitPoints.ancestry }}</dd>
+              </div>
+              <div>
+                <dt>{{ t('characters.hitPointsClass') }}</dt>
+                <dd>{{ character.derivedStatistics.hitPoints.class }}</dd>
+              </div>
+              <div>
+                <dt>{{ t('characters.hitPointsConstitution') }}</dt>
+                <dd>
+                  {{
+                    formatSignedModifier(
+                      character.derivedStatistics.hitPoints.constitutionModifier,
+                    )
+                  }}
+                </dd>
+              </div>
+            </dl>
+          </v-card-text></v-card
+        >
         <v-card elevation="0"
           ><v-card-item :title="t('common.details')" /><v-card-text
             ><p v-if="character.age">{{ t('characters.age', { age: character.age }) }}</p>
@@ -214,6 +245,27 @@ h1 {
 }
 .stats .v-card {
   border: 1px solid rgb(var(--v-theme-surface-variant));
+}
+.hit-points-card__maximum {
+  display: block;
+  color: rgb(var(--v-theme-error));
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 2.5rem;
+  line-height: 1;
+}
+.hit-points-card__breakdown {
+  display: grid;
+  gap: 6px;
+  margin: 18px 0 0;
+}
+.hit-points-card__breakdown div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.hit-points-card__breakdown dd {
+  margin: 0;
+  font-weight: 700;
 }
 .abilities {
   display: grid;

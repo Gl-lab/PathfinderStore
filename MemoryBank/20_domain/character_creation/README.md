@@ -56,6 +56,7 @@
 - `Background` — источник двух стартовых boosts и декларативных дополнительных grants; boost package входит в текущий MVP.
 - `Class` — источник key ability boost, class HP и декларативных proficiencies/features; class package входит в текущий MVP.
 - `Final free boosts` — отдельный завершающий пакет четырёх boosts, распределённых по разным характеристикам.
+- `CharacterHitPoints` — вычисляемый breakdown maximum HP первого уровня из ancestry HP, class HP и Constitution modifier; в БД не хранится.
 - `Core Rulebook` / `Player Core` — в AoN-данных базовый `Player Core`-слой часто индексируется как `Core Rulebook`; в документации проекта эти два ярлыка считаются одним baseline-источником, если явно не указано иное.
 
 ## Нормализация терминов

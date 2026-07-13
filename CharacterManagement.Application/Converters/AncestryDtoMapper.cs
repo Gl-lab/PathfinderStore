@@ -75,16 +75,14 @@ public static class AncestryDtoMapper
         VisionType? visionOverride = selectedEffects
             .Select( effect => effect.VisionOverride )
             .FirstOrDefault( vision => vision is not null );
-        int? baseHitPointsOverride = selectedEffects
-            .Select( effect => effect.BaseHitPointsOverride )
-            .FirstOrDefault( hitPoints => hitPoints is not null );
-
         return new CharacterAncestryPackageDto
         {
             SelectedHeritageId = character.SelectedHeritageId,
             SelectedAncestryFeatId = character.SelectedAncestryFeatId,
             EffectiveVision = visionOverride ?? ancestry.Vision,
-            EffectiveBaseHitPoints = baseHitPointsOverride ?? ancestry.BaseHitPoints,
+            EffectiveBaseHitPoints = ancestry.GetEffectiveBaseHitPoints(
+                character.SelectedHeritageId,
+                character.SelectedAncestryFeatId ),
             StartingLanguageIds = ancestry.StartingLanguages
                 .Select( languageId => languageId.Value )
                 .ToList(),

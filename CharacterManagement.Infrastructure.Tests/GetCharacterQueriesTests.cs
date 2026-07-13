@@ -45,6 +45,7 @@ public sealed class GetCharacterQueriesTests
         Assert.Null( result.BackgroundPackage );
         Assert.Null( result.ClassPackage );
         Assert.Empty( result.FinalFreeBoosts );
+        Assert.Null( result.DerivedStatistics );
     }
 
     [Fact]
@@ -111,6 +112,107 @@ public sealed class GetCharacterQueriesTests
                 AbilityType.Wisdom
             ],
             result.FinalFreeBoosts );
+        Assert.NotNull( result.DerivedStatistics );
+        Assert.Equal( 17, result.DerivedStatistics.HitPoints.Maximum );
+        Assert.Equal( 8, result.DerivedStatistics.HitPoints.Ancestry );
+        Assert.Equal( 8, result.DerivedStatistics.HitPoints.Class );
+        Assert.Equal( 1, result.DerivedStatistics.HitPoints.ConstitutionModifier );
+    }
+
+    [Fact]
+    public async Task GetCharacterById_UnbreakableGoblin_UsesHeritageHpOverride()
+    {
+        await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
+        Account account = await CreateAccountAsync( dbContext, 403 );
+        AncestryRepository ancestryRepository = new AncestryRepository();
+        BackgroundRepository backgroundRepository = new BackgroundRepository();
+        CharacterClassRepository characterClassRepository = new CharacterClassRepository();
+        CharacterBuilder builder = CreateBuilder(
+            ancestryRepository,
+            backgroundRepository,
+            characterClassRepository );
+        builder.CreateCharacter( account.Id, "Fumbus", AncestryType.Goblin );
+        builder.SetAncestryPackage( "goblin.unbreakable", "goblin.burn_it" );
+        builder.ApplyFreeBoosts( [ AbilityType.Constitution ] );
+        builder.SetBackground(
+            "background.acrobat",
+            AbilityType.Dexterity,
+            AbilityType.Constitution );
+        builder.SetClass( "class.fighter", AbilityType.Strength );
+        builder.SetFinalFreeBoosts(
+            [
+                AbilityType.Strength,
+                AbilityType.Dexterity,
+                AbilityType.Constitution,
+                AbilityType.Intelligence
+            ] );
+        DraftCharacter draftCharacter = builder.Build();
+        dbContext.Character.Add( draftCharacter );
+        await dbContext.SaveChangesAsync();
+        dbContext.ChangeTracker.Clear();
+        GetCharacterByIdHandler handler = CreateByIdHandler(
+            dbContext,
+            ancestryRepository,
+            backgroundRepository,
+            characterClassRepository );
+
+        CharacterDto result = await handler.Handle(
+            new GetCharacterByIdCommand( account.UserId, draftCharacter.Id ),
+            CancellationToken.None );
+
+        Assert.NotNull( result.AncestryPackage );
+        Assert.Equal( 10, result.AncestryPackage.EffectiveBaseHitPoints );
+        Assert.NotNull( result.DerivedStatistics );
+        Assert.Equal( 23, result.DerivedStatistics.HitPoints.Maximum );
+        Assert.Equal( 10, result.DerivedStatistics.HitPoints.Ancestry );
+        Assert.Equal( 10, result.DerivedStatistics.HitPoints.Class );
+        Assert.Equal( 3, result.DerivedStatistics.HitPoints.ConstitutionModifier );
+    }
+
+    [Fact]
+    public async Task GetCharacters_WhenCharacterIsComplete_ReturnsDerivedStatistics()
+    {
+        await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
+        Account account = await CreateAccountAsync( dbContext, 404 );
+        AncestryRepository ancestryRepository = new AncestryRepository();
+        BackgroundRepository backgroundRepository = new BackgroundRepository();
+        CharacterClassRepository characterClassRepository = new CharacterClassRepository();
+        CharacterBuilder builder = CreateBuilder(
+            ancestryRepository,
+            backgroundRepository,
+            characterClassRepository );
+        builder.CreateCharacter( account.Id, "Valeros", AncestryType.Human );
+        builder.SetAncestryPackage( "human.skilled", "human.cooperative_nature" );
+        builder.ApplyFreeBoosts( [ AbilityType.Strength, AbilityType.Constitution ] );
+        builder.SetBackground(
+            "background.warrior",
+            AbilityType.Strength,
+            AbilityType.Constitution );
+        builder.SetClass( "class.fighter", AbilityType.Strength );
+        builder.SetFinalFreeBoosts(
+            [
+                AbilityType.Strength,
+                AbilityType.Dexterity,
+                AbilityType.Constitution,
+                AbilityType.Wisdom
+            ] );
+        dbContext.Character.Add( builder.Build() );
+        await dbContext.SaveChangesAsync();
+        dbContext.ChangeTracker.Clear();
+        GetCharactersHandler handler = new GetCharactersHandler(
+            new CharacterRepository( dbContext ),
+            new CharacterConvertor(
+                ancestryRepository,
+                backgroundRepository,
+                characterClassRepository ) );
+
+        IReadOnlyCollection<CharacterDto> result = await handler.Handle(
+            new GetCharactersCommand( account.UserId ),
+            CancellationToken.None );
+
+        CharacterDto character = Assert.Single( result );
+        Assert.NotNull( character.DerivedStatistics );
+        Assert.Equal( 21, character.DerivedStatistics.HitPoints.Maximum );
     }
 
     [Fact]
@@ -173,12 +275,30 @@ public sealed class GetCharacterQueriesTests
         return new GetCharactersHandler( characterRepository, characterConvertor );
     }
 
-    private static GetCharacterByIdHandler CreateByIdHandler( CharacterManagementDbContext dbContext )
+    private static GetCharacterByIdHandler CreateByIdHandler(
+        CharacterManagementDbContext dbContext,
+        AncestryRepository? ancestryRepository = null,
+        BackgroundRepository? backgroundRepository = null,
+        CharacterClassRepository? characterClassRepository = null )
     {
         CharacterRepository characterRepository = new CharacterRepository( dbContext );
-        CharacterConvertor characterConvertor = new CharacterConvertor();
+        CharacterConvertor characterConvertor = new CharacterConvertor(
+            ancestryRepository,
+            backgroundRepository,
+            characterClassRepository );
 
         return new GetCharacterByIdHandler( characterRepository, characterConvertor );
+    }
+
+    private static CharacterBuilder CreateBuilder(
+        AncestryRepository ancestryRepository,
+        BackgroundRepository backgroundRepository,
+        CharacterClassRepository characterClassRepository )
+    {
+        return new CharacterBuilder(
+            ancestryRepository,
+            backgroundRepository: backgroundRepository,
+            characterClassRepository: characterClassRepository );
     }
 
     private static async Task<Account> CreateAccountAsync( CharacterManagementDbContext dbContext, int userId )

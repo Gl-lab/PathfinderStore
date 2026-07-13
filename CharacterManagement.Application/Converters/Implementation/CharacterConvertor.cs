@@ -49,6 +49,12 @@ public sealed class CharacterConvertor : ICharacterConvertor
                 ? null
                 : CharacterClassDtoMapper.MapPackage( draftCharacter, characterClass ),
             FinalFreeBoosts = draftCharacter.AppliedFinalFreeBoosts.ToArray(),
+            DerivedStatistics = ancestry is null || characterClass is null
+                ? null
+                : CharacterDerivedStatisticsDtoMapper.Map(
+                    draftCharacter,
+                    ancestry,
+                    characterClass ),
             Characteristics = new GroupCharacteristicDto
             {
                 Strength = Convert( draftCharacter.AbilityScores.Strength ),

@@ -76,7 +76,20 @@ onMounted(loadCharacters)
             ></template
           ><v-card-title>{{ character.name }}</v-card-title
           ><v-card-subtitle>{{ getAncestryLabel(character.ancestryType) }}</v-card-subtitle></v-card-item
-        ><v-card-text>{{ character.concept || t('characters.noConcept') }}</v-card-text
+        ><v-card-text class="character-card__content"
+          ><span>{{ character.concept || t('characters.noConcept') }}</span
+          ><v-chip
+            v-if="character.derivedStatistics"
+            color="secondary"
+            prepend-icon="mdi-heart-pulse"
+            size="small"
+            variant="tonal"
+            >{{
+              t('characters.hitPointsValue', {
+                value: character.derivedStatistics.hitPoints.maximum,
+              })
+            }}</v-chip
+          ></v-card-text
         ><v-card-actions
           ><v-btn variant="text" color="primary">{{ t('common.open') }}</v-btn></v-card-actions
         ></v-card
@@ -128,6 +141,12 @@ h1 {
 }
 .character-card {
   cursor: pointer;
+}
+.character-card__content {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
 }
 .character-card__initials {
   color: white;
