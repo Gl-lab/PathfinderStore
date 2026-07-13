@@ -112,6 +112,16 @@ public class CharacterBuilder : ICharacterBuilder
         _draftCharacter.SetClassPackage( characterClass, keyAbility );
     }
 
+    public void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts )
+    {
+        if ( _draftCharacter is null )
+        {
+            throw new InvalidOperationException( "Character must be created before setting final free boosts." );
+        }
+
+        _draftCharacter.SetFinalFreeBoosts( finalFreeBoosts );
+    }
+
     public void IncreaseAbilityScores( IEnumerable<AbilityType> increasedAbilityTypes )
     {
         if ( _draftCharacter is null )

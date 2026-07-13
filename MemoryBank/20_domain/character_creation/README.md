@@ -53,8 +53,9 @@
 - `AbilityScores` — шесть базовых значений характеристик: `Strength`, `Dexterity`, `Constitution`, `Intelligence`, `Wisdom`, `Charisma`.
 - `Characteristic.Modifier` — вычисляемый модификатор характеристики по формуле `(Value - 10) / 2`.
 - `Ancestry` — игровая сущность PF2e, которая в текущем проекте определяет стартовые повышения, понижения, размер, скорость, базовые HP и зрение.
-- `Background` — источник стартовых boosts и дополнительных эффектов, пока не входит в MVP.
-- `Class` — источник key ability boost, class HP, proficiencies и class features, пока не входит в MVP.
+- `Background` — источник двух стартовых boosts и декларативных дополнительных grants; boost package входит в текущий MVP.
+- `Class` — источник key ability boost, class HP и декларативных proficiencies/features; class package входит в текущий MVP.
+- `Final free boosts` — отдельный завершающий пакет четырёх boosts, распределённых по разным характеристикам.
 - `Core Rulebook` / `Player Core` — в AoN-данных базовый `Player Core`-слой часто индексируется как `Core Rulebook`; в документации проекта эти два ярлыка считаются одним baseline-источником, если явно не указано иное.
 
 ## Нормализация терминов

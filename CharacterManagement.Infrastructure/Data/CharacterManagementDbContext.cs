@@ -45,6 +45,19 @@ public class CharacterManagementDbContext( DbContextOptions<CharacterManagementD
                     c => c.Aggregate( 0, ( h, v ) => HashCode.Combine( h, v ) ),
                     c => c.ToList() ) );
 
+            b.Property( x => x.AppliedFinalFreeBoosts )
+                .HasConversion(
+                    v => JsonSerializer.Serialize( v.ToList(), (JsonSerializerOptions?)null ),
+                    v => String.IsNullOrEmpty( v )
+                        ? (IReadOnlyList<AbilityType>)Array.Empty<AbilityType>()
+                        : (IReadOnlyList<AbilityType>)( JsonSerializer.Deserialize<List<AbilityType>>( v, (JsonSerializerOptions?)null ) ?? new List<AbilityType>() ) )
+                .HasColumnType( "jsonb" )
+                .HasDefaultValueSql( "'[]'::jsonb" )
+                .Metadata.SetValueComparer( new ValueComparer<IReadOnlyList<AbilityType>>(
+                    ( a, b ) => a != null && b != null && a.SequenceEqual( b ),
+                    c => c.Aggregate( 0, ( h, v ) => HashCode.Combine( h, v ) ),
+                    c => c.ToList() ) );
+
             b.OwnsOne( x => x.AbilityScores, ab =>
             {
                 ab.Ignore( a => a.MaxPortableWeight );

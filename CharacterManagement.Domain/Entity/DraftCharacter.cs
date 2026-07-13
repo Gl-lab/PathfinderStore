@@ -21,6 +21,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public AbilityType? SelectedBackgroundFreeBoost { get; private set; }
     public string? SelectedClassId { get; private set; }
     public AbilityType? SelectedClassKeyAbility { get; private set; }
+    public IReadOnlyList<AbilityType> AppliedFinalFreeBoosts { get; private set; } = [];
     public bool HasCompleteAncestryPackage => !String.IsNullOrWhiteSpace( SelectedHeritageId ) && !String.IsNullOrWhiteSpace( SelectedAncestryFeatId );
     public bool HasBackgroundBoostPackage =>
         !String.IsNullOrWhiteSpace( SelectedBackgroundId ) &&
@@ -29,6 +30,9 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public bool HasClassBoostPackage =>
         !String.IsNullOrWhiteSpace( SelectedClassId ) &&
         SelectedClassKeyAbility.HasValue;
+    public bool HasFinalFreeBoostPackage =>
+        AppliedFinalFreeBoosts.Count == 4 &&
+        AppliedFinalFreeBoosts.Distinct().Count() == 4;
 
     // Навигационные свойства для EF Core
     public Account Account { get; private set; }
@@ -276,6 +280,53 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         EnsureInvariants();
     }
 
+    public void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts )
+    {
+        ArgumentNullException.ThrowIfNull( finalFreeBoosts );
+
+        if ( !HasClassBoostPackage )
+        {
+            throw new CharacterManagementException( "Class package must be set before final free boosts." );
+        }
+
+        if ( finalFreeBoosts.Count != 4 )
+        {
+            throw new CharacterManagementException(
+                $"Expected 4 final free boosts, got {finalFreeBoosts.Count}." );
+        }
+
+        if ( finalFreeBoosts.Distinct().Count() != finalFreeBoosts.Count )
+        {
+            throw new CharacterManagementException( "Final free boosts must target different abilities." );
+        }
+
+        foreach ( AbilityType boost in finalFreeBoosts )
+        {
+            if ( !Enum.IsDefined( boost ) )
+            {
+                throw new CharacterManagementException( $"Unknown ability type '{boost}'." );
+            }
+
+            int previousFinalBoost = AppliedFinalFreeBoosts.Contains( boost ) ? 2 : 0;
+            int scoreAfterReplacement = AbilityScores.GetCharacteristic( boost ).Value - previousFinalBoost + 2;
+            if ( scoreAfterReplacement > 18 )
+            {
+                throw new CharacterManagementException(
+                    $"Final free boost cannot increase {boost} above 18." );
+            }
+        }
+
+        RemoveFinalFreeBoostEffects();
+
+        foreach ( AbilityType boost in finalFreeBoosts )
+        {
+            AbilityScores.ApplyAbilityBoost( boost );
+        }
+
+        AppliedFinalFreeBoosts = finalFreeBoosts.ToArray();
+        EnsureInvariants();
+    }
+
     public void UpdateAbilityScore( AbilityType abilityType, int value )
     {
         if ( AbilityScores == null )
@@ -448,5 +499,15 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
 
         SelectedClassId = null;
         SelectedClassKeyAbility = null;
+    }
+
+    private void RemoveFinalFreeBoostEffects()
+    {
+        foreach ( AbilityType boost in AppliedFinalFreeBoosts )
+        {
+            AbilityScores.RemoveAbilityBoost( boost );
+        }
+
+        AppliedFinalFreeBoosts = [];
     }
 }

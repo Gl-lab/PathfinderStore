@@ -98,6 +98,7 @@ Store сейчас не является активным направление
 - ancestry-каталог;
 - применение ancestry boosts/flaws/free boosts;
 - background-каталог и применение background boosts;
+- class-каталог, key ability boost и четыре финальных свободных boosts;
 - список, карточку и удаление персонажей.
 
 Ключевая модель: `Account -> DraftCharacter -> AbilityScores -> Characteristic`.
@@ -154,7 +155,7 @@ Seed users:
 
 ### Текущий character creation focus
 
-Frontend MVP создания персонажа реализован на Vue 3. Текущий flow включает Ancestry package, ancestry boosts, Background package с двумя boosts и Class package с key ability boost. Background grants и Class rules пока возвращаются декларативно и ожидают отдельные подсистемы.
+Frontend MVP создания персонажа реализован на Vue 3. Текущий flow включает Ancestry package, ancestry boosts, Background package с двумя boosts, Class package с key ability boost и отдельный пакет четырёх финальных свободных boosts. Стартовый pipeline характеристик завершён; Background grants и Class rules пока возвращаются декларативно и ожидают отдельные подсистемы.
 
 Смотреть:
 

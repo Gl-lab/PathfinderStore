@@ -16,6 +16,8 @@ Vikunja остаётся источником истины по фактичес
 
 ## Заметки
 
+- [`character_creation_near_term_roadmap.md`](character_creation_near_term_roadmap.md)
+- [`final_free_boosts_implementation.md`](final_free_boosts_implementation.md)
 - [`background_package_implementation.md`](background_package_implementation.md)
 - [`class_package_implementation.md`](class_package_implementation.md)
 - [`task_16_domain_rules.md`](task_16_domain_rules.md)

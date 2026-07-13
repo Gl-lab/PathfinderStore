@@ -46,6 +46,16 @@ public sealed class CreateCharacterCommandValidator : AbstractValidator<CreateCh
 
                 RuleFor( command => command.Character.ClassKeyAbility )
                     .NotNull();
+
+                RuleFor( command => command.Character.FinalFreeBoosts )
+                    .Cascade( CascadeMode.Stop )
+                    .NotNull()
+                    .Must( boosts => boosts?.Count == 4 )
+                    .WithMessage( "Exactly 4 final free boosts must be selected." )
+                    .Must( boosts => boosts is not null && boosts.Distinct().Count() == boosts.Count )
+                    .WithMessage( "Final free boosts must target different abilities." )
+                    .Must( boosts => boosts is not null && boosts.All( Enum.IsDefined ) )
+                    .WithMessage( "Final free boosts contain an unknown ability type." );
             } );
     }
 }

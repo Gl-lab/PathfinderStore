@@ -31,6 +31,13 @@ public sealed class CreateCharacterHandlerTests
             BackgroundFreeBoost = AbilityType.Charisma,
             ClassId = "class.fighter",
             ClassKeyAbility = AbilityType.Strength,
+            FinalFreeBoosts =
+            [
+                AbilityType.Strength,
+                AbilityType.Dexterity,
+                AbilityType.Constitution,
+                AbilityType.Wisdom
+            ],
         };
         CreateCharacterCommand command = new CreateCharacterCommand( account.UserId, character );
 
@@ -52,10 +59,13 @@ public sealed class CreateCharacterHandlerTests
         Assert.Equal( character.BackgroundFreeBoost, savedCharacter.SelectedBackgroundFreeBoost );
         Assert.Equal( character.ClassId, savedCharacter.SelectedClassId );
         Assert.Equal( character.ClassKeyAbility, savedCharacter.SelectedClassKeyAbility );
+        Assert.Equal( character.FinalFreeBoosts, savedCharacter.AppliedFinalFreeBoosts );
         Assert.Equal( account.Id, savedCharacter.AccountId );
-        Assert.Equal( 14, savedCharacter.AbilityScores.Strength.Value );
+        Assert.Equal( 16, savedCharacter.AbilityScores.Strength.Value );
         Assert.Equal( 12, savedCharacter.AbilityScores.Intelligence.Value );
-        Assert.Equal( 12, savedCharacter.AbilityScores.Dexterity.Value );
+        Assert.Equal( 14, savedCharacter.AbilityScores.Dexterity.Value );
+        Assert.Equal( 12, savedCharacter.AbilityScores.Constitution.Value );
+        Assert.Equal( 12, savedCharacter.AbilityScores.Wisdom.Value );
         Assert.Equal( 12, savedCharacter.AbilityScores.Charisma.Value );
     }
 
@@ -97,6 +107,13 @@ public sealed class CreateCharacterHandlerTests
             BackgroundFreeBoost = AbilityType.Charisma,
             ClassId = "class.fighter",
             ClassKeyAbility = AbilityType.Strength,
+            FinalFreeBoosts =
+            [
+                AbilityType.Strength,
+                AbilityType.Dexterity,
+                AbilityType.Constitution,
+                AbilityType.Wisdom
+            ],
         };
         CreateCharacterCommand command = new CreateCharacterCommand( account.UserId, character );
 

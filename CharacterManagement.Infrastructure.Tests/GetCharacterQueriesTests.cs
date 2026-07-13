@@ -44,6 +44,7 @@ public sealed class GetCharacterQueriesTests
         Assert.Null( result.Backpack );
         Assert.Null( result.BackgroundPackage );
         Assert.Null( result.ClassPackage );
+        Assert.Empty( result.FinalFreeBoosts );
     }
 
     [Fact]
@@ -66,6 +67,13 @@ public sealed class GetCharacterQueriesTests
             AbilityType.Wisdom,
             AbilityType.Charisma );
         builder.SetClass( "class.cleric", AbilityType.Wisdom );
+        builder.SetFinalFreeBoosts(
+            [
+                AbilityType.Strength,
+                AbilityType.Dexterity,
+                AbilityType.Constitution,
+                AbilityType.Wisdom
+            ] );
         DraftCharacter draftCharacter = builder.Build();
         dbContext.Character.Add( draftCharacter );
         await dbContext.SaveChangesAsync();
@@ -93,8 +101,16 @@ public sealed class GetCharacterQueriesTests
         Assert.Equal( "class.cleric", result.ClassPackage.ClassId );
         Assert.Equal( 8, result.ClassPackage.BaseHitPoints );
         Assert.Equal( AbilityType.Wisdom, result.ClassPackage.KeyAbility );
-        Assert.Equal( 16, result.Characteristics.Wisdom.Value );
+        Assert.Equal( 18, result.Characteristics.Wisdom.Value );
         Assert.Contains( result.ClassPackage.Rules, rule => rule.Id == "class_choice.cleric.deity" );
+        Assert.Equal(
+            [
+                AbilityType.Strength,
+                AbilityType.Dexterity,
+                AbilityType.Constitution,
+                AbilityType.Wisdom
+            ],
+            result.FinalFreeBoosts );
     }
 
     [Fact]

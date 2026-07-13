@@ -114,6 +114,7 @@ export interface CreateCharacterRequest {
   backgroundFreeBoost: AbilityCode
   classId: string
   classKeyAbility: AbilityCode
+  finalFreeBoosts: AbilityCode[]
 }
 
 export async function getAncestries(): Promise<Ancestry[]> {

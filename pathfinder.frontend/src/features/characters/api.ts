@@ -66,6 +66,7 @@ export interface Character {
   ancestryPackage: CharacterAncestryPackage | null
   backgroundPackage: CharacterBackgroundPackage | null
   classPackage: CharacterClassPackage | null
+  finalFreeBoosts: AbilityCode[]
   characteristics: {
     strength: Characteristic
     dexterity: Characteristic

@@ -25,6 +25,13 @@ public sealed class CreateCharacterCommandValidatorTests
                 BackgroundFreeBoost = AbilityType.Charisma,
                 ClassId = "class.fighter",
                 ClassKeyAbility = AbilityType.Strength,
+                FinalFreeBoosts =
+                [
+                    AbilityType.Strength,
+                    AbilityType.Dexterity,
+                    AbilityType.Constitution,
+                    AbilityType.Wisdom
+                ],
             } );
 
         Assert.Throws<ValidationException>( () => validator.ValidateAndThrow( command ) );
@@ -64,6 +71,13 @@ public sealed class CreateCharacterCommandValidatorTests
                 BackgroundFreeBoost = AbilityType.Charisma,
                 ClassId = "class.fighter",
                 ClassKeyAbility = AbilityType.Strength,
+                FinalFreeBoosts =
+                [
+                    AbilityType.Strength,
+                    AbilityType.Dexterity,
+                    AbilityType.Constitution,
+                    AbilityType.Wisdom
+                ],
             } );
 
         validator.ValidateAndThrow( command );
@@ -133,5 +147,65 @@ public sealed class CreateCharacterCommandValidatorTests
             } );
 
         Assert.Throws<ValidationException>( () => validator.ValidateAndThrow( command ) );
+    }
+
+    [Theory]
+    [MemberData( nameof( InvalidFinalFreeBoosts ) )]
+    public void Validate_WhenFinalFreeBoostsAreInvalid_ThrowsValidationException(
+        IReadOnlyList<AbilityType>? finalFreeBoosts )
+    {
+        CreateCharacterCommandValidator validator = new CreateCharacterCommandValidator();
+        CreateCharacterCommand command = new CreateCharacterCommand(
+            42,
+            new CreateCharacterRequestDto
+            {
+                Name = "Thorin",
+                AncestryType = AncestryType.Human,
+                HeritageId = "human.skilled",
+                AncestryFeatId = "human.cooperative_nature",
+                FreeBoosts = [ AbilityType.Strength, AbilityType.Intelligence ],
+                BackgroundId = "background.acrobat",
+                BackgroundRestrictedBoost = AbilityType.Dexterity,
+                BackgroundFreeBoost = AbilityType.Charisma,
+                ClassId = "class.fighter",
+                ClassKeyAbility = AbilityType.Strength,
+                FinalFreeBoosts = finalFreeBoosts,
+            } );
+
+        Assert.Throws<ValidationException>( () => validator.ValidateAndThrow( command ) );
+    }
+
+    public static IEnumerable<object?[]> InvalidFinalFreeBoosts()
+    {
+        yield return [ null ];
+        yield return
+        [
+            new AbilityType[]
+            {
+                AbilityType.Strength,
+                AbilityType.Dexterity,
+                AbilityType.Constitution
+            }
+        ];
+        yield return
+        [
+            new AbilityType[]
+            {
+                AbilityType.Strength,
+                AbilityType.Strength,
+                AbilityType.Constitution,
+                AbilityType.Wisdom
+            }
+        ];
+        yield return
+        [
+            new AbilityType[]
+            {
+                AbilityType.Strength,
+                AbilityType.Dexterity,
+                AbilityType.Constitution,
+                ( AbilityType )999
+            }
+        ];
     }
 }

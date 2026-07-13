@@ -48,6 +48,7 @@ public sealed class CharacterConvertor : ICharacterConvertor
             ClassPackage = characterClass is null
                 ? null
                 : CharacterClassDtoMapper.MapPackage( draftCharacter, characterClass ),
+            FinalFreeBoosts = draftCharacter.AppliedFinalFreeBoosts.ToArray(),
             Characteristics = new GroupCharacteristicDto
             {
                 Strength = Convert( draftCharacter.AbilityScores.Strength ),

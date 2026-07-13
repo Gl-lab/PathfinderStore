@@ -16,4 +16,5 @@ public class CreateCharacterRequestDto
     public AbilityType? BackgroundFreeBoost { get; set; }
     public string ClassId { get; set; } = String.Empty;
     public AbilityType? ClassKeyAbility { get; set; }
+    public IReadOnlyList<AbilityType>? FinalFreeBoosts { get; set; }
 }

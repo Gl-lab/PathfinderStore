@@ -37,6 +37,8 @@ public sealed class CreateCharacterHandler : IRequestHandler<CreateCharacterComm
             ?? throw new CharacterManagementException( "Background free boost must be specified." );
         AbilityType classKeyAbility = request.Character.ClassKeyAbility
             ?? throw new CharacterManagementException( "Class key ability must be specified." );
+        IReadOnlyList<AbilityType> finalFreeBoosts = request.Character.FinalFreeBoosts
+            ?? throw new CharacterManagementException( "Final free boosts must be specified." );
 
         _characterBuilder.CreateCharacter(
             account.Id,
@@ -51,6 +53,7 @@ public sealed class CreateCharacterHandler : IRequestHandler<CreateCharacterComm
             backgroundRestrictedBoost,
             backgroundFreeBoost );
         _characterBuilder.SetClass( request.Character.ClassId, classKeyAbility );
+        _characterBuilder.SetFinalFreeBoosts( finalFreeBoosts );
 
         DraftCharacter draftCharacter = _characterBuilder.Build();
         account.AddDraftCharacter( draftCharacter );

@@ -12,6 +12,7 @@ public class CharacterDto : BaseDto
     public CharacterAncestryPackageDto? AncestryPackage { get; set; }
     public CharacterBackgroundPackageDto? BackgroundPackage { get; set; }
     public CharacterClassPackageDto? ClassPackage { get; set; }
+    public IReadOnlyList<AbilityType> FinalFreeBoosts { get; set; } = [];
     public virtual BackpackDto? Backpack { get; set; }
     public virtual GroupCharacteristicDto Characteristics { get; set; }
 }

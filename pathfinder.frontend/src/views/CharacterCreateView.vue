@@ -25,6 +25,11 @@ import {
   isBackgroundChoiceComplete,
 } from '@/features/character-creation/background'
 import { isCharacterClassChoiceComplete } from '@/features/character-creation/characterClass'
+import {
+  calculateAbilityScorePreview,
+  isFinalFreeBoostDisabled,
+  isFinalFreeBoostSelectionComplete,
+} from '@/features/character-creation/finalFreeBoosts'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -48,6 +53,7 @@ const form = ref({
   backgroundFreeBoost: null as AbilityCode | null,
   classId: null as string | null,
   classKeyAbility: null as AbilityCode | null,
+  finalFreeBoosts: [] as AbilityCode[],
 })
 const abilityCodes: AbilityCode[] = ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma']
 const selectedAncestry = computed(
@@ -78,6 +84,22 @@ const selectedCharacterClass = computed(
 const backgroundFreeBoostOptions = computed(() =>
   getBackgroundFreeBoostOptions(abilityCodes, form.value.backgroundRestrictedBoost),
 )
+const boostsBeforeFinal = computed<AbilityCode[]>(() => [
+  ...fixedBoosts.value,
+  ...form.value.freeBoosts,
+  ...(form.value.backgroundRestrictedBoost ? [form.value.backgroundRestrictedBoost] : []),
+  ...(form.value.backgroundFreeBoost ? [form.value.backgroundFreeBoost] : []),
+  ...(form.value.classKeyAbility ? [form.value.classKeyAbility] : []),
+])
+const abilityScoresBeforeFinal = computed(() =>
+  calculateAbilityScorePreview(boostsBeforeFinal.value, selectedAncestry.value?.abilityFlaws ?? []),
+)
+const abilityScoresAfterFinal = computed(() =>
+  calculateAbilityScorePreview(
+    [...boostsBeforeFinal.value, ...form.value.finalFreeBoosts],
+    selectedAncestry.value?.abilityFlaws ?? [],
+  ),
+)
 const canContinue = computed(() => {
   if (step.value === 1)
     return (
@@ -98,6 +120,8 @@ const canContinue = computed(() => {
       selectedCharacterClass.value,
       form.value.classKeyAbility,
     )
+  if (step.value === 7)
+    return isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts)
   return true
 })
 
@@ -126,11 +150,20 @@ function selectCharacterClass(classId: string | null): void {
   form.value.classId = classId
   form.value.classKeyAbility = null
 }
+function isFinalBoostDisabled(type: AbilityCode): boolean {
+  return isFinalFreeBoostDisabled(type, form.value.finalFreeBoosts)
+}
+function formatFinalBoostScore(type: AbilityCode): string {
+  return t('wizard.finalBoostScore', {
+    before: abilityScoresBeforeFinal.value[type],
+    after: abilityScoresAfterFinal.value[type],
+  })
+}
 function formatAbilities(types: AbilityCode[]): string {
   return types.map(getAbilityLabel).join(', ') || t('wizard.none')
 }
 function next(): void {
-  if (canContinue.value && step.value < 7) step.value += 1
+  if (canContinue.value && step.value < 8) step.value += 1
 }
 function previous(): void {
   if (step.value > 1) step.value -= 1
@@ -142,7 +175,8 @@ async function submit(): Promise<void> {
     !selectedCharacterClass.value ||
     !form.value.backgroundRestrictedBoost ||
     !form.value.backgroundFreeBoost ||
-    !form.value.classKeyAbility
+    !form.value.classKeyAbility ||
+    !isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts)
   )
     return
   errorMessages.value = []
@@ -161,6 +195,7 @@ async function submit(): Promise<void> {
       backgroundFreeBoost: form.value.backgroundFreeBoost,
       classId: selectedCharacterClass.value.id,
       classKeyAbility: form.value.classKeyAbility,
+      finalFreeBoosts: form.value.finalFreeBoosts,
     })
     await router.replace('/')
   } catch (error) {
@@ -200,10 +235,10 @@ onMounted(loadCatalogs)
       </div>
       <v-btn variant="text" to="/">{{ t('common.cancel') }}</v-btn>
     </header>
-    <v-progress-linear :model-value="(step / 7) * 100" color="accent" height="8" rounded />
+    <v-progress-linear :model-value="(step / 8) * 100" color="accent" height="8" rounded />
     <ol class="steps">
       <li
-        v-for="(item, index) in [t('wizard.basic'), t('wizard.ancestry'), t('wizard.choices'), t('wizard.boosts'), t('wizard.background'), t('classUi.characterClass'), t('wizard.review')]"
+        v-for="(item, index) in [t('wizard.basic'), t('wizard.ancestry'), t('wizard.choices'), t('wizard.boosts'), t('wizard.background'), t('classUi.characterClass'), t('wizard.finalFreeBoosts'), t('wizard.review')]"
         :key="item"
         :class="{ active: step === index + 1, complete: step > index + 1 }"
       >
@@ -364,7 +399,22 @@ onMounted(loadCatalogs)
             </v-list>
           </template>
         </section>
-        <section v-else-if="step === 7 && selectedAncestry">
+        <section v-else-if="step === 7">
+          <h2>{{ t('wizard.finalFreeBoosts') }}</h2>
+          <p class="hint">
+            {{ t('wizard.finalFreeBoostsHint', { selected: form.finalFreeBoosts.length }) }}
+          </p>
+          <v-checkbox
+            v-for="code in abilityCodes"
+            :key="code"
+            v-model="form.finalFreeBoosts"
+            :value="code"
+            :label="`${getAbilityLabel(code)} · ${formatFinalBoostScore(code)}`"
+            :disabled="isFinalBoostDisabled(code)"
+            hide-details
+          />
+        </section>
+        <section v-else-if="step === 8 && selectedAncestry">
           <h2>{{ t('wizard.review') }}</h2>
           <v-list lines="two"
             ><v-list-item :title="t('common.name')" :subtitle="form.name" /><v-list-item
@@ -388,18 +438,26 @@ onMounted(loadCatalogs)
               v-if="form.classKeyAbility"
               :title="t('classUi.keyAbility')"
               :subtitle="getAbilityLabel(form.classKeyAbility)" /><v-list-item
+              :title="t('wizard.finalFreeBoosts')"
+              :subtitle="formatAbilities(form.finalFreeBoosts)" /><v-list-item
               v-if="form.concept"
               :title="t('wizard.selectedConcept')"
               :subtitle="form.concept" /></v-list
           ><v-alert type="info" variant="tonal"
             >{{ t('wizard.resultHint') }}</v-alert
           >
+          <div class="ability-preview">
+            <div v-for="code in abilityCodes" :key="code">
+              <span>{{ getAbilityLabel(code) }}</span>
+              <strong>{{ abilityScoresAfterFinal[code] }}</strong>
+            </div>
+          </div>
         </section></template
       ></v-card
     >
     <footer>
       <v-btn variant="text" :disabled="step === 1 || isSubmitting" @click="previous">{{ t('common.back') }}</v-btn
-      ><v-spacer /><v-btn v-if="step < 7" color="primary" :disabled="!canContinue" @click="next"
+      ><v-spacer /><v-btn v-if="step < 8" color="primary" :disabled="!canContinue" @click="next"
         >{{ t('common.next') }}</v-btn
       ><v-btn v-else color="accent" :loading="isSubmitting" @click="submit"
         >{{ t('wizard.create') }}</v-btn
@@ -436,7 +494,7 @@ h1 {
 }
 .steps {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(8, 1fr);
   gap: 8px;
   padding: 0;
   margin: 0;
@@ -462,6 +520,18 @@ h1 {
 .radio-detail {
   color: #52606d;
 }
+.ability-preview {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px 16px;
+  margin-top: 16px;
+}
+.ability-preview div {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid rgb(var(--v-theme-surface-variant));
+  padding-bottom: 6px;
+}
 .radio-detail {
   margin: 4px 0 0;
   font-size: 0.875rem;
@@ -479,6 +549,7 @@ h2 {
     flex-direction: column;
   }
   .steps {
+    grid-template-columns: repeat(4, 1fr);
     font-size: 0.75rem;
     gap: 4px;
   }

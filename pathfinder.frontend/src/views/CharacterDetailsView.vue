@@ -149,6 +149,10 @@ onMounted(load)
             </ul>
           </v-card-text
         ></v-card
+        ><v-card v-if="character.finalFreeBoosts.length" elevation="0"
+          ><v-card-item :title="t('characters.finalFreeBoosts')" /><v-card-text
+            ><p>{{ character.finalFreeBoosts.map(getAbilityLabel).join(', ') }}</p></v-card-text
+          ></v-card
         ><v-card elevation="0"
           ><v-card-item :title="t('characters.abilities')" /><v-card-text class="abilities"
             ><div v-for="(code, key) in abilityCodes" :key="key">
