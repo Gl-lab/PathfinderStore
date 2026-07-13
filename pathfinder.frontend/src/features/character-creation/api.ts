@@ -139,6 +139,21 @@ export interface RogueTrainingChoice {
   replacementSkillId: string | null
 }
 
+export interface ClericDoctrineEffect {
+  id: string
+  name: string
+  summary: string
+  deferredDependencies: string[]
+}
+
+export interface ClericDoctrine {
+  id: string
+  name: string
+  proficiencyGrants: Proficiency[]
+  effects: ClericDoctrineEffect[]
+  deferredDependencies: string[]
+}
+
 export interface CreateCharacterRequest {
   name: string
   concept: string | null
@@ -155,6 +170,7 @@ export interface CreateCharacterRequest {
   classKeyAbility: AbilityCode
   rogueRacketId: string | null
   rogueTrainingChoices: RogueTrainingChoice[]
+  clericDoctrineId: string | null
   finalFreeBoosts: AbilityCode[]
 }
 
@@ -172,6 +188,10 @@ export async function getCharacterClasses(): Promise<CharacterClass[]> {
 
 export async function getRogueRackets(): Promise<RogueRacket[]> {
   return (await http.get<RogueRacket[]>('/api/classes/rogue/rackets')).data
+}
+
+export async function getClericDoctrines(): Promise<ClericDoctrine[]> {
+  return (await http.get<ClericDoctrine[]>('/api/classes/cleric/doctrines')).data
 }
 
 export async function getSkills(): Promise<Skill[]> {

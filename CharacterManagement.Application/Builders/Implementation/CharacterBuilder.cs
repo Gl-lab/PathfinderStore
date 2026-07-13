@@ -13,6 +13,7 @@ public class CharacterBuilder : ICharacterBuilder
     private readonly ICharacterClassRepository? _characterClassRepository;
     private readonly ISkillRepository? _skillRepository;
     private readonly IRogueRacketRepository? _rogueRacketRepository;
+    private readonly IClericDoctrineRepository? _clericDoctrineRepository;
 
     public CharacterBuilder(
         IAncestryRepository ancestryRepository,
@@ -20,7 +21,8 @@ public class CharacterBuilder : ICharacterBuilder
         IBackgroundRepository? backgroundRepository = null,
         ICharacterClassRepository? characterClassRepository = null,
         ISkillRepository? skillRepository = null,
-        IRogueRacketRepository? rogueRacketRepository = null )
+        IRogueRacketRepository? rogueRacketRepository = null,
+        IClericDoctrineRepository? clericDoctrineRepository = null )
     {
         _ancestryRepository = ancestryRepository;
         _ancestryChoiceAvailabilityPolicy = ancestryChoiceAvailabilityPolicy ?? new CommonAncestryChoiceAvailabilityPolicy();
@@ -28,6 +30,7 @@ public class CharacterBuilder : ICharacterBuilder
         _characterClassRepository = characterClassRepository;
         _skillRepository = skillRepository;
         _rogueRacketRepository = rogueRacketRepository;
+        _clericDoctrineRepository = clericDoctrineRepository;
     }
 
     public void CreateCharacter(
@@ -108,7 +111,8 @@ public class CharacterBuilder : ICharacterBuilder
         string characterClassId,
         AbilityType keyAbility,
         string? rogueRacketId = null,
-        IReadOnlyList<RogueTrainingChoice>? rogueTrainingChoices = null )
+        IReadOnlyList<RogueTrainingChoice>? rogueTrainingChoices = null,
+        string? clericDoctrineId = null )
     {
         if ( _draftCharacter is null )
         {
@@ -148,6 +152,24 @@ public class CharacterBuilder : ICharacterBuilder
             }
         }
 
+        ClericDoctrine? doctrine = null;
+        if ( !String.IsNullOrWhiteSpace( clericDoctrineId ) )
+        {
+            if ( _clericDoctrineRepository is null )
+            {
+                throw new InvalidOperationException( "Cleric doctrine repository is not configured." );
+            }
+
+            try
+            {
+                doctrine = _clericDoctrineRepository.GetClericDoctrine( clericDoctrineId );
+            }
+            catch ( ArgumentException exception )
+            {
+                throw new CharacterManagementException( exception.Message );
+            }
+        }
+
         if ( ( characterClass.Id == "class.rogue" ) && ( _skillRepository is null ) )
         {
             throw new InvalidOperationException( "Skill repository is not configured." );
@@ -158,7 +180,8 @@ public class CharacterBuilder : ICharacterBuilder
             keyAbility,
             racket,
             rogueTrainingChoices,
-            _skillRepository?.GetAll() ?? [] );
+            _skillRepository?.GetAll() ?? [],
+            doctrine );
     }
 
     public void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts )

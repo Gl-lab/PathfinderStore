@@ -210,6 +210,15 @@ onMounted(load)
                 :key="effect.id"
               >{{ effect.name }}: {{ effect.summary }}</p>
             </template>
+            <template v-if="character.classPackage.clericDoctrine">
+              <p>
+                {{ t('classUi.clericDoctrine') }}: {{ character.classPackage.clericDoctrine.name }}
+              </p>
+              <p
+                v-for="effect in character.classPackage.clericDoctrine.effects"
+                :key="effect.id"
+              >{{ effect.name }}: {{ effect.summary }} {{ t('classUi.deferredEffect') }}</p>
+            </template>
             <p><strong>{{ t('classUi.rules') }}</strong></p>
             <ul>
               <li v-for="rule in character.classPackage.rules" :key="rule.id">

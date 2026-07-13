@@ -175,6 +175,61 @@ public sealed class CreateCharacterCommandValidatorTests
         Assert.Throws<ValidationException>( () => validator.ValidateAndThrow( command ) );
     }
 
+    [Theory]
+    [InlineData( "class.cleric", null )]
+    [InlineData( "class.fighter", "cleric_doctrine.warpriest" )]
+    public void Validate_WhenClericDoctrineDoesNotMatchClass_ThrowsValidationException(
+        string classId,
+        string? clericDoctrineId )
+    {
+        CreateCharacterCommandValidator validator = new CreateCharacterCommandValidator();
+        CreateCharacterRequestDto character = CreateValidRequest();
+        character.ClassId = classId;
+        character.ClassKeyAbility = classId == "class.cleric"
+            ? AbilityType.Wisdom
+            : AbilityType.Strength;
+        character.ClericDoctrineId = clericDoctrineId;
+
+        Assert.Throws<ValidationException>( () => validator.ValidateAndThrow(
+            new CreateCharacterCommand( 42, character ) ) );
+    }
+
+    [Fact]
+    public void Validate_WhenClericDoctrineIsSelected_DoesNotThrow()
+    {
+        CreateCharacterCommandValidator validator = new CreateCharacterCommandValidator();
+        CreateCharacterRequestDto character = CreateValidRequest();
+        character.ClassId = "class.cleric";
+        character.ClassKeyAbility = AbilityType.Wisdom;
+        character.ClericDoctrineId = "cleric_doctrine.cloistered";
+
+        validator.ValidateAndThrow( new CreateCharacterCommand( 42, character ) );
+    }
+
+    private static CreateCharacterRequestDto CreateValidRequest()
+    {
+        return new CreateCharacterRequestDto
+        {
+            Name = "Thorin",
+            AncestryType = AncestryType.Human,
+            HeritageId = "human.skilled",
+            AncestryFeatId = "human.cooperative_nature",
+            FreeBoosts = [ AbilityType.Strength, AbilityType.Intelligence ],
+            BackgroundId = "background.acrobat",
+            BackgroundRestrictedBoost = AbilityType.Dexterity,
+            BackgroundFreeBoost = AbilityType.Charisma,
+            ClassId = "class.fighter",
+            ClassKeyAbility = AbilityType.Strength,
+            FinalFreeBoosts =
+            [
+                AbilityType.Strength,
+                AbilityType.Dexterity,
+                AbilityType.Constitution,
+                AbilityType.Wisdom,
+            ],
+        };
+    }
+
     public static IEnumerable<object?[]> InvalidFinalFreeBoosts()
     {
         yield return [ null ];

@@ -29,7 +29,11 @@ public enum CharacterClassDependencyType
     SpellCatalog,
     DeityCatalog,
     FamiliarRules,
-    RogueRacketCatalog
+    RogueRacketCatalog,
+    ClericDoctrineCatalog,
+    DomainCatalog,
+    GeneralFeatCatalog,
+    WeaponCatalog
 }
 
 public sealed record CharacterClassRuleDescriptor(

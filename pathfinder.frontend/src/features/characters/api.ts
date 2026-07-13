@@ -72,6 +72,17 @@ export interface CharacterClassPackage {
     alternativeKeyAbility: AbilityCode | null
     effects: { id: string; name: string; summary: string }[]
   } | null
+  clericDoctrine: {
+    id: string
+    name: string
+    effects: {
+      id: string
+      name: string
+      summary: string
+      deferredDependencies: string[]
+    }[]
+    deferredDependencies: string[]
+  } | null
   rules: {
     id: string
     kind: string

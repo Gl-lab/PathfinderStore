@@ -189,6 +189,45 @@ public sealed class CreateCharacterHandlerTests
     }
 
     [Fact]
+    public async Task Handle_Cleric_PersistsDoctrineSelection()
+    {
+        await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
+        Account account = await CreateAccountAsync( dbContext, 56, "Kyra", "Dawn" );
+        CreateCharacterHandler handler = CreateHandler( dbContext );
+        CreateCharacterRequestDto character = new CreateCharacterRequestDto
+        {
+            Name = "Kyra",
+            AncestryType = AncestryType.Human,
+            HeritageId = "human.skilled",
+            AncestryFeatId = "human.cooperative_nature",
+            FreeBoosts = [ AbilityType.Strength, AbilityType.Wisdom ],
+            BackgroundId = "background.acolyte",
+            BackgroundRestrictedBoost = AbilityType.Wisdom,
+            BackgroundFreeBoost = AbilityType.Charisma,
+            ClassId = "class.cleric",
+            ClassKeyAbility = AbilityType.Wisdom,
+            ClericDoctrineId = "cleric_doctrine.warpriest",
+            FinalFreeBoosts =
+            [
+                AbilityType.Strength,
+                AbilityType.Dexterity,
+                AbilityType.Constitution,
+                AbilityType.Wisdom,
+            ],
+        };
+
+        await handler.Handle(
+            new CreateCharacterCommand( account.UserId, character ),
+            CancellationToken.None );
+        dbContext.ChangeTracker.Clear();
+
+        DraftCharacter savedCharacter = await dbContext.Character
+            .AsNoTracking()
+            .SingleAsync( entity => entity.AccountId == account.Id );
+        Assert.Equal( "cleric_doctrine.warpriest", savedCharacter.SelectedClericDoctrineId );
+    }
+
+    [Fact]
     public async Task Handle_DuplicateFreeBoosts_ThrowsAndDoesNotPersistCharacter()
     {
         await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
@@ -234,7 +273,8 @@ public sealed class CreateCharacterHandlerTests
             backgroundRepository: backgroundRepository,
             characterClassRepository: characterClassRepository,
             skillRepository: new SkillRepository(),
-            rogueRacketRepository: new RogueRacketRepository() );
+            rogueRacketRepository: new RogueRacketRepository(),
+            clericDoctrineRepository: new ClericDoctrineRepository() );
         TestUnitOfWork unitOfWork = new TestUnitOfWork( dbContext );
 
         return new CreateCharacterHandler( accountRepository, characterBuilder, unitOfWork );

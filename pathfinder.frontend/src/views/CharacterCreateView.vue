@@ -25,12 +25,14 @@ import {
   getAncestries,
   getBackgrounds,
   getCharacterClasses,
+  getClericDoctrines,
   getRogueRackets,
   getSkills,
   type Ancestry,
   type Background,
   type BackgroundTrainingChoice,
   type CharacterClass,
+  type ClericDoctrine,
   type RogueRacket,
   type RogueTrainingChoice,
   type Skill,
@@ -52,6 +54,10 @@ import {
   requiresRogueReplacement,
 } from '@/features/character-creation/rogueRacket'
 import {
+  getEffectiveClassProficiencies,
+  isClericDoctrineChoiceComplete,
+} from '@/features/character-creation/clericDoctrine'
+import {
   calculateAbilityScorePreview,
   isFinalFreeBoostDisabled,
   isFinalFreeBoostSelectionComplete,
@@ -64,6 +70,7 @@ const ancestries = ref<Ancestry[]>([])
 const backgrounds = ref<Background[]>([])
 const characterClasses = ref<CharacterClass[]>([])
 const rogueRackets = ref<RogueRacket[]>([])
+const clericDoctrines = ref<ClericDoctrine[]>([])
 const skills = ref<Skill[]>([])
 const isLoadingCatalogs = ref(true)
 const isSubmitting = ref(false)
@@ -84,6 +91,7 @@ const form = ref({
   classKeyAbility: null as AbilityCode | null,
   rogueRacketId: null as string | null,
   rogueTrainingChoices: [] as RogueTrainingChoice[],
+  clericDoctrineId: null as string | null,
   finalFreeBoosts: [] as AbilityCode[],
 })
 const abilityCodes: AbilityCode[] = ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma']
@@ -114,6 +122,12 @@ const selectedCharacterClass = computed(
 )
 const selectedRogueRacket = computed(
   () => rogueRackets.value.find((item) => item.id === form.value.rogueRacketId) ?? null,
+)
+const selectedClericDoctrine = computed(
+  () => clericDoctrines.value.find((item) => item.id === form.value.clericDoctrineId) ?? null,
+)
+const effectiveClassProficiencies = computed(() =>
+  getEffectiveClassProficiencies(selectedCharacterClass.value, selectedClericDoctrine.value),
 )
 const backgroundSkillIds = computed(() => {
   if (!selectedBackground.value) return []
@@ -164,15 +178,18 @@ const canContinue = computed(() => {
       form.value.backgroundTrainingChoices,
     )
   if (step.value === 6)
-    return selectedCharacterClass.value?.id === 'class.rogue'
-      ? isRogueRacketChoiceComplete(
+    return (
+      isClericDoctrineChoiceComplete(selectedCharacterClass.value, selectedClericDoctrine.value) &&
+      (selectedCharacterClass.value?.id === 'class.rogue'
+        ? isRogueRacketChoiceComplete(
           selectedRogueRacket.value,
           form.value.classKeyAbility,
           form.value.rogueTrainingChoices,
           backgroundSkillIds.value,
           skills.value,
         )
-      : isCharacterClassChoiceComplete(selectedCharacterClass.value, form.value.classKeyAbility)
+        : isCharacterClassChoiceComplete(selectedCharacterClass.value, form.value.classKeyAbility))
+    )
   if (step.value === 7)
     return isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts)
   return true
@@ -222,6 +239,7 @@ function selectCharacterClass(classId: string | null): void {
   form.value.classKeyAbility = null
   form.value.rogueRacketId = null
   form.value.rogueTrainingChoices = []
+  form.value.clericDoctrineId = null
 }
 function selectRogueRacket(racketId: string | null): void {
   form.value.rogueRacketId = racketId
@@ -278,6 +296,7 @@ async function submit(): Promise<void> {
     !form.value.backgroundRestrictedBoost ||
     !form.value.backgroundFreeBoost ||
     !form.value.classKeyAbility ||
+    !isClericDoctrineChoiceComplete(selectedCharacterClass.value, selectedClericDoctrine.value) ||
     !isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts)
   )
     return
@@ -303,6 +322,7 @@ async function submit(): Promise<void> {
       classKeyAbility: form.value.classKeyAbility,
       rogueRacketId: form.value.rogueRacketId,
       rogueTrainingChoices: form.value.rogueTrainingChoices,
+      clericDoctrineId: form.value.clericDoctrineId,
       finalFreeBoosts: form.value.finalFreeBoosts,
     })
     await router.replace('/')
@@ -316,17 +336,19 @@ async function loadCatalogs(): Promise<void> {
   isLoadingCatalogs.value = true
   errorMessages.value = []
   try {
-    const [ancestryCatalog, backgroundCatalog, classCatalog, racketCatalog, skillCatalog] = await Promise.all([
+    const [ancestryCatalog, backgroundCatalog, classCatalog, racketCatalog, doctrineCatalog, skillCatalog] = await Promise.all([
       getAncestries(),
       getBackgrounds(),
       getCharacterClasses(),
       getRogueRackets(),
+      getClericDoctrines(),
       getSkills(),
     ])
     ancestries.value = ancestryCatalog
     backgrounds.value = backgroundCatalog
     characterClasses.value = classCatalog
     rogueRackets.value = racketCatalog
+    clericDoctrines.value = doctrineCatalog
     skills.value = skillCatalog
   } catch (error) {
     errorMessages.value = getApiErrorMessages(error)
@@ -522,6 +544,14 @@ onMounted(loadCatalogs)
               :label="t('classUi.rogueRacket')"
               @update:model-value="selectRogueRacket"
             />
+            <v-select
+              v-if="selectedCharacterClass.id === 'class.cleric'"
+              v-model="form.clericDoctrineId"
+              :items="clericDoctrines"
+              item-title="name"
+              item-value="id"
+              :label="t('classUi.clericDoctrine')"
+            />
             <v-radio-group v-model="form.classKeyAbility" :label="t('classUi.keyAbility')">
               <v-radio
                 v-for="code in selectedCharacterClass.id === 'class.rogue'
@@ -561,9 +591,17 @@ onMounted(loadCatalogs)
                 variant="tonal"
               >{{ effect.name }}: {{ effect.summary }}</v-alert>
             </div>
+            <div v-if="selectedClericDoctrine" class="rogue-training">
+              <v-alert
+                v-for="effect in selectedClericDoctrine.effects"
+                :key="effect.id"
+                type="info"
+                variant="tonal"
+              >{{ effect.name }}: {{ effect.summary }} {{ t('classUi.deferredEffect') }}</v-alert>
+            </div>
             <v-list density="compact" :subheader="t('classUi.initialProficiencies')">
               <v-list-item
-                v-for="group in groupProficiencies(selectedCharacterClass.initialProficiencies)"
+                v-for="group in groupProficiencies(effectiveClassProficiencies)"
                 :key="group.category"
                 :title="getProficiencyCategoryLabel(group.category)"
                 :subtitle="group.items.map((item) => formatProficiency(item, getProficiencyRankLabel)).join(', ')"
@@ -624,9 +662,12 @@ onMounted(loadCatalogs)
               v-if="selectedRogueRacket"
               :title="t('classUi.rogueRacket')"
               :subtitle="selectedRogueRacket.name" /><v-list-item
+              v-if="selectedClericDoctrine"
+              :title="t('classUi.clericDoctrine')"
+              :subtitle="selectedClericDoctrine.name" /><v-list-item
               v-if="selectedCharacterClass"
               :title="t('classUi.initialProficiencies')"
-              :subtitle="groupProficiencies(selectedCharacterClass.initialProficiencies).map((group) => getProficiencyCategoryLabel(group.category)).join(', ')" /><v-list-item
+              :subtitle="groupProficiencies(effectiveClassProficiencies).map((group) => getProficiencyCategoryLabel(group.category)).join(', ')" /><v-list-item
               :title="t('wizard.finalFreeBoosts')"
               :subtitle="formatAbilities(form.finalFreeBoosts)" /><v-list-item
               v-if="form.concept"

@@ -68,7 +68,8 @@ public static class CharacterClassDtoMapper
     public static CharacterClassPackageDto MapPackage(
         DraftCharacter character,
         CharacterClass characterClass,
-        RogueRacket? rogueRacket = null )
+        RogueRacket? rogueRacket = null,
+        ClericDoctrine? clericDoctrine = null )
     {
         ArgumentNullException.ThrowIfNull( character );
         ArgumentNullException.ThrowIfNull( characterClass );
@@ -85,6 +86,9 @@ public static class CharacterClassDtoMapper
             BaseHitPoints = characterClass.BaseHitPoints,
             KeyAbility = character.SelectedClassKeyAbility!.Value,
             RogueRacket = rogueRacket is null ? null : RogueRacketDtoMapper.MapPackage( rogueRacket ),
+            ClericDoctrine = clericDoctrine is null
+                ? null
+                : ClericDoctrineDtoMapper.MapPackage( clericDoctrine ),
             Rules = characterClass.Rules
                 .Select( Map )
                 .ToList(),

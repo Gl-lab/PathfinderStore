@@ -57,7 +57,8 @@ public sealed class CreateCharacterHandler : IRequestHandler<CreateCharacterComm
             request.Character.ClassId,
             classKeyAbility,
             request.Character.RogueRacketId,
-            request.Character.RogueTrainingChoices );
+            request.Character.RogueTrainingChoices,
+            request.Character.ClericDoctrineId );
         _characterBuilder.SetFinalFreeBoosts( finalFreeBoosts );
 
         DraftCharacter draftCharacter = _characterBuilder.Build();

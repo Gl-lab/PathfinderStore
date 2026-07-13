@@ -22,6 +22,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public string? SelectedClassId { get; private set; }
     public AbilityType? SelectedClassKeyAbility { get; private set; }
     public string? SelectedRogueRacketId { get; private set; }
+    public string? SelectedClericDoctrineId { get; private set; }
     public IReadOnlyList<AbilityType> AppliedFinalFreeBoosts { get; private set; } = [];
     public IReadOnlyList<TrainedSkill> TrainedSkills { get; private set; } = [];
     public IReadOnlyList<TrainedLore> TrainedLore { get; private set; } = [];
@@ -279,7 +280,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         AbilityType keyAbility,
         RogueRacket? rogueRacket = null,
         IReadOnlyList<RogueTrainingChoice>? rogueTrainingChoices = null,
-        IReadOnlyCollection<SkillDefinition>? skillCatalog = null )
+        IReadOnlyCollection<SkillDefinition>? skillCatalog = null,
+        ClericDoctrine? clericDoctrine = null )
     {
         ArgumentNullException.ThrowIfNull( characterClass );
 
@@ -302,6 +304,17 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         if ( !isRogue && ( rogueTrainingChoices?.Count > 0 ) )
         {
             throw new CharacterManagementException( "Rogue training choices can only be selected for the Rogue class." );
+        }
+
+        bool isCleric = characterClass.Id == "class.cleric";
+        if ( isCleric && ( clericDoctrine is null ) )
+        {
+            throw new CharacterManagementException( "Cleric class requires a Doctrine." );
+        }
+
+        if ( !isCleric && ( clericDoctrine is not null ) )
+        {
+            throw new CharacterManagementException( "Cleric Doctrine can only be selected for the Cleric class." );
         }
 
         List<AbilityType> allowedKeyAbilities = characterClass.KeyAbilityOptions.ToList();
@@ -335,6 +348,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         SelectedClassId = characterClass.Id;
         SelectedClassKeyAbility = keyAbility;
         SelectedRogueRacketId = rogueRacket?.Id;
+        SelectedClericDoctrineId = clericDoctrine?.Id;
         if ( rogueTraining is not null )
         {
             TrainedSkills = rogueTraining.Skills.ToArray();
@@ -565,6 +579,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         SelectedClassId = null;
         SelectedClassKeyAbility = null;
         SelectedRogueRacketId = null;
+        SelectedClericDoctrineId = null;
         TrainedSkills = TrainedSkills
             .Where( training =>
                 !training.SourceGrantId.StartsWith( "class.", StringComparison.Ordinal ) &&

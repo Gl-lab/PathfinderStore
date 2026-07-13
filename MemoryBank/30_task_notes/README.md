@@ -22,6 +22,7 @@ Vikunja остаётся источником истины по фактичес
 - [`skills_lore_foundation_implementation.md`](skills_lore_foundation_implementation.md)
 - [`class_proficiency_foundation_implementation.md`](class_proficiency_foundation_implementation.md)
 - [`rogue_racket_implementation.md`](rogue_racket_implementation.md)
+- [`cleric_doctrine_implementation.md`](cleric_doctrine_implementation.md)
 - [`background_package_implementation.md`](background_package_implementation.md)
 - [`class_package_implementation.md`](class_package_implementation.md)
 - [`task_16_domain_rules.md`](task_16_domain_rules.md)

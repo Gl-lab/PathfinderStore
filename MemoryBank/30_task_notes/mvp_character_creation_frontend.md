@@ -16,12 +16,13 @@
 - Dashboard показывает maximum HP, карточка персонажа — maximum HP и breakdown ancestry/class/Constitution.
 - Background step разрешает fixed, finite-choice и open Lore grants; review/details показывают фактический training.
 - Class step и review показывают категории typed starting proficiencies; карточка группирует targets и локализованные ranks.
+- Wizard поддерживает обязательные Rogue's Racket и Cleric Doctrine; Doctrine preview объединяет class/doctrine proficiencies, а review/details показывают выбор и deferred effects.
 
 ## Что не готово
 
 - Skill feat от Background пока не применяется.
-- Class skills, higher proficiency ranks и replacement choices при cross-source duplicate training пока не реализованы.
-- Class skills, spell proficiencies, features, spells и mandatory choices отображаются декларативно, но не выбираются.
+- Общий выбор дополнительных Class skills и level-up proficiency progression пока не реализованы.
+- Spell proficiencies, большинство features/spells и ещё не реализованные mandatory choices отображаются декларативно.
 - Нет полноценного e2e test suite с реальным backend и PostgreSQL.
 
 ## Связанные файлы
@@ -32,6 +33,6 @@
 
 ## Next steps
 
-1. Добавлять следующие обязательные class choices отдельными flows; Rogue's Racket реализован.
+1. Следующий Cleric flow — типизированный Deity catalog и обязательный Deity choice без строковой заглушки.
 2. Подключить class skills отдельной задачей с replacement flow для повторного training.
 3. Добавить e2e-покрытие основного пользовательского сценария.

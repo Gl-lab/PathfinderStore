@@ -59,11 +59,13 @@ public sealed class GetCharacterQueriesTests
         AncestryRepository ancestryRepository = new AncestryRepository();
         BackgroundRepository backgroundRepository = new BackgroundRepository();
         CharacterClassRepository characterClassRepository = new CharacterClassRepository();
+        ClericDoctrineRepository clericDoctrineRepository = new ClericDoctrineRepository();
         CharacterBuilder builder = new CharacterBuilder(
             ancestryRepository,
             backgroundRepository: backgroundRepository,
             characterClassRepository: characterClassRepository,
-            skillRepository: new SkillRepository() );
+            skillRepository: new SkillRepository(),
+            clericDoctrineRepository: clericDoctrineRepository );
         builder.CreateCharacter( account.Id, "Kyra", AncestryType.Human );
         builder.SetAncestryPackage( "human.skilled", "human.cooperative_nature" );
         builder.ApplyFreeBoosts( [ AbilityType.Strength, AbilityType.Wisdom ] );
@@ -71,7 +73,10 @@ public sealed class GetCharacterQueriesTests
             "background.acolyte",
             AbilityType.Wisdom,
             AbilityType.Charisma );
-        builder.SetClass( "class.cleric", AbilityType.Wisdom );
+        builder.SetClass(
+            "class.cleric",
+            AbilityType.Wisdom,
+            clericDoctrineId: "cleric_doctrine.cloistered" );
         builder.SetFinalFreeBoosts(
             [
                 AbilityType.Strength,
@@ -88,7 +93,8 @@ public sealed class GetCharacterQueriesTests
             ancestryRepository,
             backgroundRepository,
             characterClassRepository,
-            new SkillRepository() );
+            new SkillRepository(),
+            clericDoctrineRepository: clericDoctrineRepository );
         GetCharacterByIdHandler handler = new GetCharacterByIdHandler(
             characterRepository,
             characterConvertor );
@@ -114,6 +120,8 @@ public sealed class GetCharacterQueriesTests
         Assert.Equal( "class.cleric", result.ClassPackage.ClassId );
         Assert.Equal( 8, result.ClassPackage.BaseHitPoints );
         Assert.Equal( AbilityType.Wisdom, result.ClassPackage.KeyAbility );
+        Assert.NotNull( result.ClassPackage.ClericDoctrine );
+        Assert.Equal( "cleric_doctrine.cloistered", result.ClassPackage.ClericDoctrine.Id );
         Assert.Equal( 8, result.Proficiencies.Count );
         Assert.Contains(
             result.Proficiencies,
@@ -138,6 +146,40 @@ public sealed class GetCharacterQueriesTests
         Assert.Equal( 8, result.DerivedStatistics.HitPoints.Ancestry );
         Assert.Equal( 8, result.DerivedStatistics.HitPoints.Class );
         Assert.Equal( 1, result.DerivedStatistics.HitPoints.ConstitutionModifier );
+    }
+
+    [Fact]
+    public async Task GetCharacterById_LegacyClericWithoutDoctrine_ReturnsNullableDoctrinePackage()
+    {
+        await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
+        Account account = await CreateAccountAsync( dbContext, 407 );
+        DraftCharacter draftCharacter = DraftCharacter.Create(
+            account.Id,
+            "Legacy Kyra",
+            AncestryType.Human );
+        dbContext.Character.Add( draftCharacter );
+        dbContext.Entry( draftCharacter )
+            .Property( character => character.SelectedClassId )
+            .CurrentValue = "class.cleric";
+        dbContext.Entry( draftCharacter )
+            .Property( character => character.SelectedClassKeyAbility )
+            .CurrentValue = AbilityType.Wisdom;
+        await dbContext.SaveChangesAsync();
+        dbContext.ChangeTracker.Clear();
+        GetCharacterByIdHandler handler = CreateByIdHandler(
+            dbContext,
+            characterClassRepository: new CharacterClassRepository() );
+
+        CharacterDto result = await handler.Handle(
+            new GetCharacterByIdCommand( account.UserId, draftCharacter.Id ),
+            CancellationToken.None );
+
+        Assert.NotNull( result.ClassPackage );
+        Assert.Equal( "class.cleric", result.ClassPackage.ClassId );
+        Assert.Null( result.ClassPackage.ClericDoctrine );
+        Assert.Contains(
+            result.Proficiencies,
+            proficiency => proficiency.TargetId == ProficiencyTargets.Fortitude.Id );
     }
 
     [Fact]

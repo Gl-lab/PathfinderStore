@@ -45,9 +45,9 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
                     AdditionalSkills( "cleric", 2 ),
                     Spellcasting( "cleric", "Divine spellcasting and Divine Font." ),
                     Choice( "cleric.deity", "Deity", "Choose a deity that determines a skill, favored weapon, and spells.", CharacterClassDependencyType.DeityCatalog ),
-                    Choice( "cleric.doctrine", "Doctrine", "Choose a cleric doctrine.", CharacterClassDependencyType.ClassChoiceCatalog )
+                    Choice( "cleric.doctrine", "Doctrine", "Choose a cleric doctrine.", CharacterClassDependencyType.ClericDoctrineCatalog )
                 ],
-                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.SkillCatalog, CharacterClassDependencyType.SpellCatalog, CharacterClassDependencyType.DeityCatalog, CharacterClassDependencyType.ClassChoiceCatalog ] ),
+                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.SkillCatalog, CharacterClassDependencyType.SpellCatalog, CharacterClassDependencyType.DeityCatalog, CharacterClassDependencyType.ClericDoctrineCatalog ] ),
             Create(
                 "druid", "Druid", 122, 8, [ AbilityType.Wisdom ], SpellTradition.Primal,
                 [

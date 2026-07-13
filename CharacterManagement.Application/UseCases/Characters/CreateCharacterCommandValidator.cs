@@ -67,6 +67,14 @@ public sealed class CreateCharacterCommandValidator : AbstractValidator<CreateCh
                             .Empty();
                     } );
 
+                When(
+                    command => command.Character.ClassId == "class.cleric",
+                    () => RuleFor( command => command.Character.ClericDoctrineId ).NotEmpty() );
+
+                When(
+                    command => command.Character.ClassId != "class.cleric",
+                    () => RuleFor( command => command.Character.ClericDoctrineId ).Empty() );
+
                 RuleFor( command => command.Character.FinalFreeBoosts )
                     .Cascade( CascadeMode.Stop )
                     .NotNull()

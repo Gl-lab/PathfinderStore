@@ -22,7 +22,8 @@ public interface ICharacterBuilder
         string characterClassId,
         AbilityType keyAbility,
         string? rogueRacketId = null,
-        IReadOnlyList<RogueTrainingChoice>? rogueTrainingChoices = null );
+        IReadOnlyList<RogueTrainingChoice>? rogueTrainingChoices = null,
+        string? clericDoctrineId = null );
     void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts );
     void IncreaseAbilityScores( IEnumerable<AbilityType> increasedAbilityScores );
     void ApplyFreeBoosts( IEnumerable<AbilityType> freeBoosts );

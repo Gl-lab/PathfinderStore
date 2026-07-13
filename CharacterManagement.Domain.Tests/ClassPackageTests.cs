@@ -115,6 +115,33 @@ public sealed class ClassPackageTests
     }
 
     [Fact]
+    public void CharacterBuilder_SetClass_ResolvesClericDoctrineCatalogEntry()
+    {
+        Ancestry ancestry = CreateAncestry();
+        CharacterClass cleric = CreateClass( "class.cleric", AbilityType.Wisdom );
+        ClericDoctrine doctrine = CreateDoctrine( "cloistered" );
+        CharacterBuilder builder = new CharacterBuilder(
+            new StubAncestryRepository( ancestry ),
+            backgroundRepository: new StubBackgroundRepository( CreateBackground() ),
+            characterClassRepository: new StubCharacterClassRepository( cleric ),
+            clericDoctrineRepository: new StubClericDoctrineRepository( doctrine ) );
+        builder.CreateCharacter( 1, "Tester", AncestryType.Human );
+        builder.SetAncestry( AncestryType.Human );
+        builder.ApplyFreeBoosts( [ AbilityType.Intelligence, AbilityType.Wisdom ] );
+        builder.SetBackground(
+            "background.acrobat",
+            AbilityType.Dexterity,
+            AbilityType.Constitution );
+
+        builder.SetClass(
+            cleric.Id,
+            AbilityType.Wisdom,
+            clericDoctrineId: doctrine.Id );
+
+        Assert.Equal( doctrine.Id, builder.Build().SelectedClericDoctrineId );
+    }
+
+    [Fact]
     public void SetClassPackage_Rogue_AppliesRacketKeyAbilityAndTraining()
     {
         DraftCharacter character = CreateCharacter();
@@ -186,6 +213,67 @@ public sealed class ClassPackageTests
         Assert.DoesNotContain( character.TrainedSkills, skill =>
             skill.SourceGrantId.StartsWith( "class.rogue.", StringComparison.Ordinal ) ||
             skill.SourceGrantId.StartsWith( "rogue_racket.", StringComparison.Ordinal ) );
+    }
+
+    [Fact]
+    public void SetClassPackage_ClericRequiresDoctrineAndStoresSelection()
+    {
+        DraftCharacter character = CreateCharacter();
+        CharacterClass cleric = CreateClass( "class.cleric", AbilityType.Wisdom );
+        ClericDoctrine doctrine = CreateDoctrine( "warpriest" );
+
+        Assert.Throws<CharacterManagementException>( () =>
+            character.SetClassPackage( cleric, AbilityType.Wisdom ) );
+
+        character.SetClassPackage(
+            cleric,
+            AbilityType.Wisdom,
+            clericDoctrine: doctrine );
+
+        Assert.Equal( doctrine.Id, character.SelectedClericDoctrineId );
+        Assert.Equal( 14, character.AbilityScores.Wisdom.Value );
+    }
+
+    [Fact]
+    public void SetClassPackage_NonClericWithDoctrine_ThrowsWithoutReplacingExistingPackage()
+    {
+        DraftCharacter character = CreateCharacter();
+        CharacterClass cleric = CreateClass( "class.cleric", AbilityType.Wisdom );
+        CharacterClass fighter = CreateClass( "class.fighter", AbilityType.Strength );
+        ClericDoctrine doctrine = CreateDoctrine( "cloistered" );
+        character.SetClassPackage(
+            cleric,
+            AbilityType.Wisdom,
+            clericDoctrine: doctrine );
+
+        Assert.Throws<CharacterManagementException>( () =>
+            character.SetClassPackage(
+                fighter,
+                AbilityType.Strength,
+                clericDoctrine: doctrine ) );
+
+        Assert.Equal( cleric.Id, character.SelectedClassId );
+        Assert.Equal( doctrine.Id, character.SelectedClericDoctrineId );
+        Assert.Equal( 14, character.AbilityScores.Wisdom.Value );
+        Assert.Equal( 10, character.AbilityScores.Strength.Value );
+    }
+
+    [Fact]
+    public void SetClassPackage_ReplacingClericWithFighter_ClearsDoctrine()
+    {
+        DraftCharacter character = CreateCharacter();
+        CharacterClass cleric = CreateClass( "class.cleric", AbilityType.Wisdom );
+        CharacterClass fighter = CreateClass( "class.fighter", AbilityType.Strength );
+        character.SetClassPackage(
+            cleric,
+            AbilityType.Wisdom,
+            clericDoctrine: CreateDoctrine( "warpriest" ) );
+
+        character.SetClassPackage( fighter, AbilityType.Strength );
+
+        Assert.Null( character.SelectedClericDoctrineId );
+        Assert.Equal( 12, character.AbilityScores.Wisdom.Value );
+        Assert.Equal( 12, character.AbilityScores.Strength.Value );
     }
 
     [Fact]
@@ -280,6 +368,17 @@ public sealed class ClassPackageTests
             [] );
     }
 
+    private static ClericDoctrine CreateDoctrine( string id )
+    {
+        return new ClericDoctrine(
+            $"cleric_doctrine.{id}",
+            id,
+            new SourceReference( "Player Core", 112 ),
+            [],
+            [],
+            [] );
+    }
+
     private static IReadOnlyCollection<SkillDefinition> CreateSkills()
     {
         SourceReference source = new SourceReference( "Player Core", 227 );
@@ -331,5 +430,19 @@ public sealed class ClassPackageTests
         public IReadOnlyCollection<Background> GetAll() => [ _background ];
 
         public Background GetBackground( string backgroundId ) => _background;
+    }
+
+    private sealed class StubClericDoctrineRepository : IClericDoctrineRepository
+    {
+        private readonly ClericDoctrine _doctrine;
+
+        public StubClericDoctrineRepository( ClericDoctrine doctrine )
+        {
+            _doctrine = doctrine;
+        }
+
+        public IReadOnlyCollection<ClericDoctrine> GetAll() => [ _doctrine ];
+
+        public ClericDoctrine GetClericDoctrine( string clericDoctrineId ) => _doctrine;
     }
 }

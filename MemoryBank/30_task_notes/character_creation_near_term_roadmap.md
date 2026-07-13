@@ -85,14 +85,18 @@ Skill increases, выбор дополнительных trained skills от Int
 
 ### 5. Обязательные class choices
 
-Следующая задача: [Rogue's Racket Implementation Plan](rogue_racket_implementation.md). Реализованы четыре Player Core racket, key ability, training/replacement, Ruffian proficiency, persistence, API и frontend; code review завершён без открытых замечаний.
+Завершено: [Rogue's Racket Implementation Plan](rogue_racket_implementation.md). Реализованы четыре Player Core racket, key ability, training/replacement, Ruffian proficiency, persistence, API и frontend; code review завершён без открытых замечаний.
+
+Завершено: [Cleric Doctrine и Deity Boundary Implementation Plan](cleric_doctrine_implementation.md). Реализованы два Doctrine, поддержанные typed proficiency effects, persistence/API/frontend и явная граница будущего Deity flow.
+
+Следующая задача: `Player Core Deity Catalog + Cleric Deity Choice`. Полноценный deity catalog должен типизировать divine skill, favored weapon, font, sanctification, domains и granted spells до включения обязательного Deity choice.
 
 После появления общего proficiency/choice foundation разделить обязательные развилки классов на небольшие самостоятельные задачи.
 
 Приоритетный порядок:
 
-1. Rogue's Racket — в том числе racket-зависимая key ability;
-2. Cleric doctrine и deity boundary;
+1. Rogue's Racket — реализовано;
+2. Cleric Doctrine и Deity Boundary — реализовано;
 3. Wizard school/thesis;
 4. Witch patron;
 5. spellcasting flows для Bard, Cleric, Druid, Witch и Wizard.
