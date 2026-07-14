@@ -167,6 +167,8 @@ Vikunja остаётся источником истины по карточка
 
 #### 2.2. Cleric Spell Catalog v1
 
+**Статус:** завершено 14 июля 2026 года; нормативный baseline описан в [cleric_spells_first_level.md](../20_domain/character_creation/cleric_spells_first_level.md).
+
 - каталог покрывает divine cantrips и spells, необходимые персонажу первого уровня;
 - deity-granted и domain spell references разрешаются тем же catalog identity;
 - API возвращает tradition, rank, traits и доступность без хранения копий spell rules в персонаже;

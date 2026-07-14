@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Pathfinder.CharacterManagement.Application.DTO;
 using Pathfinder.CharacterManagement.Application.UseCases.ClericDoctrines;
 using Pathfinder.CharacterManagement.Application.UseCases.ClericDomains;
+using Pathfinder.CharacterManagement.Application.UseCases.ClericSpells;
 using Pathfinder.CharacterManagement.Application.UseCases.CharacterClasses;
 using Pathfinder.CharacterManagement.Application.UseCases.Deities;
 using Pathfinder.CharacterManagement.Application.UseCases.RogueRackets;
@@ -134,5 +135,15 @@ public sealed class ClassesController : AuthorizedController
         IReadOnlyCollection<ClericDomainDto> domains = await _mediator.Send(
             new GetClericDomainsCommand() );
         return Ok( domains );
+    }
+
+    [HttpGet( "cleric/spells" )]
+    [ProducesResponseType( typeof( IReadOnlyCollection<SpellDefinitionDto> ), StatusCodes.Status200OK )]
+    [ProducesResponseType( StatusCodes.Status401Unauthorized )]
+    public async Task<ActionResult<IReadOnlyCollection<SpellDefinitionDto>>> GetClericSpells()
+    {
+        IReadOnlyCollection<SpellDefinitionDto> spells = await _mediator.Send(
+            new GetClericSpellsCommand() );
+        return Ok( spells );
     }
 }

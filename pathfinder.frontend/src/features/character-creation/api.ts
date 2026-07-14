@@ -291,6 +291,18 @@ export interface SpellReference {
   kind: SpellKind
 }
 
+export type SpellRarity = 'Common' | 'Uncommon' | 'Rare' | 'Unique'
+
+export interface SpellDefinition extends SpellReference {
+  traditions: SpellTradition[]
+  traits: string[]
+  rarity: SpellRarity
+  source: {
+    book: string
+    page: number
+  }
+}
+
 export interface ClericDomain {
   id: string
   name: string
@@ -401,6 +413,10 @@ export async function getDeities(): Promise<Deity[]> {
 
 export async function getClericDomains(): Promise<ClericDomain[]> {
   return (await http.get<ClericDomain[]>('/api/classes/cleric/domains')).data
+}
+
+export async function getClericSpells(): Promise<SpellDefinition[]> {
+  return (await http.get<SpellDefinition[]>('/api/classes/cleric/spells')).data
 }
 
 export async function getSkills(): Promise<Skill[]> {

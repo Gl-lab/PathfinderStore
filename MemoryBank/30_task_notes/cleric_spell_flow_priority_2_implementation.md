@@ -235,4 +235,6 @@ npm run build
 - миграция `AddClericDomain` создана через `dotnet ef`, legacy rows остаются читаемыми;
 - review 2.1 исправил устаревшую frontend test command в плане и naming статического catalog field;
 - backend tests, frontend tests, lint и production build для 2.1 проходят;
-- slices 2.2–2.4 ещё не реализованы.
+- slice 2.2 завершён: добавлены 94 spell definitions, referential-integrity checks, Cleric availability resolver, catalog API и frontend contract;
+- проверки 2.2: Domain tests `148/148`, Infrastructure tests `172/172`, frontend tests `52/52`, lint и production build проходят;
+- slices 2.3–2.4 ещё не реализованы.
