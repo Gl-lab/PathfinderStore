@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router'
 import { getApiErrorMessages } from '@/api/errors'
 import { getAncestryLabel } from '@/i18n/domain'
 import { getCharacters, type Character } from '@/features/characters/api'
+import CharacterAvatar from '@/features/characters/CharacterAvatar.vue'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -69,11 +70,11 @@ onMounted(loadCharacters)
         @click="router.push({ name: 'character-details', params: { id: character.id } })"
         ><v-card-item
           ><template #prepend
-            ><v-avatar color="primary" size="48"
-              ><span class="character-card__initials">{{
-                character.name.slice(0, 1).toUpperCase()
-              }}</span></v-avatar
-            ></template
+            ><CharacterAvatar
+              :path="character.avatarPath"
+              :alt="t('characters.avatarAlt', { name: character.name })"
+              :size="48"
+            /></template
           ><v-card-title>{{ character.name }}</v-card-title
           ><v-card-subtitle>{{ getAncestryLabel(character.ancestryType) }}</v-card-subtitle></v-card-item
         ><v-card-text class="character-card__content"
@@ -147,11 +148,6 @@ h1 {
   justify-content: space-between;
   gap: 12px;
   align-items: start;
-}
-.character-card__initials {
-  color: white;
-  font-size: 1.25rem;
-  font-weight: 700;
 }
 @media (max-width: 600px) {
   .dashboard__header {

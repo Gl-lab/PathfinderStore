@@ -216,6 +216,8 @@ export interface Character {
   concept: string | null
   age: number | null
   gender: CharacterGender
+  avatarId: string
+  avatarPath: string
   ancestryType: AncestryCode
   ancestryPackage: CharacterAncestryPackage | null
   backgroundPackage: CharacterBackgroundPackage | null

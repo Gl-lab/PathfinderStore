@@ -29,6 +29,7 @@ import {
   formatProficiency,
   groupProficiencies,
 } from '@/features/characters/proficiencies'
+import CharacterAvatar from '@/features/characters/CharacterAvatar.vue'
 
 const route = useRoute()
 const { t } = useI18n()
@@ -152,10 +153,17 @@ onMounted(load)
         </v-card>
       </v-dialog>
       <header>
-        <div>
-          <p class="eyebrow">{{ getAncestryLabel(character.ancestryType) }}</p>
-          <h1>{{ character.name }}</h1>
-          <p v-if="character.concept">{{ character.concept }}</p>
+        <div class="character-heading">
+          <CharacterAvatar
+            :path="character.avatarPath"
+            :alt="t('characters.avatarAlt', { name: character.name })"
+            :size="160"
+          />
+          <div>
+            <p class="eyebrow">{{ getAncestryLabel(character.ancestryType) }}</p>
+            <h1>{{ character.name }}</h1>
+            <p v-if="character.concept">{{ character.concept }}</p>
+          </div>
         </div>
         <v-btn
           color="error"
@@ -463,6 +471,12 @@ header {
   gap: 24px;
   align-items: start;
 }
+.character-heading {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  min-width: 0;
+}
 .eyebrow {
   color: rgb(var(--v-theme-secondary));
   font-size: 0.875rem;
@@ -530,6 +544,10 @@ small {
 }
 @media (max-width: 600px) {
   header {
+    flex-direction: column;
+  }
+  .character-heading {
+    align-items: flex-start;
     flex-direction: column;
   }
   .stats {
