@@ -176,6 +176,8 @@ Vikunja остаётся источником истины по карточка
 
 #### 2.3. Prepared Spells + Divine Font Loadout
 
+**Статус:** завершено 14 июля 2026 года; выбор сохраняется как две группы IDs, а Divine Font slots вычисляются сервером.
+
 - сервер вычисляет доступные prepared slots и отдельные Divine Font slots по правилам первого уровня;
 - пользователь выбирает cantrips и prepared spells только из доступного Cleric списка;
 - Heal/Harm для Font определяется сохранённым Deity choice;

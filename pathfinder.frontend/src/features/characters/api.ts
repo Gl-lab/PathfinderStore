@@ -183,6 +183,14 @@ export interface CharacterClassPackage {
       kind: 'Focus'
     }
   } | null
+  clericSpellLoadout: {
+    cantrips: { id: string; name: string; rank: number; kind: 'Cantrip' }[]
+    preparedSpells: {
+      spell: { id: string; name: string; rank: number; kind: 'Spell' }
+      accessSources: ('DivineTradition' | 'DeityGranted')[]
+    }[]
+    divineFontSpells: { id: string; name: string; rank: number; kind: 'Spell' }[]
+  } | null
   rules: {
     id: string
     kind: string

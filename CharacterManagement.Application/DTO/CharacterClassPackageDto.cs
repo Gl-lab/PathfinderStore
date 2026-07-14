@@ -20,5 +20,6 @@ public sealed class CharacterClassPackageDto
     public ClericDoctrinePackageDto? ClericDoctrine { get; set; }
     public DeityPackageDto? Deity { get; set; }
     public ClericDomainPackageDto? ClericDomain { get; set; }
+    public ClericSpellLoadoutDto? ClericSpellLoadout { get; set; }
     public IReadOnlyList<CharacterClassRuleDto> Rules { get; set; } = [];
 }

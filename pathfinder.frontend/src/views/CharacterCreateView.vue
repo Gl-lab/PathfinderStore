@@ -33,6 +33,7 @@ import {
   getHuntersEdges,
   getClericDoctrines,
   getClericDomains,
+  getClericSpellOptions,
   getDeities,
   getRogueRackets,
   getSkills,
@@ -44,6 +45,7 @@ import {
   type ClassTrainingTargetChoice,
   type ClericDoctrine,
   type ClericDomain,
+  type ClericSpellOptions,
   type Deity,
   type DivineFont,
   type DivineSanctification,
@@ -89,6 +91,7 @@ import {
   getAvailableClericDomains,
   isClericDomainChoiceComplete,
 } from '@/features/character-creation/clericDomain'
+import { isClericSpellLoadoutComplete } from '@/features/character-creation/clericSpellLoadout'
 import {
   calculateAbilityScorePreview,
   isFinalFreeBoostDisabled,
@@ -140,6 +143,7 @@ const arcaneTheses = ref<ArcaneThesis[]>([])
 const clericDoctrines = ref<ClericDoctrine[]>([])
 const deities = ref<Deity[]>([])
 const clericDomains = ref<ClericDomain[]>([])
+const clericSpellOptions = ref<ClericSpellOptions>({ cantrips: [], rankOneSpells: [] })
 const skills = ref<Skill[]>([])
 const isLoadingCatalogs = ref(true)
 const isSubmitting = ref(false)
@@ -173,6 +177,8 @@ const form = ref({
   divineFont: null as DivineFont | null,
   divineSanctification: null as DivineSanctification | null,
   deitySkillReplacementId: null as string | null,
+  clericCantripIds: [] as string[],
+  clericPreparedSpellIds: [] as (string | null)[],
   finalFreeBoosts: [] as AbilityCode[],
   classSkillGrantChoices: [] as ClassSkillGrantChoice[],
   additionalClassTrainingChoices: [] as ClassTrainingTargetChoice[],
@@ -244,6 +250,16 @@ const selectedDeity = computed(
 )
 const selectedClericDomain = computed(
   () => clericDomains.value.find((item) => item.id === form.value.clericDomainId) ?? null,
+)
+const selectedClericCantrips = computed(() =>
+  form.value.clericCantripIds
+    .map((spellId) => clericSpellOptions.value.cantrips.find((option) => option.spell.id === spellId)?.spell)
+    .filter((spell) => spell !== undefined),
+)
+const selectedClericPreparedSpells = computed(() =>
+  form.value.clericPreparedSpellIds
+    .map((spellId) => clericSpellOptions.value.rankOneSpells.find((option) => option.spell.id === spellId)?.spell)
+    .filter((spell) => spell !== undefined),
 )
 const classKeyAbilityOptions = computed(() => {
   if (!selectedCharacterClass.value) return []
@@ -388,8 +404,15 @@ const canContinue = computed(() => {
       isSelectedClassChoiceComplete()
     )
   if (step.value === 7)
-    return isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts)
+    return isClericSpellLoadoutComplete(
+      selectedCharacterClass.value,
+      form.value.clericCantripIds,
+      form.value.clericPreparedSpellIds,
+      clericSpellOptions.value,
+    )
   if (step.value === 8)
+    return isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts)
+  if (step.value === 9)
     return isClassTrainingComplete(
       effectiveCharacterClass.value,
       form.value.classSkillGrantChoices,
@@ -466,19 +489,33 @@ function selectCharacterClass(classId: string | null): void {
   form.value.divineFont = null
   form.value.divineSanctification = null
   form.value.deitySkillReplacementId = null
+  form.value.clericCantripIds = []
+  form.value.clericPreparedSpellIds = []
+  clericSpellOptions.value = { cantrips: [], rankOneSpells: [] }
   form.value.classSkillGrantChoices = createClassSkillGrantChoices(
     characterClasses.value.find((item) => item.id === classId) ?? null,
   )
   resetAdditionalClassTraining()
 }
-function selectDeity(deityId: string | null): void {
+async function selectDeity(deityId: string | null): Promise<void> {
   form.value.deityId = deityId
   const deity = deities.value.find((item) => item.id === deityId) ?? null
   form.value.divineFont = deity?.divineFontOptions.length === 1 ? deity.divineFontOptions[0] : null
   form.value.divineSanctification = deity?.requiredSanctification ?? null
   form.value.deitySkillReplacementId = null
   form.value.clericDomainId = null
+  form.value.clericCantripIds = []
+  form.value.clericPreparedSpellIds = deity ? [null, null] : []
+  clericSpellOptions.value = { cantrips: [], rankOneSpells: [] }
   resetClassTrainingTargets()
+  if (deity) {
+    try {
+      const options = await getClericSpellOptions(deity.id)
+      if (form.value.deityId === deity.id) clericSpellOptions.value = options
+    } catch (error) {
+      if (form.value.deityId === deity.id) errorMessages.value = getApiErrorMessages(error)
+    }
+  }
 }
 function selectClericDoctrine(clericDoctrineId: string | null): void {
   form.value.clericDoctrineId = clericDoctrineId
@@ -589,8 +626,11 @@ function getProficiencyCategoryLabel(category: ProficiencyCategory): string {
 function formatAbilities(types: AbilityCode[]): string {
   return types.map(getAbilityLabel).join(', ') || t('wizard.none')
 }
+function selectClericCantrips(spellIds: string[]): void {
+  form.value.clericCantripIds = spellIds.slice(0, 5)
+}
 function next(): void {
-  if (canContinue.value && step.value < 9) step.value += 1
+  if (canContinue.value && step.value < 10) step.value += 1
 }
 function previous(): void {
   if (step.value > 1) step.value -= 1
@@ -630,8 +670,14 @@ async function submit(): Promise<void> {
       selectedDeity.value,
       selectedClericDomain.value,
     ) ||
-    !isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts)
-    || !isClassTrainingComplete(
+    !isClericSpellLoadoutComplete(
+      selectedCharacterClass.value,
+      form.value.clericCantripIds,
+      form.value.clericPreparedSpellIds,
+      clericSpellOptions.value,
+    ) ||
+    !isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts) ||
+    !isClassTrainingComplete(
       effectiveCharacterClass.value,
       form.value.classSkillGrantChoices,
       form.value.additionalClassTrainingChoices,
@@ -676,6 +722,10 @@ async function submit(): Promise<void> {
       divineFont: form.value.divineFont,
       divineSanctification: form.value.divineSanctification,
       deitySkillReplacementId: form.value.deitySkillReplacementId,
+      clericCantripIds: form.value.clericCantripIds,
+      clericPreparedSpellIds: form.value.clericPreparedSpellIds.filter(
+        (spellId): spellId is string => spellId !== null,
+      ),
       finalFreeBoosts: form.value.finalFreeBoosts,
       classSkillGrantChoices: form.value.classSkillGrantChoices.map((choice) => ({
         ...choice,
@@ -760,10 +810,10 @@ watch(
       </div>
       <v-btn variant="text" to="/">{{ t('common.cancel') }}</v-btn>
     </header>
-    <v-progress-linear :model-value="(step / 9) * 100" color="accent" height="8" rounded />
+    <v-progress-linear :model-value="(step / 10) * 100" color="accent" height="8" rounded />
     <ol class="steps">
       <li
-        v-for="(item, index) in [t('wizard.basic'), t('wizard.ancestry'), t('wizard.choices'), t('wizard.boosts'), t('wizard.background'), t('classUi.characterClass'), t('wizard.finalFreeBoosts'), t('classUi.classTraining'), t('wizard.review')]"
+        v-for="(item, index) in [t('wizard.basic'), t('wizard.ancestry'), t('wizard.choices'), t('wizard.boosts'), t('wizard.background'), t('classUi.characterClass'), t('classUi.clericSpells'), t('wizard.finalFreeBoosts'), t('classUi.classTraining'), t('wizard.review')]"
         :key="item"
         :class="{ active: step === index + 1, complete: step > index + 1 }"
       >
@@ -1203,6 +1253,38 @@ watch(
           </template>
         </section>
         <section v-else-if="step === 7">
+          <h2>{{ t('classUi.clericSpells') }}</h2>
+          <template v-if="selectedCharacterClass?.id === 'class.cleric'">
+            <p class="hint">{{ t('classUi.clericSpellsHint') }}</p>
+            <v-select
+              :model-value="form.clericCantripIds"
+              :items="clericSpellOptions.cantrips.map((option) => option.spell)"
+              item-title="name"
+              item-value="id"
+              :label="t('classUi.clericCantrips')"
+              multiple
+              chips
+              closable-chips
+              :counter="5"
+              @update:model-value="selectClericCantrips"
+            />
+            <h3>{{ t('classUi.clericPreparedSpells') }}</h3>
+            <v-select
+              v-for="(_, index) in form.clericPreparedSpellIds"
+              :key="index"
+              v-model="form.clericPreparedSpellIds[index]"
+              :items="clericSpellOptions.rankOneSpells.map((option) => option.spell)"
+              item-title="name"
+              item-value="id"
+              :label="t('classUi.clericSpellSlot', { number: index + 1 })"
+            />
+            <v-alert v-if="form.divineFont" type="info" variant="tonal">
+              {{ t('classUi.divineFontSpells') }}: 4 × {{ t(`classUi.divineFonts.${form.divineFont}`) }}
+            </v-alert>
+          </template>
+          <v-alert v-else type="info" variant="tonal">{{ t('wizard.none') }}</v-alert>
+        </section>
+        <section v-else-if="step === 8">
           <h2>{{ t('wizard.finalFreeBoosts') }}</h2>
           <p class="hint">
             {{ t('wizard.finalFreeBoostsHint', { selected: form.finalFreeBoosts.length }) }}
@@ -1217,7 +1299,7 @@ watch(
             hide-details
           />
         </section>
-        <section v-else-if="step === 8 && selectedCharacterClass">
+        <section v-else-if="step === 9 && selectedCharacterClass">
           <h2>{{ t('classUi.classTraining') }}</h2>
           <p class="hint">
             {{ t('classUi.classTrainingHint', { count: additionalClassTrainingCount }) }}
@@ -1281,7 +1363,7 @@ watch(
             />
           </div>
         </section>
-        <section v-else-if="step === 9 && selectedAncestry">
+        <section v-else-if="step === 10 && selectedAncestry">
           <h2>{{ t('wizard.review') }}</h2>
           <v-list lines="two"
             ><v-list-item :title="t('common.name')" :subtitle="form.name" /><v-list-item
@@ -1360,6 +1442,15 @@ watch(
               v-if="selectedDeity && form.divineFont"
               :title="t('classUi.divineFont')"
               :subtitle="t(`classUi.divineFonts.${form.divineFont}`)" /><v-list-item
+              v-if="selectedClericCantrips.length"
+              :title="t('classUi.clericCantrips')"
+              :subtitle="selectedClericCantrips.map((spell) => spell.name).join(', ')" /><v-list-item
+              v-if="selectedClericPreparedSpells.length"
+              :title="t('classUi.clericPreparedSpells')"
+              :subtitle="selectedClericPreparedSpells.map((spell) => spell.name).join(', ')" /><v-list-item
+              v-if="form.divineFont"
+              :title="t('classUi.divineFontSpells')"
+              :subtitle="`4 × ${t(`classUi.divineFonts.${form.divineFont}`)}`" /><v-list-item
               v-if="selectedDeity"
               :title="t('classUi.domains')"
               :subtitle="selectedDeity.primaryDomainIds.join(', ')" /><v-list-item
@@ -1387,7 +1478,7 @@ watch(
     >
     <footer>
       <v-btn variant="text" :disabled="step === 1 || isSubmitting" @click="previous">{{ t('common.back') }}</v-btn
-      ><v-spacer /><v-btn v-if="step < 9" color="primary" :disabled="!canContinue" @click="next"
+      ><v-spacer /><v-btn v-if="step < 10" color="primary" :disabled="!canContinue" @click="next"
         >{{ t('common.next') }}</v-btn
       ><v-btn v-else color="accent" :loading="isSubmitting" @click="submit"
         >{{ t('wizard.create') }}</v-btn

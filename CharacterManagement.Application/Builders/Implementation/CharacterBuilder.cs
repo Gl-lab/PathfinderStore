@@ -2,6 +2,7 @@
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.CharacterManagement.Domain.Exceptions;
 using Pathfinder.CharacterManagement.Domain.Rules.Training;
+using Pathfinder.CharacterManagement.Domain.Rules.Spells;
 
 namespace Pathfinder.CharacterManagement.Application.Builders.Implementation;
 
@@ -17,6 +18,7 @@ public class CharacterBuilder : ICharacterBuilder
     private readonly IClericDoctrineRepository? _clericDoctrineRepository;
     private readonly IDeityRepository? _deityRepository;
     private readonly IClericDomainRepository? _clericDomainRepository;
+    private readonly ISpellRepository? _spellRepository;
     private readonly IHuntersEdgeRepository? _huntersEdgeRepository;
     private readonly IDruidicOrderRepository? _druidicOrderRepository;
     private readonly IBardMuseRepository? _bardMuseRepository;
@@ -39,7 +41,8 @@ public class CharacterBuilder : ICharacterBuilder
         IWitchPatronRepository? witchPatronRepository = null,
         IArcaneSchoolRepository? arcaneSchoolRepository = null,
         IArcaneThesisRepository? arcaneThesisRepository = null,
-        IClericDomainRepository? clericDomainRepository = null )
+        IClericDomainRepository? clericDomainRepository = null,
+        ISpellRepository? spellRepository = null )
     {
         _ancestryRepository = ancestryRepository;
         _ancestryChoiceAvailabilityPolicy = ancestryChoiceAvailabilityPolicy ?? new CommonAncestryChoiceAvailabilityPolicy();
@@ -50,6 +53,7 @@ public class CharacterBuilder : ICharacterBuilder
         _clericDoctrineRepository = clericDoctrineRepository;
         _deityRepository = deityRepository;
         _clericDomainRepository = clericDomainRepository;
+        _spellRepository = spellRepository;
         _huntersEdgeRepository = huntersEdgeRepository;
         _druidicOrderRepository = druidicOrderRepository;
         _bardMuseRepository = bardMuseRepository;
@@ -149,7 +153,9 @@ public class CharacterBuilder : ICharacterBuilder
         string? witchPatronFamiliarSpellId = null,
         string? arcaneSchoolId = null,
         string? arcaneThesisId = null,
-        string? clericDomainId = null )
+        string? clericDomainId = null,
+        IReadOnlyList<string>? clericCantripIds = null,
+        IReadOnlyList<string>? clericPreparedSpellIds = null )
     {
         if ( _draftCharacter is null )
         {
@@ -357,6 +363,29 @@ public class CharacterBuilder : ICharacterBuilder
             throw new InvalidOperationException( "Skill repository is not configured." );
         }
 
+        ClericSpellLoadout? clericSpellLoadout = null;
+        bool isCleric = characterClass.Id == "class.cleric";
+        if ( !isCleric &&
+             ( ( clericCantripIds?.Count > 0 ) || ( clericPreparedSpellIds?.Count > 0 ) ) )
+        {
+            throw new CharacterManagementException(
+                "Cleric spell choices can only be selected for the Cleric class." );
+        }
+
+        if ( isCleric && ( deity is not null ) )
+        {
+            if ( _spellRepository is null )
+            {
+                throw new InvalidOperationException( "Spell repository is not configured." );
+            }
+
+            clericSpellLoadout = ClericSpellLoadoutResolver.Resolve(
+                deity,
+                clericCantripIds ?? [],
+                clericPreparedSpellIds ?? [],
+                _spellRepository.GetAll() );
+        }
+
         _draftCharacter.SetClassPackage(
             characterClass,
             keyAbility,
@@ -375,7 +404,8 @@ public class CharacterBuilder : ICharacterBuilder
             witchPatronFamiliarSpellId,
             arcaneSchool,
             arcaneThesis,
-            clericDomain );
+            clericDomain,
+            clericSpellLoadout );
     }
 
     public void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts )

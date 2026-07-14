@@ -33,6 +33,8 @@ public class CreateCharacterRequestDto
     public DivineFont? DivineFont { get; set; }
     public DivineSanctification? DivineSanctification { get; set; }
     public string? DeitySkillReplacementId { get; set; }
+    public IReadOnlyList<string> ClericCantripIds { get; set; } = [];
+    public IReadOnlyList<string> ClericPreparedSpellIds { get; set; } = [];
     public IReadOnlyList<AbilityType>? FinalFreeBoosts { get; set; }
     public IReadOnlyList<ClassSkillGrantChoice> ClassSkillGrantChoices { get; set; } = [];
     public IReadOnlyList<ClassTrainingTargetChoice> AdditionalClassTrainingChoices { get; set; } = [];

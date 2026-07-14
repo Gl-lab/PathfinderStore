@@ -346,6 +346,20 @@ onMounted(load)
                 {{ character.classPackage.clericDomain.initialFocusSpell.name }}
               </p>
             </template>
+            <template v-if="character.classPackage.clericSpellLoadout">
+              <p>
+                {{ t('classUi.clericCantrips') }}:
+                {{ character.classPackage.clericSpellLoadout.cantrips.map((spell) => spell.name).join(', ') || t('wizard.none') }}
+              </p>
+              <p>
+                {{ t('classUi.clericPreparedSpells') }}:
+                {{ character.classPackage.clericSpellLoadout.preparedSpells.map((slot) => slot.spell.name).join(', ') || t('wizard.none') }}
+              </p>
+              <p>
+                {{ t('classUi.divineFontSpells') }}:
+                {{ character.classPackage.clericSpellLoadout.divineFontSpells.map((spell) => spell.name).join(', ') || t('wizard.none') }}
+              </p>
+            </template>
             <p><strong>{{ t('classUi.rules') }}</strong></p>
             <ul>
               <li v-for="rule in character.classPackage.rules" :key="rule.id">

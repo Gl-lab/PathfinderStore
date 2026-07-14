@@ -3,6 +3,7 @@ using Pathfinder.CharacterManagement.Application.Repositories;
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.CharacterManagement.Domain.Exceptions;
 using Pathfinder.CharacterManagement.Domain.Rules.Training;
+using Pathfinder.CharacterManagement.Domain.Rules.Spells;
 
 namespace CharacterManagement.Domain.Tests;
 
@@ -130,6 +131,31 @@ public sealed class ClassPackageTests
     }
 
     [Fact]
+    public void CharacterBuilder_SetClass_NonClericWithSpellChoices_Throws()
+    {
+        Ancestry ancestry = CreateAncestry();
+        CharacterClass fighter = CreateClass( "class.fighter", AbilityType.Strength );
+        CharacterBuilder builder = new CharacterBuilder(
+            new StubAncestryRepository( ancestry ),
+            backgroundRepository: new StubBackgroundRepository( CreateBackground() ),
+            characterClassRepository: new StubCharacterClassRepository( fighter ) );
+        builder.CreateCharacter( 1, "Tester", AncestryType.Human );
+        builder.SetAncestry( AncestryType.Human );
+        builder.ApplyFreeBoosts( [ AbilityType.Intelligence, AbilityType.Wisdom ] );
+        builder.SetBackground(
+            "background.acrobat",
+            AbilityType.Dexterity,
+            AbilityType.Constitution );
+
+        Assert.Throws<CharacterManagementException>( () => builder.SetClass(
+            fighter.Id,
+            AbilityType.Strength,
+            clericCantripIds: [ "spell.guidance" ] ) );
+
+        Assert.Null( builder.Build().SelectedClassId );
+    }
+
+    [Fact]
     public void CharacterBuilder_SetClass_ResolvesClericDoctrineCatalogEntry()
     {
         Ancestry ancestry = CreateAncestry();
@@ -144,7 +170,8 @@ public sealed class ClassPackageTests
             skillRepository: new StubSkillRepository( CreateSkills() ),
             clericDoctrineRepository: new StubClericDoctrineRepository( doctrine ),
             deityRepository: new StubDeityRepository( deity ),
-            clericDomainRepository: new StubClericDomainRepository( domain ) );
+            clericDomainRepository: new StubClericDomainRepository( domain ),
+            spellRepository: new StubSpellRepository( CreateSpellCatalog() ) );
         builder.CreateCharacter( 1, "Tester", AncestryType.Human );
         builder.SetAncestry( AncestryType.Human );
         builder.ApplyFreeBoosts( [ AbilityType.Intelligence, AbilityType.Wisdom ] );
@@ -159,7 +186,9 @@ public sealed class ClassPackageTests
             clericDoctrineId: doctrine.Id,
             deityId: deity.Id,
             divineFont: DivineFont.Heal,
-            clericDomainId: domain.Id );
+            clericDomainId: domain.Id,
+            clericCantripIds: CreateCantripIds(),
+            clericPreparedSpellIds: [ "spell.heal", "spell.heal" ] );
 
         Assert.Equal( doctrine.Id, builder.Build().SelectedClericDoctrineId );
         Assert.Equal( domain.Id, builder.Build().SelectedClericDomainId );
@@ -256,10 +285,13 @@ public sealed class ClassPackageTests
             skillCatalog: CreateSkills(),
             clericDoctrine: doctrine,
             deity: deity,
-            divineFont: DivineFont.Heal );
+            divineFont: DivineFont.Heal,
+            clericSpellLoadout: CreateClericSpellLoadout() );
 
         Assert.Equal( doctrine.Id, character.SelectedClericDoctrineId );
         Assert.Equal( 14, character.AbilityScores.Wisdom.Value );
+        Assert.Equal( CreateCantripIds(), character.PreparedClericCantripIds );
+        Assert.Equal( [ "spell.heal", "spell.heal" ], character.PreparedClericSpellIds );
     }
 
     [Fact]
@@ -278,7 +310,8 @@ public sealed class ClassPackageTests
             clericDoctrine: doctrine,
             deity: deity,
             divineFont: DivineFont.Heal,
-            clericDomain: domain );
+            clericDomain: domain,
+            clericSpellLoadout: CreateClericSpellLoadout() );
 
         Assert.Throws<CharacterManagementException>( () =>
             character.SetClassPackage(
@@ -305,12 +338,15 @@ public sealed class ClassPackageTests
             skillCatalog: CreateSkills(),
             clericDoctrine: CreateDoctrine( "warpriest" ),
             deity: CreateDeity(),
-            divineFont: DivineFont.Heal );
+            divineFont: DivineFont.Heal,
+            clericSpellLoadout: CreateClericSpellLoadout() );
 
         character.SetClassPackage( fighter, AbilityType.Strength );
 
         Assert.Null( character.SelectedClericDoctrineId );
         Assert.Null( character.SelectedClericDomainId );
+        Assert.Empty( character.PreparedClericCantripIds );
+        Assert.Empty( character.PreparedClericSpellIds );
         Assert.Equal( 12, character.AbilityScores.Wisdom.Value );
         Assert.Equal( 12, character.AbilityScores.Strength.Value );
     }
@@ -360,7 +396,8 @@ public sealed class ClassPackageTests
             clericDoctrine: CreateDoctrine( "cloistered" ),
             deity: deity,
             divineFont: DivineFont.Heal,
-            clericDomain: domain );
+            clericDomain: domain,
+            clericSpellLoadout: CreateClericSpellLoadout() );
 
         character.SetClassPackage(
             cleric,
@@ -368,7 +405,8 @@ public sealed class ClassPackageTests
             skillCatalog: CreateSkills(),
             clericDoctrine: CreateDoctrine( "warpriest" ),
             deity: deity,
-            divineFont: DivineFont.Heal );
+            divineFont: DivineFont.Heal,
+            clericSpellLoadout: CreateClericSpellLoadout() );
 
         Assert.Null( character.SelectedClericDomainId );
         Assert.Throws<CharacterManagementException>( () => character.SetClassPackage(
@@ -930,6 +968,46 @@ public sealed class ClassPackageTests
             new SpellReference( "spell.word_of_truth", "Word of Truth", 1, SpellKind.Focus ) );
     }
 
+    private static ClericSpellLoadout CreateClericSpellLoadout()
+    {
+        return ClericSpellLoadoutResolver.Resolve(
+            CreateDeity(),
+            CreateCantripIds(),
+            [ "spell.heal", "spell.heal" ],
+            CreateSpellCatalog() );
+    }
+
+    private static string[] CreateCantripIds()
+    {
+        return [ "spell.cantrip_1", "spell.cantrip_2", "spell.cantrip_3", "spell.cantrip_4", "spell.cantrip_5" ];
+    }
+
+    private static IReadOnlyCollection<SpellDefinition> CreateSpellCatalog()
+    {
+        SourceReference source = new SourceReference( "Player Core", 1 );
+        return
+        [
+            .. CreateCantripIds().Select( ( id, index ) => new SpellDefinition(
+                id,
+                $"Cantrip {index + 1}",
+                1,
+                SpellKind.Cantrip,
+                [ SpellTradition.Divine ],
+                [ "Cantrip" ],
+                SpellRarity.Common,
+                source ) ),
+            new SpellDefinition(
+                "spell.heal",
+                "Heal",
+                1,
+                SpellKind.Spell,
+                [ SpellTradition.Divine ],
+                [ "Healing" ],
+                SpellRarity.Common,
+                source ),
+        ];
+    }
+
     private static IReadOnlyCollection<SkillDefinition> CreateSkills()
     {
         SourceReference source = new SourceReference( "Player Core", 227 );
@@ -1037,5 +1115,20 @@ public sealed class ClassPackageTests
         public IReadOnlyCollection<SkillDefinition> GetAll() => _skills;
 
         public SkillDefinition GetSkill( string skillId ) => _skills.Single( skill => skill.Id == skillId );
+    }
+
+    private sealed class StubSpellRepository : ISpellRepository
+    {
+        private readonly IReadOnlyCollection<SpellDefinition> _spells;
+
+        public StubSpellRepository( IReadOnlyCollection<SpellDefinition> spells )
+        {
+            _spells = spells;
+        }
+
+        public IReadOnlyCollection<SpellDefinition> GetAll() => _spells;
+
+        public SpellDefinition GetSpell( string spellId ) =>
+            _spells.Single( spell => spell.Id == spellId );
     }
 }

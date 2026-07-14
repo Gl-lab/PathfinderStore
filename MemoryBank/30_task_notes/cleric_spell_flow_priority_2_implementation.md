@@ -236,5 +236,7 @@ npm run build
 - review 2.1 исправил устаревшую frontend test command в плане и naming статического catalog field;
 - backend tests, frontend tests, lint и production build для 2.1 проходят;
 - slice 2.2 завершён: добавлены 94 spell definitions, referential-integrity checks, Cleric availability resolver, catalog API и frontend contract;
-- проверки 2.2: Domain tests `148/148`, Infrastructure tests `172/172`, frontend tests `52/52`, lint и production build проходят;
-- slices 2.3–2.4 ещё не реализованы.
+- slice 2.3 завершён: сервер валидирует и сохраняет 5 cantrips и 2 prepared slots, выводит 4 derived Divine Font slots, предоставляет deity-specific options API и отдельный wizard step;
+- миграция `AddClericSpellLoadout` создана через `dotnet ef`; legacy rows получают пустые JSONB-коллекции;
+- проверки 2.3: Domain tests `151/151`, Infrastructure tests `174/174`, frontend tests `54/54`, lint и production build проходят;
+- slice 2.4 ещё не реализован.

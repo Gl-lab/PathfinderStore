@@ -473,6 +473,8 @@ public sealed class CreateCharacterHandlerTests
             ClericDomainId = "domain.might",
             DivineFont = DivineFont.Heal,
             DivineSanctification = DivineSanctification.Holy,
+            ClericCantripIds = ClericCantripIds(),
+            ClericPreparedSpellIds = [ "spell.heal", "spell.sure_strike" ],
             FinalFreeBoosts =
             [
                 AbilityType.Strength,
@@ -505,6 +507,8 @@ public sealed class CreateCharacterHandlerTests
         Assert.Equal( "domain.might", savedCharacter.SelectedClericDomainId );
         Assert.Equal( DivineFont.Heal, savedCharacter.SelectedDivineFont );
         Assert.Equal( DivineSanctification.Holy, savedCharacter.SelectedDivineSanctification );
+        Assert.Equal( ClericCantripIds(), savedCharacter.PreparedClericCantripIds );
+        Assert.Equal( [ "spell.heal", "spell.sure_strike" ], savedCharacter.PreparedClericSpellIds );
     }
 
     [Fact]
@@ -562,7 +566,8 @@ public sealed class CreateCharacterHandlerTests
             witchPatronRepository: new WitchPatronRepository(),
             arcaneSchoolRepository: new ArcaneSchoolRepository(),
             arcaneThesisRepository: new ArcaneThesisRepository(),
-            clericDomainRepository: new ClericDomainRepository() );
+            clericDomainRepository: new ClericDomainRepository(),
+            spellRepository: new SpellRepository() );
 
         TestUnitOfWork unitOfWork = new TestUnitOfWork( dbContext );
 
@@ -574,6 +579,11 @@ public sealed class CreateCharacterHandlerTests
         return skillIds
             .Select( skillId => new ClassTrainingTargetChoice( skillId, null ) )
             .ToArray();
+    }
+
+    private static string[] ClericCantripIds()
+    {
+        return [ "spell.daze", "spell.detect_magic", "spell.divine_lance", "spell.guidance", "spell.light" ];
     }
 
     private static async Task<Account> CreateAccountAsync(

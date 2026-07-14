@@ -1,4 +1,5 @@
 using Pathfinder.CharacterManagement.Domain.Entity;
+using Pathfinder.CharacterManagement.Domain.Exceptions;
 using Pathfinder.CharacterManagement.Domain.Rules.Spells;
 
 namespace CharacterManagement.Domain.Tests;
@@ -46,6 +47,78 @@ public sealed class ClericSpellAvailabilityResolverTests
         Assert.Equal( [ ClericSpellAccessSource.DeityGranted ], grantedSpell.AccessSources );
         Assert.DoesNotContain( pharasmaSpells, spell => spell.Spell.Id == sureStrike.Id );
         Assert.DoesNotContain( iomedaeSpells, spell => spell.Spell.Id == fireball.Id );
+    }
+
+    [Fact]
+    public void ResolveLoadout_AllowsRepeatedPreparedSpellButRequiresUniqueCantrips()
+    {
+        SpellDefinition[] cantrips = Enumerable
+            .Range( 1, 5 )
+            .Select( index => Create(
+                $"cantrip_{index}",
+                SpellKind.Cantrip,
+                SpellRarity.Common,
+                [ SpellTradition.Divine ] ) )
+            .ToArray();
+        SpellDefinition heal = Create(
+            "heal",
+            SpellKind.Spell,
+            SpellRarity.Common,
+            [ SpellTradition.Divine ] );
+        IReadOnlyCollection<SpellDefinition> catalog = [ .. cantrips, heal ];
+        Deity deity = CreateDeity( "iomedae", [] );
+        string[] cantripIds = cantrips.Select( spell => spell.Id ).ToArray();
+
+        ClericSpellLoadout result = ClericSpellLoadoutResolver.Resolve(
+            deity,
+            cantripIds,
+            [ heal.Id, heal.Id ],
+            catalog );
+
+        Assert.Equal( cantripIds, result.CantripIds );
+        Assert.Equal( [ heal.Id, heal.Id ], result.PreparedSpellIds );
+        Assert.Throws<CharacterManagementException>( () => ClericSpellLoadoutResolver.Resolve(
+            deity,
+            [ cantripIds[ 0 ], cantripIds[ 0 ], cantripIds[ 2 ], cantripIds[ 3 ], cantripIds[ 4 ] ],
+            [ heal.Id, heal.Id ],
+            catalog ) );
+    }
+
+    [Fact]
+    public void ResolveLoadout_RejectsSpellGrantedByAnotherDeityAndFocusSpell()
+    {
+        SpellDefinition[] cantrips = Enumerable
+            .Range( 1, 5 )
+            .Select( index => Create(
+                $"cantrip_{index}",
+                SpellKind.Cantrip,
+                SpellRarity.Common,
+                [ SpellTradition.Divine ] ) )
+            .ToArray();
+        SpellDefinition sureStrike = Create(
+            "sure_strike",
+            SpellKind.Spell,
+            SpellRarity.Common,
+            [ SpellTradition.Arcane ] );
+        SpellDefinition focusSpell = Create(
+            "fire_ray",
+            SpellKind.Focus,
+            SpellRarity.Uncommon,
+            [ SpellTradition.Divine ] );
+        Deity pharasma = CreateDeity( "pharasma", [] );
+        IReadOnlyCollection<SpellDefinition> catalog = [ .. cantrips, sureStrike, focusSpell ];
+        string[] cantripIds = cantrips.Select( spell => spell.Id ).ToArray();
+
+        Assert.Throws<CharacterManagementException>( () => ClericSpellLoadoutResolver.Resolve(
+            pharasma,
+            cantripIds,
+            [ sureStrike.Id, sureStrike.Id ],
+            catalog ) );
+        Assert.Throws<CharacterManagementException>( () => ClericSpellLoadoutResolver.Resolve(
+            pharasma,
+            cantripIds,
+            [ focusSpell.Id, focusSpell.Id ],
+            catalog ) );
     }
 
     private static SpellDefinition Create(

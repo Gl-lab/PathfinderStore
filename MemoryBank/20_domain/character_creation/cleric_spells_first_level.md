@@ -34,7 +34,16 @@
 - granted spell при подготовке Cleric считается divine, но его исходная tradition в общем каталоге не изменяется;
 - focus spells не входят в prepared spell list и применяются отдельным domain/focus flow.
 
-Количество cantrips, prepared slots, Divine Font slots и сохранение loadout относятся к slice 2.3.
+## Loadout первого уровня
+
+- пользователь выбирает `5` разных доступных cantrips;
+- пользователь заполняет `2` prepared spell slots rank 1; одно и то же заклинание разрешено подготовить в обоих слотах;
+- Divine Font даёт `4` дополнительных слота максимального доступного rank;
+- каждый Font slot содержит `Heal` или `Harm` в соответствии с уже выбранным и проверенным `DivineFont`;
+- persisted state содержит только cantrip IDs и prepared spell IDs; количество и содержимое Font slots вычисляется сервером;
+- wizard загружает deity-specific варианты через серверный API и не расширяет divine list самостоятельно.
+
+Legacy rows после миграции получают пустые JSONB-коллекции и остаются читаемыми. Строгая проверка полного loadout применяется к созданию нового Cleric.
 
 ## Проверяемые инварианты
 

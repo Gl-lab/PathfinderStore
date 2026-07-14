@@ -2,6 +2,7 @@ using Pathfinder.CharacterManagement.Application.Converters;
 using Pathfinder.CharacterManagement.Application.DTO;
 using Pathfinder.CharacterManagement.Application.Repositories;
 using Pathfinder.CharacterManagement.Domain.Entity;
+using Pathfinder.CharacterManagement.Domain.Rules.Spells;
 
 namespace Pathfinder.CharacterManagement.Application.Features.Characters.Queries.Mapping;
 
@@ -21,6 +22,7 @@ public sealed class CharacterDetailsDtoMapper
     private readonly IClericDoctrineRepository? _clericDoctrineRepository;
     private readonly IDeityRepository? _deityRepository;
     private readonly IClericDomainRepository? _clericDomainRepository;
+    private readonly ISpellRepository? _spellRepository;
 
     public CharacterDetailsDtoMapper(
         IAncestryRepository? ancestryRepository = null,
@@ -36,7 +38,8 @@ public sealed class CharacterDetailsDtoMapper
         IWitchPatronRepository? witchPatronRepository = null,
         IArcaneSchoolRepository? arcaneSchoolRepository = null,
         IArcaneThesisRepository? arcaneThesisRepository = null,
-        IClericDomainRepository? clericDomainRepository = null )
+        IClericDomainRepository? clericDomainRepository = null,
+        ISpellRepository? spellRepository = null )
     {
         _ancestryRepository = ancestryRepository;
         _backgroundRepository = backgroundRepository;
@@ -52,6 +55,7 @@ public sealed class CharacterDetailsDtoMapper
         _clericDoctrineRepository = clericDoctrineRepository;
         _deityRepository = deityRepository;
         _clericDomainRepository = clericDomainRepository;
+        _spellRepository = spellRepository;
     }
 
     public DraftCharacter Convert( CharacterDto character ) => throw new NotSupportedException();
@@ -75,6 +79,9 @@ public sealed class CharacterDetailsDtoMapper
         ClericDoctrine? clericDoctrine = ResolveClericDoctrine( draftCharacter );
         Deity? deity = ResolveDeity( draftCharacter );
         ClericDomain? clericDomain = ResolveClericDomain( draftCharacter );
+        ClericSpellLoadoutDto? clericSpellLoadout = ResolveClericSpellLoadout(
+            draftCharacter,
+            deity );
 
         return new CharacterDto
         {
@@ -101,7 +108,8 @@ public sealed class CharacterDetailsDtoMapper
                     witchPatron,
                     arcaneSchool,
                     arcaneThesis,
-                    clericDomain ),
+                    clericDomain,
+                    clericSpellLoadout ),
             FinalFreeBoosts = draftCharacter.AppliedFinalFreeBoosts.ToArray(),
             DerivedStatistics = ancestry is null || characterClass is null
                 ? null
@@ -289,6 +297,56 @@ public sealed class CharacterDetailsDtoMapper
         }
 
         return _clericDomainRepository.GetClericDomain( character.SelectedClericDomainId );
+    }
+
+    private ClericSpellLoadoutDto? ResolveClericSpellLoadout(
+        DraftCharacter character,
+        Deity? deity )
+    {
+        if ( ( character.SelectedClassId != "class.cleric" ) || ( deity is null ) )
+        {
+            return null;
+        }
+
+        if ( _spellRepository is null )
+        {
+            throw new InvalidOperationException(
+                "Spell repository is required to map a Cleric spell loadout." );
+        }
+
+        IReadOnlyCollection<SpellDefinition> catalog = _spellRepository.GetAll();
+        IReadOnlyDictionary<string, SpellDefinition> definitions = catalog
+            .ToDictionary( spell => spell.Id, StringComparer.Ordinal );
+        IReadOnlyDictionary<string, ClericAvailableSpell> availableSpells =
+            ClericSpellAvailabilityResolver
+                .ResolveRankOneSpells( deity, catalog )
+                .ToDictionary( spell => spell.Spell.Id, StringComparer.Ordinal );
+        SpellDefinition? fontSpell = character.SelectedDivineFont switch
+        {
+            DivineFont.Heal => definitions[ "spell.heal" ],
+            DivineFont.Harm => definitions[ "spell.harm" ],
+            _ => null,
+        };
+
+        return new ClericSpellLoadoutDto
+        {
+            Cantrips = character.PreparedClericCantripIds
+                .Select( spellId => SpellDefinitionDtoMapper.Map( definitions[ spellId ] ) )
+                .ToArray(),
+            PreparedSpells = character.PreparedClericSpellIds
+                .Select( spellId => new ClericPreparedSpellDto
+                {
+                    Spell = SpellDefinitionDtoMapper.Map( definitions[ spellId ] ),
+                    AccessSources = availableSpells[ spellId ].AccessSources,
+                } )
+                .ToArray(),
+            DivineFontSpells = fontSpell is null
+                ? []
+                : Enumerable
+                    .Range( 0, 4 )
+                    .Select( _ => SpellDefinitionDtoMapper.Map( fontSpell ) )
+                    .ToArray(),
+        };
     }
 
     private CharacterClass? ResolveCharacterClass( DraftCharacter character )

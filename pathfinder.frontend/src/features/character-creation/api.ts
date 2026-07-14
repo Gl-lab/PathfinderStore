@@ -303,6 +303,19 @@ export interface SpellDefinition extends SpellReference {
   }
 }
 
+export type ClericSpellAccessSource = 'DivineTradition' | 'DeityGranted'
+
+export interface ClericAvailableSpell {
+  spell: SpellDefinition
+  effectiveTradition: SpellTradition
+  accessSources: ClericSpellAccessSource[]
+}
+
+export interface ClericSpellOptions {
+  cantrips: ClericAvailableSpell[]
+  rankOneSpells: ClericAvailableSpell[]
+}
+
 export interface ClericDomain {
   id: string
   name: string
@@ -358,6 +371,8 @@ export interface CreateCharacterRequest {
   divineFont: DivineFont | null
   divineSanctification: DivineSanctification | null
   deitySkillReplacementId: string | null
+  clericCantripIds: string[]
+  clericPreparedSpellIds: string[]
   finalFreeBoosts: AbilityCode[]
   classSkillGrantChoices: ClassSkillGrantChoice[]
   additionalClassTrainingChoices: ClassTrainingTargetChoice[]
@@ -417,6 +432,14 @@ export async function getClericDomains(): Promise<ClericDomain[]> {
 
 export async function getClericSpells(): Promise<SpellDefinition[]> {
   return (await http.get<SpellDefinition[]>('/api/classes/cleric/spells')).data
+}
+
+export async function getClericSpellOptions(deityId: string): Promise<ClericSpellOptions> {
+  return (
+    await http.get<ClericSpellOptions>('/api/classes/cleric/spells/available', {
+      params: { deityId },
+    })
+  ).data
 }
 
 export async function getSkills(): Promise<Skill[]> {

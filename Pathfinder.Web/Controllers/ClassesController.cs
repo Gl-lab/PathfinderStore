@@ -146,4 +146,15 @@ public sealed class ClassesController : AuthorizedController
             new GetClericSpellsCommand() );
         return Ok( spells );
     }
+
+    [HttpGet( "cleric/spells/available" )]
+    [ProducesResponseType( typeof( ClericSpellOptionsDto ), StatusCodes.Status200OK )]
+    [ProducesResponseType( StatusCodes.Status401Unauthorized )]
+    public async Task<ActionResult<ClericSpellOptionsDto>> GetClericSpellOptions(
+        [FromQuery] string deityId )
+    {
+        ClericSpellOptionsDto options = await _mediator.Send(
+            new GetClericSpellOptionsCommand( deityId ) );
+        return Ok( options );
+    }
 }

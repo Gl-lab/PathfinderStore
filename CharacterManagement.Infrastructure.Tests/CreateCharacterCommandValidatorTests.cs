@@ -211,6 +211,8 @@ public sealed class CreateCharacterCommandValidatorTests
         character.ClericDomainId = "domain.might";
         character.DivineFont = DivineFont.Heal;
         character.DivineSanctification = DivineSanctification.Holy;
+        character.ClericCantripIds = ClericCantripIds();
+        character.ClericPreparedSpellIds = [ "spell.heal", "spell.heal" ];
 
         validator.ValidateAndThrow( new CreateCharacterCommand( 42, character ) );
     }
@@ -501,5 +503,10 @@ public sealed class CreateCharacterCommandValidatorTests
                 ( AbilityType )999
             }
         ];
+    }
+
+    private static string[] ClericCantripIds()
+    {
+        return [ "spell.daze", "spell.detect_magic", "spell.divine_lance", "spell.guidance", "spell.light" ];
     }
 }

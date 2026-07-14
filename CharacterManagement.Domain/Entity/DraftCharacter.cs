@@ -1,5 +1,6 @@
 using Pathfinder.CharacterManagement.Domain.Exceptions;
 using Pathfinder.CharacterManagement.Domain.Rules.Training;
+using Pathfinder.CharacterManagement.Domain.Rules.Spells;
 using Pathfinder.Utils.Entities.Base;
 
 namespace Pathfinder.CharacterManagement.Domain.Entity;
@@ -35,6 +36,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public string? SelectedClericDomainId { get; private set; }
     public DivineFont? SelectedDivineFont { get; private set; }
     public DivineSanctification? SelectedDivineSanctification { get; private set; }
+    public IReadOnlyList<string> PreparedClericCantripIds { get; private set; } = [];
+    public IReadOnlyList<string> PreparedClericSpellIds { get; private set; } = [];
     public IReadOnlyList<AbilityType> AppliedFinalFreeBoosts { get; private set; } = [];
     public IReadOnlyList<TrainedSkill> TrainedSkills { get; private set; } = [];
     public IReadOnlyList<TrainedLore> TrainedLore { get; private set; } = [];
@@ -305,7 +308,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         string? witchPatronFamiliarSpellId = null,
         ArcaneSchool? arcaneSchool = null,
         ArcaneThesis? arcaneThesis = null,
-        ClericDomain? clericDomain = null )
+        ClericDomain? clericDomain = null,
+        ClericSpellLoadout? clericSpellLoadout = null )
     {
         ArgumentNullException.ThrowIfNull( characterClass );
 
@@ -451,6 +455,11 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
             throw new CharacterManagementException( "Cleric class requires a Divine Font." );
         }
 
+        if ( isCleric && clericSpellLoadout is null )
+        {
+            throw new CharacterManagementException( "Cleric class requires a prepared spell loadout." );
+        }
+
         if ( isCleric &&
              divineFont.HasValue &&
              deity is not null &&
@@ -482,7 +491,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
                divineFont.HasValue ||
                divineSanctification.HasValue ||
                clericDomain is not null ||
-               !String.IsNullOrWhiteSpace( deitySkillReplacementId ) ) )
+               !String.IsNullOrWhiteSpace( deitySkillReplacementId ) ||
+               clericSpellLoadout is not null ) )
         {
             throw new CharacterManagementException( "Deity class choices can only be selected for the Cleric class." );
         }
@@ -546,6 +556,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         SelectedClericDomainId = clericDomain?.Id;
         SelectedDivineFont = divineFont;
         SelectedDivineSanctification = divineSanctification;
+        PreparedClericCantripIds = clericSpellLoadout?.CantripIds.ToArray() ?? [];
+        PreparedClericSpellIds = clericSpellLoadout?.PreparedSpellIds.ToArray() ?? [];
         if ( rogueTraining is not null )
         {
             TrainedSkills = rogueTraining.Skills.ToArray();
@@ -866,6 +878,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         SelectedClericDomainId = null;
         SelectedDivineFont = null;
         SelectedDivineSanctification = null;
+        PreparedClericCantripIds = [];
+        PreparedClericSpellIds = [];
         RemoveClassTrainingEffects();
         TrainedSkills = TrainedSkills
             .Where( training =>

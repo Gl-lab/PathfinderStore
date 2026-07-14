@@ -70,7 +70,8 @@ public sealed class GetCharacterQueriesTests
             skillRepository: new SkillRepository(),
             clericDoctrineRepository: clericDoctrineRepository,
             deityRepository: deityRepository,
-            clericDomainRepository: clericDomainRepository );
+            clericDomainRepository: clericDomainRepository,
+            spellRepository: new SpellRepository() );
         builder.CreateCharacter( account.Id, "Kyra", AncestryType.Human );
         builder.SetAncestryPackage( "human.skilled", "human.cooperative_nature" );
         builder.ApplyFreeBoosts( [ AbilityType.Strength, AbilityType.Wisdom ] );
@@ -85,7 +86,9 @@ public sealed class GetCharacterQueriesTests
             deityId: "deity.iomedae",
             clericDomainId: "domain.might",
             divineFont: DivineFont.Heal,
-            divineSanctification: DivineSanctification.Holy );
+            divineSanctification: DivineSanctification.Holy,
+            clericCantripIds: ClericCantripIds(),
+            clericPreparedSpellIds: [ "spell.heal", "spell.sure_strike" ] );
         builder.SetFinalFreeBoosts(
             [
                 AbilityType.Strength,
@@ -105,7 +108,8 @@ public sealed class GetCharacterQueriesTests
             new SkillRepository(),
             clericDoctrineRepository: clericDoctrineRepository,
             deityRepository: deityRepository,
-            clericDomainRepository: clericDomainRepository );
+            clericDomainRepository: clericDomainRepository,
+            spellRepository: new SpellRepository() );
         GetCharacterByIdHandler handler = new GetCharacterByIdHandler(
             characterRepository,
             characterDetailsDtoMapper );
@@ -140,6 +144,21 @@ public sealed class GetCharacterQueriesTests
         Assert.Equal( "deity.iomedae", result.ClassPackage.Deity.Id );
         Assert.NotNull( result.ClassPackage.ClericDomain );
         Assert.Equal( "domain.might", result.ClassPackage.ClericDomain.Id );
+        Assert.NotNull( result.ClassPackage.ClericSpellLoadout );
+        Assert.Equal( 5, result.ClassPackage.ClericSpellLoadout.Cantrips.Count );
+        Assert.Equal( 2, result.ClassPackage.ClericSpellLoadout.PreparedSpells.Count );
+        Assert.Equal( 4, result.ClassPackage.ClericSpellLoadout.DivineFontSpells.Count );
+        Assert.Equal(
+            [ "spell.heal", "spell.sure_strike" ],
+            result.ClassPackage.ClericSpellLoadout.PreparedSpells
+                .Select( slot => slot.Spell.Id )
+                .ToArray() );
+        Assert.All(
+            result.ClassPackage.ClericSpellLoadout.DivineFontSpells,
+            spell => Assert.Equal( "spell.heal", spell.Id ) );
+        Assert.NotSame(
+            result.ClassPackage.ClericSpellLoadout.DivineFontSpells[ 0 ],
+            result.ClassPackage.ClericSpellLoadout.DivineFontSpells[ 1 ] );
         Assert.Equal(
             "spell.athletic_rush",
             result.ClassPackage.ClericDomain.InitialFocusSpell.Id );
@@ -883,6 +902,11 @@ public sealed class GetCharacterQueriesTests
             backgroundRepository: backgroundRepository,
             characterClassRepository: characterClassRepository,
             skillRepository: new SkillRepository() );
+    }
+
+    private static string[] ClericCantripIds()
+    {
+        return [ "spell.daze", "spell.detect_magic", "spell.divine_lance", "spell.guidance", "spell.light" ];
     }
 
     private static async Task<Account> CreateAccountAsync( CharacterManagementDbContext dbContext, int userId )

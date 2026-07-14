@@ -46,6 +46,32 @@ public class CharacterManagementDbContext( DbContextOptions<CharacterManagementD
             b.Property( x => x.SelectedDivineFont ).HasConversion<int>();
             b.Property( x => x.SelectedDivineSanctification ).HasConversion<int>();
 
+            b.Property( x => x.PreparedClericCantripIds )
+                .HasConversion(
+                    value => JsonSerializer.Serialize( value.ToList(), (JsonSerializerOptions?)null ),
+                    value => String.IsNullOrEmpty( value )
+                        ? (IReadOnlyList<string>)Array.Empty<string>()
+                        : (IReadOnlyList<string>)( JsonSerializer.Deserialize<List<string>>( value, (JsonSerializerOptions?)null ) ?? new List<string>() ) )
+                .HasColumnType( "jsonb" )
+                .HasDefaultValueSql( "'[]'::jsonb" )
+                .Metadata.SetValueComparer( new ValueComparer<IReadOnlyList<string>>(
+                    ( first, second ) => first != null && second != null && first.SequenceEqual( second ),
+                    collection => collection.Aggregate( 0, ( hash, item ) => HashCode.Combine( hash, item ) ),
+                    collection => collection.ToList() ) );
+
+            b.Property( x => x.PreparedClericSpellIds )
+                .HasConversion(
+                    value => JsonSerializer.Serialize( value.ToList(), (JsonSerializerOptions?)null ),
+                    value => String.IsNullOrEmpty( value )
+                        ? (IReadOnlyList<string>)Array.Empty<string>()
+                        : (IReadOnlyList<string>)( JsonSerializer.Deserialize<List<string>>( value, (JsonSerializerOptions?)null ) ?? new List<string>() ) )
+                .HasColumnType( "jsonb" )
+                .HasDefaultValueSql( "'[]'::jsonb" )
+                .Metadata.SetValueComparer( new ValueComparer<IReadOnlyList<string>>(
+                    ( first, second ) => first != null && second != null && first.SequenceEqual( second ),
+                    collection => collection.Aggregate( 0, ( hash, item ) => HashCode.Combine( hash, item ) ),
+                    collection => collection.ToList() ) );
+
             b.Property( x => x.AppliedFreeBoosts )
                 .HasConversion(
                     v => JsonSerializer.Serialize( v.ToList(), (JsonSerializerOptions?)null ),

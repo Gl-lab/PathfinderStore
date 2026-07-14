@@ -126,6 +126,14 @@ public sealed class CreateCharacterCommandValidator : AbstractValidator<CreateCh
                         RuleFor( command => command.Character.ClericDoctrineId ).NotEmpty();
                         RuleFor( command => command.Character.DeityId ).NotEmpty();
                         RuleFor( command => command.Character.DivineFont ).NotNull();
+                        RuleFor( command => command.Character.ClericCantripIds )
+                            .NotNull()
+                            .Must( spellIds => spellIds.Count == 5 )
+                            .WithMessage( "Exactly 5 Cleric cantrips must be selected." );
+                        RuleFor( command => command.Character.ClericPreparedSpellIds )
+                            .NotNull()
+                            .Must( spellIds => spellIds.Count == 2 )
+                            .WithMessage( "Exactly 2 Cleric spell slots must be prepared." );
                     } );
 
                 When(
@@ -148,6 +156,8 @@ public sealed class CreateCharacterCommandValidator : AbstractValidator<CreateCh
                         RuleFor( command => command.Character.DivineSanctification ).Empty();
                         RuleFor( command => command.Character.DeitySkillReplacementId ).Empty();
                         RuleFor( command => command.Character.ClericDomainId ).Empty();
+                        RuleFor( command => command.Character.ClericCantripIds ).Empty();
+                        RuleFor( command => command.Character.ClericPreparedSpellIds ).Empty();
                     } );
 
                 RuleFor( command => command.Character.FinalFreeBoosts )
