@@ -27,6 +27,7 @@ import {
   getCharacterClasses,
   getDruidicOrders,
   getBardMuses,
+  getWitchPatrons,
   getHuntersEdges,
   getClericDoctrines,
   getDeities,
@@ -44,6 +45,7 @@ import {
   type DivineSanctification,
   type DruidicOrder,
   type BardMuse,
+  type WitchPatron,
   type HuntersEdge,
   type RogueRacket,
   type RogueTrainingChoice,
@@ -94,6 +96,11 @@ import {
   withDruidicOrderSkillGrant,
 } from '@/features/character-creation/druidicOrder'
 import { isBardMuseChoiceComplete } from '@/features/character-creation/bardMuse'
+import {
+  getWitchPatronFamiliarSpellOptions,
+  isWitchPatronChoiceComplete,
+  withWitchPatron,
+} from '@/features/character-creation/witchPatron'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -105,6 +112,7 @@ const rogueRackets = ref<RogueRacket[]>([])
 const huntersEdges = ref<HuntersEdge[]>([])
 const druidicOrders = ref<DruidicOrder[]>([])
 const bardMuses = ref<BardMuse[]>([])
+const witchPatrons = ref<WitchPatron[]>([])
 const clericDoctrines = ref<ClericDoctrine[]>([])
 const deities = ref<Deity[]>([])
 const skills = ref<Skill[]>([])
@@ -130,6 +138,8 @@ const form = ref({
   huntersEdgeId: null as string | null,
   druidicOrderId: null as string | null,
   bardMuseId: null as string | null,
+  witchPatronId: null as string | null,
+  witchPatronFamiliarSpellId: null as string | null,
   clericDoctrineId: null as string | null,
   deityId: null as string | null,
   divineFont: null as DivineFont | null,
@@ -177,8 +187,17 @@ const selectedDruidicOrder = computed(
 const selectedBardMuse = computed(
   () => bardMuses.value.find((item) => item.id === form.value.bardMuseId) ?? null,
 )
+const selectedWitchPatron = computed(
+  () => witchPatrons.value.find((item) => item.id === form.value.witchPatronId) ?? null,
+)
+const witchPatronFamiliarSpellOptions = computed(() =>
+  getWitchPatronFamiliarSpellOptions(selectedWitchPatron.value),
+)
 const effectiveCharacterClass = computed(() =>
-  withDruidicOrderSkillGrant(selectedCharacterClass.value, selectedDruidicOrder.value),
+  withWitchPatron(
+    withDruidicOrderSkillGrant(selectedCharacterClass.value, selectedDruidicOrder.value),
+    selectedWitchPatron.value,
+  ),
 )
 const selectedClericDoctrine = computed(
   () => clericDoctrines.value.find((item) => item.id === form.value.clericDoctrineId) ?? null,
@@ -284,6 +303,11 @@ const canContinue = computed(() => {
       isHuntersEdgeChoiceComplete(selectedCharacterClass.value, selectedHuntersEdge.value) &&
       isDruidicOrderChoiceComplete(selectedCharacterClass.value, selectedDruidicOrder.value) &&
       isBardMuseChoiceComplete(selectedCharacterClass.value, selectedBardMuse.value) &&
+      isWitchPatronChoiceComplete(
+        selectedCharacterClass.value,
+        selectedWitchPatron.value,
+        form.value.witchPatronFamiliarSpellId,
+      ) &&
       isDeityChoiceComplete(
         selectedCharacterClass.value,
         selectedDeity.value,
@@ -369,6 +393,8 @@ function selectCharacterClass(classId: string | null): void {
   form.value.huntersEdgeId = null
   form.value.druidicOrderId = null
   form.value.bardMuseId = null
+  form.value.witchPatronId = null
+  form.value.witchPatronFamiliarSpellId = null
   form.value.clericDoctrineId = null
   form.value.deityId = null
   form.value.divineFont = null
@@ -389,6 +415,11 @@ function selectDeity(deityId: string | null): void {
 }
 function selectDruidicOrder(druidicOrderId: string | null): void {
   form.value.druidicOrderId = druidicOrderId
+  resetClassTraining()
+}
+function selectWitchPatron(witchPatronId: string | null): void {
+  form.value.witchPatronId = witchPatronId
+  form.value.witchPatronFamiliarSpellId = null
   resetClassTraining()
 }
 function selectRogueRacket(racketId: string | null): void {
@@ -495,6 +526,11 @@ async function submit(): Promise<void> {
     !isHuntersEdgeChoiceComplete(selectedCharacterClass.value, selectedHuntersEdge.value) ||
     !isDruidicOrderChoiceComplete(selectedCharacterClass.value, selectedDruidicOrder.value) ||
     !isBardMuseChoiceComplete(selectedCharacterClass.value, selectedBardMuse.value) ||
+    !isWitchPatronChoiceComplete(
+      selectedCharacterClass.value,
+      selectedWitchPatron.value,
+      form.value.witchPatronFamiliarSpellId,
+    ) ||
     !isClericDoctrineChoiceComplete(selectedCharacterClass.value, selectedClericDoctrine.value) ||
     !isDeityChoiceComplete(
       selectedCharacterClass.value,
@@ -541,6 +577,8 @@ async function submit(): Promise<void> {
       huntersEdgeId: form.value.huntersEdgeId,
       druidicOrderId: form.value.druidicOrderId,
       bardMuseId: form.value.bardMuseId,
+      witchPatronId: form.value.witchPatronId,
+      witchPatronFamiliarSpellId: form.value.witchPatronFamiliarSpellId,
       clericDoctrineId: form.value.clericDoctrineId,
       deityId: form.value.deityId,
       divineFont: form.value.divineFont,
@@ -572,7 +610,7 @@ async function loadCatalogs(): Promise<void> {
   isLoadingCatalogs.value = true
   errorMessages.value = []
   try {
-    const [ancestryCatalog, backgroundCatalog, classCatalog, racketCatalog, huntersEdgeCatalog, druidicOrderCatalog, bardMuseCatalog, doctrineCatalog, deityCatalog, skillCatalog] = await Promise.all([
+    const [ancestryCatalog, backgroundCatalog, classCatalog, racketCatalog, huntersEdgeCatalog, druidicOrderCatalog, bardMuseCatalog, witchPatronCatalog, doctrineCatalog, deityCatalog, skillCatalog] = await Promise.all([
       getAncestries(),
       getBackgrounds(),
       getCharacterClasses(),
@@ -580,6 +618,7 @@ async function loadCatalogs(): Promise<void> {
       getHuntersEdges(),
       getDruidicOrders(),
       getBardMuses(),
+      getWitchPatrons(),
       getClericDoctrines(),
       getDeities(),
       getSkills(),
@@ -591,6 +630,7 @@ async function loadCatalogs(): Promise<void> {
     huntersEdges.value = huntersEdgeCatalog
     druidicOrders.value = druidicOrderCatalog
     bardMuses.value = bardMuseCatalog
+    witchPatrons.value = witchPatronCatalog
     clericDoctrines.value = doctrineCatalog
     deities.value = deityCatalog
     skills.value = skillCatalog
@@ -804,6 +844,32 @@ watch(
             >
               {{ t(`classUi.bardMuseBenefitKinds.${benefit.kind}`) }}:
               {{ benefit.name }}. {{ t('classUi.deferredEffect') }}
+            </v-alert>
+            <v-select
+              v-if="selectedCharacterClass.id === 'class.witch'"
+              :model-value="form.witchPatronId"
+              :items="witchPatrons"
+              item-title="name"
+              item-value="id"
+              :label="t('classUi.witchPatron')"
+              @update:model-value="selectWitchPatron"
+            />
+            <v-select
+              v-if="witchPatronFamiliarSpellOptions.length > 1"
+              v-model="form.witchPatronFamiliarSpellId"
+              :items="witchPatronFamiliarSpellOptions"
+              item-title="name"
+              item-value="id"
+              :label="t('classUi.witchPatronFamiliarSpell')"
+            />
+            <v-alert
+              v-for="benefit in selectedWitchPatron?.benefits ?? []"
+              :key="benefit.id"
+              type="info"
+              variant="tonal"
+            >
+              {{ t(`classUi.witchPatronBenefitKinds.${benefit.kind}`) }}:
+              {{ benefit.name }} — {{ benefit.summary }}
             </v-alert>
             <v-select
               v-if="selectedCharacterClass.id === 'class.druid'"
@@ -1090,6 +1156,16 @@ watch(
               v-if="selectedBardMuse"
               :title="t('classUi.bardMuse')"
               :subtitle="selectedBardMuse.name" /><v-list-item
+              v-if="selectedWitchPatron"
+              :title="t('classUi.witchPatron')"
+              :subtitle="selectedWitchPatron.name" /><v-list-item
+              v-if="selectedWitchPatron"
+              :title="t('classUi.spellTradition')"
+              :subtitle="t(`classUi.spellTraditions.${selectedWitchPatron.spellTradition}`)" /><v-list-item
+              v-for="benefit in selectedWitchPatron?.benefits ?? []"
+              :key="`review-${benefit.id}`"
+              :title="t(`classUi.witchPatronBenefitKinds.${benefit.kind}`)"
+              :subtitle="`${benefit.name} — ${benefit.summary}`" /><v-list-item
               v-for="benefit in selectedBardMuse?.benefits ?? []"
               :key="`review-${benefit.id}`"
               :title="t(`classUi.bardMuseBenefitKinds.${benefit.kind}`)"

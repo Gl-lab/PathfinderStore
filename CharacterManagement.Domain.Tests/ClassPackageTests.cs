@@ -440,6 +440,57 @@ public sealed class ClassPackageTests
     }
 
     [Fact]
+    public void SetClassPackage_WitchStoresPatronAndDerivesSingleFamiliarSpell()
+    {
+        DraftCharacter character = CreateCharacter();
+        CharacterClass witch = CreateClass( "class.witch", AbilityType.Intelligence );
+        WitchPatron patron = CreateWitchPatron( "command" );
+
+        character.SetClassPackage(
+            witch,
+            AbilityType.Intelligence,
+            witchPatron: patron );
+
+        Assert.Equal( patron.Id, character.SelectedWitchPatronId );
+        Assert.Equal( "spell.command", character.SelectedWitchPatronFamiliarSpellId );
+    }
+
+    [Fact]
+    public void SetClassPackage_WildingStewardRequiresChoiceAndInvalidCallIsAtomic()
+    {
+        DraftCharacter character = CreateCharacter();
+        CharacterClass fighter = CreateClass( "class.fighter", AbilityType.Strength );
+        CharacterClass witch = CreateClass( "class.witch", AbilityType.Intelligence );
+        WitchPatron patron = CreateWitchPatron( "summon_animal", "summon_plant_or_fungus" );
+        character.SetClassPackage( fighter, AbilityType.Strength );
+
+        Assert.Throws<CharacterManagementException>( () => character.SetClassPackage(
+            witch,
+            AbilityType.Intelligence,
+            witchPatron: patron ) );
+
+        Assert.Equal( fighter.Id, character.SelectedClassId );
+        Assert.Null( character.SelectedWitchPatronId );
+    }
+
+    [Fact]
+    public void SetClassPackage_ChangingWitchToAnotherClassClearsPatronPackage()
+    {
+        DraftCharacter character = CreateCharacter();
+        CharacterClass witch = CreateClass( "class.witch", AbilityType.Intelligence );
+        CharacterClass fighter = CreateClass( "class.fighter", AbilityType.Strength );
+        character.SetClassPackage(
+            witch,
+            AbilityType.Intelligence,
+            witchPatron: CreateWitchPatron( "command" ) );
+
+        character.SetClassPackage( fighter, AbilityType.Strength );
+
+        Assert.Null( character.SelectedWitchPatronId );
+        Assert.Null( character.SelectedWitchPatronFamiliarSpellId );
+    }
+
+    [Fact]
     public void SetBackgroundPackage_AfterClassPackage_ThrowsWithoutRemovingClassEffects()
     {
         DraftCharacter character = CreateCharacter();
@@ -589,6 +640,32 @@ public sealed class ClassPackageTests
                     BardMuseBenefitKind.RepertoireSpell,
                     "Sure Strike",
                     [] ),
+            ] );
+    }
+
+    private static WitchPatron CreateWitchPatron( params string[] familiarSpellIds )
+    {
+        return new WitchPatron(
+            "witch_patron.faiths_flamekeeper",
+            "Faith's Flamekeeper",
+            SourceReference.Unknown,
+            SpellTradition.Divine,
+            new ClassSkillGrantDescriptor(
+                "witch_patron.faiths_flamekeeper.skill.patron",
+                [ "skill.religion" ] ),
+            [
+                new WitchPatronBenefitDescriptor(
+                    "lesson.fervors_grasp", WitchPatronBenefitKind.Lesson,
+                    "Fervor's Grasp", "Lesson", [] ),
+                new WitchPatronBenefitDescriptor(
+                    "spell.stoke_the_heart", WitchPatronBenefitKind.HexCantrip,
+                    "Stoke the Heart", "Hex", [] ),
+                .. familiarSpellIds.Select( id => new WitchPatronBenefitDescriptor(
+                    $"spell.{id}", WitchPatronBenefitKind.FamiliarSpell,
+                    id, "Familiar spell", [] ) ),
+                new WitchPatronBenefitDescriptor(
+                    "familiar_ability.restored_spirit", WitchPatronBenefitKind.FamiliarAbility,
+                    "Restored Spirit", "Familiar ability", [] ),
             ] );
     }
 

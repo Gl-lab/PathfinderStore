@@ -9,10 +9,12 @@ public sealed class CharacterClassPackageDto
     public int BaseHitPoints { get; set; }
     public AbilityType KeyAbility { get; set; }
     public int AdditionalSkillCount { get; set; }
+    public SpellTradition? SpellTradition { get; set; }
     public RogueRacketPackageDto? RogueRacket { get; set; }
     public HuntersEdgePackageDto? HuntersEdge { get; set; }
     public DruidicOrderPackageDto? DruidicOrder { get; set; }
     public BardMusePackageDto? BardMuse { get; set; }
+    public WitchPatronPackageDto? WitchPatron { get; set; }
     public ClericDoctrinePackageDto? ClericDoctrine { get; set; }
     public DeityPackageDto? Deity { get; set; }
     public IReadOnlyList<CharacterClassRuleDto> Rules { get; set; } = [];

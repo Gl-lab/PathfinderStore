@@ -25,6 +25,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public string? SelectedHuntersEdgeId { get; private set; }
     public string? SelectedDruidicOrderId { get; private set; }
     public string? SelectedBardMuseId { get; private set; }
+    public string? SelectedWitchPatronId { get; private set; }
+    public string? SelectedWitchPatronFamiliarSpellId { get; private set; }
     public string? SelectedClericDoctrineId { get; private set; }
     public string? SelectedDeityId { get; private set; }
     public DivineFont? SelectedDivineFont { get; private set; }
@@ -294,7 +296,9 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         string? deitySkillReplacementId = null,
         HuntersEdge? huntersEdge = null,
         DruidicOrder? druidicOrder = null,
-        BardMuse? bardMuse = null )
+        BardMuse? bardMuse = null,
+        WitchPatron? witchPatron = null,
+        string? witchPatronFamiliarSpellId = null )
     {
         ArgumentNullException.ThrowIfNull( characterClass );
 
@@ -353,6 +357,19 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         {
             throw new CharacterManagementException(
                 "Bard Muse can only be selected for the Bard class." );
+        }
+
+        bool isWitch = characterClass.Id == "class.witch";
+        if ( isWitch && ( witchPatron is null ) )
+        {
+            throw new CharacterManagementException( "Witch class requires a Patron." );
+        }
+
+        if ( !isWitch &&
+             ( ( witchPatron is not null ) || !String.IsNullOrWhiteSpace( witchPatronFamiliarSpellId ) ) )
+        {
+            throw new CharacterManagementException(
+                "Witch Patron choices can only be selected for the Witch class." );
         }
 
         bool isCleric = characterClass.Id == "class.cleric";
@@ -454,6 +471,9 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
                 backgroundTraining );
         }
 
+        WitchPatronBenefitDescriptor? familiarSpell = witchPatron?.ResolveFamiliarSpell(
+            witchPatronFamiliarSpellId );
+
         RemoveClassEffects();
 
         AbilityScores.ApplyAbilityBoost( keyAbility );
@@ -463,6 +483,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         SelectedHuntersEdgeId = huntersEdge?.Id;
         SelectedDruidicOrderId = druidicOrder?.Id;
         SelectedBardMuseId = bardMuse?.Id;
+        SelectedWitchPatronId = witchPatron?.Id;
+        SelectedWitchPatronFamiliarSpellId = familiarSpell?.Id;
         SelectedClericDoctrineId = clericDoctrine?.Id;
         SelectedDeityId = deity?.Id;
         SelectedDivineFont = divineFont;
@@ -532,7 +554,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         IReadOnlyList<ClassSkillGrantChoice> grantChoices,
         IReadOnlyList<ClassTrainingTargetChoice> additionalChoices,
         IReadOnlyCollection<SkillDefinition> skillCatalog,
-        DruidicOrder? druidicOrder = null )
+        DruidicOrder? druidicOrder = null,
+        WitchPatron? witchPatron = null )
     {
         ArgumentNullException.ThrowIfNull( characterClass );
         ArgumentNullException.ThrowIfNull( grantChoices );
@@ -560,6 +583,24 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
                 "Druidic Order does not match the selected class package." );
         }
 
+        if ( !String.Equals(
+                 witchPatron?.Id,
+                 SelectedWitchPatronId,
+                 StringComparison.Ordinal ) )
+        {
+            throw new CharacterManagementException(
+                "Witch Patron does not match the selected class package." );
+        }
+
+        IReadOnlyList<ClassSkillGrantDescriptor> featureGrants = new[]
+            {
+                druidicOrder?.SkillGrant,
+                witchPatron?.SkillGrant,
+            }
+            .Where( grant => grant is not null )
+            .Cast<ClassSkillGrantDescriptor>()
+            .ToArray();
+
         IReadOnlyList<TrainedSkill> existingSkills = TrainedSkills
             .Where( training => !IsClassTrainingSource( training.SourceGrantId ) )
             .ToArray();
@@ -574,7 +615,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
             AbilityScores.Intelligence.Modifier,
             existingSkills,
             existingLore,
-            druidicOrder is null ? [] : [ druidicOrder.SkillGrant ] );
+            featureGrants );
 
         TrainedSkills = training.Skills.ToArray();
         TrainedLore = training.Lore.ToArray();
@@ -759,6 +800,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         SelectedHuntersEdgeId = null;
         SelectedDruidicOrderId = null;
         SelectedBardMuseId = null;
+        SelectedWitchPatronId = null;
+        SelectedWitchPatronFamiliarSpellId = null;
         SelectedClericDoctrineId = null;
         SelectedDeityId = null;
         SelectedDivineFont = null;
@@ -784,7 +827,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     private static bool IsClassTrainingSource( string sourceGrantId )
     {
         return ( sourceGrantId.StartsWith( "class.", StringComparison.Ordinal ) ||
-                 sourceGrantId.StartsWith( "druidic_order.", StringComparison.Ordinal ) ) &&
+                 sourceGrantId.StartsWith( "druidic_order.", StringComparison.Ordinal ) ||
+                 sourceGrantId.StartsWith( "witch_patron.", StringComparison.Ordinal ) ) &&
                sourceGrantId.Contains( ".skill.", StringComparison.Ordinal );
     }
 

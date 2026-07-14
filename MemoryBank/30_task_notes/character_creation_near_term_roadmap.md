@@ -106,6 +106,8 @@ Vikunja остаётся источником истины по карточка
 
 #### 1.5. Witch Patron
 
+**Статус:** завершено 14 июля 2026 года; см. [Implementation Plan](witch_patron_implementation.md).
+
 **Проблема.** Witch сохраняется без Patron, поэтому не определены spell tradition, granted skill, lesson и familiar ability.
 
 **Ожидаемый результат.** Patron обязателен для Witch; tradition и skill grant применяются типизированно, а lesson, familiar ability и spells остаются проверенными descriptors.

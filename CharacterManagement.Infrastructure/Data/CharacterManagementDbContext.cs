@@ -35,6 +35,8 @@ public class CharacterManagementDbContext( DbContextOptions<CharacterManagementD
             b.Property( x => x.SelectedHuntersEdgeId ).HasMaxLength( 100 );
             b.Property( x => x.SelectedDruidicOrderId ).HasMaxLength( 100 );
             b.Property( x => x.SelectedBardMuseId ).HasMaxLength( 100 );
+            b.Property( x => x.SelectedWitchPatronId ).HasMaxLength( 100 );
+            b.Property( x => x.SelectedWitchPatronFamiliarSpellId ).HasMaxLength( 100 );
             b.Property( x => x.SelectedClericDoctrineId ).HasMaxLength( 100 );
             b.Property( x => x.SelectedDeityId ).HasMaxLength( 100 );
             b.Property( x => x.SelectedDivineFont ).HasConversion<int>();

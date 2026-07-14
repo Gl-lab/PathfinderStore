@@ -192,6 +192,24 @@ export interface BardMuse {
   }[]
 }
 
+export type WitchPatronBenefitKind = 'Lesson' | 'HexCantrip' | 'FamiliarSpell' | 'FamiliarAbility'
+
+export interface WitchPatronBenefit {
+  id: string
+  kind: WitchPatronBenefitKind
+  name: string
+  summary: string
+  deferredDependencies: string[]
+}
+
+export interface WitchPatron {
+  id: string
+  name: string
+  spellTradition: SpellTradition
+  skillGrant: ClassSkillGrant
+  benefits: WitchPatronBenefit[]
+}
+
 export interface RogueTrainingChoice {
   grantId: string
   selectedSkillId: string | null
@@ -252,6 +270,8 @@ export interface CreateCharacterRequest {
   huntersEdgeId: string | null
   druidicOrderId: string | null
   bardMuseId: string | null
+  witchPatronId: string | null
+  witchPatronFamiliarSpellId: string | null
   clericDoctrineId: string | null
   deityId: string | null
   divineFont: DivineFont | null
@@ -288,6 +308,10 @@ export async function getDruidicOrders(): Promise<DruidicOrder[]> {
 
 export async function getBardMuses(): Promise<BardMuse[]> {
   return (await http.get<BardMuse[]>('/api/classes/bard/muses')).data
+}
+
+export async function getWitchPatrons(): Promise<WitchPatron[]> {
+  return (await http.get<WitchPatron[]>('/api/classes/witch/patrons')).data
 }
 
 export async function getClericDoctrines(): Promise<ClericDoctrine[]> {

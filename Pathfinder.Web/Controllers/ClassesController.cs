@@ -11,6 +11,7 @@ using Pathfinder.CharacterManagement.Application.UseCases.RogueRackets;
 using Pathfinder.CharacterManagement.Application.UseCases.HuntersEdges;
 using Pathfinder.CharacterManagement.Application.UseCases.DruidicOrders;
 using Pathfinder.CharacterManagement.Application.UseCases.BardMuses;
+using Pathfinder.CharacterManagement.Application.UseCases.WitchPatrons;
 using Pathfinder.Web.Controllers.Base;
 
 namespace Pathfinder.Web.Controllers;
@@ -71,6 +72,16 @@ public sealed class ClassesController : AuthorizedController
         IReadOnlyCollection<BardMuseDto> bardMuses = await _mediator.Send(
             new GetBardMusesCommand() );
         return Ok( bardMuses );
+    }
+
+    [HttpGet( "witch/patrons" )]
+    [ProducesResponseType( typeof( IReadOnlyCollection<WitchPatronDto> ), StatusCodes.Status200OK )]
+    [ProducesResponseType( StatusCodes.Status401Unauthorized )]
+    public async Task<ActionResult<IReadOnlyCollection<WitchPatronDto>>> GetWitchPatrons()
+    {
+        IReadOnlyCollection<WitchPatronDto> patrons = await _mediator.Send(
+            new GetWitchPatronsCommand() );
+        return Ok( patrons );
     }
 
     [HttpGet( "cleric/doctrines" )]

@@ -291,6 +291,63 @@ public sealed class CreateCharacterHandlerTests
     }
 
     [Fact]
+    public async Task Handle_Witch_PersistsPatronDerivedSpellAndPatronSkill()
+    {
+        await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
+        Account account = await CreateAccountAsync( dbContext, 59, "Feiya", "Hexer" );
+        CreateCharacterHandler handler = CreateHandler( dbContext );
+        CreateCharacterRequestDto character = new CreateCharacterRequestDto
+        {
+            Name = "Feiya",
+            AncestryType = AncestryType.Human,
+            HeritageId = "human.skilled",
+            AncestryFeatId = "human.cooperative_nature",
+            FreeBoosts = [ AbilityType.Intelligence, AbilityType.Wisdom ],
+            BackgroundId = "background.acrobat",
+            BackgroundRestrictedBoost = AbilityType.Dexterity,
+            BackgroundFreeBoost = AbilityType.Charisma,
+            ClassId = "class.witch",
+            ClassKeyAbility = AbilityType.Intelligence,
+            WitchPatronId = "witch_patron.faiths_flamekeeper",
+            FinalFreeBoosts =
+            [
+                AbilityType.Strength,
+                AbilityType.Dexterity,
+                AbilityType.Constitution,
+                AbilityType.Intelligence,
+            ],
+            ClassSkillGrantChoices =
+            [
+                new ClassSkillGrantChoice(
+                    "witch_patron.faiths_flamekeeper.skill.patron",
+                    null,
+                    null ),
+            ],
+            AdditionalClassTrainingChoices = GeneralSkillChoices(
+                "skill.arcana",
+                "skill.athletics",
+                "skill.crafting",
+                "skill.deception",
+                "skill.diplomacy",
+                "skill.intimidation" ),
+        };
+
+        await handler.Handle(
+            new CreateCharacterCommand( account.UserId, character ),
+            CancellationToken.None );
+        dbContext.ChangeTracker.Clear();
+
+        DraftCharacter savedCharacter = await dbContext.Character
+            .AsNoTracking()
+            .SingleAsync( entity => entity.AccountId == account.Id );
+        Assert.Equal( "witch_patron.faiths_flamekeeper", savedCharacter.SelectedWitchPatronId );
+        Assert.Equal( "spell.command", savedCharacter.SelectedWitchPatronFamiliarSpellId );
+        Assert.Contains( savedCharacter.TrainedSkills, training =>
+            ( training.SkillId == "skill.religion" ) &&
+            training.SourceGrantId.StartsWith( "witch_patron.", StringComparison.Ordinal ) );
+    }
+
+    [Fact]
     public async Task Handle_Ranger_PersistsHuntersEdge()
     {
         await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
@@ -445,7 +502,8 @@ public sealed class CreateCharacterHandlerTests
             deityRepository: new DeityRepository(),
             huntersEdgeRepository: new HuntersEdgeRepository(),
             druidicOrderRepository: new DruidicOrderRepository(),
-            bardMuseRepository: new BardMuseRepository() );
+            bardMuseRepository: new BardMuseRepository(),
+            witchPatronRepository: new WitchPatronRepository() );
 
         TestUnitOfWork unitOfWork = new TestUnitOfWork( dbContext );
 

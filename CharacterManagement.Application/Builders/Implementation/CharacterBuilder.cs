@@ -18,6 +18,7 @@ public class CharacterBuilder : ICharacterBuilder
     private readonly IHuntersEdgeRepository? _huntersEdgeRepository;
     private readonly IDruidicOrderRepository? _druidicOrderRepository;
     private readonly IBardMuseRepository? _bardMuseRepository;
+    private readonly IWitchPatronRepository? _witchPatronRepository;
 
     public CharacterBuilder(
         IAncestryRepository ancestryRepository,
@@ -30,7 +31,8 @@ public class CharacterBuilder : ICharacterBuilder
         IDeityRepository? deityRepository = null,
         IHuntersEdgeRepository? huntersEdgeRepository = null,
         IDruidicOrderRepository? druidicOrderRepository = null,
-        IBardMuseRepository? bardMuseRepository = null )
+        IBardMuseRepository? bardMuseRepository = null,
+        IWitchPatronRepository? witchPatronRepository = null )
     {
         _ancestryRepository = ancestryRepository;
         _ancestryChoiceAvailabilityPolicy = ancestryChoiceAvailabilityPolicy ?? new CommonAncestryChoiceAvailabilityPolicy();
@@ -43,6 +45,7 @@ public class CharacterBuilder : ICharacterBuilder
         _huntersEdgeRepository = huntersEdgeRepository;
         _druidicOrderRepository = druidicOrderRepository;
         _bardMuseRepository = bardMuseRepository;
+        _witchPatronRepository = witchPatronRepository;
     }
 
     public void CreateCharacter(
@@ -131,7 +134,9 @@ public class CharacterBuilder : ICharacterBuilder
         string? deitySkillReplacementId = null,
         string? huntersEdgeId = null,
         string? druidicOrderId = null,
-        string? bardMuseId = null )
+        string? bardMuseId = null,
+        string? witchPatronId = null,
+        string? witchPatronFamiliarSpellId = null )
     {
         if ( _draftCharacter is null )
         {
@@ -261,6 +266,24 @@ public class CharacterBuilder : ICharacterBuilder
             }
         }
 
+        WitchPatron? witchPatron = null;
+        if ( !String.IsNullOrWhiteSpace( witchPatronId ) )
+        {
+            if ( _witchPatronRepository is null )
+            {
+                throw new InvalidOperationException( "Witch Patron repository is not configured." );
+            }
+
+            try
+            {
+                witchPatron = _witchPatronRepository.GetWitchPatron( witchPatronId );
+            }
+            catch ( ArgumentException exception )
+            {
+                throw new CharacterManagementException( exception.Message );
+            }
+        }
+
         if ( ( ( characterClass.Id == "class.rogue" ) || ( deity is not null ) ) &&
              ( _skillRepository is null ) )
         {
@@ -280,7 +303,9 @@ public class CharacterBuilder : ICharacterBuilder
             deitySkillReplacementId,
             huntersEdge,
             druidicOrder,
-            bardMuse );
+            bardMuse,
+            witchPatron,
+            witchPatronFamiliarSpellId );
     }
 
     public void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts )
@@ -328,7 +353,8 @@ public class CharacterBuilder : ICharacterBuilder
             grantChoices,
             additionalChoices,
             _skillRepository.GetAll(),
-            ResolveSelectedDruidicOrder() );
+            ResolveSelectedDruidicOrder(),
+            ResolveSelectedWitchPatron() );
     }
 
     private DruidicOrder? ResolveSelectedDruidicOrder()
@@ -344,6 +370,21 @@ public class CharacterBuilder : ICharacterBuilder
         }
 
         return _druidicOrderRepository.GetDruidicOrder( _draftCharacter.SelectedDruidicOrderId );
+    }
+
+    private WitchPatron? ResolveSelectedWitchPatron()
+    {
+        if ( _draftCharacter?.SelectedWitchPatronId is null )
+        {
+            return null;
+        }
+
+        if ( _witchPatronRepository is null )
+        {
+            throw new InvalidOperationException( "Witch Patron repository is not configured." );
+        }
+
+        return _witchPatronRepository.GetWitchPatron( _draftCharacter.SelectedWitchPatronId );
     }
 
     public void IncreaseAbilityScores( IEnumerable<AbilityType> increasedAbilityTypes )

@@ -81,7 +81,8 @@ public static class CharacterClassDtoMapper
         DruidicOrder? druidicOrder = null,
         BardMuse? bardMuse = null,
         ClericDoctrine? clericDoctrine = null,
-        Deity? deity = null )
+        Deity? deity = null,
+        WitchPatron? witchPatron = null )
     {
         ArgumentNullException.ThrowIfNull( character );
         ArgumentNullException.ThrowIfNull( characterClass );
@@ -99,10 +100,16 @@ public static class CharacterClassDtoMapper
             KeyAbility = character.SelectedClassKeyAbility!.Value,
             AdditionalSkillCount = characterClass.AdditionalSkillCountBase +
                                    character.AbilityScores.Intelligence.Modifier,
+            SpellTradition = witchPatron?.SpellTradition ?? characterClass.SpellTradition,
             RogueRacket = rogueRacket is null ? null : RogueRacketDtoMapper.MapPackage( rogueRacket ),
             HuntersEdge = huntersEdge is null ? null : HuntersEdgeDtoMapper.MapPackage( huntersEdge ),
             DruidicOrder = druidicOrder is null ? null : DruidicOrderDtoMapper.MapPackage( druidicOrder ),
             BardMuse = bardMuse is null ? null : BardMuseDtoMapper.MapPackage( bardMuse ),
+            WitchPatron = witchPatron is null
+                ? null
+                : WitchPatronDtoMapper.MapPackage(
+                    witchPatron,
+                    character.SelectedWitchPatronFamiliarSpellId! ),
             ClericDoctrine = clericDoctrine is null
                 ? null
                 : ClericDoctrineDtoMapper.MapPackage( clericDoctrine ),

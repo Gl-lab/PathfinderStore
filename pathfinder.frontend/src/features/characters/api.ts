@@ -16,6 +16,7 @@ export type ProficiencyCategory =
   | 'Attack'
   | 'Defense'
   | 'ClassDc'
+export type SpellTradition = 'Arcane' | 'Divine' | 'Occult' | 'Primal'
 
 export interface Proficiency {
   targetId: string
@@ -67,6 +68,7 @@ export interface CharacterClassPackage {
   baseHitPoints: number
   keyAbility: AbilityCode
   additionalSkillCount: number
+  spellTradition: SpellTradition | null
   rogueRacket: {
     id: string
     name: string
@@ -98,6 +100,26 @@ export interface CharacterClassPackage {
       name: string
       deferredDependencies: string[]
     }[]
+  } | null
+  witchPatron: {
+    id: string
+    name: string
+    spellTradition: SpellTradition
+    skillGrant: { id: string; skillOptions: string[] }
+    benefits: {
+      id: string
+      kind: 'Lesson' | 'HexCantrip' | 'FamiliarSpell' | 'FamiliarAbility'
+      name: string
+      summary: string
+      deferredDependencies: string[]
+    }[]
+    selectedFamiliarSpell: {
+      id: string
+      kind: 'FamiliarSpell'
+      name: string
+      summary: string
+      deferredDependencies: string[]
+    }
   } | null
   clericDoctrine: {
     id: string

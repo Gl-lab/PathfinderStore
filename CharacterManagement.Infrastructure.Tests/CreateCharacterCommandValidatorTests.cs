@@ -326,6 +326,41 @@ public sealed class CreateCharacterCommandValidatorTests
         validator.ValidateAndThrow( new CreateCharacterCommand( 42, character ) );
     }
 
+    [Theory]
+    [InlineData( "class.witch", null, null )]
+    [InlineData( "class.fighter", "witch_patron.resentment", null )]
+    [InlineData( "class.fighter", null, "spell.enfeeble" )]
+    public void Validate_WhenWitchPatronDoesNotMatchClass_ThrowsValidationException(
+        string classId,
+        string? patronId,
+        string? familiarSpellId )
+    {
+        CreateCharacterCommandValidator validator = new CreateCharacterCommandValidator();
+        CreateCharacterRequestDto character = CreateValidRequest();
+        character.ClassId = classId;
+        character.ClassKeyAbility = classId == "class.witch"
+            ? AbilityType.Intelligence
+            : AbilityType.Strength;
+        character.WitchPatronId = patronId;
+        character.WitchPatronFamiliarSpellId = familiarSpellId;
+
+        Assert.Throws<ValidationException>( () => validator.ValidateAndThrow(
+            new CreateCharacterCommand( 42, character ) ) );
+    }
+
+    [Fact]
+    public void Validate_WhenWitchHasPatron_AllowsCatalogAwareNestedValidation()
+    {
+        CreateCharacterCommandValidator validator = new CreateCharacterCommandValidator();
+        CreateCharacterRequestDto character = CreateValidRequest();
+        character.ClassId = "class.witch";
+        character.ClassKeyAbility = AbilityType.Intelligence;
+        character.WitchPatronId = "witch_patron.wilding_steward";
+        character.WitchPatronFamiliarSpellId = "spell.summon_animal";
+
+        validator.ValidateAndThrow( new CreateCharacterCommand( 42, character ) );
+    }
+
     private static CreateCharacterRequestDto CreateValidRequest()
     {
         return new CreateCharacterRequestDto

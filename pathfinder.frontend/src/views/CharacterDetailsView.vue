@@ -243,6 +243,26 @@ onMounted(load)
                 {{ benefit.name }}. {{ t('classUi.deferredEffect') }}
               </p>
             </template>
+            <template v-if="character.classPackage.witchPatron">
+              <p>
+                {{ t('classUi.witchPatron') }}: {{ character.classPackage.witchPatron.name }}
+              </p>
+              <p>
+                {{ t('classUi.spellTradition') }}:
+                {{ t(`classUi.spellTraditions.${character.classPackage.witchPatron.spellTradition}`) }}
+              </p>
+              <p
+                v-for="benefit in character.classPackage.witchPatron.benefits"
+                :key="benefit.id"
+              >
+                {{ t(`classUi.witchPatronBenefitKinds.${benefit.kind}`) }}:
+                {{ benefit.name }} — {{ benefit.summary }}
+              </p>
+              <p>
+                {{ t('classUi.witchPatronFamiliarSpell') }}:
+                {{ character.classPackage.witchPatron.selectedFamiliarSpell.name }}
+              </p>
+            </template>
             <template v-if="character.classPackage.clericDoctrine">
               <p>
                 {{ t('classUi.clericDoctrine') }}: {{ character.classPackage.clericDoctrine.name }}

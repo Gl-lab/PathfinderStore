@@ -419,6 +419,89 @@ public sealed class GetCharacterQueriesTests
     }
 
     [Fact]
+    public async Task GetCharacterById_WitchReturnsPatronTraditionAndSelectedFamiliarSpell()
+    {
+        await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
+        Account account = await CreateAccountAsync( dbContext, 412 );
+        AncestryRepository ancestryRepository = new AncestryRepository();
+        BackgroundRepository backgroundRepository = new BackgroundRepository();
+        CharacterClassRepository characterClassRepository = new CharacterClassRepository();
+        WitchPatronRepository patronRepository = new WitchPatronRepository();
+        CharacterBuilder builder = new CharacterBuilder(
+            ancestryRepository,
+            backgroundRepository: backgroundRepository,
+            characterClassRepository: characterClassRepository,
+            skillRepository: new SkillRepository(),
+            witchPatronRepository: patronRepository );
+        builder.CreateCharacter( account.Id, "Feiya", AncestryType.Human );
+        builder.SetAncestryPackage( "human.skilled", "human.cooperative_nature" );
+        builder.ApplyFreeBoosts( [ AbilityType.Intelligence, AbilityType.Wisdom ] );
+        builder.SetBackground(
+            "background.acrobat",
+            AbilityType.Dexterity,
+            AbilityType.Charisma );
+        builder.SetClass(
+            "class.witch",
+            AbilityType.Intelligence,
+            witchPatronId: "witch_patron.wilding_steward",
+            witchPatronFamiliarSpellId: "spell.summon_animal" );
+        DraftCharacter draftCharacter = builder.Build();
+        dbContext.Character.Add( draftCharacter );
+        await dbContext.SaveChangesAsync();
+        dbContext.ChangeTracker.Clear();
+        CharacterConvertor converter = new CharacterConvertor(
+            ancestryRepository: ancestryRepository,
+            backgroundRepository: backgroundRepository,
+            characterClassRepository: characterClassRepository,
+            skillRepository: new SkillRepository(),
+            witchPatronRepository: patronRepository );
+        GetCharacterByIdHandler handler = new GetCharacterByIdHandler(
+            new CharacterRepository( dbContext ),
+            converter );
+
+        CharacterDto result = await handler.Handle(
+            new GetCharacterByIdCommand( account.UserId, draftCharacter.Id ),
+            CancellationToken.None );
+
+        Assert.NotNull( result.ClassPackage?.WitchPatron );
+        Assert.Equal( SpellTradition.Primal, result.ClassPackage.SpellTradition );
+        Assert.Equal( "witch_patron.wilding_steward", result.ClassPackage.WitchPatron.Id );
+        Assert.Equal( "spell.summon_animal", result.ClassPackage.WitchPatron.SelectedFamiliarSpell.Id );
+    }
+
+    [Fact]
+    public async Task GetCharacterById_LegacyWitchWithoutPatron_ReturnsNullablePackage()
+    {
+        await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
+        Account account = await CreateAccountAsync( dbContext, 413 );
+        DraftCharacter draftCharacter = DraftCharacter.Create(
+            account.Id,
+            "Legacy Feiya",
+            AncestryType.Human );
+        dbContext.Character.Add( draftCharacter );
+        dbContext.Entry( draftCharacter )
+            .Property( character => character.SelectedClassId )
+            .CurrentValue = "class.witch";
+        dbContext.Entry( draftCharacter )
+            .Property( character => character.SelectedClassKeyAbility )
+            .CurrentValue = AbilityType.Intelligence;
+        await dbContext.SaveChangesAsync();
+        dbContext.ChangeTracker.Clear();
+        GetCharacterByIdHandler handler = CreateByIdHandler(
+            dbContext,
+            characterClassRepository: new CharacterClassRepository() );
+
+        CharacterDto result = await handler.Handle(
+            new GetCharacterByIdCommand( account.UserId, draftCharacter.Id ),
+            CancellationToken.None );
+
+        Assert.NotNull( result.ClassPackage );
+        Assert.Equal( "class.witch", result.ClassPackage.ClassId );
+        Assert.Null( result.ClassPackage.WitchPatron );
+        Assert.Null( result.ClassPackage.SpellTradition );
+    }
+
+    [Fact]
     public async Task GetCharacterById_LegacyClericWithoutDoctrine_ReturnsNullableDoctrinePackage()
     {
         await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();

@@ -16,6 +16,7 @@ using Pathfinder.CharacterManagement.Application.UseCases.Skills;
 using Pathfinder.CharacterManagement.Application.UseCases.HuntersEdges;
 using Pathfinder.CharacterManagement.Application.UseCases.DruidicOrders;
 using Pathfinder.CharacterManagement.Application.UseCases.BardMuses;
+using Pathfinder.CharacterManagement.Application.UseCases.WitchPatrons;
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.Web.Controllers;
 
@@ -170,6 +171,30 @@ public sealed class ControllerTests
         OkObjectResult okResult = Assert.IsType<OkObjectResult>( actionResult.Result );
         IReadOnlyCollection<BardMuseDto> payload =
             Assert.IsAssignableFrom<IReadOnlyCollection<BardMuseDto>>( okResult.Value );
+        Assert.Same( expected, payload );
+    }
+
+    [Fact]
+    public async Task ClassesController_GetWitchPatrons_ReturnsOkWithPayload()
+    {
+        IReadOnlyCollection<WitchPatronDto> expected =
+        [
+            new WitchPatronDto
+            {
+                Id = "witch_patron.resentment",
+                Name = "The Resentment",
+            },
+        ];
+        TestMediator mediator = new TestMediator();
+        mediator.Register( new GetWitchPatronsCommand(), expected );
+        ClassesController controller = new ClassesController( mediator );
+
+        ActionResult<IReadOnlyCollection<WitchPatronDto>> actionResult =
+            await controller.GetWitchPatrons();
+
+        OkObjectResult okResult = Assert.IsType<OkObjectResult>( actionResult.Result );
+        IReadOnlyCollection<WitchPatronDto> payload =
+            Assert.IsAssignableFrom<IReadOnlyCollection<WitchPatronDto>>( okResult.Value );
         Assert.Same( expected, payload );
     }
 

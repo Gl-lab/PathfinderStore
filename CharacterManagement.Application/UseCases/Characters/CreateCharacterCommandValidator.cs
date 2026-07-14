@@ -92,6 +92,18 @@ public sealed class CreateCharacterCommandValidator : AbstractValidator<CreateCh
                     () => RuleFor( command => command.Character.BardMuseId ).Empty() );
 
                 When(
+                    command => command.Character.ClassId == "class.witch",
+                    () => RuleFor( command => command.Character.WitchPatronId ).NotEmpty() );
+
+                When(
+                    command => command.Character.ClassId != "class.witch",
+                    () =>
+                    {
+                        RuleFor( command => command.Character.WitchPatronId ).Empty();
+                        RuleFor( command => command.Character.WitchPatronFamiliarSpellId ).Empty();
+                    } );
+
+                When(
                     command => command.Character.ClassId == "class.cleric",
                     () =>
                     {

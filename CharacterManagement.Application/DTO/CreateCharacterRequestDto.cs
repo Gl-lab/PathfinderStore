@@ -22,6 +22,8 @@ public class CreateCharacterRequestDto
     public string? HuntersEdgeId { get; set; }
     public string? DruidicOrderId { get; set; }
     public string? BardMuseId { get; set; }
+    public string? WitchPatronId { get; set; }
+    public string? WitchPatronFamiliarSpellId { get; set; }
     public string? ClericDoctrineId { get; set; }
     public string? DeityId { get; set; }
     public DivineFont? DivineFont { get; set; }
