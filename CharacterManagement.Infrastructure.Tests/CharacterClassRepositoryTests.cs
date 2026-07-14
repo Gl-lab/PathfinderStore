@@ -85,6 +85,29 @@ public sealed class CharacterClassRepositoryTests
     }
 
     [Fact]
+    public void GetCharacterClass_WizardHasResolvedChoicesAndDeferredMechanics()
+    {
+        CharacterClassRepository repository = new CharacterClassRepository();
+
+        CharacterClass wizard = repository.GetCharacterClass( "class.wizard" );
+
+        Assert.DoesNotContain(
+            CharacterClassDependencyType.ClassChoiceCatalog,
+            wizard.DeferredDependencies );
+        Assert.Contains(
+            CharacterClassDependencyType.SpellPreparationRules,
+            wizard.DeferredDependencies );
+        Assert.Contains(
+            CharacterClassDependencyType.ItemCatalog,
+            wizard.DeferredDependencies );
+        Assert.All(
+            wizard.Rules.Where( rule => rule.Kind == CharacterClassRuleKind.MandatoryChoice ),
+            rule => Assert.DoesNotContain(
+                CharacterClassDependencyType.ClassChoiceCatalog,
+                rule.DeferredDependencies ) );
+    }
+
+    [Fact]
     public void GetCharacterClass_UnknownId_Throws()
     {
         CharacterClassRepository repository = new CharacterClassRepository();

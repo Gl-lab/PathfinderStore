@@ -18,6 +18,7 @@ using Pathfinder.CharacterManagement.Application.UseCases.DruidicOrders;
 using Pathfinder.CharacterManagement.Application.UseCases.BardMuses;
 using Pathfinder.CharacterManagement.Application.UseCases.WitchPatrons;
 using Pathfinder.CharacterManagement.Application.UseCases.ArcaneSchools;
+using Pathfinder.CharacterManagement.Application.UseCases.ArcaneTheses;
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.Web.Controllers;
 
@@ -220,6 +221,30 @@ public sealed class ControllerTests
         OkObjectResult okResult = Assert.IsType<OkObjectResult>( actionResult.Result );
         IReadOnlyCollection<ArcaneSchoolDto> payload =
             Assert.IsAssignableFrom<IReadOnlyCollection<ArcaneSchoolDto>>( okResult.Value );
+        Assert.Same( expected, payload );
+    }
+
+    [Fact]
+    public async Task ClassesController_GetArcaneTheses_ReturnsOkWithPayload()
+    {
+        IReadOnlyCollection<ArcaneThesisDto> expected =
+        [
+            new ArcaneThesisDto
+            {
+                Id = "arcane_thesis.spell_substitution",
+                Name = "Spell Substitution",
+            },
+        ];
+        TestMediator mediator = new TestMediator();
+        mediator.Register( new GetArcaneThesesCommand(), expected );
+        ClassesController controller = new ClassesController( mediator );
+
+        ActionResult<IReadOnlyCollection<ArcaneThesisDto>> actionResult =
+            await controller.GetArcaneTheses();
+
+        OkObjectResult okResult = Assert.IsType<OkObjectResult>( actionResult.Result );
+        IReadOnlyCollection<ArcaneThesisDto> payload =
+            Assert.IsAssignableFrom<IReadOnlyCollection<ArcaneThesisDto>>( okResult.Value );
         Assert.Same( expected, payload );
     }
 

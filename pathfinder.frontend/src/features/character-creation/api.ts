@@ -236,6 +236,31 @@ export interface ArcaneSchool {
   }[]
 }
 
+export type ArcaneThesisEffectKind =
+  | 'FirstLevelSpellshapeFeatChoice'
+  | 'DailySpellshapeFeatChoice'
+  | 'FamiliarFeatGrant'
+  | 'FamiliarAbilityProgression'
+  | 'DrainFamiliarReplacement'
+  | 'SpellSlotBlending'
+  | 'PreparedSpellSubstitution'
+  | 'MakeshiftStaff'
+  | 'StaffChargePreparation'
+  | 'StaffChargeProgression'
+
+export interface ArcaneThesis {
+  id: string
+  name: string
+  effects: {
+    id: string
+    kind: ArcaneThesisEffectKind
+    name: string
+    summary: string
+    milestoneLevels: number[]
+    deferredDependencies: string[]
+  }[]
+}
+
 export interface RogueTrainingChoice {
   grantId: string
   selectedSkillId: string | null
@@ -299,6 +324,7 @@ export interface CreateCharacterRequest {
   witchPatronId: string | null
   witchPatronFamiliarSpellId: string | null
   arcaneSchoolId: string | null
+  arcaneThesisId: string | null
   clericDoctrineId: string | null
   deityId: string | null
   divineFont: DivineFont | null
@@ -343,6 +369,10 @@ export async function getWitchPatrons(): Promise<WitchPatron[]> {
 
 export async function getArcaneSchools(): Promise<ArcaneSchool[]> {
   return (await http.get<ArcaneSchool[]>('/api/classes/wizard/arcane-schools')).data
+}
+
+export async function getArcaneTheses(): Promise<ArcaneThesis[]> {
+  return (await http.get<ArcaneThesis[]>('/api/classes/wizard/arcane-theses')).data
 }
 
 export async function getClericDoctrines(): Promise<ClericDoctrine[]> {

@@ -15,12 +15,12 @@ Vikunja остаётся источником истины по карточка
 - `Background`, два boosts и фактический skill/Lore training;
 - `Class`, key ability boost и четыре финальных свободных boosts;
 - типизированные стартовые proficiencies;
-- обязательные `Rogue's Racket`, `Cleric Doctrine` и `Cleric Deity`;
+- обязательные class choices всех восьми классов Player Core baseline;
 - divine skill replacement, favored weapon proficiency, Divine Font и sanctification;
 - сохранение через EF, API/read-модели, список, карточку и удаление во frontend;
 - вычисляемые ability modifiers и maximum HP первого уровня.
 
-Стартовый pipeline характеристик завершён. Deity domains и granted spells пока возвращаются только как typed descriptors. Background skill feat, общие class skills, остальные обязательные class choices, spells, equipment и большинство derived statistics ещё не применяются.
+Стартовый pipeline характеристик, class skills и обязательных классовых выборов завершён. Deity domains, class-choice benefits и granted spells пока возвращаются только как typed descriptors. Background skill feat, class/ancestry feats, spells, equipment и большинство derived statistics ещё не применяются.
 
 ## Завершённый фундамент
 
@@ -137,6 +137,8 @@ Vikunja остаётся источником истины по карточка
 
 #### 1.7. Wizard Arcane Thesis
 
+**Статус:** завершено 14 июля 2026 года; см. [план и результат реализации](wizard_arcane_thesis_implementation.md).
+
 **Проблема.** Обязательная Arcane Thesis отсутствует, а её разнородные эффекты нельзя смешивать с School curriculum в одной задаче.
 
 **Ожидаемый результат.** Wizard независимо выбирает Thesis; supported effects типизированы, остальные имеют явные deferred dependencies.
@@ -148,7 +150,7 @@ Vikunja остаётся источником истины по карточка
 - persistence, API, wizard, review/details и tests покрывают выбор;
 - spell/familiar/item mechanics не имитируются частично.
 
-Приоритет считается завершённым, когда новый персонаж каждого из восьми классов имеет все обязательные классовые выборы первого уровня. Feats и spell loadout остаются явно незавершёнными областями, а не скрытой частью этого критерия.
+**Статус приоритета 1:** завершён 14 июля 2026 года. Новый персонаж каждого из восьми классов имеет все обязательные классовые выборы первого уровня. Feats и spell loadout остаются явно незавершёнными областями, а не скрытой частью этого критерия.
 
 ### Приоритет 2 — полноценный Cleric spell flow первого уровня
 

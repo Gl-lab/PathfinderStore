@@ -68,7 +68,8 @@ public sealed class CreateCharacterHandler : IRequestHandler<CreateCharacterComm
             request.Character.BardMuseId,
             request.Character.WitchPatronId,
             request.Character.WitchPatronFamiliarSpellId,
-            request.Character.ArcaneSchoolId );
+            request.Character.ArcaneSchoolId,
+            request.Character.ArcaneThesisId );
         _characterBuilder.SetFinalFreeBoosts( finalFreeBoosts );
         _characterBuilder.SetClassTraining(
             request.Character.ClassId,

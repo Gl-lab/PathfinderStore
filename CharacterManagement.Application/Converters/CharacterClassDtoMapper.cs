@@ -83,7 +83,8 @@ public static class CharacterClassDtoMapper
         ClericDoctrine? clericDoctrine = null,
         Deity? deity = null,
         WitchPatron? witchPatron = null,
-        ArcaneSchool? arcaneSchool = null )
+        ArcaneSchool? arcaneSchool = null,
+        ArcaneThesis? arcaneThesis = null )
     {
         ArgumentNullException.ThrowIfNull( character );
         ArgumentNullException.ThrowIfNull( characterClass );
@@ -112,6 +113,7 @@ public static class CharacterClassDtoMapper
                     witchPatron,
                     character.SelectedWitchPatronFamiliarSpellId! ),
             ArcaneSchool = arcaneSchool is null ? null : ArcaneSchoolDtoMapper.MapPackage( arcaneSchool ),
+            ArcaneThesis = arcaneThesis is null ? null : ArcaneThesisDtoMapper.MapPackage( arcaneThesis ),
             ClericDoctrine = clericDoctrine is null
                 ? null
                 : ClericDoctrineDtoMapper.MapPackage( clericDoctrine ),

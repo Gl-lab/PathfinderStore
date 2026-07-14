@@ -29,6 +29,7 @@ import {
   getBardMuses,
   getWitchPatrons,
   getArcaneSchools,
+  getArcaneTheses,
   getHuntersEdges,
   getClericDoctrines,
   getDeities,
@@ -48,6 +49,7 @@ import {
   type BardMuse,
   type WitchPatron,
   type ArcaneSchool,
+  type ArcaneThesis,
   type HuntersEdge,
   type RogueRacket,
   type RogueTrainingChoice,
@@ -107,6 +109,10 @@ import {
   groupArcaneSchoolCurriculum,
   isArcaneSchoolChoiceComplete,
 } from '@/features/character-creation/arcaneSchool'
+import {
+  formatArcaneThesisMilestones,
+  isArcaneThesisChoiceComplete,
+} from '@/features/character-creation/arcaneThesis'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -120,6 +126,7 @@ const druidicOrders = ref<DruidicOrder[]>([])
 const bardMuses = ref<BardMuse[]>([])
 const witchPatrons = ref<WitchPatron[]>([])
 const arcaneSchools = ref<ArcaneSchool[]>([])
+const arcaneTheses = ref<ArcaneThesis[]>([])
 const clericDoctrines = ref<ClericDoctrine[]>([])
 const deities = ref<Deity[]>([])
 const skills = ref<Skill[]>([])
@@ -148,6 +155,7 @@ const form = ref({
   witchPatronId: null as string | null,
   witchPatronFamiliarSpellId: null as string | null,
   arcaneSchoolId: null as string | null,
+  arcaneThesisId: null as string | null,
   clericDoctrineId: null as string | null,
   deityId: null as string | null,
   divineFont: null as DivineFont | null,
@@ -206,6 +214,9 @@ const selectedArcaneSchool = computed(
 )
 const arcaneSchoolCurriculum = computed(() =>
   groupArcaneSchoolCurriculum(selectedArcaneSchool.value),
+)
+const selectedArcaneThesis = computed(
+  () => arcaneTheses.value.find((item) => item.id === form.value.arcaneThesisId) ?? null,
 )
 const effectiveCharacterClass = computed(() =>
   withWitchPatron(
@@ -323,6 +334,7 @@ const canContinue = computed(() => {
         form.value.witchPatronFamiliarSpellId,
       ) &&
       isArcaneSchoolChoiceComplete(selectedCharacterClass.value, selectedArcaneSchool.value) &&
+      isArcaneThesisChoiceComplete(selectedCharacterClass.value, selectedArcaneThesis.value) &&
       isDeityChoiceComplete(
         selectedCharacterClass.value,
         selectedDeity.value,
@@ -411,6 +423,7 @@ function selectCharacterClass(classId: string | null): void {
   form.value.witchPatronId = null
   form.value.witchPatronFamiliarSpellId = null
   form.value.arcaneSchoolId = null
+  form.value.arcaneThesisId = null
   form.value.clericDoctrineId = null
   form.value.deityId = null
   form.value.divineFont = null
@@ -548,6 +561,7 @@ async function submit(): Promise<void> {
       form.value.witchPatronFamiliarSpellId,
     ) ||
     !isArcaneSchoolChoiceComplete(selectedCharacterClass.value, selectedArcaneSchool.value) ||
+    !isArcaneThesisChoiceComplete(selectedCharacterClass.value, selectedArcaneThesis.value) ||
     !isClericDoctrineChoiceComplete(selectedCharacterClass.value, selectedClericDoctrine.value) ||
     !isDeityChoiceComplete(
       selectedCharacterClass.value,
@@ -597,6 +611,7 @@ async function submit(): Promise<void> {
       witchPatronId: form.value.witchPatronId,
       witchPatronFamiliarSpellId: form.value.witchPatronFamiliarSpellId,
       arcaneSchoolId: form.value.arcaneSchoolId,
+      arcaneThesisId: form.value.arcaneThesisId,
       clericDoctrineId: form.value.clericDoctrineId,
       deityId: form.value.deityId,
       divineFont: form.value.divineFont,
@@ -628,7 +643,7 @@ async function loadCatalogs(): Promise<void> {
   isLoadingCatalogs.value = true
   errorMessages.value = []
   try {
-    const [ancestryCatalog, backgroundCatalog, classCatalog, racketCatalog, huntersEdgeCatalog, druidicOrderCatalog, bardMuseCatalog, witchPatronCatalog, arcaneSchoolCatalog, doctrineCatalog, deityCatalog, skillCatalog] = await Promise.all([
+    const [ancestryCatalog, backgroundCatalog, classCatalog, racketCatalog, huntersEdgeCatalog, druidicOrderCatalog, bardMuseCatalog, witchPatronCatalog, arcaneSchoolCatalog, arcaneThesisCatalog, doctrineCatalog, deityCatalog, skillCatalog] = await Promise.all([
       getAncestries(),
       getBackgrounds(),
       getCharacterClasses(),
@@ -638,6 +653,7 @@ async function loadCatalogs(): Promise<void> {
       getBardMuses(),
       getWitchPatrons(),
       getArcaneSchools(),
+      getArcaneTheses(),
       getClericDoctrines(),
       getDeities(),
       getSkills(),
@@ -651,6 +667,7 @@ async function loadCatalogs(): Promise<void> {
     bardMuses.value = bardMuseCatalog
     witchPatrons.value = witchPatronCatalog
     arcaneSchools.value = arcaneSchoolCatalog
+    arcaneTheses.value = arcaneThesisCatalog
     clericDoctrines.value = doctrineCatalog
     deities.value = deityCatalog
     skills.value = skillCatalog
@@ -915,6 +932,28 @@ watch(
             >
               {{ t(`classUi.arcaneSchoolBenefitKinds.${benefit.kind}`) }}:
               {{ benefit.name }} — {{ benefit.summary }}
+            </v-alert>
+            <v-select
+              v-if="selectedCharacterClass.id === 'class.wizard'"
+              v-model="form.arcaneThesisId"
+              :items="arcaneTheses"
+              item-title="name"
+              item-value="id"
+              :label="t('classUi.arcaneThesis')"
+            />
+            <v-alert
+              v-for="effect in selectedArcaneThesis?.effects ?? []"
+              :key="effect.id"
+              type="info"
+              variant="tonal"
+            >
+              {{ t(`classUi.arcaneThesisEffectKinds.${effect.kind}`) }}:
+              {{ effect.name }} — {{ effect.summary }}
+              {{
+                t('classUi.arcaneThesisMilestones', {
+                  levels: formatArcaneThesisMilestones(effect.milestoneLevels),
+                })
+              }}
             </v-alert>
             <v-select
               v-if="selectedCharacterClass.id === 'class.druid'"
@@ -1218,6 +1257,13 @@ watch(
               :key="`review-school-${benefit.id}`"
               :title="t(`classUi.arcaneSchoolBenefitKinds.${benefit.kind}`)"
               :subtitle="`${benefit.name} — ${benefit.summary}`" /><v-list-item
+              v-if="selectedArcaneThesis"
+              :title="t('classUi.arcaneThesis')"
+              :subtitle="selectedArcaneThesis.name" /><v-list-item
+              v-for="effect in selectedArcaneThesis?.effects ?? []"
+              :key="`review-thesis-${effect.id}`"
+              :title="t(`classUi.arcaneThesisEffectKinds.${effect.kind}`)"
+              :subtitle="`${effect.name} — ${effect.summary} (${formatArcaneThesisMilestones(effect.milestoneLevels)})`" /><v-list-item
               v-for="benefit in selectedBardMuse?.benefits ?? []"
               :key="`review-${benefit.id}`"
               :title="t(`classUi.bardMuseBenefitKinds.${benefit.kind}`)"

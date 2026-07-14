@@ -112,6 +112,14 @@ public sealed class CreateCharacterCommandValidator : AbstractValidator<CreateCh
                     () => RuleFor( command => command.Character.ArcaneSchoolId ).Empty() );
 
                 When(
+                    command => command.Character.ClassId == "class.wizard",
+                    () => RuleFor( command => command.Character.ArcaneThesisId ).NotEmpty() );
+
+                When(
+                    command => command.Character.ClassId != "class.wizard",
+                    () => RuleFor( command => command.Character.ArcaneThesisId ).Empty() );
+
+                When(
                     command => command.Character.ClassId == "class.cleric",
                     () =>
                     {

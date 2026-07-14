@@ -275,6 +275,19 @@ onMounted(load)
                 {{ benefit.name }} — {{ benefit.summary }}
               </p>
             </template>
+            <template v-if="character.classPackage.arcaneThesis">
+              <p>
+                {{ t('classUi.arcaneThesis') }}: {{ character.classPackage.arcaneThesis.name }}
+              </p>
+              <p
+                v-for="effect in character.classPackage.arcaneThesis.effects"
+                :key="effect.id"
+              >
+                {{ t(`classUi.arcaneThesisEffectKinds.${effect.kind}`) }}:
+                {{ effect.name }} — {{ effect.summary }}
+                {{ t('classUi.arcaneThesisMilestones', { levels: effect.milestoneLevels.join(', ') }) }}
+              </p>
+            </template>
             <template v-if="character.classPackage.clericDoctrine">
               <p>
                 {{ t('classUi.clericDoctrine') }}: {{ character.classPackage.clericDoctrine.name }}

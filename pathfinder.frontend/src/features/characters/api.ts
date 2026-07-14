@@ -139,6 +139,18 @@ export interface CharacterClassPackage {
       deferredDependencies: string[]
     }[]
   } | null
+  arcaneThesis: {
+    id: string
+    name: string
+    effects: {
+      id: string
+      kind: string
+      name: string
+      summary: string
+      milestoneLevels: number[]
+      deferredDependencies: string[]
+    }[]
+  } | null
   clericDoctrine: {
     id: string
     name: string

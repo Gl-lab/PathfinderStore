@@ -510,12 +510,14 @@ public sealed class GetCharacterQueriesTests
         BackgroundRepository backgroundRepository = new BackgroundRepository();
         CharacterClassRepository characterClassRepository = new CharacterClassRepository();
         ArcaneSchoolRepository arcaneSchoolRepository = new ArcaneSchoolRepository();
+        ArcaneThesisRepository arcaneThesisRepository = new ArcaneThesisRepository();
         CharacterBuilder builder = new CharacterBuilder(
             ancestryRepository,
             backgroundRepository: backgroundRepository,
             characterClassRepository: characterClassRepository,
             skillRepository: new SkillRepository(),
-            arcaneSchoolRepository: arcaneSchoolRepository );
+            arcaneSchoolRepository: arcaneSchoolRepository,
+            arcaneThesisRepository: arcaneThesisRepository );
         builder.CreateCharacter( account.Id, "Ezren", AncestryType.Human );
         builder.SetAncestryPackage( "human.skilled", "human.cooperative_nature" );
         builder.ApplyFreeBoosts( [ AbilityType.Intelligence, AbilityType.Wisdom ] );
@@ -526,7 +528,8 @@ public sealed class GetCharacterQueriesTests
         builder.SetClass(
             "class.wizard",
             AbilityType.Intelligence,
-            arcaneSchoolId: "arcane_school.mentalism" );
+            arcaneSchoolId: "arcane_school.mentalism",
+            arcaneThesisId: "arcane_thesis.spell_substitution" );
         DraftCharacter draftCharacter = builder.Build();
         dbContext.Character.Add( draftCharacter );
         await dbContext.SaveChangesAsync();
@@ -536,7 +539,8 @@ public sealed class GetCharacterQueriesTests
             backgroundRepository: backgroundRepository,
             characterClassRepository: characterClassRepository,
             skillRepository: new SkillRepository(),
-            arcaneSchoolRepository: arcaneSchoolRepository );
+            arcaneSchoolRepository: arcaneSchoolRepository,
+            arcaneThesisRepository: arcaneThesisRepository );
         GetCharacterByIdHandler handler = new GetCharacterByIdHandler(
             new CharacterRepository( dbContext ),
             converter );
@@ -549,6 +553,10 @@ public sealed class GetCharacterQueriesTests
         Assert.Equal( SpellTradition.Arcane, result.ClassPackage.SpellTradition );
         Assert.Equal( "arcane_school.mentalism", result.ClassPackage.ArcaneSchool.Id );
         Assert.NotEmpty( result.ClassPackage.ArcaneSchool.CurriculumSpells );
+        Assert.NotNull( result.ClassPackage.ArcaneThesis );
+        Assert.Equal(
+            "arcane_thesis.spell_substitution",
+            result.ClassPackage.ArcaneThesis.Id );
     }
 
     [Fact]
@@ -580,7 +588,46 @@ public sealed class GetCharacterQueriesTests
         Assert.NotNull( result.ClassPackage );
         Assert.Equal( "class.wizard", result.ClassPackage.ClassId );
         Assert.Null( result.ClassPackage.ArcaneSchool );
+        Assert.Null( result.ClassPackage.ArcaneThesis );
         Assert.Equal( SpellTradition.Arcane, result.ClassPackage.SpellTradition );
+    }
+
+    [Fact]
+    public async Task GetCharacterById_LegacyWizardWithSchoolWithoutThesis_ReturnsPartialPackage()
+    {
+        await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
+        Account account = await CreateAccountAsync( dbContext, 416 );
+        DraftCharacter draftCharacter = DraftCharacter.Create(
+            account.Id,
+            "Pre-Thesis Ezren",
+            AncestryType.Human );
+        dbContext.Character.Add( draftCharacter );
+        dbContext.Entry( draftCharacter )
+            .Property( character => character.SelectedClassId )
+            .CurrentValue = "class.wizard";
+        dbContext.Entry( draftCharacter )
+            .Property( character => character.SelectedClassKeyAbility )
+            .CurrentValue = AbilityType.Intelligence;
+        dbContext.Entry( draftCharacter )
+            .Property( character => character.SelectedArcaneSchoolId )
+            .CurrentValue = "arcane_school.mentalism";
+        await dbContext.SaveChangesAsync();
+        dbContext.ChangeTracker.Clear();
+        CharacterConvertor converter = new CharacterConvertor(
+            characterClassRepository: new CharacterClassRepository(),
+            skillRepository: new SkillRepository(),
+            arcaneSchoolRepository: new ArcaneSchoolRepository() );
+        GetCharacterByIdHandler handler = new GetCharacterByIdHandler(
+            new CharacterRepository( dbContext ),
+            converter );
+
+        CharacterDto result = await handler.Handle(
+            new GetCharacterByIdCommand( account.UserId, draftCharacter.Id ),
+            CancellationToken.None );
+
+        Assert.NotNull( result.ClassPackage?.ArcaneSchool );
+        Assert.Equal( "arcane_school.mentalism", result.ClassPackage.ArcaneSchool.Id );
+        Assert.Null( result.ClassPackage.ArcaneThesis );
     }
 
     [Fact]

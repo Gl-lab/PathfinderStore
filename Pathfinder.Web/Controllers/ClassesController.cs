@@ -13,6 +13,7 @@ using Pathfinder.CharacterManagement.Application.UseCases.DruidicOrders;
 using Pathfinder.CharacterManagement.Application.UseCases.BardMuses;
 using Pathfinder.CharacterManagement.Application.UseCases.WitchPatrons;
 using Pathfinder.CharacterManagement.Application.UseCases.ArcaneSchools;
+using Pathfinder.CharacterManagement.Application.UseCases.ArcaneTheses;
 using Pathfinder.Web.Controllers.Base;
 
 namespace Pathfinder.Web.Controllers;
@@ -93,6 +94,16 @@ public sealed class ClassesController : AuthorizedController
         IReadOnlyCollection<ArcaneSchoolDto> schools = await _mediator.Send(
             new GetArcaneSchoolsCommand() );
         return Ok( schools );
+    }
+
+    [HttpGet( "wizard/arcane-theses" )]
+    [ProducesResponseType( typeof( IReadOnlyCollection<ArcaneThesisDto> ), StatusCodes.Status200OK )]
+    [ProducesResponseType( StatusCodes.Status401Unauthorized )]
+    public async Task<ActionResult<IReadOnlyCollection<ArcaneThesisDto>>> GetArcaneTheses()
+    {
+        IReadOnlyCollection<ArcaneThesisDto> theses = await _mediator.Send(
+            new GetArcaneThesesCommand() );
+        return Ok( theses );
     }
 
     [HttpGet( "cleric/doctrines" )]

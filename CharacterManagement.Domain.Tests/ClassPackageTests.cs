@@ -67,7 +67,8 @@ public sealed class ClassPackageTests
         character.SetClassPackage(
             wizard,
             AbilityType.Intelligence,
-            arcaneSchool: CreateArcaneSchool() );
+            arcaneSchool: CreateArcaneSchool(),
+            arcaneThesis: CreateArcaneThesis() );
 
         Assert.Equal( 16, character.AbilityScores.Intelligence.Value );
     }
@@ -86,7 +87,8 @@ public sealed class ClassPackageTests
         character.SetClassPackage(
             wizard,
             AbilityType.Intelligence,
-            arcaneSchool: CreateArcaneSchool() );
+            arcaneSchool: CreateArcaneSchool(),
+            arcaneThesis: CreateArcaneThesis() );
 
         character.SetClassPackage(
             bard,
@@ -521,13 +523,63 @@ public sealed class ClassPackageTests
         character.SetClassPackage(
             wizard,
             AbilityType.Intelligence,
-            arcaneSchool: arcaneSchool );
+            arcaneSchool: arcaneSchool,
+            arcaneThesis: CreateArcaneThesis() );
 
         Assert.Equal( arcaneSchool.Id, character.SelectedArcaneSchoolId );
 
         character.SetClassPackage( fighter, AbilityType.Strength );
 
         Assert.Null( character.SelectedArcaneSchoolId );
+    }
+
+    [Fact]
+    public void SetClassPackage_WizardRequiresThesisAndInvalidCallIsAtomic()
+    {
+        DraftCharacter character = CreateCharacter();
+        CharacterClass fighter = CreateClass( "class.fighter", AbilityType.Strength );
+        CharacterClass wizard = CreateClass( "class.wizard", AbilityType.Intelligence );
+        character.SetClassPackage( fighter, AbilityType.Strength );
+
+        Assert.Throws<CharacterManagementException>( () => character.SetClassPackage(
+            wizard,
+            AbilityType.Intelligence,
+            arcaneSchool: CreateArcaneSchool() ) );
+
+        Assert.Equal( fighter.Id, character.SelectedClassId );
+        Assert.Null( character.SelectedArcaneThesisId );
+    }
+
+    [Fact]
+    public void SetClassPackage_WizardStoresThesisAndChangingClassClearsIt()
+    {
+        DraftCharacter character = CreateCharacter();
+        CharacterClass wizard = CreateClass( "class.wizard", AbilityType.Intelligence );
+        CharacterClass fighter = CreateClass( "class.fighter", AbilityType.Strength );
+        ArcaneThesis arcaneThesis = CreateArcaneThesis();
+        character.SetClassPackage(
+            wizard,
+            AbilityType.Intelligence,
+            arcaneSchool: CreateArcaneSchool(),
+            arcaneThesis: arcaneThesis );
+
+        Assert.Equal( arcaneThesis.Id, character.SelectedArcaneThesisId );
+
+        character.SetClassPackage( fighter, AbilityType.Strength );
+
+        Assert.Null( character.SelectedArcaneThesisId );
+    }
+
+    [Fact]
+    public void SetClassPackage_NonWizardWithThesis_Throws()
+    {
+        DraftCharacter character = CreateCharacter();
+        CharacterClass fighter = CreateClass( "class.fighter", AbilityType.Strength );
+
+        Assert.Throws<CharacterManagementException>( () => character.SetClassPackage(
+            fighter,
+            AbilityType.Strength,
+            arcaneThesis: CreateArcaneThesis() ) );
     }
 
     [Fact]
@@ -747,6 +799,23 @@ public sealed class ClassPackageTests
                     "Invisibility Cloak",
                     "Advanced school spell.",
                     [] ),
+            ] );
+    }
+
+    private static ArcaneThesis CreateArcaneThesis()
+    {
+        return new ArcaneThesis(
+            "arcane_thesis.spell_substitution",
+            "Spell Substitution",
+            SourceReference.Unknown,
+            [
+                new ArcaneThesisEffectDescriptor(
+                    "arcane_thesis.spell_substitution.effect.prepared_spell_substitution",
+                    ArcaneThesisEffectKind.PreparedSpellSubstitution,
+                    "Spell Substitution",
+                    "Substitutes a prepared spell.",
+                    [ 1 ],
+                    [ CharacterClassDependencyType.SpellPreparationRules ] ),
             ] );
     }
 

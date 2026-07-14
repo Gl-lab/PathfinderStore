@@ -33,7 +33,8 @@ public interface ICharacterBuilder
         string? bardMuseId = null,
         string? witchPatronId = null,
         string? witchPatronFamiliarSpellId = null,
-        string? arcaneSchoolId = null );
+        string? arcaneSchoolId = null,
+        string? arcaneThesisId = null );
     void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts );
     void SetClassTraining(
         string characterClassId,

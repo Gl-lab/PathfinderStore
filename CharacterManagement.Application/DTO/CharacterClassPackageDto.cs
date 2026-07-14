@@ -16,6 +16,7 @@ public sealed class CharacterClassPackageDto
     public BardMusePackageDto? BardMuse { get; set; }
     public WitchPatronPackageDto? WitchPatron { get; set; }
     public ArcaneSchoolPackageDto? ArcaneSchool { get; set; }
+    public ArcaneThesisPackageDto? ArcaneThesis { get; set; }
     public ClericDoctrinePackageDto? ClericDoctrine { get; set; }
     public DeityPackageDto? Deity { get; set; }
     public IReadOnlyList<CharacterClassRuleDto> Rules { get; set; } = [];

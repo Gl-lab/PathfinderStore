@@ -20,6 +20,7 @@ public class CharacterBuilder : ICharacterBuilder
     private readonly IBardMuseRepository? _bardMuseRepository;
     private readonly IWitchPatronRepository? _witchPatronRepository;
     private readonly IArcaneSchoolRepository? _arcaneSchoolRepository;
+    private readonly IArcaneThesisRepository? _arcaneThesisRepository;
 
     public CharacterBuilder(
         IAncestryRepository ancestryRepository,
@@ -34,7 +35,8 @@ public class CharacterBuilder : ICharacterBuilder
         IDruidicOrderRepository? druidicOrderRepository = null,
         IBardMuseRepository? bardMuseRepository = null,
         IWitchPatronRepository? witchPatronRepository = null,
-        IArcaneSchoolRepository? arcaneSchoolRepository = null )
+        IArcaneSchoolRepository? arcaneSchoolRepository = null,
+        IArcaneThesisRepository? arcaneThesisRepository = null )
     {
         _ancestryRepository = ancestryRepository;
         _ancestryChoiceAvailabilityPolicy = ancestryChoiceAvailabilityPolicy ?? new CommonAncestryChoiceAvailabilityPolicy();
@@ -49,6 +51,7 @@ public class CharacterBuilder : ICharacterBuilder
         _bardMuseRepository = bardMuseRepository;
         _witchPatronRepository = witchPatronRepository;
         _arcaneSchoolRepository = arcaneSchoolRepository;
+        _arcaneThesisRepository = arcaneThesisRepository;
     }
 
     public void CreateCharacter(
@@ -140,7 +143,8 @@ public class CharacterBuilder : ICharacterBuilder
         string? bardMuseId = null,
         string? witchPatronId = null,
         string? witchPatronFamiliarSpellId = null,
-        string? arcaneSchoolId = null )
+        string? arcaneSchoolId = null,
+        string? arcaneThesisId = null )
     {
         if ( _draftCharacter is null )
         {
@@ -306,6 +310,24 @@ public class CharacterBuilder : ICharacterBuilder
             }
         }
 
+        ArcaneThesis? arcaneThesis = null;
+        if ( !String.IsNullOrWhiteSpace( arcaneThesisId ) )
+        {
+            if ( _arcaneThesisRepository is null )
+            {
+                throw new InvalidOperationException( "Arcane Thesis repository is not configured." );
+            }
+
+            try
+            {
+                arcaneThesis = _arcaneThesisRepository.GetArcaneThesis( arcaneThesisId );
+            }
+            catch ( ArgumentException exception )
+            {
+                throw new CharacterManagementException( exception.Message );
+            }
+        }
+
         if ( ( ( characterClass.Id == "class.rogue" ) || ( deity is not null ) ) &&
              ( _skillRepository is null ) )
         {
@@ -328,7 +350,8 @@ public class CharacterBuilder : ICharacterBuilder
             bardMuse,
             witchPatron,
             witchPatronFamiliarSpellId,
-            arcaneSchool );
+            arcaneSchool,
+            arcaneThesis );
     }
 
     public void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts )

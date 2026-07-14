@@ -415,6 +415,7 @@ public sealed class CreateCharacterHandlerTests
             ClassId = "class.wizard",
             ClassKeyAbility = AbilityType.Intelligence,
             ArcaneSchoolId = "arcane_school.mentalism",
+            ArcaneThesisId = "arcane_thesis.spell_substitution",
             FinalFreeBoosts =
             [
                 AbilityType.Strength,
@@ -443,6 +444,9 @@ public sealed class CreateCharacterHandlerTests
             .AsNoTracking()
             .SingleAsync( entity => entity.AccountId == account.Id );
         Assert.Equal( "arcane_school.mentalism", savedCharacter.SelectedArcaneSchoolId );
+        Assert.Equal(
+            "arcane_thesis.spell_substitution",
+            savedCharacter.SelectedArcaneThesisId );
     }
 
     [Fact]
@@ -553,7 +557,8 @@ public sealed class CreateCharacterHandlerTests
             druidicOrderRepository: new DruidicOrderRepository(),
             bardMuseRepository: new BardMuseRepository(),
             witchPatronRepository: new WitchPatronRepository(),
-            arcaneSchoolRepository: new ArcaneSchoolRepository() );
+            arcaneSchoolRepository: new ArcaneSchoolRepository(),
+            arcaneThesisRepository: new ArcaneThesisRepository() );
 
         TestUnitOfWork unitOfWork = new TestUnitOfWork( dbContext );
 

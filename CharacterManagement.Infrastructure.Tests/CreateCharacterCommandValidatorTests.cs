@@ -388,6 +388,42 @@ public sealed class CreateCharacterCommandValidatorTests
         character.ClassId = "class.wizard";
         character.ClassKeyAbility = AbilityType.Intelligence;
         character.ArcaneSchoolId = "arcane_school.mentalism";
+        character.ArcaneThesisId = "arcane_thesis.spell_substitution";
+
+        validator.ValidateAndThrow( new CreateCharacterCommand( 42, character ) );
+    }
+
+    [Theory]
+    [InlineData( "class.wizard", null )]
+    [InlineData( "class.fighter", "arcane_thesis.spell_substitution" )]
+    public void Validate_WhenArcaneThesisDoesNotMatchClass_ThrowsValidationException(
+        string classId,
+        string? arcaneThesisId )
+    {
+        CreateCharacterCommandValidator validator = new CreateCharacterCommandValidator();
+        CreateCharacterRequestDto character = CreateValidRequest();
+        character.ClassId = classId;
+        character.ClassKeyAbility = classId == "class.wizard"
+            ? AbilityType.Intelligence
+            : AbilityType.Strength;
+        character.ArcaneSchoolId = classId == "class.wizard"
+            ? "arcane_school.mentalism"
+            : null;
+        character.ArcaneThesisId = arcaneThesisId;
+
+        Assert.Throws<ValidationException>( () => validator.ValidateAndThrow(
+            new CreateCharacterCommand( 42, character ) ) );
+    }
+
+    [Fact]
+    public void Validate_WhenWizardHasSchoolAndThesis_DoesNotThrow()
+    {
+        CreateCharacterCommandValidator validator = new CreateCharacterCommandValidator();
+        CreateCharacterRequestDto character = CreateValidRequest();
+        character.ClassId = "class.wizard";
+        character.ClassKeyAbility = AbilityType.Intelligence;
+        character.ArcaneSchoolId = "arcane_school.mentalism";
+        character.ArcaneThesisId = "arcane_thesis.spell_substitution";
 
         validator.ValidateAndThrow( new CreateCharacterCommand( 42, character ) );
     }
