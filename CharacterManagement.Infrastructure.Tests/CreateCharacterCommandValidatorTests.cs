@@ -235,6 +235,35 @@ public sealed class CreateCharacterCommandValidatorTests
             new CreateCharacterCommand( 42, character ) ) );
     }
 
+    [Theory]
+    [InlineData( "class.ranger", null )]
+    [InlineData( "class.fighter", "hunters_edge.flurry" )]
+    public void Validate_WhenHuntersEdgeDoesNotMatchClass_ThrowsValidationException(
+        string classId,
+        string? huntersEdgeId )
+    {
+        CreateCharacterCommandValidator validator = new CreateCharacterCommandValidator();
+        CreateCharacterRequestDto character = CreateValidRequest();
+        character.ClassId = classId;
+        character.ClassKeyAbility = AbilityType.Strength;
+        character.HuntersEdgeId = huntersEdgeId;
+
+        Assert.Throws<ValidationException>( () => validator.ValidateAndThrow(
+            new CreateCharacterCommand( 42, character ) ) );
+    }
+
+    [Fact]
+    public void Validate_WhenRangerHasHuntersEdge_DoesNotThrow()
+    {
+        CreateCharacterCommandValidator validator = new CreateCharacterCommandValidator();
+        CreateCharacterRequestDto character = CreateValidRequest();
+        character.ClassId = "class.ranger";
+        character.ClassKeyAbility = AbilityType.Dexterity;
+        character.HuntersEdgeId = "hunters_edge.flurry";
+
+        validator.ValidateAndThrow( new CreateCharacterCommand( 42, character ) );
+    }
+
     private static CreateCharacterRequestDto CreateValidRequest()
     {
         return new CreateCharacterRequestDto

@@ -77,6 +77,7 @@ public static class CharacterClassDtoMapper
         DraftCharacter character,
         CharacterClass characterClass,
         RogueRacket? rogueRacket = null,
+        HuntersEdge? huntersEdge = null,
         ClericDoctrine? clericDoctrine = null,
         Deity? deity = null )
     {
@@ -97,6 +98,7 @@ public static class CharacterClassDtoMapper
             AdditionalSkillCount = characterClass.AdditionalSkillCountBase +
                                    character.AbilityScores.Intelligence.Modifier,
             RogueRacket = rogueRacket is null ? null : RogueRacketDtoMapper.MapPackage( rogueRacket ),
+            HuntersEdge = huntersEdge is null ? null : HuntersEdgeDtoMapper.MapPackage( huntersEdge ),
             ClericDoctrine = clericDoctrine is null
                 ? null
                 : ClericDoctrineDtoMapper.MapPackage( clericDoctrine ),

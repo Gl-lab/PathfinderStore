@@ -15,6 +15,7 @@ public class CharacterBuilder : ICharacterBuilder
     private readonly IRogueRacketRepository? _rogueRacketRepository;
     private readonly IClericDoctrineRepository? _clericDoctrineRepository;
     private readonly IDeityRepository? _deityRepository;
+    private readonly IHuntersEdgeRepository? _huntersEdgeRepository;
 
     public CharacterBuilder(
         IAncestryRepository ancestryRepository,
@@ -24,7 +25,8 @@ public class CharacterBuilder : ICharacterBuilder
         ISkillRepository? skillRepository = null,
         IRogueRacketRepository? rogueRacketRepository = null,
         IClericDoctrineRepository? clericDoctrineRepository = null,
-        IDeityRepository? deityRepository = null )
+        IDeityRepository? deityRepository = null,
+        IHuntersEdgeRepository? huntersEdgeRepository = null )
     {
         _ancestryRepository = ancestryRepository;
         _ancestryChoiceAvailabilityPolicy = ancestryChoiceAvailabilityPolicy ?? new CommonAncestryChoiceAvailabilityPolicy();
@@ -34,6 +36,7 @@ public class CharacterBuilder : ICharacterBuilder
         _rogueRacketRepository = rogueRacketRepository;
         _clericDoctrineRepository = clericDoctrineRepository;
         _deityRepository = deityRepository;
+        _huntersEdgeRepository = huntersEdgeRepository;
     }
 
     public void CreateCharacter(
@@ -119,7 +122,8 @@ public class CharacterBuilder : ICharacterBuilder
         string? deityId = null,
         DivineFont? divineFont = null,
         DivineSanctification? divineSanctification = null,
-        string? deitySkillReplacementId = null )
+        string? deitySkillReplacementId = null,
+        string? huntersEdgeId = null )
     {
         if ( _draftCharacter is null )
         {
@@ -195,6 +199,24 @@ public class CharacterBuilder : ICharacterBuilder
             }
         }
 
+        HuntersEdge? huntersEdge = null;
+        if ( !String.IsNullOrWhiteSpace( huntersEdgeId ) )
+        {
+            if ( _huntersEdgeRepository is null )
+            {
+                throw new InvalidOperationException( "Hunter's Edge repository is not configured." );
+            }
+
+            try
+            {
+                huntersEdge = _huntersEdgeRepository.GetHuntersEdge( huntersEdgeId );
+            }
+            catch ( ArgumentException exception )
+            {
+                throw new CharacterManagementException( exception.Message );
+            }
+        }
+
         if ( ( ( characterClass.Id == "class.rogue" ) || ( deity is not null ) ) &&
              ( _skillRepository is null ) )
         {
@@ -211,7 +233,8 @@ public class CharacterBuilder : ICharacterBuilder
             deity,
             divineFont,
             divineSanctification,
-            deitySkillReplacementId );
+            deitySkillReplacementId,
+            huntersEdge );
     }
 
     public void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts )

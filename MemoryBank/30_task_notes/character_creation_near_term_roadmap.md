@@ -61,6 +61,8 @@ Vikunja остаётся источником истины по карточка
 
 #### 1.2. Ranger Hunter's Edge
 
+**Статус:** завершено 14 июля 2026 года; см. [Implementation Plan](ranger_hunters_edge_implementation.md).
+
 **Проблема.** Ranger сохраняется без обязательного Hunter's Edge.
 
 **Ожидаемый результат.** Ranger обязан выбрать Edge из проверенного Player Core catalog; stable id сохраняется и возвращается frontend, а combat effects остаются typed descriptors.

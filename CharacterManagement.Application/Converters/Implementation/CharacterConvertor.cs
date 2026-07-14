@@ -11,6 +11,7 @@ public sealed class CharacterConvertor : ICharacterConvertor
     private readonly ICharacterClassRepository? _characterClassRepository;
     private readonly ISkillRepository? _skillRepository;
     private readonly IRogueRacketRepository? _rogueRacketRepository;
+    private readonly IHuntersEdgeRepository? _huntersEdgeRepository;
     private readonly IClericDoctrineRepository? _clericDoctrineRepository;
     private readonly IDeityRepository? _deityRepository;
 
@@ -20,6 +21,7 @@ public sealed class CharacterConvertor : ICharacterConvertor
         ICharacterClassRepository? characterClassRepository = null,
         ISkillRepository? skillRepository = null,
         IRogueRacketRepository? rogueRacketRepository = null,
+        IHuntersEdgeRepository? huntersEdgeRepository = null,
         IClericDoctrineRepository? clericDoctrineRepository = null,
         IDeityRepository? deityRepository = null )
     {
@@ -28,6 +30,7 @@ public sealed class CharacterConvertor : ICharacterConvertor
         _characterClassRepository = characterClassRepository;
         _skillRepository = skillRepository;
         _rogueRacketRepository = rogueRacketRepository;
+        _huntersEdgeRepository = huntersEdgeRepository;
         _clericDoctrineRepository = clericDoctrineRepository;
         _deityRepository = deityRepository;
     }
@@ -44,6 +47,7 @@ public sealed class CharacterConvertor : ICharacterConvertor
             : _backgroundRepository?.GetBackground( draftCharacter.SelectedBackgroundId );
         CharacterClass? characterClass = ResolveCharacterClass( draftCharacter );
         RogueRacket? rogueRacket = ResolveRogueRacket( draftCharacter );
+        HuntersEdge? huntersEdge = ResolveHuntersEdge( draftCharacter );
         ClericDoctrine? clericDoctrine = ResolveClericDoctrine( draftCharacter );
         Deity? deity = ResolveDeity( draftCharacter );
 
@@ -64,6 +68,7 @@ public sealed class CharacterConvertor : ICharacterConvertor
                     draftCharacter,
                     characterClass,
                     rogueRacket,
+                    huntersEdge,
                     clericDoctrine,
                     deity ),
             FinalFreeBoosts = draftCharacter.AppliedFinalFreeBoosts.ToArray(),
@@ -109,6 +114,22 @@ public sealed class CharacterConvertor : ICharacterConvertor
         }
 
         return _rogueRacketRepository.GetRogueRacket( character.SelectedRogueRacketId );
+    }
+
+    private HuntersEdge? ResolveHuntersEdge( DraftCharacter character )
+    {
+        if ( character.SelectedHuntersEdgeId is null )
+        {
+            return null;
+        }
+
+        if ( _huntersEdgeRepository is null )
+        {
+            throw new InvalidOperationException(
+                "Hunter's Edge repository is required to map a selected Hunter's Edge." );
+        }
+
+        return _huntersEdgeRepository.GetHuntersEdge( character.SelectedHuntersEdgeId );
     }
 
     private ClericDoctrine? ResolveClericDoctrine( DraftCharacter character )

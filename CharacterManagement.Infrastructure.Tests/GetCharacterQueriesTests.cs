@@ -167,6 +167,95 @@ public sealed class GetCharacterQueriesTests
     }
 
     [Fact]
+    public async Task GetCharacterById_RangerReturnsSelectedHuntersEdge()
+    {
+        await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
+        Account account = await CreateAccountAsync( dbContext, 405 );
+        AncestryRepository ancestryRepository = new AncestryRepository();
+        BackgroundRepository backgroundRepository = new BackgroundRepository();
+        CharacterClassRepository characterClassRepository = new CharacterClassRepository();
+        HuntersEdgeRepository huntersEdgeRepository = new HuntersEdgeRepository();
+        CharacterBuilder builder = new CharacterBuilder(
+            ancestryRepository,
+            backgroundRepository: backgroundRepository,
+            characterClassRepository: characterClassRepository,
+            skillRepository: new SkillRepository(),
+            huntersEdgeRepository: huntersEdgeRepository );
+        builder.CreateCharacter( account.Id, "Harsk", AncestryType.Human );
+        builder.SetAncestryPackage( "human.skilled", "human.cooperative_nature" );
+        builder.ApplyFreeBoosts( [ AbilityType.Strength, AbilityType.Wisdom ] );
+        builder.SetBackground(
+            "background.acrobat",
+            AbilityType.Dexterity,
+            AbilityType.Charisma );
+        builder.SetClass(
+            "class.ranger",
+            AbilityType.Dexterity,
+            huntersEdgeId: "hunters_edge.precision" );
+        builder.SetFinalFreeBoosts(
+            [
+                AbilityType.Strength,
+                AbilityType.Dexterity,
+                AbilityType.Constitution,
+                AbilityType.Wisdom,
+            ] );
+        DraftCharacter draftCharacter = builder.Build();
+        dbContext.Character.Add( draftCharacter );
+        await dbContext.SaveChangesAsync();
+        dbContext.ChangeTracker.Clear();
+        CharacterConvertor converter = new CharacterConvertor(
+            ancestryRepository,
+            backgroundRepository,
+            characterClassRepository,
+            new SkillRepository(),
+            huntersEdgeRepository: huntersEdgeRepository );
+        GetCharacterByIdHandler handler = new GetCharacterByIdHandler(
+            new CharacterRepository( dbContext ),
+            converter );
+
+        CharacterDto result = await handler.Handle(
+            new GetCharacterByIdCommand( account.UserId, draftCharacter.Id ),
+            CancellationToken.None );
+
+        Assert.NotNull( result.ClassPackage?.HuntersEdge );
+        Assert.Equal( "hunters_edge.precision", result.ClassPackage.HuntersEdge.Id );
+        Assert.Equal(
+            HuntersEdgeEffectKind.PrecisionDamage,
+            Assert.Single( result.ClassPackage.HuntersEdge.Effects ).Kind );
+    }
+
+    [Fact]
+    public async Task GetCharacterById_LegacyRangerWithoutHuntersEdge_ReturnsNullablePackage()
+    {
+        await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
+        Account account = await CreateAccountAsync( dbContext, 406 );
+        DraftCharacter draftCharacter = DraftCharacter.Create(
+            account.Id,
+            "Legacy Harsk",
+            AncestryType.Human );
+        dbContext.Character.Add( draftCharacter );
+        dbContext.Entry( draftCharacter )
+            .Property( character => character.SelectedClassId )
+            .CurrentValue = "class.ranger";
+        dbContext.Entry( draftCharacter )
+            .Property( character => character.SelectedClassKeyAbility )
+            .CurrentValue = AbilityType.Dexterity;
+        await dbContext.SaveChangesAsync();
+        dbContext.ChangeTracker.Clear();
+        GetCharacterByIdHandler handler = CreateByIdHandler(
+            dbContext,
+            characterClassRepository: new CharacterClassRepository() );
+
+        CharacterDto result = await handler.Handle(
+            new GetCharacterByIdCommand( account.UserId, draftCharacter.Id ),
+            CancellationToken.None );
+
+        Assert.NotNull( result.ClassPackage );
+        Assert.Equal( "class.ranger", result.ClassPackage.ClassId );
+        Assert.Null( result.ClassPackage.HuntersEdge );
+    }
+
+    [Fact]
     public async Task GetCharacterById_LegacyClericWithoutDoctrine_ReturnsNullableDoctrinePackage()
     {
         await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();

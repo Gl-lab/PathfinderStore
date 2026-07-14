@@ -22,6 +22,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public string? SelectedClassId { get; private set; }
     public AbilityType? SelectedClassKeyAbility { get; private set; }
     public string? SelectedRogueRacketId { get; private set; }
+    public string? SelectedHuntersEdgeId { get; private set; }
     public string? SelectedClericDoctrineId { get; private set; }
     public string? SelectedDeityId { get; private set; }
     public DivineFont? SelectedDivineFont { get; private set; }
@@ -288,7 +289,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         Deity? deity = null,
         DivineFont? divineFont = null,
         DivineSanctification? divineSanctification = null,
-        string? deitySkillReplacementId = null )
+        string? deitySkillReplacementId = null,
+        HuntersEdge? huntersEdge = null )
     {
         ArgumentNullException.ThrowIfNull( characterClass );
 
@@ -311,6 +313,18 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         if ( !isRogue && ( rogueTrainingChoices?.Count > 0 ) )
         {
             throw new CharacterManagementException( "Rogue training choices can only be selected for the Rogue class." );
+        }
+
+        bool isRanger = characterClass.Id == "class.ranger";
+        if ( isRanger && ( huntersEdge is null ) )
+        {
+            throw new CharacterManagementException( "Ranger class requires a Hunter's Edge." );
+        }
+
+        if ( !isRanger && ( huntersEdge is not null ) )
+        {
+            throw new CharacterManagementException(
+                "Hunter's Edge can only be selected for the Ranger class." );
         }
 
         bool isCleric = characterClass.Id == "class.cleric";
@@ -418,6 +432,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         SelectedClassId = characterClass.Id;
         SelectedClassKeyAbility = keyAbility;
         SelectedRogueRacketId = rogueRacket?.Id;
+        SelectedHuntersEdgeId = huntersEdge?.Id;
         SelectedClericDoctrineId = clericDoctrine?.Id;
         SelectedDeityId = deity?.Id;
         SelectedDivineFont = divineFont;
@@ -700,6 +715,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         SelectedClassId = null;
         SelectedClassKeyAbility = null;
         SelectedRogueRacketId = null;
+        SelectedHuntersEdgeId = null;
         SelectedClericDoctrineId = null;
         SelectedDeityId = null;
         SelectedDivineFont = null;

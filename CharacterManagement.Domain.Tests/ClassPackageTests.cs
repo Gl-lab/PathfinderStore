@@ -293,6 +293,53 @@ public sealed class ClassPackageTests
     }
 
     [Fact]
+    public void SetClassPackage_RangerRequiresHuntersEdgeAndInvalidCallIsAtomic()
+    {
+        DraftCharacter character = CreateCharacter();
+        CharacterClass fighter = CreateClass( "class.fighter", AbilityType.Strength );
+        CharacterClass ranger = CreateClass( "class.ranger", AbilityType.Dexterity );
+        character.SetClassPackage( fighter, AbilityType.Strength );
+
+        Assert.Throws<CharacterManagementException>( () =>
+            character.SetClassPackage( ranger, AbilityType.Dexterity ) );
+
+        Assert.Equal( "class.fighter", character.SelectedClassId );
+        Assert.Null( character.SelectedHuntersEdgeId );
+    }
+
+    [Fact]
+    public void SetClassPackage_RangerStoresEdgeAndChangingClassClearsIt()
+    {
+        DraftCharacter character = CreateCharacter();
+        CharacterClass ranger = CreateClass( "class.ranger", AbilityType.Dexterity );
+        CharacterClass fighter = CreateClass( "class.fighter", AbilityType.Strength );
+        HuntersEdge huntersEdge = CreateHuntersEdge();
+        character.SetClassPackage(
+            ranger,
+            AbilityType.Dexterity,
+            huntersEdge: huntersEdge );
+
+        Assert.Equal( huntersEdge.Id, character.SelectedHuntersEdgeId );
+
+        character.SetClassPackage( fighter, AbilityType.Strength );
+
+        Assert.Null( character.SelectedHuntersEdgeId );
+    }
+
+    [Fact]
+    public void SetClassPackage_NonRangerWithHuntersEdge_Throws()
+    {
+        DraftCharacter character = CreateCharacter();
+        CharacterClass fighter = CreateClass( "class.fighter", AbilityType.Strength );
+
+        Assert.Throws<CharacterManagementException>( () =>
+            character.SetClassPackage(
+                fighter,
+                AbilityType.Strength,
+                huntersEdge: CreateHuntersEdge() ) );
+    }
+
+    [Fact]
     public void SetBackgroundPackage_AfterClassPackage_ThrowsWithoutRemovingClassEffects()
     {
         DraftCharacter character = CreateCharacter();
@@ -384,6 +431,22 @@ public sealed class ClassPackageTests
             [],
             [],
             [] );
+    }
+
+    private static HuntersEdge CreateHuntersEdge()
+    {
+        return new HuntersEdge(
+            "hunters_edge.precision",
+            "Precision",
+            SourceReference.Unknown,
+            [
+                new HuntersEdgeEffectDescriptor(
+                    "hunters_edge.precision.effect.level_1",
+                    HuntersEdgeEffectKind.PrecisionDamage,
+                    "Precision",
+                    "Additional precision damage." ),
+            ],
+            [ CharacterClassDependencyType.ClassFeatureRules ] );
     }
 
     private static ClericDoctrine CreateDoctrine( string id )

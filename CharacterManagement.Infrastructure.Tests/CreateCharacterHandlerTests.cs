@@ -232,6 +232,55 @@ public sealed class CreateCharacterHandlerTests
     }
 
     [Fact]
+    public async Task Handle_Ranger_PersistsHuntersEdge()
+    {
+        await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
+        Account account = await CreateAccountAsync( dbContext, 57, "Harsk", "Tracker" );
+        CreateCharacterHandler handler = CreateHandler( dbContext );
+        CreateCharacterRequestDto character = new CreateCharacterRequestDto
+        {
+            Name = "Harsk",
+            AncestryType = AncestryType.Human,
+            HeritageId = "human.skilled",
+            AncestryFeatId = "human.cooperative_nature",
+            FreeBoosts = [ AbilityType.Strength, AbilityType.Wisdom ],
+            BackgroundId = "background.acrobat",
+            BackgroundRestrictedBoost = AbilityType.Dexterity,
+            BackgroundFreeBoost = AbilityType.Charisma,
+            ClassId = "class.ranger",
+            ClassKeyAbility = AbilityType.Dexterity,
+            HuntersEdgeId = "hunters_edge.precision",
+            FinalFreeBoosts =
+            [
+                AbilityType.Strength,
+                AbilityType.Dexterity,
+                AbilityType.Constitution,
+                AbilityType.Wisdom,
+            ],
+            ClassSkillGrantChoices =
+            [
+                new ClassSkillGrantChoice( "class.ranger.skill.nature", null, null ),
+                new ClassSkillGrantChoice( "class.ranger.skill.survival", null, null ),
+            ],
+            AdditionalClassTrainingChoices = GeneralSkillChoices(
+                "skill.arcana",
+                "skill.crafting",
+                "skill.deception",
+                "skill.diplomacy" ),
+        };
+
+        await handler.Handle(
+            new CreateCharacterCommand( account.UserId, character ),
+            CancellationToken.None );
+        dbContext.ChangeTracker.Clear();
+
+        DraftCharacter savedCharacter = await dbContext.Character
+            .AsNoTracking()
+            .SingleAsync( entity => entity.AccountId == account.Id );
+        Assert.Equal( "hunters_edge.precision", savedCharacter.SelectedHuntersEdgeId );
+    }
+
+    [Fact]
     public async Task Handle_Cleric_PersistsDoctrineSelection()
     {
         await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
@@ -334,7 +383,9 @@ public sealed class CreateCharacterHandlerTests
             skillRepository: new SkillRepository(),
             rogueRacketRepository: new RogueRacketRepository(),
             clericDoctrineRepository: new ClericDoctrineRepository(),
-            deityRepository: new DeityRepository() );
+            deityRepository: new DeityRepository(),
+            huntersEdgeRepository: new HuntersEdgeRepository() );
+
         TestUnitOfWork unitOfWork = new TestUnitOfWork( dbContext );
 
         return new CreateCharacterHandler( accountRepository, characterBuilder, unitOfWork );

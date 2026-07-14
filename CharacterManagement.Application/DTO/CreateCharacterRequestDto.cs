@@ -19,6 +19,7 @@ public class CreateCharacterRequestDto
     public AbilityType? ClassKeyAbility { get; set; }
     public string? RogueRacketId { get; set; }
     public IReadOnlyList<RogueTrainingChoice> RogueTrainingChoices { get; set; } = [];
+    public string? HuntersEdgeId { get; set; }
     public string? ClericDoctrineId { get; set; }
     public string? DeityId { get; set; }
     public DivineFont? DivineFont { get; set; }

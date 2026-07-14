@@ -25,6 +25,7 @@ import {
   getAncestries,
   getBackgrounds,
   getCharacterClasses,
+  getHuntersEdges,
   getClericDoctrines,
   getDeities,
   getRogueRackets,
@@ -39,6 +40,7 @@ import {
   type Deity,
   type DivineFont,
   type DivineSanctification,
+  type HuntersEdge,
   type RogueRacket,
   type RogueTrainingChoice,
   type Skill,
@@ -82,6 +84,7 @@ import {
   isClassTrainingComplete,
   requiresClassGrantReplacement,
 } from '@/features/character-creation/classTraining'
+import { isHuntersEdgeChoiceComplete } from '@/features/character-creation/huntersEdge'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -90,6 +93,7 @@ const ancestries = ref<Ancestry[]>([])
 const backgrounds = ref<Background[]>([])
 const characterClasses = ref<CharacterClass[]>([])
 const rogueRackets = ref<RogueRacket[]>([])
+const huntersEdges = ref<HuntersEdge[]>([])
 const clericDoctrines = ref<ClericDoctrine[]>([])
 const deities = ref<Deity[]>([])
 const skills = ref<Skill[]>([])
@@ -112,6 +116,7 @@ const form = ref({
   classKeyAbility: null as AbilityCode | null,
   rogueRacketId: null as string | null,
   rogueTrainingChoices: [] as RogueTrainingChoice[],
+  huntersEdgeId: null as string | null,
   clericDoctrineId: null as string | null,
   deityId: null as string | null,
   divineFont: null as DivineFont | null,
@@ -149,6 +154,9 @@ const selectedCharacterClass = computed(
 )
 const selectedRogueRacket = computed(
   () => rogueRackets.value.find((item) => item.id === form.value.rogueRacketId) ?? null,
+)
+const selectedHuntersEdge = computed(
+  () => huntersEdges.value.find((item) => item.id === form.value.huntersEdgeId) ?? null,
 )
 const selectedClericDoctrine = computed(
   () => clericDoctrines.value.find((item) => item.id === form.value.clericDoctrineId) ?? null,
@@ -251,6 +259,7 @@ const canContinue = computed(() => {
   if (step.value === 6)
     return (
       isClericDoctrineChoiceComplete(selectedCharacterClass.value, selectedClericDoctrine.value) &&
+      isHuntersEdgeChoiceComplete(selectedCharacterClass.value, selectedHuntersEdge.value) &&
       isDeityChoiceComplete(
         selectedCharacterClass.value,
         selectedDeity.value,
@@ -333,6 +342,7 @@ function selectCharacterClass(classId: string | null): void {
   form.value.classKeyAbility = null
   form.value.rogueRacketId = null
   form.value.rogueTrainingChoices = []
+  form.value.huntersEdgeId = null
   form.value.clericDoctrineId = null
   form.value.deityId = null
   form.value.divineFont = null
@@ -452,6 +462,7 @@ async function submit(): Promise<void> {
     !form.value.backgroundRestrictedBoost ||
     !form.value.backgroundFreeBoost ||
     !form.value.classKeyAbility ||
+    !isHuntersEdgeChoiceComplete(selectedCharacterClass.value, selectedHuntersEdge.value) ||
     !isClericDoctrineChoiceComplete(selectedCharacterClass.value, selectedClericDoctrine.value) ||
     !isDeityChoiceComplete(
       selectedCharacterClass.value,
@@ -495,6 +506,7 @@ async function submit(): Promise<void> {
       classKeyAbility: form.value.classKeyAbility,
       rogueRacketId: form.value.rogueRacketId,
       rogueTrainingChoices: form.value.rogueTrainingChoices,
+      huntersEdgeId: form.value.huntersEdgeId,
       clericDoctrineId: form.value.clericDoctrineId,
       deityId: form.value.deityId,
       divineFont: form.value.divineFont,
@@ -526,11 +538,12 @@ async function loadCatalogs(): Promise<void> {
   isLoadingCatalogs.value = true
   errorMessages.value = []
   try {
-    const [ancestryCatalog, backgroundCatalog, classCatalog, racketCatalog, doctrineCatalog, deityCatalog, skillCatalog] = await Promise.all([
+    const [ancestryCatalog, backgroundCatalog, classCatalog, racketCatalog, huntersEdgeCatalog, doctrineCatalog, deityCatalog, skillCatalog] = await Promise.all([
       getAncestries(),
       getBackgrounds(),
       getCharacterClasses(),
       getRogueRackets(),
+      getHuntersEdges(),
       getClericDoctrines(),
       getDeities(),
       getSkills(),
@@ -539,6 +552,7 @@ async function loadCatalogs(): Promise<void> {
     backgrounds.value = backgroundCatalog
     characterClasses.value = classCatalog
     rogueRackets.value = racketCatalog
+    huntersEdges.value = huntersEdgeCatalog
     clericDoctrines.value = doctrineCatalog
     deities.value = deityCatalog
     skills.value = skillCatalog
@@ -736,6 +750,20 @@ watch(
             <p>
               {{ t('classUi.baseHitPoints') }}: {{ selectedCharacterClass.baseHitPoints }}
             </p>
+            <v-select
+              v-if="selectedCharacterClass.id === 'class.ranger'"
+              v-model="form.huntersEdgeId"
+              :items="huntersEdges"
+              item-title="name"
+              item-value="id"
+              :label="t('classUi.huntersEdge')"
+            />
+            <v-alert
+              v-for="effect in selectedHuntersEdge?.effects ?? []"
+              :key="effect.id"
+              type="info"
+              variant="tonal"
+            >{{ effect.name }}: {{ effect.summary }} {{ t('classUi.deferredEffect') }}</v-alert>
             <v-select
               v-if="selectedCharacterClass.id === 'class.rogue'"
               :model-value="form.rogueRacketId"
@@ -980,6 +1008,9 @@ watch(
               v-if="selectedRogueRacket"
               :title="t('classUi.rogueRacket')"
               :subtitle="selectedRogueRacket.name" /><v-list-item
+              v-if="selectedHuntersEdge"
+              :title="t('classUi.huntersEdge')"
+              :subtitle="selectedHuntersEdge.name" /><v-list-item
               v-if="selectedClericDoctrine"
               :title="t('classUi.clericDoctrine')"
               :subtitle="selectedClericDoctrine.name" /><v-list-item

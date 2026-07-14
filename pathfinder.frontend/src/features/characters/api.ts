@@ -73,6 +73,11 @@ export interface CharacterClassPackage {
     alternativeKeyAbility: AbilityCode | null
     effects: { id: string; name: string; summary: string }[]
   } | null
+  huntersEdge: {
+    id: string
+    name: string
+    effects: { id: string; kind: string; name: string; summary: string }[]
+  } | null
   clericDoctrine: {
     id: string
     name: string

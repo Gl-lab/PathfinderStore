@@ -151,6 +151,20 @@ export interface RogueRacket {
   deferredDependencies: string[]
 }
 
+export type HuntersEdgeEffectKind = 'MultipleAttackPenalty' | 'ConditionalBonuses' | 'PrecisionDamage'
+
+export interface HuntersEdge {
+  id: string
+  name: string
+  effects: {
+    id: string
+    kind: HuntersEdgeEffectKind
+    name: string
+    summary: string
+  }[]
+  deferredDependencies: string[]
+}
+
 export interface RogueTrainingChoice {
   grantId: string
   selectedSkillId: string | null
@@ -208,6 +222,7 @@ export interface CreateCharacterRequest {
   classKeyAbility: AbilityCode
   rogueRacketId: string | null
   rogueTrainingChoices: RogueTrainingChoice[]
+  huntersEdgeId: string | null
   clericDoctrineId: string | null
   deityId: string | null
   divineFont: DivineFont | null
@@ -232,6 +247,10 @@ export async function getCharacterClasses(): Promise<CharacterClass[]> {
 
 export async function getRogueRackets(): Promise<RogueRacket[]> {
   return (await http.get<RogueRacket[]>('/api/classes/rogue/rackets')).data
+}
+
+export async function getHuntersEdges(): Promise<HuntersEdge[]> {
+  return (await http.get<HuntersEdge[]>('/api/classes/ranger/hunters-edges')).data
 }
 
 export async function getClericDoctrines(): Promise<ClericDoctrine[]> {

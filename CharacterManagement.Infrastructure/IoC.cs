@@ -17,5 +17,6 @@ public static class DependencyInjection
         services.AddScoped<IRogueRacketRepository, RogueRacketRepository>();
         services.AddScoped<IClericDoctrineRepository, ClericDoctrineRepository>();
         services.AddScoped<IDeityRepository, DeityRepository>();
+        services.AddScoped<IHuntersEdgeRepository, HuntersEdgeRepository>();
     }
 }

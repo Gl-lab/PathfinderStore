@@ -18,6 +18,7 @@ Vikunja остаётся источником истины по фактичес
 
 - [`character_creation_near_term_roadmap.md`](character_creation_near_term_roadmap.md)
 - [`class_skills_foundation_v1_implementation.md`](class_skills_foundation_v1_implementation.md)
+- [`ranger_hunters_edge_implementation.md`](ranger_hunters_edge_implementation.md)
 - [`final_free_boosts_implementation.md`](final_free_boosts_implementation.md)
 - [`hit_points_v1_implementation.md`](hit_points_v1_implementation.md)
 - [`skills_lore_foundation_implementation.md`](skills_lore_foundation_implementation.md)

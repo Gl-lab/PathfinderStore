@@ -8,6 +8,7 @@ using Pathfinder.CharacterManagement.Application.UseCases.ClericDoctrines;
 using Pathfinder.CharacterManagement.Application.UseCases.CharacterClasses;
 using Pathfinder.CharacterManagement.Application.UseCases.Deities;
 using Pathfinder.CharacterManagement.Application.UseCases.RogueRackets;
+using Pathfinder.CharacterManagement.Application.UseCases.HuntersEdges;
 using Pathfinder.Web.Controllers.Base;
 
 namespace Pathfinder.Web.Controllers;
@@ -38,6 +39,16 @@ public sealed class ClassesController : AuthorizedController
     {
         IReadOnlyCollection<RogueRacketDto> rackets = await _mediator.Send( new GetRogueRacketsCommand() );
         return Ok( rackets );
+    }
+
+    [HttpGet( "ranger/hunters-edges" )]
+    [ProducesResponseType( typeof( IReadOnlyCollection<HuntersEdgeDto> ), StatusCodes.Status200OK )]
+    [ProducesResponseType( StatusCodes.Status401Unauthorized )]
+    public async Task<ActionResult<IReadOnlyCollection<HuntersEdgeDto>>> GetHuntersEdges()
+    {
+        IReadOnlyCollection<HuntersEdgeDto> huntersEdges = await _mediator.Send(
+            new GetHuntersEdgesCommand() );
+        return Ok( huntersEdges );
     }
 
     [HttpGet( "cleric/doctrines" )]

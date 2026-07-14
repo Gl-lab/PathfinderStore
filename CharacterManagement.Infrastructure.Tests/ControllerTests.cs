@@ -13,6 +13,7 @@ using Pathfinder.CharacterManagement.Application.UseCases.Backgrounds;
 using Pathfinder.CharacterManagement.Application.UseCases.CharacterClasses;
 using Pathfinder.CharacterManagement.Application.UseCases.Characters;
 using Pathfinder.CharacterManagement.Application.UseCases.Skills;
+using Pathfinder.CharacterManagement.Application.UseCases.HuntersEdges;
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.Web.Controllers;
 
@@ -96,6 +97,29 @@ public sealed class ControllerTests
 
         OkObjectResult okResult = Assert.IsType<OkObjectResult>( actionResult.Result );
         IReadOnlyCollection<CharacterClassDto> payload = Assert.IsAssignableFrom<IReadOnlyCollection<CharacterClassDto>>( okResult.Value );
+        Assert.Same( expected, payload );
+    }
+
+    [Fact]
+    public async Task ClassesController_GetHuntersEdges_ReturnsOkWithPayload()
+    {
+        IReadOnlyCollection<HuntersEdgeDto> expected =
+        [
+            new HuntersEdgeDto
+            {
+                Id = "hunters_edge.precision",
+                Name = "Precision",
+            },
+        ];
+        TestMediator mediator = new TestMediator();
+        mediator.Register( new GetHuntersEdgesCommand(), expected );
+        ClassesController controller = new ClassesController( mediator );
+
+        ActionResult<IReadOnlyCollection<HuntersEdgeDto>> actionResult = await controller.GetHuntersEdges();
+
+        OkObjectResult okResult = Assert.IsType<OkObjectResult>( actionResult.Result );
+        IReadOnlyCollection<HuntersEdgeDto> payload =
+            Assert.IsAssignableFrom<IReadOnlyCollection<HuntersEdgeDto>>( okResult.Value );
         Assert.Same( expected, payload );
     }
 
