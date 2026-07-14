@@ -470,6 +470,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
             }
         }
 
+        RemoveClassTrainingEffects();
         RemoveFinalFreeBoostEffects();
 
         foreach ( AbilityType boost in finalFreeBoosts )
@@ -478,6 +479,49 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         }
 
         AppliedFinalFreeBoosts = finalFreeBoosts.ToArray();
+        EnsureInvariants();
+    }
+
+    public void SetClassTraining(
+        CharacterClass characterClass,
+        IReadOnlyList<ClassSkillGrantChoice> grantChoices,
+        IReadOnlyList<ClassTrainingTargetChoice> additionalChoices,
+        IReadOnlyCollection<SkillDefinition> skillCatalog )
+    {
+        ArgumentNullException.ThrowIfNull( characterClass );
+        ArgumentNullException.ThrowIfNull( grantChoices );
+        ArgumentNullException.ThrowIfNull( additionalChoices );
+        ArgumentNullException.ThrowIfNull( skillCatalog );
+
+        if ( !HasFinalFreeBoostPackage )
+        {
+            throw new CharacterManagementException(
+                "Final free boost package must be set before class training." );
+        }
+
+        if ( characterClass.Id != SelectedClassId )
+        {
+            throw new CharacterManagementException(
+                $"Character class '{characterClass.Id}' does not match selected class '{SelectedClassId}'." );
+        }
+
+        IReadOnlyList<TrainedSkill> existingSkills = TrainedSkills
+            .Where( training => !IsClassTrainingSource( training.SourceGrantId ) )
+            .ToArray();
+        IReadOnlyList<TrainedLore> existingLore = TrainedLore
+            .Where( training => !IsClassTrainingSource( training.SourceGrantId ) )
+            .ToArray();
+        ClassTrainingResult training = ClassTrainingResolver.Resolve(
+            characterClass,
+            grantChoices,
+            additionalChoices,
+            skillCatalog,
+            AbilityScores.Intelligence.Modifier,
+            existingSkills,
+            existingLore );
+
+        TrainedSkills = training.Skills.ToArray();
+        TrainedLore = training.Lore.ToArray();
         EnsureInvariants();
     }
 
@@ -660,12 +704,28 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         SelectedDeityId = null;
         SelectedDivineFont = null;
         SelectedDivineSanctification = null;
+        RemoveClassTrainingEffects();
         TrainedSkills = TrainedSkills
             .Where( training =>
-                !training.SourceGrantId.StartsWith( "class.", StringComparison.Ordinal ) &&
                 !training.SourceGrantId.StartsWith( "rogue_racket.", StringComparison.Ordinal ) &&
                 !training.SourceGrantId.StartsWith( "deity.", StringComparison.Ordinal ) )
             .ToArray();
+    }
+
+    private void RemoveClassTrainingEffects()
+    {
+        TrainedSkills = TrainedSkills
+            .Where( training => !IsClassTrainingSource( training.SourceGrantId ) )
+            .ToArray();
+        TrainedLore = TrainedLore
+            .Where( training => !IsClassTrainingSource( training.SourceGrantId ) )
+            .ToArray();
+    }
+
+    private static bool IsClassTrainingSource( string sourceGrantId )
+    {
+        return sourceGrantId.StartsWith( "class.", StringComparison.Ordinal ) &&
+               sourceGrantId.Contains( ".skill.", StringComparison.Ordinal );
     }
 
     private void RemoveFinalFreeBoostEffects()

@@ -214,6 +214,27 @@ public sealed class CreateCharacterCommandValidatorTests
         validator.ValidateAndThrow( new CreateCharacterCommand( 42, character ) );
     }
 
+    [Theory]
+    [InlineData( true )]
+    [InlineData( false )]
+    public void Validate_WhenClassTrainingCollectionIsNull_ThrowsValidationException(
+        bool omitGrantChoices )
+    {
+        CreateCharacterCommandValidator validator = new CreateCharacterCommandValidator();
+        CreateCharacterRequestDto character = CreateValidRequest();
+        if ( omitGrantChoices )
+        {
+            character.ClassSkillGrantChoices = null!;
+        }
+        else
+        {
+            character.AdditionalClassTrainingChoices = null!;
+        }
+
+        Assert.Throws<ValidationException>( () => validator.ValidateAndThrow(
+            new CreateCharacterCommand( 42, character ) ) );
+    }
+
     private static CreateCharacterRequestDto CreateValidRequest()
     {
         return new CreateCharacterRequestDto

@@ -38,6 +38,21 @@ public sealed class CreateCharacterHandlerTests
                 AbilityType.Constitution,
                 AbilityType.Wisdom
             ],
+            ClassSkillGrantChoices =
+            [
+                new ClassSkillGrantChoice(
+                    "class.fighter.skill.acrobatics_or_athletics",
+                    "skill.athletics",
+                    null ),
+            ],
+            AdditionalClassTrainingChoices =
+            [
+                .. GeneralSkillChoices(
+                    "skill.arcana",
+                    "skill.crafting",
+                    "skill.deception" ),
+                new ClassTrainingTargetChoice( null, "Warfare" ),
+            ],
         };
         CreateCharacterCommand command = new CreateCharacterCommand( account.UserId, character );
 
@@ -60,8 +75,12 @@ public sealed class CreateCharacterHandlerTests
         Assert.Equal( character.ClassId, savedCharacter.SelectedClassId );
         Assert.Equal( character.ClassKeyAbility, savedCharacter.SelectedClassKeyAbility );
         Assert.Equal( character.FinalFreeBoosts, savedCharacter.AppliedFinalFreeBoosts );
-        Assert.Equal( "skill.acrobatics", Assert.Single( savedCharacter.TrainedSkills ).SkillId );
-        Assert.Equal( "lore.circus", Assert.Single( savedCharacter.TrainedLore ).LoreId );
+        Assert.Contains( savedCharacter.TrainedSkills, training => training.SkillId == "skill.acrobatics" );
+        Assert.Contains( savedCharacter.TrainedSkills, training => training.SkillId == "skill.athletics" );
+        Assert.Contains( savedCharacter.TrainedLore, training => training.LoreId == "lore.circus" );
+        Assert.Contains( savedCharacter.TrainedLore, training =>
+            ( training.LoreId == "lore.custom.warfare" ) &&
+            ( training.SourceGrantId == "class.fighter.skill.additional" ) );
         Assert.Equal( account.Id, savedCharacter.AccountId );
         Assert.Equal( 16, savedCharacter.AbilityScores.Strength.Value );
         Assert.Equal( 12, savedCharacter.AbilityScores.Intelligence.Value );
@@ -127,6 +146,15 @@ public sealed class CreateCharacterHandlerTests
                 AbilityType.Constitution,
                 AbilityType.Wisdom,
             ],
+            ClassSkillGrantChoices =
+            [
+                new ClassSkillGrantChoice( "class.druid.skill.nature", null, null ),
+            ],
+            AdditionalClassTrainingChoices = GeneralSkillChoices(
+                "skill.arcana",
+                "skill.athletics",
+                "skill.crafting",
+                "skill.deception" ),
         };
 
         await handler.Handle(
@@ -137,7 +165,8 @@ public sealed class CreateCharacterHandlerTests
         DraftCharacter savedCharacter = await dbContext.Character
             .AsNoTracking()
             .SingleAsync( entity => entity.AccountId == account.Id );
-        Assert.Equal( "skill.occultism", Assert.Single( savedCharacter.TrainedSkills ).SkillId );
+        Assert.Contains( savedCharacter.TrainedSkills, training => training.SkillId == "skill.occultism" );
+        Assert.Contains( savedCharacter.TrainedSkills, training => training.SkillId == "skill.nature" );
         TrainedLore lore = Assert.Single( savedCharacter.TrainedLore );
         Assert.Equal( "lore.custom.ancient_forest", lore.LoreId );
         Assert.Equal( "Ancient Forest Lore", lore.Name );
@@ -169,6 +198,20 @@ public sealed class CreateCharacterHandlerTests
                 AbilityType.Intelligence,
                 AbilityType.Wisdom,
             ],
+            ClassSkillGrantChoices =
+            [
+                new ClassSkillGrantChoice( "class.rogue.skill.stealth", null, null ),
+            ],
+            AdditionalClassTrainingChoices = GeneralSkillChoices(
+                "skill.arcana",
+                "skill.athletics",
+                "skill.crafting",
+                "skill.deception",
+                "skill.diplomacy",
+                "skill.intimidation",
+                "skill.medicine",
+                "skill.nature",
+                "skill.occultism" ),
         };
 
         await handler.Handle(
@@ -217,6 +260,16 @@ public sealed class CreateCharacterHandlerTests
                 AbilityType.Constitution,
                 AbilityType.Wisdom,
             ],
+            ClassSkillGrantChoices =
+            [
+                new ClassSkillGrantChoice(
+                    "class.cleric.skill.religion",
+                    null,
+                    new ClassTrainingTargetChoice( "skill.athletics", null ) ),
+            ],
+            AdditionalClassTrainingChoices = GeneralSkillChoices(
+                "skill.arcana",
+                "skill.crafting" ),
         };
 
         await handler.Handle(
@@ -285,6 +338,13 @@ public sealed class CreateCharacterHandlerTests
         TestUnitOfWork unitOfWork = new TestUnitOfWork( dbContext );
 
         return new CreateCharacterHandler( accountRepository, characterBuilder, unitOfWork );
+    }
+
+    private static IReadOnlyList<ClassTrainingTargetChoice> GeneralSkillChoices( params string[] skillIds )
+    {
+        return skillIds
+            .Select( skillId => new ClassTrainingTargetChoice( skillId, null ) )
+            .ToArray();
     }
 
     private static async Task<Account> CreateAccountAsync(

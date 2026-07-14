@@ -8,6 +8,7 @@ public sealed class CharacterClassPackageDto
     public string Name { get; set; } = String.Empty;
     public int BaseHitPoints { get; set; }
     public AbilityType KeyAbility { get; set; }
+    public int AdditionalSkillCount { get; set; }
     public RogueRacketPackageDto? RogueRacket { get; set; }
     public ClericDoctrinePackageDto? ClericDoctrine { get; set; }
     public DeityPackageDto? Deity { get; set; }

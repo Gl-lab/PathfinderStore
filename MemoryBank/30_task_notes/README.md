@@ -17,6 +17,7 @@ Vikunja остаётся источником истины по фактичес
 ## Заметки
 
 - [`character_creation_near_term_roadmap.md`](character_creation_near_term_roadmap.md)
+- [`class_skills_foundation_v1_implementation.md`](class_skills_foundation_v1_implementation.md)
 - [`final_free_boosts_implementation.md`](final_free_boosts_implementation.md)
 - [`hit_points_v1_implementation.md`](hit_points_v1_implementation.md)
 - [`skills_lore_foundation_implementation.md`](skills_lore_foundation_implementation.md)

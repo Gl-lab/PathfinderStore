@@ -19,6 +19,8 @@ const cleric: CharacterClass = {
       sourceGrantId: 'class.cleric.initial_proficiencies',
     },
   ],
+  initialSkillGrants: [],
+  additionalSkillCountBase: 2,
   spellTradition: 'Divine',
   rules: [],
   deferredDependencies: [],

@@ -64,6 +64,10 @@ public sealed class CreateCharacterHandler : IRequestHandler<CreateCharacterComm
             request.Character.DivineSanctification,
             request.Character.DeitySkillReplacementId );
         _characterBuilder.SetFinalFreeBoosts( finalFreeBoosts );
+        _characterBuilder.SetClassTraining(
+            request.Character.ClassId,
+            request.Character.ClassSkillGrantChoices,
+            request.Character.AdditionalClassTrainingChoices );
 
         DraftCharacter draftCharacter = _characterBuilder.Build();
         account.AddDraftCharacter( draftCharacter );

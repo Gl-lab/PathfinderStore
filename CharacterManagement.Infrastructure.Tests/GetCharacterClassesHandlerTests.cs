@@ -42,5 +42,9 @@ public sealed class GetCharacterClassesHandlerTests
                 ( proficiency.TargetId == ProficiencyTargets.SimpleWeapons.Id ) &&
                 ( proficiency.Rank == ProficiencyRank.Expert ) );
         Assert.Contains( fighter.Rules, rule => rule.Kind == CharacterClassRuleKind.ClassFeatChoice );
+        Assert.Equal( 3, fighter.AdditionalSkillCountBase );
+        ClassSkillGrantDto skillGrant = Assert.Single( fighter.InitialSkillGrants );
+        Assert.Equal( "class.fighter.skill.acrobatics_or_athletics", skillGrant.Id );
+        Assert.Equal( [ "skill.acrobatics", "skill.athletics" ], skillGrant.SkillOptions );
     }
 }

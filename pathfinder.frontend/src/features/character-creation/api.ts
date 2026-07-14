@@ -111,9 +111,27 @@ export interface CharacterClass {
   baseHitPoints: number
   keyAbilityOptions: AbilityCode[]
   initialProficiencies: Proficiency[]
+  initialSkillGrants: ClassSkillGrant[]
+  additionalSkillCountBase: number
   spellTradition: SpellTradition | null
   rules: CharacterClassRule[]
   deferredDependencies: string[]
+}
+
+export interface ClassSkillGrant {
+  id: string
+  skillOptions: string[]
+}
+
+export interface ClassTrainingTargetChoice {
+  skillId: string | null
+  customLoreTopic: string | null
+}
+
+export interface ClassSkillGrantChoice {
+  grantId: string
+  selectedSkillId: string | null
+  replacementTarget: ClassTrainingTargetChoice | null
 }
 
 export interface RogueSkillGrant {
@@ -196,6 +214,8 @@ export interface CreateCharacterRequest {
   divineSanctification: DivineSanctification | null
   deitySkillReplacementId: string | null
   finalFreeBoosts: AbilityCode[]
+  classSkillGrantChoices: ClassSkillGrantChoice[]
+  additionalClassTrainingChoices: ClassTrainingTargetChoice[]
 }
 
 export async function getAncestries(): Promise<Ancestry[]> {

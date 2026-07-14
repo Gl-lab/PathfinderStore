@@ -148,6 +148,42 @@ public sealed class FinalFreeBoostPackageTests
     }
 
     [Fact]
+    public void SetFinalFreeBoosts_CalledAfterClassTraining_RemovesStaleTraining()
+    {
+        DraftCharacter character = CreateCharacterWithoutClass();
+        CharacterClass characterClass = CreateClassWithTraining();
+        character.SetClassPackage( characterClass, AbilityType.Dexterity );
+        AbilityType[] boosts =
+        [
+            AbilityType.Strength,
+            AbilityType.Dexterity,
+            AbilityType.Constitution,
+            AbilityType.Charisma,
+        ];
+        character.SetFinalFreeBoosts( boosts );
+        character.SetClassTraining(
+            characterClass,
+            [ new ClassSkillGrantChoice( "class.test.skill.arcana", null, null ) ],
+            [ new ClassTrainingTargetChoice( "skill.athletics", null ) ],
+            [
+                new SkillDefinition(
+                    "skill.arcana",
+                    "Arcana",
+                    AbilityType.Intelligence,
+                    SourceReference.Unknown ),
+                new SkillDefinition(
+                    "skill.athletics",
+                    "Athletics",
+                    AbilityType.Strength,
+                    SourceReference.Unknown ),
+            ] );
+
+        character.SetFinalFreeBoosts( boosts );
+
+        Assert.Empty( character.TrainedSkills );
+    }
+
+    [Fact]
     public void SetFinalFreeBoosts_ReplacementWouldExceedCap_PreservesPreviousPackage()
     {
         DraftCharacter character = CreateCharacterWithClass();
@@ -278,6 +314,29 @@ public sealed class FinalFreeBoostPackageTests
                     ProficiencyRank.Trained,
                     "class.test.initial_proficiencies" ),
             ],
+            [],
+            0,
+            null,
+            [],
+            [] );
+    }
+
+    private static CharacterClass CreateClassWithTraining()
+    {
+        return new CharacterClass(
+            "class.test",
+            "Test",
+            SourceReference.Unknown,
+            8,
+            [ AbilityType.Dexterity ],
+            [
+                new ProficiencyGrant(
+                    ProficiencyTargets.Perception,
+                    ProficiencyRank.Trained,
+                    "class.test.initial_proficiencies" ),
+            ],
+            [ new ClassSkillGrantDescriptor( "class.test.skill.arcana", [ "skill.arcana" ] ) ],
+            0,
             null,
             [],
             [] );

@@ -25,4 +25,6 @@ public class CreateCharacterRequestDto
     public DivineSanctification? DivineSanctification { get; set; }
     public string? DeitySkillReplacementId { get; set; }
     public IReadOnlyList<AbilityType>? FinalFreeBoosts { get; set; }
+    public IReadOnlyList<ClassSkillGrantChoice> ClassSkillGrantChoices { get; set; } = [];
+    public IReadOnlyList<ClassTrainingTargetChoice> AdditionalClassTrainingChoices { get; set; } = [];
 }

@@ -84,6 +84,8 @@ public sealed class ProficiencyModelsTests
             8,
             [ AbilityType.Strength ],
             grants,
+            [],
+            0,
             null,
             [],
             [] );

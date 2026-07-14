@@ -21,6 +21,14 @@ public static class CharacterClassDtoMapper
             BaseHitPoints = characterClass.BaseHitPoints,
             KeyAbilityOptions = characterClass.KeyAbilityOptions.ToList(),
             InitialProficiencies = MapProficiencies( characterClass.InitialProficiencies ),
+            InitialSkillGrants = characterClass.InitialSkillGrants
+                .Select( grant => new ClassSkillGrantDto
+                {
+                    Id = grant.Id,
+                    SkillOptions = grant.SkillOptions.ToArray(),
+                } )
+                .ToList(),
+            AdditionalSkillCountBase = characterClass.AdditionalSkillCountBase,
             SpellTradition = characterClass.SpellTradition,
             Rules = characterClass.Rules
                 .Select( Map )
@@ -86,6 +94,8 @@ public static class CharacterClassDtoMapper
             Name = characterClass.Name,
             BaseHitPoints = characterClass.BaseHitPoints,
             KeyAbility = character.SelectedClassKeyAbility!.Value,
+            AdditionalSkillCount = characterClass.AdditionalSkillCountBase +
+                                   character.AbilityScores.Intelligence.Modifier,
             RogueRacket = rogueRacket is null ? null : RogueRacketDtoMapper.MapPackage( rogueRacket ),
             ClericDoctrine = clericDoctrine is null
                 ? null

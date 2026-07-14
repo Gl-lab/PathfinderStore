@@ -234,6 +234,8 @@ public sealed class CharacterHitPointsTests
                     ProficiencyRank.Trained,
                     $"{id}.initial_proficiencies" ),
             ],
+            [],
+            0,
             null,
             [],
             [] );

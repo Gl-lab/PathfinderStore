@@ -8,6 +8,8 @@ public sealed class CharacterClass
     public int BaseHitPoints { get; }
     public IReadOnlyList<AbilityType> KeyAbilityOptions { get; }
     public IReadOnlyList<ProficiencyGrant> InitialProficiencies { get; }
+    public IReadOnlyList<ClassSkillGrantDescriptor> InitialSkillGrants { get; }
+    public int AdditionalSkillCountBase { get; }
     public SpellTradition? SpellTradition { get; }
     public IReadOnlyList<CharacterClassRuleDescriptor> Rules { get; }
     public IReadOnlyList<CharacterClassDependencyType> DeferredDependencies { get; }
@@ -19,6 +21,8 @@ public sealed class CharacterClass
         int baseHitPoints,
         IReadOnlyList<AbilityType> keyAbilityOptions,
         IReadOnlyList<ProficiencyGrant> initialProficiencies,
+        IReadOnlyList<ClassSkillGrantDescriptor> initialSkillGrants,
+        int additionalSkillCountBase,
         SpellTradition? spellTradition,
         IReadOnlyList<CharacterClassRuleDescriptor> rules,
         IReadOnlyList<CharacterClassDependencyType> deferredDependencies )
@@ -36,6 +40,7 @@ public sealed class CharacterClass
         ArgumentNullException.ThrowIfNull( source );
         ArgumentNullException.ThrowIfNull( keyAbilityOptions );
         ArgumentNullException.ThrowIfNull( initialProficiencies );
+        ArgumentNullException.ThrowIfNull( initialSkillGrants );
         ArgumentNullException.ThrowIfNull( rules );
         ArgumentNullException.ThrowIfNull( deferredDependencies );
 
@@ -71,12 +76,31 @@ public sealed class CharacterClass
                 nameof( initialProficiencies ) );
         }
 
+        if ( initialSkillGrants
+            .Select( grant => grant.Id )
+            .Distinct( StringComparer.Ordinal )
+            .Count() != initialSkillGrants.Count )
+        {
+            throw new ArgumentException(
+                "Character class initial skill grant ids must be unique.",
+                nameof( initialSkillGrants ) );
+        }
+
+        if ( additionalSkillCountBase < 0 )
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof( additionalSkillCountBase ),
+                "Additional skill count base cannot be negative." );
+        }
+
         Id = id.Trim();
         Name = name.Trim();
         Source = source;
         BaseHitPoints = baseHitPoints;
         KeyAbilityOptions = keyAbilityOptions;
         InitialProficiencies = initialProficiencies.ToArray();
+        InitialSkillGrants = initialSkillGrants.ToArray();
+        AdditionalSkillCountBase = additionalSkillCountBase;
         SpellTradition = spellTradition;
         Rules = rules;
         DeferredDependencies = deferredDependencies;

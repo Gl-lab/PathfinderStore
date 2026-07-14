@@ -66,6 +66,7 @@ export interface CharacterClassPackage {
   name: string
   baseHitPoints: number
   keyAbility: AbilityCode
+  additionalSkillCount: number
   rogueRacket: {
     id: string
     name: string

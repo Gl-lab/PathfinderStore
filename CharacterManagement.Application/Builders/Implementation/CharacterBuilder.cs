@@ -224,6 +224,43 @@ public class CharacterBuilder : ICharacterBuilder
         _draftCharacter.SetFinalFreeBoosts( finalFreeBoosts );
     }
 
+    public void SetClassTraining(
+        string characterClassId,
+        IReadOnlyList<ClassSkillGrantChoice> grantChoices,
+        IReadOnlyList<ClassTrainingTargetChoice> additionalChoices )
+    {
+        if ( _draftCharacter is null )
+        {
+            throw new InvalidOperationException( "Character must be created before setting class training." );
+        }
+
+        if ( _characterClassRepository is null )
+        {
+            throw new InvalidOperationException( "Character class repository is not configured." );
+        }
+
+        if ( _skillRepository is null )
+        {
+            throw new InvalidOperationException( "Skill repository is not configured." );
+        }
+
+        CharacterClass characterClass;
+        try
+        {
+            characterClass = _characterClassRepository.GetCharacterClass( characterClassId );
+        }
+        catch ( ArgumentException exception )
+        {
+            throw new CharacterManagementException( exception.Message );
+        }
+
+        _draftCharacter.SetClassTraining(
+            characterClass,
+            grantChoices,
+            additionalChoices,
+            _skillRepository.GetAll() );
+    }
+
     public void IncreaseAbilityScores( IEnumerable<AbilityType> increasedAbilityTypes )
     {
         if ( _draftCharacter is null )

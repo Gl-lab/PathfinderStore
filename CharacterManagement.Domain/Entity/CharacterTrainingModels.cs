@@ -25,3 +25,16 @@ public sealed record RogueTrainingChoice(
 
 public sealed record RogueTrainingResult(
     IReadOnlyList<TrainedSkill> Skills );
+
+public sealed record ClassTrainingTargetChoice(
+    string? SkillId,
+    string? CustomLoreTopic );
+
+public sealed record ClassSkillGrantChoice(
+    string GrantId,
+    string? SelectedSkillId,
+    ClassTrainingTargetChoice? ReplacementTarget );
+
+public sealed record ClassTrainingResult(
+    IReadOnlyList<TrainedSkill> Skills,
+    IReadOnlyList<TrainedLore> Lore );

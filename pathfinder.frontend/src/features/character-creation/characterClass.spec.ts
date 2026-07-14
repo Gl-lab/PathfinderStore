@@ -8,6 +8,8 @@ const fighter: CharacterClass = {
   baseHitPoints: 10,
   keyAbilityOptions: ['Strength', 'Dexterity'],
   initialProficiencies: [],
+  initialSkillGrants: [],
+  additionalSkillCountBase: 3,
   spellTradition: null,
   rules: [],
   deferredDependencies: [],

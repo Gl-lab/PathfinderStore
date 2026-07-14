@@ -29,6 +29,10 @@ public interface ICharacterBuilder
         DivineSanctification? divineSanctification = null,
         string? deitySkillReplacementId = null );
     void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts );
+    void SetClassTraining(
+        string characterClassId,
+        IReadOnlyList<ClassSkillGrantChoice> grantChoices,
+        IReadOnlyList<ClassTrainingTargetChoice> additionalChoices );
     void IncreaseAbilityScores( IEnumerable<AbilityType> increasedAbilityScores );
     void ApplyFreeBoosts( IEnumerable<AbilityType> freeBoosts );
     void SetInventory();

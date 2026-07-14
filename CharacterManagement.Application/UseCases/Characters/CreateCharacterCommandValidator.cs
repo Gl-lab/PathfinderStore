@@ -96,6 +96,12 @@ public sealed class CreateCharacterCommandValidator : AbstractValidator<CreateCh
                     .WithMessage( "Final free boosts must target different abilities." )
                     .Must( boosts => boosts is not null && boosts.All( Enum.IsDefined ) )
                     .WithMessage( "Final free boosts contain an unknown ability type." );
+
+                RuleFor( command => command.Character.ClassSkillGrantChoices )
+                    .NotNull();
+
+                RuleFor( command => command.Character.AdditionalClassTrainingChoices )
+                    .NotNull();
             } );
     }
 }

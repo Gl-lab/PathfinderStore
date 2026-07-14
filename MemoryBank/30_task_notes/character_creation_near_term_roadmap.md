@@ -45,6 +45,8 @@ Vikunja остаётся источником истины по карточка
 
 #### 1.1. Class Skills Foundation v1
 
+**Статус:** завершено 14 июля 2026 года; см. [Implementation Plan](class_skills_foundation_v1_implementation.md).
+
 **Проблема.** `Druidic Order` и `Witch Patron` выдают skill training, а все классы используют fixed skills и формулу `N + Intelligence modifier`. Текущие Background, Racket и Deity resolvers не образуют общего class-skill flow.
 
 **Ожидаемый результат.** После final boosts пользователь выбирает точное число class skills, а сервер объединяет все источники training и replacements с сохранением provenance.

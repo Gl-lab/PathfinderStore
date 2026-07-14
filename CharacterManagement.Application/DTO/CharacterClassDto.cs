@@ -10,9 +10,17 @@ public sealed class CharacterClassDto
     public int BaseHitPoints { get; set; }
     public IReadOnlyList<AbilityType> KeyAbilityOptions { get; set; } = [];
     public IReadOnlyList<ProficiencyDto> InitialProficiencies { get; set; } = [];
+    public IReadOnlyList<ClassSkillGrantDto> InitialSkillGrants { get; set; } = [];
+    public int AdditionalSkillCountBase { get; set; }
     public SpellTradition? SpellTradition { get; set; }
     public IReadOnlyList<CharacterClassRuleDto> Rules { get; set; } = [];
     public IReadOnlyList<CharacterClassDependencyType> DeferredDependencies { get; set; } = [];
+}
+
+public sealed class ClassSkillGrantDto
+{
+    public string Id { get; set; } = String.Empty;
+    public IReadOnlyList<string> SkillOptions { get; set; } = [];
 }
 
 public sealed class CharacterClassRuleDto

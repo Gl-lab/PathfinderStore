@@ -128,6 +128,7 @@ public sealed class GetCharacterQueriesTests
         Assert.Equal( "class.cleric", result.ClassPackage.ClassId );
         Assert.Equal( 8, result.ClassPackage.BaseHitPoints );
         Assert.Equal( AbilityType.Wisdom, result.ClassPackage.KeyAbility );
+        Assert.Equal( 2, result.ClassPackage.AdditionalSkillCount );
         Assert.NotNull( result.ClassPackage.ClericDoctrine );
         Assert.Equal( "cleric_doctrine.cloistered", result.ClassPackage.ClericDoctrine.Id );
         Assert.NotNull( result.ClassPackage.Deity );

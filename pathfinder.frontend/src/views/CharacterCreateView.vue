@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { getApiErrorMessages } from '@/api/errors'
@@ -33,6 +33,8 @@ import {
   type Background,
   type BackgroundTrainingChoice,
   type CharacterClass,
+  type ClassSkillGrantChoice,
+  type ClassTrainingTargetChoice,
   type ClericDoctrine,
   type Deity,
   type DivineFont,
@@ -71,6 +73,15 @@ import {
   isFinalFreeBoostDisabled,
   isFinalFreeBoostSelectionComplete,
 } from '@/features/character-creation/finalFreeBoosts'
+import {
+  createAdditionalClassTrainingChoices,
+  createClassSkillGrantChoices,
+  getAdditionalClassTrainingCount,
+  getClassTrainingLabels,
+  getCustomLoreId,
+  isClassTrainingComplete,
+  requiresClassGrantReplacement,
+} from '@/features/character-creation/classTraining'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -107,6 +118,8 @@ const form = ref({
   divineSanctification: null as DivineSanctification | null,
   deitySkillReplacementId: null as string | null,
   finalFreeBoosts: [] as AbilityCode[],
+  classSkillGrantChoices: [] as ClassSkillGrantChoice[],
+  additionalClassTrainingChoices: [] as ClassTrainingTargetChoice[],
 })
 const abilityCodes: AbilityCode[] = ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma']
 const selectedAncestry = computed(
@@ -160,6 +173,17 @@ const backgroundSkillIds = computed(() => {
     })
     .filter((id): id is string => id !== null)
 })
+const backgroundLoreIds = computed(() => {
+  if (!selectedBackground.value) return []
+  return selectedBackground.value.grants
+    .filter((grant) => grant.kind === 'LoreTraining')
+    .map((grant) => {
+      if (!grant.requiresChoice) return grant.targetId
+      const choice = form.value.backgroundTrainingChoices.find((item) => item.grantId === grant.id)
+      return choice?.targetId ?? getCustomLoreId(choice?.customLoreTopic)
+    })
+    .filter((id): id is string => Boolean(id))
+})
 const rogueKeyAbilities = computed(() => getRogueKeyAbilities(selectedRogueRacket.value))
 const backgroundFreeBoostOptions = computed(() =>
   getBackgroundFreeBoostOptions(abilityCodes, form.value.backgroundRestrictedBoost),
@@ -180,6 +204,32 @@ const abilityScoresAfterFinal = computed(() =>
     selectedAncestry.value?.abilityFlaws ?? [],
   ),
 )
+const existingClassTrainingSkillIds = computed(() => {
+  const rogueSkillIds = getRogueGrants(selectedRogueRacket.value)
+    .map((grant) => getResolvedRogueTarget(grant, form.value.rogueTrainingChoices))
+    .filter((id): id is string => id !== null)
+  const deitySkillId = selectedDeity.value?.divineSkillId ?? null
+  const effectiveDeitySkillId = deitySkillId && backgroundSkillIds.value.includes(deitySkillId)
+    ? form.value.deitySkillReplacementId
+    : deitySkillId
+  return Array.from(new Set([
+    ...backgroundSkillIds.value,
+    ...backgroundLoreIds.value,
+    ...rogueSkillIds,
+    ...(effectiveDeitySkillId ? [effectiveDeitySkillId] : []),
+  ]))
+})
+const additionalClassTrainingCount = computed(() => getAdditionalClassTrainingCount(
+  selectedCharacterClass.value,
+  abilityScoresAfterFinal.value.Intelligence,
+))
+const classTrainingLabels = computed(() => getClassTrainingLabels(
+  form.value.classSkillGrantChoices,
+  form.value.additionalClassTrainingChoices,
+  selectedCharacterClass.value,
+  existingClassTrainingSkillIds.value,
+  skills.value,
+))
 const canContinue = computed(() => {
   if (step.value === 1)
     return (
@@ -222,6 +272,15 @@ const canContinue = computed(() => {
     )
   if (step.value === 7)
     return isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts)
+  if (step.value === 8)
+    return isClassTrainingComplete(
+      selectedCharacterClass.value,
+      form.value.classSkillGrantChoices,
+      form.value.additionalClassTrainingChoices,
+      additionalClassTrainingCount.value,
+      existingClassTrainingSkillIds.value,
+      skills.value,
+    )
   return true
 })
 
@@ -244,6 +303,7 @@ function selectBackground(backgroundId: string | null): void {
   const background = backgrounds.value.find((item) => item.id === backgroundId) ?? null
   form.value.backgroundTrainingChoices = createBackgroundTrainingChoices(background)
   form.value.deitySkillReplacementId = null
+  resetClassTraining()
 }
 
 function getBackgroundTrainingChoice(grantId: string): BackgroundTrainingChoice | undefined {
@@ -255,12 +315,14 @@ function selectBackgroundTrainingTarget(grantId: string, targetId: string | null
   choice.targetId = targetId
   choice.customLoreTopic = null
   form.value.deitySkillReplacementId = null
+  resetClassTrainingTargets()
 }
 function setBackgroundLoreTopic(grantId: string, topic: string): void {
   const choice = getBackgroundTrainingChoice(grantId)
   if (!choice) return
   choice.targetId = null
   choice.customLoreTopic = topic
+  resetClassTrainingTargets()
 }
 function selectBackgroundRestrictedBoost(boost: AbilityCode | null): void {
   form.value.backgroundRestrictedBoost = boost
@@ -276,6 +338,10 @@ function selectCharacterClass(classId: string | null): void {
   form.value.divineFont = null
   form.value.divineSanctification = null
   form.value.deitySkillReplacementId = null
+  form.value.classSkillGrantChoices = createClassSkillGrantChoices(
+    characterClasses.value.find((item) => item.id === classId) ?? null,
+  )
+  resetAdditionalClassTraining()
 }
 function selectDeity(deityId: string | null): void {
   form.value.deityId = deityId
@@ -283,6 +349,7 @@ function selectDeity(deityId: string | null): void {
   form.value.divineFont = deity?.divineFontOptions.length === 1 ? deity.divineFontOptions[0] : null
   form.value.divineSanctification = deity?.requiredSanctification ?? null
   form.value.deitySkillReplacementId = null
+  resetClassTrainingTargets()
 }
 function selectRogueRacket(racketId: string | null): void {
   form.value.rogueRacketId = racketId
@@ -290,6 +357,7 @@ function selectRogueRacket(racketId: string | null): void {
   form.value.rogueTrainingChoices = createRogueTrainingChoices(
     rogueRackets.value.find((item) => item.id === racketId) ?? null,
   )
+  resetClassTrainingTargets()
 }
 function getRogueChoice(grantId: string): RogueTrainingChoice | undefined {
   return form.value.rogueTrainingChoices.find((choice) => choice.grantId === grantId)
@@ -310,6 +378,48 @@ function getReplacementOptions(grantId: string): Skill[] {
 function getDeityReplacementOptions(): Skill[] {
   return skills.value.filter((skill) => !backgroundSkillIds.value.includes(skill.id))
 }
+function getClassGrantChoice(grantId: string): ClassSkillGrantChoice | undefined {
+  return form.value.classSkillGrantChoices.find((choice) => choice.grantId === grantId)
+}
+function classGrantRequiresReplacement(grantId: string): boolean {
+  return requiresClassGrantReplacement(
+    grantId,
+    selectedCharacterClass.value,
+    form.value.classSkillGrantChoices,
+    existingClassTrainingSkillIds.value,
+  )
+}
+function setTrainingSkill(target: ClassTrainingTargetChoice, skillId: string | null): void {
+  target.skillId = skillId
+  target.customLoreTopic = null
+}
+function setTrainingLore(target: ClassTrainingTargetChoice, topic: string): void {
+  target.skillId = null
+  target.customLoreTopic = topic
+}
+function setClassGrantReplacementSkill(grantId: string, skillId: string | null): void {
+  const choice = getClassGrantChoice(grantId)
+  if (!choice) return
+  choice.replacementTarget = skillId ? { skillId, customLoreTopic: null } : null
+}
+function setClassGrantReplacementLore(grantId: string, topic: string): void {
+  const choice = getClassGrantChoice(grantId)
+  if (!choice) return
+  choice.replacementTarget = topic ? { skillId: null, customLoreTopic: topic } : null
+}
+function resetAdditionalClassTraining(): void {
+  form.value.additionalClassTrainingChoices = createAdditionalClassTrainingChoices(
+    additionalClassTrainingCount.value,
+  )
+}
+function resetClassTrainingTargets(): void {
+  form.value.classSkillGrantChoices.forEach((choice) => { choice.replacementTarget = null })
+  resetAdditionalClassTraining()
+}
+function resetClassTraining(): void {
+  form.value.classSkillGrantChoices = createClassSkillGrantChoices(selectedCharacterClass.value)
+  resetAdditionalClassTraining()
+}
 function isFinalBoostDisabled(type: AbilityCode): boolean {
   return isFinalFreeBoostDisabled(type, form.value.finalFreeBoosts)
 }
@@ -329,7 +439,7 @@ function formatAbilities(types: AbilityCode[]): string {
   return types.map(getAbilityLabel).join(', ') || t('wizard.none')
 }
 function next(): void {
-  if (canContinue.value && step.value < 8) step.value += 1
+  if (canContinue.value && step.value < 9) step.value += 1
 }
 function previous(): void {
   if (step.value > 1) step.value -= 1
@@ -353,6 +463,14 @@ async function submit(): Promise<void> {
       skills.value,
     ) ||
     !isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts)
+    || !isClassTrainingComplete(
+      selectedCharacterClass.value,
+      form.value.classSkillGrantChoices,
+      form.value.additionalClassTrainingChoices,
+      additionalClassTrainingCount.value,
+      existingClassTrainingSkillIds.value,
+      skills.value,
+    )
   )
     return
   errorMessages.value = []
@@ -383,6 +501,19 @@ async function submit(): Promise<void> {
       divineSanctification: form.value.divineSanctification,
       deitySkillReplacementId: form.value.deitySkillReplacementId,
       finalFreeBoosts: form.value.finalFreeBoosts,
+      classSkillGrantChoices: form.value.classSkillGrantChoices.map((choice) => ({
+        ...choice,
+        replacementTarget: choice.replacementTarget
+          ? {
+            ...choice.replacementTarget,
+            customLoreTopic: choice.replacementTarget.customLoreTopic?.trim() || null,
+          }
+          : null,
+      })),
+      additionalClassTrainingChoices: form.value.additionalClassTrainingChoices.map((choice) => ({
+        ...choice,
+        customLoreTopic: choice.customLoreTopic?.trim() || null,
+      })),
     })
     await router.replace('/')
   } catch (error) {
@@ -418,6 +549,15 @@ async function loadCatalogs(): Promise<void> {
   }
 }
 onMounted(loadCatalogs)
+watch(additionalClassTrainingCount, (count) => {
+  if (form.value.additionalClassTrainingChoices.length !== count) {
+    form.value.additionalClassTrainingChoices = createAdditionalClassTrainingChoices(count)
+  }
+})
+watch(
+  () => existingClassTrainingSkillIds.value.join('|'),
+  () => resetClassTrainingTargets(),
+)
 </script>
 
 <template>
@@ -430,10 +570,10 @@ onMounted(loadCatalogs)
       </div>
       <v-btn variant="text" to="/">{{ t('common.cancel') }}</v-btn>
     </header>
-    <v-progress-linear :model-value="(step / 8) * 100" color="accent" height="8" rounded />
+    <v-progress-linear :model-value="(step / 9) * 100" color="accent" height="8" rounded />
     <ol class="steps">
       <li
-        v-for="(item, index) in [t('wizard.basic'), t('wizard.ancestry'), t('wizard.choices'), t('wizard.boosts'), t('wizard.background'), t('classUi.characterClass'), t('wizard.finalFreeBoosts'), t('wizard.review')]"
+        v-for="(item, index) in [t('wizard.basic'), t('wizard.ancestry'), t('wizard.choices'), t('wizard.boosts'), t('wizard.background'), t('classUi.characterClass'), t('wizard.finalFreeBoosts'), t('classUi.classTraining'), t('wizard.review')]"
         :key="item"
         :class="{ active: step === index + 1, complete: step > index + 1 }"
       >
@@ -726,7 +866,7 @@ onMounted(loadCatalogs)
                 v-for="rule in selectedCharacterClass.rules"
                 :key="rule.id"
                 :title="rule.name"
-                :subtitle="rule.requiresChoice ? `${rule.summary} ${t('classUi.deferredChoice')}` : rule.summary"
+                :subtitle="rule.deferredDependencies.length ? `${rule.summary} ${t('classUi.deferredChoice')}` : rule.summary"
               />
             </v-list>
           </template>
@@ -746,7 +886,71 @@ onMounted(loadCatalogs)
             hide-details
           />
         </section>
-        <section v-else-if="step === 8 && selectedAncestry">
+        <section v-else-if="step === 8 && selectedCharacterClass">
+          <h2>{{ t('classUi.classTraining') }}</h2>
+          <p class="hint">
+            {{ t('classUi.classTrainingHint', { count: additionalClassTrainingCount }) }}
+          </p>
+          <div
+            v-for="grant in selectedCharacterClass.initialSkillGrants"
+            :key="grant.id"
+            class="training-choice"
+          >
+            <v-select
+              v-if="grant.skillOptions.length > 1"
+              :model-value="getClassGrantChoice(grant.id)?.selectedSkillId"
+              :items="skills.filter((skill) => grant.skillOptions.includes(skill.id))"
+              item-title="name"
+              item-value="id"
+              :label="t('classUi.initialClassSkill')"
+              @update:model-value="(value) => { const choice = getClassGrantChoice(grant.id); if (choice) { choice.selectedSkillId = value; choice.replacementTarget = null } }"
+            />
+            <v-alert v-else type="info" variant="tonal">
+              {{ t('classUi.initialClassSkill') }}: {{ getSkillName(grant.skillOptions[0]) }}
+            </v-alert>
+            <template v-if="classGrantRequiresReplacement(grant.id)">
+              <p class="hint">{{ t('classUi.classSkillReplacementHint') }}</p>
+              <v-select
+                :model-value="getClassGrantChoice(grant.id)?.replacementTarget?.skillId"
+                :items="skills"
+                item-title="name"
+                item-value="id"
+                clearable
+                :label="t('classUi.replacementSkill')"
+                @update:model-value="(value) => setClassGrantReplacementSkill(grant.id, value)"
+              />
+              <v-text-field
+                :model-value="getClassGrantChoice(grant.id)?.replacementTarget?.customLoreTopic"
+                :label="t('classUi.customLore')"
+                clearable
+                @update:model-value="(value) => setClassGrantReplacementLore(grant.id, value ?? '')"
+              />
+            </template>
+          </div>
+          <h3>{{ t('classUi.additionalClassSkills') }}</h3>
+          <div
+            v-for="(choice, index) in form.additionalClassTrainingChoices"
+            :key="index"
+            class="training-choice"
+          >
+            <v-select
+              :model-value="choice.skillId"
+              :items="skills"
+              item-title="name"
+              item-value="id"
+              clearable
+              :label="t('classUi.additionalSkill', { number: index + 1 })"
+              @update:model-value="(value) => setTrainingSkill(choice, value)"
+            />
+            <v-text-field
+              :model-value="choice.customLoreTopic"
+              :label="t('classUi.customLore')"
+              clearable
+              @update:model-value="(value) => setTrainingLore(choice, value ?? '')"
+            />
+          </div>
+        </section>
+        <section v-else-if="step === 9 && selectedAncestry">
           <h2>{{ t('wizard.review') }}</h2>
           <v-list lines="two"
             ><v-list-item :title="t('common.name')" :subtitle="form.name" /><v-list-item
@@ -793,6 +997,8 @@ onMounted(loadCatalogs)
               :subtitle="groupProficiencies(effectiveClassProficiencies).map((group) => getProficiencyCategoryLabel(group.category)).join(', ')" /><v-list-item
               :title="t('wizard.finalFreeBoosts')"
               :subtitle="formatAbilities(form.finalFreeBoosts)" /><v-list-item
+              :title="t('classUi.classTraining')"
+              :subtitle="classTrainingLabels.join(', ')" /><v-list-item
               v-if="form.concept"
               :title="t('wizard.selectedConcept')"
               :subtitle="form.concept" /></v-list
@@ -810,7 +1016,7 @@ onMounted(loadCatalogs)
     >
     <footer>
       <v-btn variant="text" :disabled="step === 1 || isSubmitting" @click="previous">{{ t('common.back') }}</v-btn
-      ><v-spacer /><v-btn v-if="step < 8" color="primary" :disabled="!canContinue" @click="next"
+      ><v-spacer /><v-btn v-if="step < 9" color="primary" :disabled="!canContinue" @click="next"
         >{{ t('common.next') }}</v-btn
       ><v-btn v-else color="accent" :loading="isSubmitting" @click="submit"
         >{{ t('wizard.create') }}</v-btn

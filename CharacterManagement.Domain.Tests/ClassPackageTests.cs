@@ -363,6 +363,8 @@ public sealed class ClassPackageTests
                     ProficiencyRank.Trained,
                     $"{id}.initial_proficiencies" ),
             ],
+            [],
+            0,
             null,
             [],
             [] );

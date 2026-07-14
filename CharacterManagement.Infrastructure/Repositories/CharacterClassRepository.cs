@@ -32,77 +32,69 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
         return
         [
             Create(
-                "bard", "Bard", 94, 8, [ AbilityType.Charisma ], SpellTradition.Occult,
+                "bard", "Bard", 94, 8, [ AbilityType.Charisma ], 4, SpellTradition.Occult,
                 [
-                    AdditionalSkills( "bard", 4 ),
                     Spellcasting( "bard", "Occult spellcasting, spell repertoire, and composition spells." ),
                     Choice( "bard.muse", "Muse", "Choose a muse that grants a bard feat and a spell.", CharacterClassDependencyType.ClassChoiceCatalog )
                 ],
-                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.SkillCatalog, CharacterClassDependencyType.SpellCatalog, CharacterClassDependencyType.ClassChoiceCatalog, CharacterClassDependencyType.ClassFeatCatalog ] ),
+                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.SpellCatalog, CharacterClassDependencyType.ClassChoiceCatalog, CharacterClassDependencyType.ClassFeatCatalog ] ),
             Create(
-                "cleric", "Cleric", 108, 8, [ AbilityType.Wisdom ], SpellTradition.Divine,
+                "cleric", "Cleric", 108, 8, [ AbilityType.Wisdom ], 2, SpellTradition.Divine,
                 [
-                    AdditionalSkills( "cleric", 2 ),
                     Spellcasting( "cleric", "Divine spellcasting and Divine Font." ),
                     Choice( "cleric.deity", "Deity", "Choose a deity that determines a skill, favored weapon, and spells.", CharacterClassDependencyType.DeityCatalog ),
                     Choice( "cleric.doctrine", "Doctrine", "Choose a cleric doctrine.", CharacterClassDependencyType.ClericDoctrineCatalog )
                 ],
-                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.SkillCatalog, CharacterClassDependencyType.SpellCatalog, CharacterClassDependencyType.DeityCatalog, CharacterClassDependencyType.ClericDoctrineCatalog ] ),
+                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.SpellCatalog, CharacterClassDependencyType.DeityCatalog, CharacterClassDependencyType.ClericDoctrineCatalog ] ),
             Create(
-                "druid", "Druid", 122, 8, [ AbilityType.Wisdom ], SpellTradition.Primal,
+                "druid", "Druid", 122, 8, [ AbilityType.Wisdom ], 2, SpellTradition.Primal,
                 [
-                    AdditionalSkills( "druid", 2 ),
                     Spellcasting( "druid", "Primal spellcasting." ),
                     Feature( "druid.features", "Druid Features", "Anathema, Shield Block, Voice of Nature, and Wildsong." ),
                     Choice( "druid.order", "Druidic Order", "Choose an order that grants a feat, order spell, and trained skill.", CharacterClassDependencyType.ClassChoiceCatalog )
                 ],
-                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.SkillCatalog, CharacterClassDependencyType.SpellCatalog, CharacterClassDependencyType.ClassFeatureRules, CharacterClassDependencyType.ClassChoiceCatalog ] ),
+                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.SpellCatalog, CharacterClassDependencyType.ClassFeatureRules, CharacterClassDependencyType.ClassChoiceCatalog ] ),
             Create(
-                "fighter", "Fighter", 136, 10, [ AbilityType.Strength, AbilityType.Dexterity ], null,
+                "fighter", "Fighter", 136, 10, [ AbilityType.Strength, AbilityType.Dexterity ], 3, null,
                 [
-                    AdditionalSkills( "fighter", 3 ),
                     Feature( "fighter.features", "Fighter Features", "Reactive Strike and Shield Block." ),
                     ClassFeat( "fighter.feat", "Fighter Feat" )
                 ],
-                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.SkillCatalog, CharacterClassDependencyType.ClassFeatureRules, CharacterClassDependencyType.ClassFeatCatalog ] ),
+                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.ClassFeatureRules, CharacterClassDependencyType.ClassFeatCatalog ] ),
             Create(
-                "ranger", "Ranger", 152, 10, [ AbilityType.Strength, AbilityType.Dexterity ], null,
+                "ranger", "Ranger", 152, 10, [ AbilityType.Strength, AbilityType.Dexterity ], 4, null,
                 [
-                    AdditionalSkills( "ranger", 4 ),
                     Feature( "ranger.hunt_prey", "Hunt Prey", "Grants the Hunt Prey class feature." ),
                     Choice( "ranger.hunters_edge", "Hunter's Edge", "Choose a Hunter's Edge.", CharacterClassDependencyType.ClassChoiceCatalog ),
                     ClassFeat( "ranger.feat", "Ranger Feat" )
                 ],
-                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.SkillCatalog, CharacterClassDependencyType.ClassFeatureRules, CharacterClassDependencyType.ClassChoiceCatalog, CharacterClassDependencyType.ClassFeatCatalog ] ),
+                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.ClassFeatureRules, CharacterClassDependencyType.ClassChoiceCatalog, CharacterClassDependencyType.ClassFeatCatalog ] ),
             Create(
-                "rogue", "Rogue", 164, 8, [ AbilityType.Dexterity ], null,
+                "rogue", "Rogue", 164, 8, [ AbilityType.Dexterity ], 7, null,
                 [
-                    AdditionalSkills( "rogue", 7 ),
                     Feature( "rogue.features", "Rogue Features", "Sneak Attack 1d6 and Surprise Attack." ),
                     Choice( "rogue.racket", "Rogue's Racket", "Choose a racket that can change skills and the available key ability.", CharacterClassDependencyType.RogueRacketCatalog ),
                     ClassFeat( "rogue.feat", "Rogue Feat" ),
                     SkillFeat( "rogue.skill_feat", "Skill Feat" )
                 ],
-                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.SkillCatalog, CharacterClassDependencyType.ClassFeatureRules, CharacterClassDependencyType.RogueRacketCatalog, CharacterClassDependencyType.ClassFeatCatalog, CharacterClassDependencyType.SkillFeatCatalog ] ),
+                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.ClassFeatureRules, CharacterClassDependencyType.RogueRacketCatalog, CharacterClassDependencyType.ClassFeatCatalog, CharacterClassDependencyType.SkillFeatCatalog ] ),
             Create(
-                "witch", "Witch", 178, 6, [ AbilityType.Intelligence ], null,
+                "witch", "Witch", 178, 6, [ AbilityType.Intelligence ], 3, null,
                 [
-                    AdditionalSkills( "witch", 3 ),
                     Spellcasting( "witch", "Spell tradition and spellcasting depend on the patron." ),
                     Feature( "witch.familiar", "Familiar", "Grants a familiar and familiar spell rules." ),
                     Choice( "witch.patron", "Patron", "Choose a patron that determines tradition and related rules.", CharacterClassDependencyType.ClassChoiceCatalog )
                 ],
-                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.SkillCatalog, CharacterClassDependencyType.SpellCatalog, CharacterClassDependencyType.FamiliarRules, CharacterClassDependencyType.ClassChoiceCatalog ] ),
+                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.SpellCatalog, CharacterClassDependencyType.FamiliarRules, CharacterClassDependencyType.ClassChoiceCatalog ] ),
             Create(
-                "wizard", "Wizard", 192, 6, [ AbilityType.Intelligence ], SpellTradition.Arcane,
+                "wizard", "Wizard", 192, 6, [ AbilityType.Intelligence ], 2, SpellTradition.Arcane,
                 [
-                    AdditionalSkills( "wizard", 2 ),
                     Spellcasting( "wizard", "Arcane spellcasting." ),
                     Feature( "wizard.arcane_bond", "Arcane Bond", "Grants the Arcane Bond class feature." ),
                     Choice( "wizard.thesis", "Arcane Thesis", "Choose an Arcane Thesis.", CharacterClassDependencyType.ClassChoiceCatalog ),
                     Choice( "wizard.school", "Arcane School", "Choose an Arcane School.", CharacterClassDependencyType.ClassChoiceCatalog )
                 ],
-                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.SkillCatalog, CharacterClassDependencyType.SpellCatalog, CharacterClassDependencyType.ClassFeatureRules, CharacterClassDependencyType.ClassChoiceCatalog ] )
+                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.SpellCatalog, CharacterClassDependencyType.ClassFeatureRules, CharacterClassDependencyType.ClassChoiceCatalog ] )
         ];
     }
 
@@ -112,6 +104,7 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
         int page,
         int baseHitPoints,
         IReadOnlyList<AbilityType> keyAbilityOptions,
+        int additionalSkillCountBase,
         SpellTradition? spellTradition,
         IReadOnlyList<CharacterClassRuleDescriptor> rules,
         IReadOnlyList<CharacterClassDependencyType> dependencies )
@@ -123,9 +116,52 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
             baseHitPoints,
             keyAbilityOptions,
             InitialProficiencies( id, name ),
+            InitialSkillGrants( id ),
+            additionalSkillCountBase,
             spellTradition,
-            rules,
+            [ AdditionalSkills( id, additionalSkillCountBase ), .. rules ],
             dependencies );
+    }
+
+    private static IReadOnlyList<ClassSkillGrantDescriptor> InitialSkillGrants( string id )
+    {
+        return id switch
+        {
+            "bard" =>
+            [
+                SkillGrant( "bard", "occultism", "skill.occultism" ),
+                SkillGrant( "bard", "performance", "skill.performance" ),
+            ],
+            "cleric" => [ SkillGrant( "cleric", "religion", "skill.religion" ) ],
+            "druid" => [ SkillGrant( "druid", "nature", "skill.nature" ) ],
+            "fighter" =>
+            [
+                SkillGrant(
+                    "fighter",
+                    "acrobatics_or_athletics",
+                    "skill.acrobatics",
+                    "skill.athletics" ),
+            ],
+            "ranger" =>
+            [
+                SkillGrant( "ranger", "nature", "skill.nature" ),
+                SkillGrant( "ranger", "survival", "skill.survival" ),
+            ],
+            "rogue" => [ SkillGrant( "rogue", "stealth", "skill.stealth" ) ],
+            "witch" => [],
+            "wizard" => [ SkillGrant( "wizard", "arcana", "skill.arcana" ) ],
+            _ => throw new ArgumentOutOfRangeException( nameof( id ), $"Unknown character class '{id}'." ),
+        };
+    }
+
+    private static ClassSkillGrantDescriptor SkillGrant(
+        string classId,
+        string grantId,
+        params string[] skillOptions )
+    {
+        return new ClassSkillGrantDescriptor(
+            $"class.{classId}.skill.{grantId}",
+            skillOptions );
     }
 
     private static IReadOnlyList<ProficiencyGrant> InitialProficiencies( string id, string name )
@@ -243,8 +279,7 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
             "Additional Skills",
             $"Trained in {baseCount} plus Intelligence modifier additional skills.",
             true,
-            CharacterClassDependencyType.SkillCatalog,
-            CharacterClassDependencyType.ProficiencyRules );
+            [] );
     }
 
     private static CharacterClassRuleDescriptor Spellcasting( string id, string summary )
