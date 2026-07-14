@@ -304,6 +304,17 @@ const classTrainingLabels = computed(() => getClassTrainingLabels(
   existingClassTrainingSkillIds.value,
   skills.value,
 ))
+function isSelectedClassChoiceComplete(): boolean {
+  return selectedCharacterClass.value?.id === 'class.rogue'
+    ? isRogueRacketChoiceComplete(
+      selectedRogueRacket.value,
+      form.value.classKeyAbility,
+      form.value.rogueTrainingChoices,
+      backgroundSkillIds.value,
+      skills.value,
+    )
+    : isCharacterClassChoiceComplete(selectedCharacterClass.value, form.value.classKeyAbility)
+}
 const canContinue = computed(() => {
   if (step.value === 1)
     return (
@@ -344,15 +355,7 @@ const canContinue = computed(() => {
         backgroundSkillIds.value,
         skills.value,
       ) &&
-      (selectedCharacterClass.value?.id === 'class.rogue'
-        ? isRogueRacketChoiceComplete(
-          selectedRogueRacket.value,
-          form.value.classKeyAbility,
-          form.value.rogueTrainingChoices,
-          backgroundSkillIds.value,
-          skills.value,
-        )
-        : isCharacterClassChoiceComplete(selectedCharacterClass.value, form.value.classKeyAbility))
+      isSelectedClassChoiceComplete()
     )
   if (step.value === 7)
     return isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts)
@@ -552,6 +555,7 @@ async function submit(): Promise<void> {
     !form.value.backgroundRestrictedBoost ||
     !form.value.backgroundFreeBoost ||
     !form.value.classKeyAbility ||
+    !isSelectedClassChoiceComplete() ||
     !isHuntersEdgeChoiceComplete(selectedCharacterClass.value, selectedHuntersEdge.value) ||
     !isDruidicOrderChoiceComplete(selectedCharacterClass.value, selectedDruidicOrder.value) ||
     !isBardMuseChoiceComplete(selectedCharacterClass.value, selectedBardMuse.value) ||

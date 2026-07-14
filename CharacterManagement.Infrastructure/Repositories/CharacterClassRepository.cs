@@ -65,10 +65,10 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
                 "ranger", "Ranger", 152, 10, [ AbilityType.Strength, AbilityType.Dexterity ], 4, null,
                 [
                     Feature( "ranger.hunt_prey", "Hunt Prey", "Grants the Hunt Prey class feature." ),
-                    Choice( "ranger.hunters_edge", "Hunter's Edge", "Choose a Hunter's Edge.", CharacterClassDependencyType.ClassChoiceCatalog ),
+                    Choice( "ranger.hunters_edge", "Hunter's Edge", "Choose a Hunter's Edge." ),
                     ClassFeat( "ranger.feat", "Ranger Feat" )
                 ],
-                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.ClassFeatureRules, CharacterClassDependencyType.ClassChoiceCatalog, CharacterClassDependencyType.ClassFeatCatalog ] ),
+                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.ClassFeatureRules, CharacterClassDependencyType.ClassFeatCatalog ] ),
             Create(
                 "rogue", "Rogue", 164, 8, [ AbilityType.Dexterity ], 7, null,
                 [

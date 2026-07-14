@@ -24,6 +24,7 @@ Vikunja остаётся источником истины по фактичес
 - [`witch_patron_implementation.md`](witch_patron_implementation.md)
 - [`wizard_arcane_school_implementation.md`](wizard_arcane_school_implementation.md)
 - [`wizard_arcane_thesis_implementation.md`](wizard_arcane_thesis_implementation.md)
+- [`priority_1_final_review.md`](priority_1_final_review.md)
 - [`final_free_boosts_implementation.md`](final_free_boosts_implementation.md)
 - [`hit_points_v1_implementation.md`](hit_points_v1_implementation.md)
 - [`skills_lore_foundation_implementation.md`](skills_lore_foundation_implementation.md)

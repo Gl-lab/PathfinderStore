@@ -108,6 +108,23 @@ public sealed class CharacterClassRepositoryTests
     }
 
     [Fact]
+    public void GetAll_AfterPriorityOne_HasNoUnresolvedGenericClassChoices()
+    {
+        CharacterClassRepository repository = new CharacterClassRepository();
+
+        IReadOnlyCollection<CharacterClass> characterClasses = repository.GetAll();
+
+        Assert.All( characterClasses, characterClass => Assert.DoesNotContain(
+            CharacterClassDependencyType.ClassChoiceCatalog,
+            characterClass.DeferredDependencies ) );
+        Assert.All(
+            characterClasses.SelectMany( characterClass => characterClass.Rules ),
+            rule => Assert.DoesNotContain(
+                CharacterClassDependencyType.ClassChoiceCatalog,
+                rule.DeferredDependencies ) );
+    }
+
+    [Fact]
     public void GetCharacterClass_UnknownId_Throws()
     {
         CharacterClassRepository repository = new CharacterClassRepository();
