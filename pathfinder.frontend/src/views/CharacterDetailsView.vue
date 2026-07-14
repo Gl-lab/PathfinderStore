@@ -311,7 +311,9 @@ onMounted(load)
               <p
                 v-for="effect in character.classPackage.clericDoctrine.effects"
                 :key="effect.id"
-              >{{ effect.name }}: {{ effect.summary }} {{ t('classUi.deferredEffect') }}</p>
+              >{{ effect.name }}: {{ effect.summary }}
+                <template v-if="effect.deferredDependencies.length">{{ t('classUi.deferredEffect') }}</template>
+              </p>
             </template>
             <template v-if="character.classPackage.deity">
               <p>{{ t('classUi.deity') }}: {{ character.classPackage.deity.name }}</p>
@@ -358,6 +360,20 @@ onMounted(load)
               <p>
                 {{ t('classUi.divineFontSpells') }}:
                 {{ character.classPackage.clericSpellLoadout.divineFontSpells.map((spell) => spell.name).join(', ') || t('wizard.none') }}
+              </p>
+            </template>
+            <template v-if="character.classPackage.clericFocusPool">
+              <p>
+                {{ t('classUi.focusPool') }}:
+                {{ character.classPackage.clericFocusPool.focusSpell.name }}
+              </p>
+              <p>
+                {{ t('classUi.focusPoints') }}:
+                {{ character.classPackage.clericFocusPool.maximumFocusPoints }}
+              </p>
+              <p>
+                {{ t('classUi.focusSource') }}:
+                {{ character.classPackage.clericFocusPool.sourceGrantId }}
               </p>
             </template>
             <p><strong>{{ t('classUi.rules') }}</strong></p>

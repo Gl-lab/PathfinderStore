@@ -20,7 +20,7 @@ public sealed class ClericDoctrineRepositoryTests
     }
 
     [Fact]
-    public void GetClericDoctrine_Cloistered_ReturnsOnlyDeferredDomainInitiate()
+    public void GetClericDoctrine_Cloistered_ReturnsImplementedDomainInitiate()
     {
         ClericDoctrineRepository repository = new ClericDoctrineRepository();
 
@@ -29,8 +29,8 @@ public sealed class ClericDoctrineRepositoryTests
         Assert.Empty( doctrine.ProficiencyGrants );
         ClericDoctrineEffectDescriptor effect = Assert.Single( doctrine.Effects );
         Assert.Equal( "cleric_doctrine.cloistered.effect.domain_initiate", effect.Id );
-        Assert.Contains( CharacterClassDependencyType.DomainCatalog, effect.DeferredDependencies );
-        Assert.Contains( CharacterClassDependencyType.DeityCatalog, doctrine.DeferredDependencies );
+        Assert.Empty( effect.DeferredDependencies );
+        Assert.Empty( doctrine.DeferredDependencies );
     }
 
     [Fact]

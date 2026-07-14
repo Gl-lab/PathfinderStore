@@ -1147,8 +1147,9 @@ watch(
               />
               <v-alert v-if="selectedClericDomain" type="info" variant="tonal">
                 {{ t('classUi.initialDomainSpell') }}:
-                {{ selectedClericDomain.initialFocusSpell.name }}.
-                {{ t('classUi.deferredEffect') }}
+                {{ selectedClericDomain.initialFocusPool.focusSpell.name }}.
+                {{ t('classUi.focusPoints') }}:
+                {{ selectedClericDomain.initialFocusPool.maximumFocusPoints }}.
               </v-alert>
               <v-radio-group
                 v-if="selectedDeity && selectedDeity.sanctificationOptions.length > 0"
@@ -1232,7 +1233,9 @@ watch(
                 :key="effect.id"
                 type="info"
                 variant="tonal"
-              >{{ effect.name }}: {{ effect.summary }} {{ t('classUi.deferredEffect') }}</v-alert>
+              >{{ effect.name }}: {{ effect.summary }}
+                <template v-if="effect.deferredDependencies.length">{{ t('classUi.deferredEffect') }}</template>
+              </v-alert>
             </div>
             <v-list density="compact" :subheader="t('classUi.initialProficiencies')">
               <v-list-item
@@ -1439,6 +1442,9 @@ watch(
               v-if="selectedClericDomain"
               :title="t('classUi.clericDomain')"
               :subtitle="`${selectedClericDomain.name} — ${selectedClericDomain.initialFocusSpell.name}`" /><v-list-item
+              v-if="selectedClericDomain"
+              :title="t('classUi.focusPool')"
+              :subtitle="`${selectedClericDomain.initialFocusPool.focusSpell.name}: ${selectedClericDomain.initialFocusPool.maximumFocusPoints}`" /><v-list-item
               v-if="selectedDeity && form.divineFont"
               :title="t('classUi.divineFont')"
               :subtitle="t(`classUi.divineFonts.${form.divineFont}`)" /><v-list-item

@@ -1,13 +1,17 @@
 using Pathfinder.CharacterManagement.Application.DTO;
 using Pathfinder.CharacterManagement.Domain.Entity;
+using Pathfinder.CharacterManagement.Domain.Rules.Spells;
 
 namespace Pathfinder.CharacterManagement.Application.Converters;
 
 public static class ClericDomainDtoMapper
 {
-    public static ClericDomainDto Map( ClericDomain clericDomain )
+    public static ClericDomainDto Map(
+        ClericDomain clericDomain,
+        ClericFocusPool focusPool )
     {
         ArgumentNullException.ThrowIfNull( clericDomain );
+        ArgumentNullException.ThrowIfNull( focusPool );
 
         return new ClericDomainDto
         {
@@ -19,6 +23,19 @@ public static class ClericDomainDtoMapper
                 Page = clericDomain.Source.Page,
             },
             InitialFocusSpell = Map( clericDomain.InitialFocusSpell ),
+            InitialFocusPool = Map( focusPool ),
+        };
+    }
+
+    public static ClericFocusPoolDto Map( ClericFocusPool focusPool )
+    {
+        ArgumentNullException.ThrowIfNull( focusPool );
+
+        return new ClericFocusPoolDto
+        {
+            MaximumFocusPoints = focusPool.MaximumFocusPoints,
+            FocusSpell = SpellDefinitionDtoMapper.Map( focusPool.FocusSpell ),
+            SourceGrantId = focusPool.SourceGrantId,
         };
     }
 

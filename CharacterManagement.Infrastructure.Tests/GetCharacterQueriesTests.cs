@@ -145,6 +145,12 @@ public sealed class GetCharacterQueriesTests
         Assert.NotNull( result.ClassPackage.ClericDomain );
         Assert.Equal( "domain.might", result.ClassPackage.ClericDomain.Id );
         Assert.NotNull( result.ClassPackage.ClericSpellLoadout );
+        Assert.NotNull( result.ClassPackage.ClericFocusPool );
+        Assert.Equal( 1, result.ClassPackage.ClericFocusPool.MaximumFocusPoints );
+        Assert.Equal( "spell.athletic_rush", result.ClassPackage.ClericFocusPool.FocusSpell.Id );
+        Assert.Equal(
+            "cleric_doctrine.cloistered.effect.domain_initiate",
+            result.ClassPackage.ClericFocusPool.SourceGrantId );
         Assert.Equal( 5, result.ClassPackage.ClericSpellLoadout.Cantrips.Count );
         Assert.Equal( 2, result.ClassPackage.ClericSpellLoadout.PreparedSpells.Count );
         Assert.Equal( 4, result.ClassPackage.ClericSpellLoadout.DivineFontSpells.Count );
@@ -689,6 +695,9 @@ public sealed class GetCharacterQueriesTests
         Assert.Equal( "class.cleric", result.ClassPackage.ClassId );
         Assert.Null( result.ClassPackage.ClericDoctrine );
         Assert.Null( result.ClassPackage.Deity );
+        Assert.Null( result.ClassPackage.ClericDomain );
+        Assert.Null( result.ClassPackage.ClericSpellLoadout );
+        Assert.Null( result.ClassPackage.ClericFocusPool );
         Assert.Contains(
             result.Proficiencies,
             proficiency => proficiency.TargetId == ProficiencyTargets.Fortitude.Id );

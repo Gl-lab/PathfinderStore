@@ -41,16 +41,9 @@ public sealed class ClericDoctrineRepository : IClericDoctrineRepository
                         "cloistered",
                         "domain_initiate",
                         "Domain Initiate",
-                        "Grants Domain Initiate and requires a domain choice.",
-                        CharacterClassDependencyType.ClassFeatCatalog,
-                        CharacterClassDependencyType.DomainCatalog,
-                        CharacterClassDependencyType.DeityCatalog )
+                        "Grants Domain Initiate and requires a domain choice." )
                 ],
-                [
-                    CharacterClassDependencyType.ClassFeatCatalog,
-                    CharacterClassDependencyType.DomainCatalog,
-                    CharacterClassDependencyType.DeityCatalog,
-                ] ),
+                [] ),
             new ClericDoctrine(
                 "cleric_doctrine.warpriest",
                 "Warpriest",

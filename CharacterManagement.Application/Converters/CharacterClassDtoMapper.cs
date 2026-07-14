@@ -86,7 +86,8 @@ public static class CharacterClassDtoMapper
         ArcaneSchool? arcaneSchool = null,
         ArcaneThesis? arcaneThesis = null,
         ClericDomain? clericDomain = null,
-        ClericSpellLoadoutDto? clericSpellLoadout = null )
+        ClericSpellLoadoutDto? clericSpellLoadout = null,
+        ClericFocusPoolDto? clericFocusPool = null )
     {
         ArgumentNullException.ThrowIfNull( character );
         ArgumentNullException.ThrowIfNull( characterClass );
@@ -124,6 +125,7 @@ public static class CharacterClassDtoMapper
                 ? null
                 : ClericDomainDtoMapper.MapPackage( clericDomain ),
             ClericSpellLoadout = clericSpellLoadout,
+            ClericFocusPool = clericFocusPool,
             Rules = characterClass.Rules
                 .Select( Map )
                 .ToList(),

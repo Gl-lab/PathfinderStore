@@ -320,6 +320,11 @@ export interface ClericDomain {
   id: string
   name: string
   initialFocusSpell: SpellReference
+  initialFocusPool: {
+    maximumFocusPoints: number
+    focusSpell: SpellDefinition
+    sourceGrantId: string
+  }
 }
 
 export type DivineFont = 'Heal' | 'Harm'

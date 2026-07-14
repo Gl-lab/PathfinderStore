@@ -16,6 +16,7 @@ public sealed class ClericDomainDto
     public string Name { get; set; } = String.Empty;
     public SourceReferenceDto Source { get; set; } = new SourceReferenceDto();
     public SpellReferenceDto InitialFocusSpell { get; set; } = new SpellReferenceDto();
+    public ClericFocusPoolDto InitialFocusPool { get; set; } = new ClericFocusPoolDto();
 }
 
 public sealed class ClericDomainPackageDto

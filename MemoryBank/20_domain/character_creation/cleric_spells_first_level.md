@@ -45,6 +45,17 @@
 
 Legacy rows после миграции получают пустые JSONB-коллекции и остаются читаемыми. Строгая проверка полного loadout применяется к созданию нового Cleric.
 
+## Domain focus spell и Focus Pool
+
+- `Domain Initiate` Cloistered Cleric выдаёт initial focus spell выбранного primary Domain;
+- definition разрешается через тот же spell catalog и обязана иметь kind `Focus` и rank `1`;
+- один полученный focus spell создаёт starting focus pool с максимумом `1` Focus Point;
+- read-модель хранит source grant ID `cleric_doctrine.cloistered.effect.domain_initiate`;
+- focus spell и pool отображаются отдельно от prepared slots и Divine Font;
+- current Focus Points, Refocus и расходование ресурсов во время игры в character creation не входят.
+
+Focus package является полностью производным и не добавляет persistence.
+
 ## Проверяемые инварианты
 
 - все spell IDs уникальны;

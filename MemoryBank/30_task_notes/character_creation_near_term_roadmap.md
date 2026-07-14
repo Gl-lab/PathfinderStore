@@ -186,6 +186,8 @@ Vikunja остаётся источником истины по карточка
 
 #### 2.4. Domain Focus Spell + Focus Pool
 
+**Статус:** завершено 14 июля 2026 года; focus package вычисляется из выбранного Domain без дополнительного persistence.
+
 - выбранный Domain выдаёт соответствующий focus spell;
 - стартовый focus pool моделируется отдельно от prepared и Font slots;
 - read-модель объясняет источник spell и pool;

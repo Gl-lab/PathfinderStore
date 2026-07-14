@@ -239,4 +239,6 @@ npm run build
 - slice 2.3 завершён: сервер валидирует и сохраняет 5 cantrips и 2 prepared slots, выводит 4 derived Divine Font slots, предоставляет deity-specific options API и отдельный wizard step;
 - миграция `AddClericSpellLoadout` создана через `dotnet ef`; legacy rows получают пустые JSONB-коллекции;
 - проверки 2.3: Domain tests `151/151`, Infrastructure tests `174/174`, frontend tests `54/54`, lint и production build проходят;
-- slice 2.4 ещё не реализован.
+- slice 2.4 завершён: Domain Initiate разрешает полную focus spell definition и derived one-point Focus Pool с явным source grant ID;
+- проверки 2.4: Domain tests `155/155`, Infrastructure tests `174/174`, frontend tests `55/55`, lint и production build проходят;
+- все slices 2.1–2.4 реализованы; до закрытия Priority 2 требуется итоговый cross-review.

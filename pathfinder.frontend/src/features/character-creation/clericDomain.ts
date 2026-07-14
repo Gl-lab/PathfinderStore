@@ -17,5 +17,21 @@ export function isClericDomainChoiceComplete(
 ): boolean {
   if (characterClass?.id !== 'class.cleric') return domain === null
   if (doctrine?.id !== 'cleric_doctrine.cloistered') return domain === null
-  return Boolean(deity && domain && deity.primaryDomainIds.includes(domain.id))
+  return Boolean(
+    deity &&
+    domain &&
+    deity.primaryDomainIds.includes(domain.id) &&
+    hasInitialClericFocusPool(domain),
+  )
+}
+
+export function hasInitialClericFocusPool(domain: ClericDomain): boolean {
+  const focusPool = domain.initialFocusPool
+  return (
+    Boolean(focusPool) &&
+    focusPool.maximumFocusPoints === 1 &&
+    focusPool.focusSpell.kind === 'Focus' &&
+    focusPool.focusSpell.id === domain.initialFocusSpell.id &&
+    Boolean(focusPool.sourceGrantId)
+  )
 }

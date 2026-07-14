@@ -11,7 +11,7 @@ Stable id domain строится как `domain.<snake_case_name>`, initial spe
 - Cloistered Cleric выбирает ровно один domain из `PrimaryDomainIds` выбранной Deity.
 - Warpriest не получает domain choice на первом уровне.
 - Выбор другого class, Doctrine или Deity удаляет несовместимый domain choice.
-- Initial domain spell является focus spell rank `1`; focus pool применяется отдельным slice Priority 2.
+- Initial domain spell является focus spell rank `1`; `Domain Initiate` разрешает его через spell catalog и создаёт derived Focus Pool с максимумом `1`.
 
 ## Нормализованный каталог
 
@@ -66,5 +66,5 @@ Stable id domain строится как `domain.<snake_case_name>`, initial spe
 ## Referential integrity
 
 - каждый `PrimaryDomainId` Cleric-eligible Deity обязан разрешаться в этом каталоге;
-- каждый `InitialFocusSpell.Id` обязан разрешаться в Cleric Spell Catalog v1 после slice 2.2;
+- каждый `InitialFocusSpell.Id` разрешается ровно в одну focus spell definition rank `1` из Cleric Spell Catalog v1;
 - domain id сохраняется в персонаже, остальные metadata вычисляются из каталога.

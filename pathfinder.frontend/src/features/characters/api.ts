@@ -191,6 +191,11 @@ export interface CharacterClassPackage {
     }[]
     divineFontSpells: { id: string; name: string; rank: number; kind: 'Spell' }[]
   } | null
+  clericFocusPool: {
+    maximumFocusPoints: number
+    focusSpell: { id: string; name: string; rank: number; kind: 'Focus' }
+    sourceGrantId: string
+  } | null
   rules: {
     id: string
     kind: string

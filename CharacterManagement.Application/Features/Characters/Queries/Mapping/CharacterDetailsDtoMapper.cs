@@ -82,6 +82,7 @@ public sealed class CharacterDetailsDtoMapper
         ClericSpellLoadoutDto? clericSpellLoadout = ResolveClericSpellLoadout(
             draftCharacter,
             deity );
+        ClericFocusPoolDto? clericFocusPool = ResolveClericFocusPool( clericDomain );
 
         return new CharacterDto
         {
@@ -109,7 +110,8 @@ public sealed class CharacterDetailsDtoMapper
                     arcaneSchool,
                     arcaneThesis,
                     clericDomain,
-                    clericSpellLoadout ),
+                    clericSpellLoadout,
+                    clericFocusPool ),
             FinalFreeBoosts = draftCharacter.AppliedFinalFreeBoosts.ToArray(),
             DerivedStatistics = ancestry is null || characterClass is null
                 ? null
@@ -347,6 +349,25 @@ public sealed class CharacterDetailsDtoMapper
                     .Select( _ => SpellDefinitionDtoMapper.Map( fontSpell ) )
                     .ToArray(),
         };
+    }
+
+    private ClericFocusPoolDto? ResolveClericFocusPool( ClericDomain? clericDomain )
+    {
+        if ( clericDomain is null )
+        {
+            return null;
+        }
+
+        if ( _spellRepository is null )
+        {
+            throw new InvalidOperationException(
+                "Spell repository is required to map a Cleric focus pool." );
+        }
+
+        ClericFocusPool focusPool = ClericFocusPoolResolver.Resolve(
+            clericDomain,
+            _spellRepository.GetAll() );
+        return ClericDomainDtoMapper.Map( focusPool );
     }
 
     private CharacterClass? ResolveCharacterClass( DraftCharacter character )
