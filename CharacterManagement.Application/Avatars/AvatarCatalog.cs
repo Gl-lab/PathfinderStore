@@ -8,7 +8,42 @@ public sealed class AvatarCatalog : IAvatarCatalog
 
     private static readonly IReadOnlyList<AvatarDefinition> DefaultAvatars =
     [
-        new AvatarDefinition( AvatarIds.Unknown, UnknownPath )
+        new AvatarDefinition( AvatarIds.Unknown, UnknownPath ),
+        new AvatarDefinition(
+            AvatarId.Create( "avatar.pc.000001" ),
+            "/avatars/pc/000001.webp",
+            AncestryType.Dwarf,
+            "class.bard",
+            CharacterGender.Male,
+            Variant: 1 ),
+        new AvatarDefinition(
+            AvatarId.Create( "avatar.pc.000002" ),
+            "/avatars/pc/000002.webp",
+            AncestryType.Dwarf,
+            "class.bard",
+            CharacterGender.Male,
+            Variant: 2 ),
+        new AvatarDefinition(
+            AvatarId.Create( "avatar.pc.000003" ),
+            "/avatars/pc/000003.webp",
+            AncestryType.Dwarf,
+            "class.bard",
+            CharacterGender.Female,
+            Variant: 1 ),
+        new AvatarDefinition(
+            AvatarId.Create( "avatar.pc.000004" ),
+            "/avatars/pc/000004.webp",
+            AncestryType.Dwarf,
+            "class.bard",
+            CharacterGender.Female,
+            Variant: 2 ),
+        new AvatarDefinition(
+            AvatarId.Create( "avatar.pc.000005" ),
+            "/avatars/pc/000005.webp",
+            AncestryType.Dwarf,
+            "class.cleric",
+            CharacterGender.Male,
+            Variant: 1 )
     ];
 
     private readonly IReadOnlyList<AvatarDefinition> _avatars;

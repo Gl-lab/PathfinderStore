@@ -10,4 +10,5 @@ public sealed record AvatarDefinition(
     CharacterGender? Gender = null,
     string? HeritageId = null,
     string? SpecializationId = null,
-    string? BackgroundId = null );
+    string? BackgroundId = null,
+    int? Variant = null );

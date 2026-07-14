@@ -86,6 +86,40 @@ public sealed class AvatarSelectorTests
         Assert.Equal( heritageAvatar, Assert.Single( result ) );
     }
 
+    [Theory]
+    [InlineData( "class.bard", CharacterGender.Male, 2 )]
+    [InlineData( "class.bard", CharacterGender.Female, 2 )]
+    [InlineData( "class.cleric", CharacterGender.Male, 1 )]
+    public void RuntimeCatalogReturnsOnlyAcceptedDwarfAssets(
+        string characterClassId,
+        CharacterGender gender,
+        int expectedCount )
+    {
+        AvatarCatalog catalog = new AvatarCatalog();
+
+        IReadOnlyList<AvatarDefinition> result = catalog.FindMatches( new AvatarSelectionCriteria(
+            AncestryType.Dwarf,
+            characterClassId,
+            gender ) );
+
+        Assert.Equal( expectedCount, result.Count );
+        Assert.All( result, avatar => Assert.NotNull( avatar.Variant ) );
+        Assert.All( result, avatar => Assert.StartsWith( "/avatars/pc/00000", avatar.Path ) );
+    }
+
+    [Fact]
+    public void RuntimeCatalogLeavesUncoveredCombinationEmpty()
+    {
+        AvatarCatalog catalog = new AvatarCatalog();
+
+        IReadOnlyList<AvatarDefinition> result = catalog.FindMatches( new AvatarSelectionCriteria(
+            AncestryType.Dwarf,
+            "class.cleric",
+            CharacterGender.Female ) );
+
+        Assert.Empty( result );
+    }
+
     private static AvatarDefinition CreateAvatar( string id ) => new AvatarDefinition(
         AvatarId.Create( id ),
         $"/avatars/{id}.webp",
