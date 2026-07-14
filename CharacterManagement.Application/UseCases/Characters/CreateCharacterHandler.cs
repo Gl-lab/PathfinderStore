@@ -1,5 +1,7 @@
 using MediatR;
 using Pathfinder.CharacterManagement.Application.Builders;
+using Pathfinder.CharacterManagement.Application.Avatars;
+using Pathfinder.CharacterManagement.Application.DTO;
 using Pathfinder.CharacterManagement.Application.Exceptions;
 using Pathfinder.CharacterManagement.Application.Repositories;
 using Pathfinder.CharacterManagement.Domain.Entity;
@@ -11,16 +13,19 @@ public sealed class CreateCharacterHandler : IRequestHandler<CreateCharacterComm
 {
     private readonly IAccountRepository _accountRepository;
     private readonly ICharacterBuilder _characterBuilder;
+    private readonly IAvatarSelector _avatarSelector;
     private readonly IUnitOfWork _unitOfWork;
 
     public CreateCharacterHandler(
         IAccountRepository accountRepository,
         ICharacterBuilder characterBuilder,
-        IUnitOfWork unitOfWork )
+        IUnitOfWork unitOfWork,
+        IAvatarSelector avatarSelector )
     {
         _accountRepository = accountRepository;
         _characterBuilder = characterBuilder;
         _unitOfWork = unitOfWork;
+        _avatarSelector = avatarSelector;
     }
 
     public async Task Handle( CreateCharacterCommand request, CancellationToken cancellationToken )
@@ -40,13 +45,22 @@ public sealed class CreateCharacterHandler : IRequestHandler<CreateCharacterComm
         IReadOnlyList<AbilityType> finalFreeBoosts = request.Character.FinalFreeBoosts
             ?? throw new CharacterManagementException( "Final free boosts must be specified." );
 
+        AvatarId avatarId = _avatarSelector.Select( new AvatarSelectionCriteria(
+            request.Character.AncestryType,
+            request.Character.ClassId,
+            request.Character.Gender,
+            request.Character.HeritageId,
+            ResolveSpecializationId( request.Character ),
+            request.Character.BackgroundId ) );
+
         _characterBuilder.CreateCharacter(
             account.Id,
             request.Character.Name,
             request.Character.AncestryType,
             request.Character.Concept,
             request.Character.Age,
-            request.Character.Gender );
+            request.Character.Gender,
+            avatarId );
         _characterBuilder.SetAncestryPackage( request.Character.HeritageId, request.Character.AncestryFeatId );
         _characterBuilder.ApplyFreeBoosts( request.Character.FreeBoosts );
         _characterBuilder.SetBackground(
@@ -80,5 +94,16 @@ public sealed class CreateCharacterHandler : IRequestHandler<CreateCharacterComm
         DraftCharacter draftCharacter = _characterBuilder.Build();
         account.AddDraftCharacter( draftCharacter );
         await _unitOfWork.Commit();
+    }
+
+    private static string? ResolveSpecializationId( CreateCharacterRequestDto character )
+    {
+        return character.RogueRacketId ??
+               character.ClericDoctrineId ??
+               character.HuntersEdgeId ??
+               character.DruidicOrderId ??
+               character.BardMuseId ??
+               character.WitchPatronId ??
+               character.ArcaneSchoolId;
     }
 }

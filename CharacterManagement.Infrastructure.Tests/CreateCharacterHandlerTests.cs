@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Pathfinder.CharacterManagement.Application.Builders.Implementation;
 using Pathfinder.CharacterManagement.Application.DTO;
 using Pathfinder.CharacterManagement.Application.UseCases.Characters;
+using Pathfinder.CharacterManagement.Application.Avatars;
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.CharacterManagement.Domain.Rules.Training;
 using Pathfinder.CharacterManagement.Infrastructure.Data;
@@ -69,6 +70,7 @@ public sealed class CreateCharacterHandlerTests
         Assert.Equal( character.Concept, savedCharacter.Concept );
         Assert.Equal( character.Age, savedCharacter.Age );
         Assert.Equal( character.Gender, savedCharacter.Gender );
+        Assert.Equal( AvatarIds.Unknown, savedCharacter.AvatarId );
         Assert.Equal( character.AncestryType, savedCharacter.AncestryType );
         Assert.Equal( character.HeritageId, savedCharacter.SelectedHeritageId );
         Assert.Equal( character.AncestryFeatId, savedCharacter.SelectedAncestryFeatId );
@@ -565,7 +567,10 @@ public sealed class CreateCharacterHandlerTests
 
         TestUnitOfWork unitOfWork = new TestUnitOfWork( dbContext );
 
-        return new CreateCharacterHandler( accountRepository, characterBuilder, unitOfWork );
+        AvatarSelector avatarSelector = new AvatarSelector(
+            new AvatarCatalog(),
+            new RandomAvatarSelectionIndexProvider() );
+        return new CreateCharacterHandler( accountRepository, characterBuilder, unitOfWork, avatarSelector );
     }
 
     private static IReadOnlyList<ClassTrainingTargetChoice> GeneralSkillChoices( params string[] skillIds )

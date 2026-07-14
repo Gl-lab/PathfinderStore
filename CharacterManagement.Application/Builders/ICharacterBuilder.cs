@@ -11,7 +11,8 @@ public interface ICharacterBuilder
         AncestryType ancestryType,
         string? concept = null,
         int? age = null,
-        CharacterGender gender = CharacterGender.NotSpecified );
+        CharacterGender gender = CharacterGender.NotSpecified,
+        AvatarId? avatarId = null );
 
     void SetAncestry( AncestryType ancestryType );
     void SetAncestryPackage( string heritageId, string ancestryFeatId );

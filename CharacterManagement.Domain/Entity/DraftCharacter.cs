@@ -13,6 +13,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public string? Concept { get; private set; }
     public int? Age { get; private set; }
     public CharacterGender Gender { get; private set; }
+    public AvatarId AvatarId { get; private set; }
     public AncestryType AncestryType { get; private set; }
     public AbilityScores AbilityScores { get; private set; }
     public IReadOnlyList<AbilityType> AppliedFreeBoosts { get; private set; } = [];
@@ -67,7 +68,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         AncestryType ancestryType,
         string? concept = null,
         int? age = null,
-        CharacterGender gender = CharacterGender.NotSpecified )
+        CharacterGender gender = CharacterGender.NotSpecified,
+        AvatarId? avatarId = null )
     {
         if ( accountId <= 0 )
         {
@@ -96,6 +98,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
             Concept = NormalizeConcept( concept ),
             Age = NormalizeAge( age ),
             Gender = gender,
+            AvatarId = avatarId ?? AvatarIds.Unknown,
             AncestryType = ancestryType,
             AbilityScores = AbilityScores.CreateDefault()
         };
@@ -708,6 +711,11 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         if ( !Enum.IsDefined( Gender ) )
         {
             throw new CharacterManagementException( "Character must have a valid gender state." );
+        }
+
+        if ( AvatarId is null )
+        {
+            throw new CharacterManagementException( "Character must have an avatar identifier." );
         }
     }
 

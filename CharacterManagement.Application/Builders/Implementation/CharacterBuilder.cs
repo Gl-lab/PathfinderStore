@@ -61,8 +61,9 @@ public class CharacterBuilder : ICharacterBuilder
         AncestryType ancestryType,
         string? concept = null,
         int? age = null,
-        CharacterGender gender = CharacterGender.NotSpecified ) =>
-        _draftCharacter = DraftCharacter.Create( accountId, name, ancestryType, concept, age, gender );
+        CharacterGender gender = CharacterGender.NotSpecified,
+        AvatarId? avatarId = null ) =>
+        _draftCharacter = DraftCharacter.Create( accountId, name, ancestryType, concept, age, gender, avatarId );
 
     public void SetAncestry( AncestryType ancestryType )
     {

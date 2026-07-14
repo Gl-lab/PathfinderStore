@@ -25,6 +25,11 @@ public class CharacterManagementDbContext( DbContextOptions<CharacterManagementD
             b.Property( x => x.Concept ).HasMaxLength( 1000 );
             b.Property( x => x.Age );
             b.Property( x => x.Gender ).HasConversion<int>();
+            b.Property( x => x.AvatarId )
+                .HasConversion(
+                    avatarId => avatarId.Value,
+                    value => AvatarId.Create( value ) )
+                .HasMaxLength( AvatarId.MaxLength );
             b.Property( x => x.AncestryType ).HasConversion<int>();
             b.Property( x => x.SelectedHeritageId ).HasMaxLength( 100 );
             b.Property( x => x.SelectedAncestryFeatId ).HasMaxLength( 100 );

@@ -1,4 +1,5 @@
 using Pathfinder.CharacterManagement.Application.Converters;
+using Pathfinder.CharacterManagement.Application.Avatars;
 using Pathfinder.CharacterManagement.Application.DTO;
 using Pathfinder.CharacterManagement.Application.Repositories;
 using Pathfinder.CharacterManagement.Domain.Entity;
@@ -20,6 +21,7 @@ public sealed class CharacterDetailsDtoMapper
     private readonly IArcaneThesisRepository? _arcaneThesisRepository;
     private readonly IClericDoctrineRepository? _clericDoctrineRepository;
     private readonly IDeityRepository? _deityRepository;
+    private readonly IAvatarCatalog? _avatarCatalog;
 
     public CharacterDetailsDtoMapper(
         IAncestryRepository? ancestryRepository = null,
@@ -34,7 +36,8 @@ public sealed class CharacterDetailsDtoMapper
         IDeityRepository? deityRepository = null,
         IWitchPatronRepository? witchPatronRepository = null,
         IArcaneSchoolRepository? arcaneSchoolRepository = null,
-        IArcaneThesisRepository? arcaneThesisRepository = null )
+        IArcaneThesisRepository? arcaneThesisRepository = null,
+        IAvatarCatalog? avatarCatalog = null )
     {
         _ancestryRepository = ancestryRepository;
         _backgroundRepository = backgroundRepository;
@@ -49,6 +52,7 @@ public sealed class CharacterDetailsDtoMapper
         _arcaneThesisRepository = arcaneThesisRepository;
         _clericDoctrineRepository = clericDoctrineRepository;
         _deityRepository = deityRepository;
+        _avatarCatalog = avatarCatalog;
     }
 
     public DraftCharacter Convert( CharacterDto character ) => throw new NotSupportedException();
@@ -79,6 +83,8 @@ public sealed class CharacterDetailsDtoMapper
             Concept = draftCharacter.Concept,
             Age = draftCharacter.Age,
             Gender = draftCharacter.Gender,
+            AvatarId = draftCharacter.AvatarId.Value,
+            AvatarPath = _avatarCatalog?.ResolvePath( draftCharacter.AvatarId ) ?? AvatarCatalog.UnknownPath,
             AncestryType = draftCharacter.AncestryType,
             AncestryPackage = ancestry is null ? null : AncestryDtoMapper.MapPackage( draftCharacter, ancestry ),
             BackgroundPackage = background is null
