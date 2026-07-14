@@ -20,6 +20,7 @@ public class CreateCharacterRequestDto
     public string? RogueRacketId { get; set; }
     public IReadOnlyList<RogueTrainingChoice> RogueTrainingChoices { get; set; } = [];
     public string? HuntersEdgeId { get; set; }
+    public string? DruidicOrderId { get; set; }
     public string? ClericDoctrineId { get; set; }
     public string? DeityId { get; set; }
     public DivineFont? DivineFont { get; set; }

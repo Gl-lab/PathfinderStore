@@ -25,6 +25,7 @@ import {
   getAncestries,
   getBackgrounds,
   getCharacterClasses,
+  getDruidicOrders,
   getHuntersEdges,
   getClericDoctrines,
   getDeities,
@@ -40,6 +41,7 @@ import {
   type Deity,
   type DivineFont,
   type DivineSanctification,
+  type DruidicOrder,
   type HuntersEdge,
   type RogueRacket,
   type RogueTrainingChoice,
@@ -85,6 +87,10 @@ import {
   requiresClassGrantReplacement,
 } from '@/features/character-creation/classTraining'
 import { isHuntersEdgeChoiceComplete } from '@/features/character-creation/huntersEdge'
+import {
+  isDruidicOrderChoiceComplete,
+  withDruidicOrderSkillGrant,
+} from '@/features/character-creation/druidicOrder'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -94,6 +100,7 @@ const backgrounds = ref<Background[]>([])
 const characterClasses = ref<CharacterClass[]>([])
 const rogueRackets = ref<RogueRacket[]>([])
 const huntersEdges = ref<HuntersEdge[]>([])
+const druidicOrders = ref<DruidicOrder[]>([])
 const clericDoctrines = ref<ClericDoctrine[]>([])
 const deities = ref<Deity[]>([])
 const skills = ref<Skill[]>([])
@@ -117,6 +124,7 @@ const form = ref({
   rogueRacketId: null as string | null,
   rogueTrainingChoices: [] as RogueTrainingChoice[],
   huntersEdgeId: null as string | null,
+  druidicOrderId: null as string | null,
   clericDoctrineId: null as string | null,
   deityId: null as string | null,
   divineFont: null as DivineFont | null,
@@ -157,6 +165,12 @@ const selectedRogueRacket = computed(
 )
 const selectedHuntersEdge = computed(
   () => huntersEdges.value.find((item) => item.id === form.value.huntersEdgeId) ?? null,
+)
+const selectedDruidicOrder = computed(
+  () => druidicOrders.value.find((item) => item.id === form.value.druidicOrderId) ?? null,
+)
+const effectiveCharacterClass = computed(() =>
+  withDruidicOrderSkillGrant(selectedCharacterClass.value, selectedDruidicOrder.value),
 )
 const selectedClericDoctrine = computed(
   () => clericDoctrines.value.find((item) => item.id === form.value.clericDoctrineId) ?? null,
@@ -234,7 +248,7 @@ const additionalClassTrainingCount = computed(() => getAdditionalClassTrainingCo
 const classTrainingLabels = computed(() => getClassTrainingLabels(
   form.value.classSkillGrantChoices,
   form.value.additionalClassTrainingChoices,
-  selectedCharacterClass.value,
+  effectiveCharacterClass.value,
   existingClassTrainingSkillIds.value,
   skills.value,
 ))
@@ -260,6 +274,7 @@ const canContinue = computed(() => {
     return (
       isClericDoctrineChoiceComplete(selectedCharacterClass.value, selectedClericDoctrine.value) &&
       isHuntersEdgeChoiceComplete(selectedCharacterClass.value, selectedHuntersEdge.value) &&
+      isDruidicOrderChoiceComplete(selectedCharacterClass.value, selectedDruidicOrder.value) &&
       isDeityChoiceComplete(
         selectedCharacterClass.value,
         selectedDeity.value,
@@ -283,7 +298,7 @@ const canContinue = computed(() => {
     return isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts)
   if (step.value === 8)
     return isClassTrainingComplete(
-      selectedCharacterClass.value,
+      effectiveCharacterClass.value,
       form.value.classSkillGrantChoices,
       form.value.additionalClassTrainingChoices,
       additionalClassTrainingCount.value,
@@ -343,6 +358,7 @@ function selectCharacterClass(classId: string | null): void {
   form.value.rogueRacketId = null
   form.value.rogueTrainingChoices = []
   form.value.huntersEdgeId = null
+  form.value.druidicOrderId = null
   form.value.clericDoctrineId = null
   form.value.deityId = null
   form.value.divineFont = null
@@ -360,6 +376,10 @@ function selectDeity(deityId: string | null): void {
   form.value.divineSanctification = deity?.requiredSanctification ?? null
   form.value.deitySkillReplacementId = null
   resetClassTrainingTargets()
+}
+function selectDruidicOrder(druidicOrderId: string | null): void {
+  form.value.druidicOrderId = druidicOrderId
+  resetClassTraining()
 }
 function selectRogueRacket(racketId: string | null): void {
   form.value.rogueRacketId = racketId
@@ -394,7 +414,7 @@ function getClassGrantChoice(grantId: string): ClassSkillGrantChoice | undefined
 function classGrantRequiresReplacement(grantId: string): boolean {
   return requiresClassGrantReplacement(
     grantId,
-    selectedCharacterClass.value,
+    effectiveCharacterClass.value,
     form.value.classSkillGrantChoices,
     existingClassTrainingSkillIds.value,
   )
@@ -427,7 +447,7 @@ function resetClassTrainingTargets(): void {
   resetAdditionalClassTraining()
 }
 function resetClassTraining(): void {
-  form.value.classSkillGrantChoices = createClassSkillGrantChoices(selectedCharacterClass.value)
+  form.value.classSkillGrantChoices = createClassSkillGrantChoices(effectiveCharacterClass.value)
   resetAdditionalClassTraining()
 }
 function isFinalBoostDisabled(type: AbilityCode): boolean {
@@ -463,6 +483,7 @@ async function submit(): Promise<void> {
     !form.value.backgroundFreeBoost ||
     !form.value.classKeyAbility ||
     !isHuntersEdgeChoiceComplete(selectedCharacterClass.value, selectedHuntersEdge.value) ||
+    !isDruidicOrderChoiceComplete(selectedCharacterClass.value, selectedDruidicOrder.value) ||
     !isClericDoctrineChoiceComplete(selectedCharacterClass.value, selectedClericDoctrine.value) ||
     !isDeityChoiceComplete(
       selectedCharacterClass.value,
@@ -475,7 +496,7 @@ async function submit(): Promise<void> {
     ) ||
     !isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts)
     || !isClassTrainingComplete(
-      selectedCharacterClass.value,
+      effectiveCharacterClass.value,
       form.value.classSkillGrantChoices,
       form.value.additionalClassTrainingChoices,
       additionalClassTrainingCount.value,
@@ -507,6 +528,7 @@ async function submit(): Promise<void> {
       rogueRacketId: form.value.rogueRacketId,
       rogueTrainingChoices: form.value.rogueTrainingChoices,
       huntersEdgeId: form.value.huntersEdgeId,
+      druidicOrderId: form.value.druidicOrderId,
       clericDoctrineId: form.value.clericDoctrineId,
       deityId: form.value.deityId,
       divineFont: form.value.divineFont,
@@ -538,12 +560,13 @@ async function loadCatalogs(): Promise<void> {
   isLoadingCatalogs.value = true
   errorMessages.value = []
   try {
-    const [ancestryCatalog, backgroundCatalog, classCatalog, racketCatalog, huntersEdgeCatalog, doctrineCatalog, deityCatalog, skillCatalog] = await Promise.all([
+    const [ancestryCatalog, backgroundCatalog, classCatalog, racketCatalog, huntersEdgeCatalog, druidicOrderCatalog, doctrineCatalog, deityCatalog, skillCatalog] = await Promise.all([
       getAncestries(),
       getBackgrounds(),
       getCharacterClasses(),
       getRogueRackets(),
       getHuntersEdges(),
+      getDruidicOrders(),
       getClericDoctrines(),
       getDeities(),
       getSkills(),
@@ -553,6 +576,7 @@ async function loadCatalogs(): Promise<void> {
     characterClasses.value = classCatalog
     rogueRackets.value = racketCatalog
     huntersEdges.value = huntersEdgeCatalog
+    druidicOrders.value = druidicOrderCatalog
     clericDoctrines.value = doctrineCatalog
     deities.value = deityCatalog
     skills.value = skillCatalog
@@ -751,6 +775,24 @@ watch(
               {{ t('classUi.baseHitPoints') }}: {{ selectedCharacterClass.baseHitPoints }}
             </p>
             <v-select
+              v-if="selectedCharacterClass.id === 'class.druid'"
+              :model-value="form.druidicOrderId"
+              :items="druidicOrders"
+              item-title="name"
+              item-value="id"
+              :label="t('classUi.druidicOrder')"
+              @update:model-value="selectDruidicOrder"
+            />
+            <v-alert
+              v-for="benefit in selectedDruidicOrder?.benefits ?? []"
+              :key="benefit.id"
+              type="info"
+              variant="tonal"
+            >
+              {{ t(`classUi.druidicOrderBenefitKinds.${benefit.kind}`) }}:
+              {{ benefit.name }}. {{ t('classUi.deferredEffect') }}
+            </v-alert>
+            <v-select
               v-if="selectedCharacterClass.id === 'class.ranger'"
               v-model="form.huntersEdgeId"
               :items="huntersEdges"
@@ -920,7 +962,7 @@ watch(
             {{ t('classUi.classTrainingHint', { count: additionalClassTrainingCount }) }}
           </p>
           <div
-            v-for="grant in selectedCharacterClass.initialSkillGrants"
+            v-for="grant in effectiveCharacterClass?.initialSkillGrants ?? []"
             :key="grant.id"
             class="training-choice"
           >
@@ -1011,6 +1053,9 @@ watch(
               v-if="selectedHuntersEdge"
               :title="t('classUi.huntersEdge')"
               :subtitle="selectedHuntersEdge.name" /><v-list-item
+              v-if="selectedDruidicOrder"
+              :title="t('classUi.druidicOrder')"
+              :subtitle="selectedDruidicOrder.name" /><v-list-item
               v-if="selectedClericDoctrine"
               :title="t('classUi.clericDoctrine')"
               :subtitle="selectedClericDoctrine.name" /><v-list-item

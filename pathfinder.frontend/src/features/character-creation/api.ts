@@ -165,6 +165,20 @@ export interface HuntersEdge {
   deferredDependencies: string[]
 }
 
+export type DruidicOrderBenefitKind = 'ClassFeat' | 'FocusSpell'
+
+export interface DruidicOrder {
+  id: string
+  name: string
+  skillGrant: ClassSkillGrant
+  benefits: {
+    id: string
+    kind: DruidicOrderBenefitKind
+    name: string
+    deferredDependencies: string[]
+  }[]
+}
+
 export interface RogueTrainingChoice {
   grantId: string
   selectedSkillId: string | null
@@ -223,6 +237,7 @@ export interface CreateCharacterRequest {
   rogueRacketId: string | null
   rogueTrainingChoices: RogueTrainingChoice[]
   huntersEdgeId: string | null
+  druidicOrderId: string | null
   clericDoctrineId: string | null
   deityId: string | null
   divineFont: DivineFont | null
@@ -251,6 +266,10 @@ export async function getRogueRackets(): Promise<RogueRacket[]> {
 
 export async function getHuntersEdges(): Promise<HuntersEdge[]> {
   return (await http.get<HuntersEdge[]>('/api/classes/ranger/hunters-edges')).data
+}
+
+export async function getDruidicOrders(): Promise<DruidicOrder[]> {
+  return (await http.get<DruidicOrder[]>('/api/classes/druid/orders')).data
 }
 
 export async function getClericDoctrines(): Promise<ClericDoctrine[]> {

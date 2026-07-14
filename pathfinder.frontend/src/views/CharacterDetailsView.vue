@@ -219,6 +219,18 @@ onMounted(load)
                 :key="effect.id"
               >{{ effect.name }}: {{ effect.summary }} {{ t('classUi.deferredEffect') }}</p>
             </template>
+            <template v-if="character.classPackage.druidicOrder">
+              <p>
+                {{ t('classUi.druidicOrder') }}: {{ character.classPackage.druidicOrder.name }}
+              </p>
+              <p
+                v-for="benefit in character.classPackage.druidicOrder.benefits"
+                :key="benefit.id"
+              >
+                {{ t(`classUi.druidicOrderBenefitKinds.${benefit.kind}`) }}:
+                {{ benefit.name }}. {{ t('classUi.deferredEffect') }}
+              </p>
+            </template>
             <template v-if="character.classPackage.clericDoctrine">
               <p>
                 {{ t('classUi.clericDoctrine') }}: {{ character.classPackage.clericDoctrine.name }}

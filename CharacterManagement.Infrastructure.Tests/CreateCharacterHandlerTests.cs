@@ -139,6 +139,7 @@ public sealed class CreateCharacterHandlerTests
             ],
             ClassId = "class.druid",
             ClassKeyAbility = AbilityType.Wisdom,
+            DruidicOrderId = "druidic_order.leaf",
             FinalFreeBoosts =
             [
                 AbilityType.Strength,
@@ -149,6 +150,7 @@ public sealed class CreateCharacterHandlerTests
             ClassSkillGrantChoices =
             [
                 new ClassSkillGrantChoice( "class.druid.skill.nature", null, null ),
+                new ClassSkillGrantChoice( "druidic_order.leaf.skill.order", null, null ),
             ],
             AdditionalClassTrainingChoices = GeneralSkillChoices(
                 "skill.arcana",
@@ -167,6 +169,8 @@ public sealed class CreateCharacterHandlerTests
             .SingleAsync( entity => entity.AccountId == account.Id );
         Assert.Contains( savedCharacter.TrainedSkills, training => training.SkillId == "skill.occultism" );
         Assert.Contains( savedCharacter.TrainedSkills, training => training.SkillId == "skill.nature" );
+        Assert.Contains( savedCharacter.TrainedSkills, training => training.SkillId == "skill.diplomacy" );
+        Assert.Equal( "druidic_order.leaf", savedCharacter.SelectedDruidicOrderId );
         TrainedLore lore = Assert.Single( savedCharacter.TrainedLore );
         Assert.Equal( "lore.custom.ancient_forest", lore.LoreId );
         Assert.Equal( "Ancient Forest Lore", lore.Name );
@@ -384,7 +388,8 @@ public sealed class CreateCharacterHandlerTests
             rogueRacketRepository: new RogueRacketRepository(),
             clericDoctrineRepository: new ClericDoctrineRepository(),
             deityRepository: new DeityRepository(),
-            huntersEdgeRepository: new HuntersEdgeRepository() );
+            huntersEdgeRepository: new HuntersEdgeRepository(),
+            druidicOrderRepository: new DruidicOrderRepository() );
 
         TestUnitOfWork unitOfWork = new TestUnitOfWork( dbContext );
 

@@ -264,6 +264,37 @@ public sealed class CreateCharacterCommandValidatorTests
         validator.ValidateAndThrow( new CreateCharacterCommand( 42, character ) );
     }
 
+    [Theory]
+    [InlineData( "class.druid", null )]
+    [InlineData( "class.fighter", "druidic_order.animal" )]
+    public void Validate_WhenDruidicOrderDoesNotMatchClass_ThrowsValidationException(
+        string classId,
+        string? druidicOrderId )
+    {
+        CreateCharacterCommandValidator validator = new CreateCharacterCommandValidator();
+        CreateCharacterRequestDto character = CreateValidRequest();
+        character.ClassId = classId;
+        character.ClassKeyAbility = classId == "class.druid"
+            ? AbilityType.Wisdom
+            : AbilityType.Strength;
+        character.DruidicOrderId = druidicOrderId;
+
+        Assert.Throws<ValidationException>( () => validator.ValidateAndThrow(
+            new CreateCharacterCommand( 42, character ) ) );
+    }
+
+    [Fact]
+    public void Validate_WhenDruidHasOrder_DoesNotThrow()
+    {
+        CreateCharacterCommandValidator validator = new CreateCharacterCommandValidator();
+        CreateCharacterRequestDto character = CreateValidRequest();
+        character.ClassId = "class.druid";
+        character.ClassKeyAbility = AbilityType.Wisdom;
+        character.DruidicOrderId = "druidic_order.animal";
+
+        validator.ValidateAndThrow( new CreateCharacterCommand( 42, character ) );
+    }
+
     private static CreateCharacterRequestDto CreateValidRequest()
     {
         return new CreateCharacterRequestDto

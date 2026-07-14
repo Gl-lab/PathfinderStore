@@ -78,6 +78,7 @@ public static class CharacterClassDtoMapper
         CharacterClass characterClass,
         RogueRacket? rogueRacket = null,
         HuntersEdge? huntersEdge = null,
+        DruidicOrder? druidicOrder = null,
         ClericDoctrine? clericDoctrine = null,
         Deity? deity = null )
     {
@@ -99,6 +100,7 @@ public static class CharacterClassDtoMapper
                                    character.AbilityScores.Intelligence.Modifier,
             RogueRacket = rogueRacket is null ? null : RogueRacketDtoMapper.MapPackage( rogueRacket ),
             HuntersEdge = huntersEdge is null ? null : HuntersEdgeDtoMapper.MapPackage( huntersEdge ),
+            DruidicOrder = druidicOrder is null ? null : DruidicOrderDtoMapper.MapPackage( druidicOrder ),
             ClericDoctrine = clericDoctrine is null
                 ? null
                 : ClericDoctrineDtoMapper.MapPackage( clericDoctrine ),

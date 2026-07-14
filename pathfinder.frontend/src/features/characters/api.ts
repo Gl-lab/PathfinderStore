@@ -78,6 +78,17 @@ export interface CharacterClassPackage {
     name: string
     effects: { id: string; kind: string; name: string; summary: string }[]
   } | null
+  druidicOrder: {
+    id: string
+    name: string
+    skillGrant: { id: string; skillOptions: string[] }
+    benefits: {
+      id: string
+      kind: 'ClassFeat' | 'FocusSpell'
+      name: string
+      deferredDependencies: string[]
+    }[]
+  } | null
   clericDoctrine: {
     id: string
     name: string

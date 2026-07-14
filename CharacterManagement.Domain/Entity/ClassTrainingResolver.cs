@@ -11,7 +11,8 @@ public static class ClassTrainingResolver
         IReadOnlyCollection<SkillDefinition> generalSkills,
         int intelligenceModifier,
         IReadOnlyCollection<TrainedSkill> existingSkills,
-        IReadOnlyCollection<TrainedLore> existingLore )
+        IReadOnlyCollection<TrainedLore> existingLore,
+        IReadOnlyList<ClassSkillGrantDescriptor>? featureSkillGrants = null )
     {
         ArgumentNullException.ThrowIfNull( characterClass );
         ArgumentNullException.ThrowIfNull( grantChoices );
@@ -19,6 +20,20 @@ public static class ClassTrainingResolver
         ArgumentNullException.ThrowIfNull( generalSkills );
         ArgumentNullException.ThrowIfNull( existingSkills );
         ArgumentNullException.ThrowIfNull( existingLore );
+
+        IReadOnlyList<ClassSkillGrantDescriptor> effectiveSkillGrants =
+        [
+            .. characterClass.InitialSkillGrants,
+            .. featureSkillGrants ?? [],
+        ];
+
+        if ( effectiveSkillGrants
+            .Select( grant => grant.Id )
+            .Distinct( StringComparer.Ordinal )
+            .Count() != effectiveSkillGrants.Count )
+        {
+            throw new CharacterManagementException( "Effective class skill grant ids must be unique." );
+        }
 
         if ( generalSkills.Count == 0 )
         {
@@ -41,7 +56,7 @@ public static class ClassTrainingResolver
             throw new CharacterManagementException( "Class skill grant choices must use unique grant ids." );
         }
 
-        HashSet<string> expectedGrantIds = characterClass.InitialSkillGrants
+        HashSet<string> expectedGrantIds = effectiveSkillGrants
             .Select( grant => grant.Id )
             .ToHashSet( StringComparer.Ordinal );
         HashSet<string> actualGrantIds = grantChoices
@@ -72,7 +87,7 @@ public static class ClassTrainingResolver
             .Concat( existingLore.Select( training => training.LoreId ) )
             .ToHashSet( StringComparer.Ordinal );
 
-        foreach ( ClassSkillGrantDescriptor grant in characterClass.InitialSkillGrants )
+        foreach ( ClassSkillGrantDescriptor grant in effectiveSkillGrants )
         {
             ClassSkillGrantChoice choice = grantChoices.Single( item => item.GrantId == grant.Id );
             string initialSkillId = ResolveInitialSkillId( grant, choice, generalSkills );

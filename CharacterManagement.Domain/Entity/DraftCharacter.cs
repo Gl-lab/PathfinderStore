@@ -23,6 +23,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public AbilityType? SelectedClassKeyAbility { get; private set; }
     public string? SelectedRogueRacketId { get; private set; }
     public string? SelectedHuntersEdgeId { get; private set; }
+    public string? SelectedDruidicOrderId { get; private set; }
     public string? SelectedClericDoctrineId { get; private set; }
     public string? SelectedDeityId { get; private set; }
     public DivineFont? SelectedDivineFont { get; private set; }
@@ -290,7 +291,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         DivineFont? divineFont = null,
         DivineSanctification? divineSanctification = null,
         string? deitySkillReplacementId = null,
-        HuntersEdge? huntersEdge = null )
+        HuntersEdge? huntersEdge = null,
+        DruidicOrder? druidicOrder = null )
     {
         ArgumentNullException.ThrowIfNull( characterClass );
 
@@ -325,6 +327,18 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         {
             throw new CharacterManagementException(
                 "Hunter's Edge can only be selected for the Ranger class." );
+        }
+
+        bool isDruid = characterClass.Id == "class.druid";
+        if ( isDruid && ( druidicOrder is null ) )
+        {
+            throw new CharacterManagementException( "Druid class requires a Druidic Order." );
+        }
+
+        if ( !isDruid && ( druidicOrder is not null ) )
+        {
+            throw new CharacterManagementException(
+                "Druidic Order can only be selected for the Druid class." );
         }
 
         bool isCleric = characterClass.Id == "class.cleric";
@@ -433,6 +447,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         SelectedClassKeyAbility = keyAbility;
         SelectedRogueRacketId = rogueRacket?.Id;
         SelectedHuntersEdgeId = huntersEdge?.Id;
+        SelectedDruidicOrderId = druidicOrder?.Id;
         SelectedClericDoctrineId = clericDoctrine?.Id;
         SelectedDeityId = deity?.Id;
         SelectedDivineFont = divineFont;
@@ -501,7 +516,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         CharacterClass characterClass,
         IReadOnlyList<ClassSkillGrantChoice> grantChoices,
         IReadOnlyList<ClassTrainingTargetChoice> additionalChoices,
-        IReadOnlyCollection<SkillDefinition> skillCatalog )
+        IReadOnlyCollection<SkillDefinition> skillCatalog,
+        DruidicOrder? druidicOrder = null )
     {
         ArgumentNullException.ThrowIfNull( characterClass );
         ArgumentNullException.ThrowIfNull( grantChoices );
@@ -520,6 +536,15 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
                 $"Character class '{characterClass.Id}' does not match selected class '{SelectedClassId}'." );
         }
 
+        if ( !String.Equals(
+                 druidicOrder?.Id,
+                 SelectedDruidicOrderId,
+                 StringComparison.Ordinal ) )
+        {
+            throw new CharacterManagementException(
+                "Druidic Order does not match the selected class package." );
+        }
+
         IReadOnlyList<TrainedSkill> existingSkills = TrainedSkills
             .Where( training => !IsClassTrainingSource( training.SourceGrantId ) )
             .ToArray();
@@ -533,7 +558,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
             skillCatalog,
             AbilityScores.Intelligence.Modifier,
             existingSkills,
-            existingLore );
+            existingLore,
+            druidicOrder is null ? [] : [ druidicOrder.SkillGrant ] );
 
         TrainedSkills = training.Skills.ToArray();
         TrainedLore = training.Lore.ToArray();
@@ -716,6 +742,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         SelectedClassKeyAbility = null;
         SelectedRogueRacketId = null;
         SelectedHuntersEdgeId = null;
+        SelectedDruidicOrderId = null;
         SelectedClericDoctrineId = null;
         SelectedDeityId = null;
         SelectedDivineFont = null;
@@ -740,7 +767,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
 
     private static bool IsClassTrainingSource( string sourceGrantId )
     {
-        return sourceGrantId.StartsWith( "class.", StringComparison.Ordinal ) &&
+        return ( sourceGrantId.StartsWith( "class.", StringComparison.Ordinal ) ||
+                 sourceGrantId.StartsWith( "druidic_order.", StringComparison.Ordinal ) ) &&
                sourceGrantId.Contains( ".skill.", StringComparison.Ordinal );
     }
 

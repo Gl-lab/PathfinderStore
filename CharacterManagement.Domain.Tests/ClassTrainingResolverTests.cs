@@ -124,6 +124,34 @@ public sealed class ClassTrainingResolverTests
         Assert.Contains( "already trained", exception.Message );
     }
 
+    [Fact]
+    public void Resolve_FeatureGrantUsesStandardReplacementFlow()
+    {
+        CharacterClass characterClass = CreateClass( [], 0 );
+        ClassSkillGrantDescriptor orderGrant = new ClassSkillGrantDescriptor(
+            "druidic_order.animal.skill.order",
+            [ "skill.athletics" ] );
+
+        ClassTrainingResult result = ClassTrainingResolver.Resolve(
+            characterClass,
+            [
+                new ClassSkillGrantChoice(
+                    orderGrant.Id,
+                    null,
+                    new ClassTrainingTargetChoice( "skill.arcana", null ) ),
+            ],
+            [],
+            CreateSkills(),
+            0,
+            [ new TrainedSkill( "skill.athletics", "background.test.skill" ) ],
+            [],
+            [ orderGrant ] );
+
+        Assert.Contains( result.Skills, skill =>
+            ( skill.SkillId == "skill.arcana" ) &&
+            ( skill.SourceGrantId == orderGrant.Id ) );
+    }
+
     private static CharacterClass CreateClass(
         IReadOnlyList<ClassSkillGrantDescriptor> initialSkillGrants,
         int additionalSkillCountBase )

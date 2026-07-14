@@ -33,6 +33,7 @@ public class CharacterManagementDbContext( DbContextOptions<CharacterManagementD
             b.Property( x => x.SelectedClassKeyAbility ).HasConversion<int>();
             b.Property( x => x.SelectedRogueRacketId ).HasMaxLength( 100 );
             b.Property( x => x.SelectedHuntersEdgeId ).HasMaxLength( 100 );
+            b.Property( x => x.SelectedDruidicOrderId ).HasMaxLength( 100 );
             b.Property( x => x.SelectedClericDoctrineId ).HasMaxLength( 100 );
             b.Property( x => x.SelectedDeityId ).HasMaxLength( 100 );
             b.Property( x => x.SelectedDivineFont ).HasConversion<int>();

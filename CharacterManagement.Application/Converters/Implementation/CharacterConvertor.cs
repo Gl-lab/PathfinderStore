@@ -12,6 +12,7 @@ public sealed class CharacterConvertor : ICharacterConvertor
     private readonly ISkillRepository? _skillRepository;
     private readonly IRogueRacketRepository? _rogueRacketRepository;
     private readonly IHuntersEdgeRepository? _huntersEdgeRepository;
+    private readonly IDruidicOrderRepository? _druidicOrderRepository;
     private readonly IClericDoctrineRepository? _clericDoctrineRepository;
     private readonly IDeityRepository? _deityRepository;
 
@@ -22,6 +23,7 @@ public sealed class CharacterConvertor : ICharacterConvertor
         ISkillRepository? skillRepository = null,
         IRogueRacketRepository? rogueRacketRepository = null,
         IHuntersEdgeRepository? huntersEdgeRepository = null,
+        IDruidicOrderRepository? druidicOrderRepository = null,
         IClericDoctrineRepository? clericDoctrineRepository = null,
         IDeityRepository? deityRepository = null )
     {
@@ -31,6 +33,7 @@ public sealed class CharacterConvertor : ICharacterConvertor
         _skillRepository = skillRepository;
         _rogueRacketRepository = rogueRacketRepository;
         _huntersEdgeRepository = huntersEdgeRepository;
+        _druidicOrderRepository = druidicOrderRepository;
         _clericDoctrineRepository = clericDoctrineRepository;
         _deityRepository = deityRepository;
     }
@@ -48,6 +51,7 @@ public sealed class CharacterConvertor : ICharacterConvertor
         CharacterClass? characterClass = ResolveCharacterClass( draftCharacter );
         RogueRacket? rogueRacket = ResolveRogueRacket( draftCharacter );
         HuntersEdge? huntersEdge = ResolveHuntersEdge( draftCharacter );
+        DruidicOrder? druidicOrder = ResolveDruidicOrder( draftCharacter );
         ClericDoctrine? clericDoctrine = ResolveClericDoctrine( draftCharacter );
         Deity? deity = ResolveDeity( draftCharacter );
 
@@ -69,6 +73,7 @@ public sealed class CharacterConvertor : ICharacterConvertor
                     characterClass,
                     rogueRacket,
                     huntersEdge,
+                    druidicOrder,
                     clericDoctrine,
                     deity ),
             FinalFreeBoosts = draftCharacter.AppliedFinalFreeBoosts.ToArray(),
@@ -146,6 +151,22 @@ public sealed class CharacterConvertor : ICharacterConvertor
         }
 
         return _clericDoctrineRepository.GetClericDoctrine( character.SelectedClericDoctrineId );
+    }
+
+    private DruidicOrder? ResolveDruidicOrder( DraftCharacter character )
+    {
+        if ( character.SelectedDruidicOrderId is null )
+        {
+            return null;
+        }
+
+        if ( _druidicOrderRepository is null )
+        {
+            throw new InvalidOperationException(
+                "Druidic Order repository is required to map a selected Order." );
+        }
+
+        return _druidicOrderRepository.GetDruidicOrder( character.SelectedDruidicOrderId );
     }
 
     private Deity? ResolveDeity( DraftCharacter character )

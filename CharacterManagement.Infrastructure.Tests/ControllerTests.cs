@@ -14,6 +14,7 @@ using Pathfinder.CharacterManagement.Application.UseCases.CharacterClasses;
 using Pathfinder.CharacterManagement.Application.UseCases.Characters;
 using Pathfinder.CharacterManagement.Application.UseCases.Skills;
 using Pathfinder.CharacterManagement.Application.UseCases.HuntersEdges;
+using Pathfinder.CharacterManagement.Application.UseCases.DruidicOrders;
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.Web.Controllers;
 
@@ -120,6 +121,30 @@ public sealed class ControllerTests
         OkObjectResult okResult = Assert.IsType<OkObjectResult>( actionResult.Result );
         IReadOnlyCollection<HuntersEdgeDto> payload =
             Assert.IsAssignableFrom<IReadOnlyCollection<HuntersEdgeDto>>( okResult.Value );
+        Assert.Same( expected, payload );
+    }
+
+    [Fact]
+    public async Task ClassesController_GetDruidicOrders_ReturnsOkWithPayload()
+    {
+        IReadOnlyCollection<DruidicOrderDto> expected =
+        [
+            new DruidicOrderDto
+            {
+                Id = "druidic_order.animal",
+                Name = "Animal",
+            },
+        ];
+        TestMediator mediator = new TestMediator();
+        mediator.Register( new GetDruidicOrdersCommand(), expected );
+        ClassesController controller = new ClassesController( mediator );
+
+        ActionResult<IReadOnlyCollection<DruidicOrderDto>> actionResult =
+            await controller.GetDruidicOrders();
+
+        OkObjectResult okResult = Assert.IsType<OkObjectResult>( actionResult.Result );
+        IReadOnlyCollection<DruidicOrderDto> payload =
+            Assert.IsAssignableFrom<IReadOnlyCollection<DruidicOrderDto>>( okResult.Value );
         Assert.Same( expected, payload );
     }
 

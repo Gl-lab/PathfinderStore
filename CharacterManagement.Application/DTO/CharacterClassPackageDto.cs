@@ -11,6 +11,7 @@ public sealed class CharacterClassPackageDto
     public int AdditionalSkillCount { get; set; }
     public RogueRacketPackageDto? RogueRacket { get; set; }
     public HuntersEdgePackageDto? HuntersEdge { get; set; }
+    public DruidicOrderPackageDto? DruidicOrder { get; set; }
     public ClericDoctrinePackageDto? ClericDoctrine { get; set; }
     public DeityPackageDto? Deity { get; set; }
     public IReadOnlyList<CharacterClassRuleDto> Rules { get; set; } = [];

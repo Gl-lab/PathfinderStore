@@ -256,6 +256,87 @@ public sealed class GetCharacterQueriesTests
     }
 
     [Fact]
+    public async Task GetCharacterById_DruidReturnsSelectedDruidicOrder()
+    {
+        await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
+        Account account = await CreateAccountAsync( dbContext, 408 );
+        AncestryRepository ancestryRepository = new AncestryRepository();
+        BackgroundRepository backgroundRepository = new BackgroundRepository();
+        CharacterClassRepository characterClassRepository = new CharacterClassRepository();
+        DruidicOrderRepository druidicOrderRepository = new DruidicOrderRepository();
+        CharacterBuilder builder = new CharacterBuilder(
+            ancestryRepository,
+            backgroundRepository: backgroundRepository,
+            characterClassRepository: characterClassRepository,
+            skillRepository: new SkillRepository(),
+            druidicOrderRepository: druidicOrderRepository );
+        builder.CreateCharacter( account.Id, "Lini", AncestryType.Human );
+        builder.SetAncestryPackage( "human.skilled", "human.cooperative_nature" );
+        builder.ApplyFreeBoosts( [ AbilityType.Intelligence, AbilityType.Wisdom ] );
+        builder.SetBackground(
+            "background.acrobat",
+            AbilityType.Dexterity,
+            AbilityType.Charisma );
+        builder.SetClass(
+            "class.druid",
+            AbilityType.Wisdom,
+            druidicOrderId: "druidic_order.leaf" );
+        DraftCharacter draftCharacter = builder.Build();
+        dbContext.Character.Add( draftCharacter );
+        await dbContext.SaveChangesAsync();
+        dbContext.ChangeTracker.Clear();
+        CharacterConvertor converter = new CharacterConvertor(
+            ancestryRepository,
+            backgroundRepository,
+            characterClassRepository,
+            new SkillRepository(),
+            druidicOrderRepository: druidicOrderRepository );
+        GetCharacterByIdHandler handler = new GetCharacterByIdHandler(
+            new CharacterRepository( dbContext ),
+            converter );
+
+        CharacterDto result = await handler.Handle(
+            new GetCharacterByIdCommand( account.UserId, draftCharacter.Id ),
+            CancellationToken.None );
+
+        Assert.NotNull( result.ClassPackage?.DruidicOrder );
+        Assert.Equal( "druidic_order.leaf", result.ClassPackage.DruidicOrder.Id );
+        Assert.Equal( "skill.diplomacy", Assert.Single(
+            result.ClassPackage.DruidicOrder.SkillGrant.SkillOptions ) );
+    }
+
+    [Fact]
+    public async Task GetCharacterById_LegacyDruidWithoutOrder_ReturnsNullablePackage()
+    {
+        await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
+        Account account = await CreateAccountAsync( dbContext, 409 );
+        DraftCharacter draftCharacter = DraftCharacter.Create(
+            account.Id,
+            "Legacy Lini",
+            AncestryType.Human );
+        dbContext.Character.Add( draftCharacter );
+        dbContext.Entry( draftCharacter )
+            .Property( character => character.SelectedClassId )
+            .CurrentValue = "class.druid";
+        dbContext.Entry( draftCharacter )
+            .Property( character => character.SelectedClassKeyAbility )
+            .CurrentValue = AbilityType.Wisdom;
+        await dbContext.SaveChangesAsync();
+        dbContext.ChangeTracker.Clear();
+        GetCharacterByIdHandler handler = CreateByIdHandler(
+            dbContext,
+            characterClassRepository: new CharacterClassRepository() );
+
+        CharacterDto result = await handler.Handle(
+            new GetCharacterByIdCommand( account.UserId, draftCharacter.Id ),
+            CancellationToken.None );
+
+        Assert.NotNull( result.ClassPackage );
+        Assert.Equal( "class.druid", result.ClassPackage.ClassId );
+        Assert.Null( result.ClassPackage.DruidicOrder );
+    }
+
+    [Fact]
     public async Task GetCharacterById_LegacyClericWithoutDoctrine_ReturnsNullableDoctrinePackage()
     {
         await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();

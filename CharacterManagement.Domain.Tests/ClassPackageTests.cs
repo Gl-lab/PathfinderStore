@@ -340,6 +340,53 @@ public sealed class ClassPackageTests
     }
 
     [Fact]
+    public void SetClassPackage_DruidRequiresOrderAndInvalidCallIsAtomic()
+    {
+        DraftCharacter character = CreateCharacter();
+        CharacterClass fighter = CreateClass( "class.fighter", AbilityType.Strength );
+        CharacterClass druid = CreateClass( "class.druid", AbilityType.Wisdom );
+        character.SetClassPackage( fighter, AbilityType.Strength );
+
+        Assert.Throws<CharacterManagementException>( () =>
+            character.SetClassPackage( druid, AbilityType.Wisdom ) );
+
+        Assert.Equal( "class.fighter", character.SelectedClassId );
+        Assert.Null( character.SelectedDruidicOrderId );
+    }
+
+    [Fact]
+    public void SetClassPackage_DruidStoresOrderAndChangingClassClearsIt()
+    {
+        DraftCharacter character = CreateCharacter();
+        CharacterClass druid = CreateClass( "class.druid", AbilityType.Wisdom );
+        CharacterClass fighter = CreateClass( "class.fighter", AbilityType.Strength );
+        DruidicOrder druidicOrder = CreateDruidicOrder();
+        character.SetClassPackage(
+            druid,
+            AbilityType.Wisdom,
+            druidicOrder: druidicOrder );
+
+        Assert.Equal( druidicOrder.Id, character.SelectedDruidicOrderId );
+
+        character.SetClassPackage( fighter, AbilityType.Strength );
+
+        Assert.Null( character.SelectedDruidicOrderId );
+    }
+
+    [Fact]
+    public void SetClassPackage_NonDruidWithOrder_Throws()
+    {
+        DraftCharacter character = CreateCharacter();
+        CharacterClass fighter = CreateClass( "class.fighter", AbilityType.Strength );
+
+        Assert.Throws<CharacterManagementException>( () =>
+            character.SetClassPackage(
+                fighter,
+                AbilityType.Strength,
+                druidicOrder: CreateDruidicOrder() ) );
+    }
+
+    [Fact]
     public void SetBackgroundPackage_AfterClassPackage_ThrowsWithoutRemovingClassEffects()
     {
         DraftCharacter character = CreateCharacter();
@@ -447,6 +494,29 @@ public sealed class ClassPackageTests
                     "Additional precision damage." ),
             ],
             [ CharacterClassDependencyType.ClassFeatureRules ] );
+    }
+
+    private static DruidicOrder CreateDruidicOrder()
+    {
+        return new DruidicOrder(
+            "druidic_order.animal",
+            "Animal",
+            SourceReference.Unknown,
+            new ClassSkillGrantDescriptor(
+                "druidic_order.animal.skill.order",
+                [ "skill.athletics" ] ),
+            [
+                new DruidicOrderBenefitDescriptor(
+                    "feat.animal_companion",
+                    DruidicOrderBenefitKind.ClassFeat,
+                    "Animal Companion",
+                    [] ),
+                new DruidicOrderBenefitDescriptor(
+                    "spell.heal_animal",
+                    DruidicOrderBenefitKind.FocusSpell,
+                    "Heal Animal",
+                    [] ),
+            ] );
     }
 
     private static ClericDoctrine CreateDoctrine( string id )

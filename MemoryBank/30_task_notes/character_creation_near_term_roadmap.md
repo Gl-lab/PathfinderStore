@@ -76,6 +76,8 @@ Vikunja остаётся источником истины по карточка
 
 #### 1.3. Druidic Order
 
+**Статус:** завершено 14 июля 2026 года; см. [Implementation Plan](druidic_order_implementation.md).
+
 **Проблема.** Обязательный Order пока существует только как декларативная зависимость.
 
 **Ожидаемый результат.** Druid выбирает Order; его trained skill применяется через общий resolver, а class feat и order spell возвращаются typed descriptors.

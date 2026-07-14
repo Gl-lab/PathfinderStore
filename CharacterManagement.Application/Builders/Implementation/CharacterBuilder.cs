@@ -16,6 +16,7 @@ public class CharacterBuilder : ICharacterBuilder
     private readonly IClericDoctrineRepository? _clericDoctrineRepository;
     private readonly IDeityRepository? _deityRepository;
     private readonly IHuntersEdgeRepository? _huntersEdgeRepository;
+    private readonly IDruidicOrderRepository? _druidicOrderRepository;
 
     public CharacterBuilder(
         IAncestryRepository ancestryRepository,
@@ -26,7 +27,8 @@ public class CharacterBuilder : ICharacterBuilder
         IRogueRacketRepository? rogueRacketRepository = null,
         IClericDoctrineRepository? clericDoctrineRepository = null,
         IDeityRepository? deityRepository = null,
-        IHuntersEdgeRepository? huntersEdgeRepository = null )
+        IHuntersEdgeRepository? huntersEdgeRepository = null,
+        IDruidicOrderRepository? druidicOrderRepository = null )
     {
         _ancestryRepository = ancestryRepository;
         _ancestryChoiceAvailabilityPolicy = ancestryChoiceAvailabilityPolicy ?? new CommonAncestryChoiceAvailabilityPolicy();
@@ -37,6 +39,7 @@ public class CharacterBuilder : ICharacterBuilder
         _clericDoctrineRepository = clericDoctrineRepository;
         _deityRepository = deityRepository;
         _huntersEdgeRepository = huntersEdgeRepository;
+        _druidicOrderRepository = druidicOrderRepository;
     }
 
     public void CreateCharacter(
@@ -123,7 +126,8 @@ public class CharacterBuilder : ICharacterBuilder
         DivineFont? divineFont = null,
         DivineSanctification? divineSanctification = null,
         string? deitySkillReplacementId = null,
-        string? huntersEdgeId = null )
+        string? huntersEdgeId = null,
+        string? druidicOrderId = null )
     {
         if ( _draftCharacter is null )
         {
@@ -217,6 +221,24 @@ public class CharacterBuilder : ICharacterBuilder
             }
         }
 
+        DruidicOrder? druidicOrder = null;
+        if ( !String.IsNullOrWhiteSpace( druidicOrderId ) )
+        {
+            if ( _druidicOrderRepository is null )
+            {
+                throw new InvalidOperationException( "Druidic Order repository is not configured." );
+            }
+
+            try
+            {
+                druidicOrder = _druidicOrderRepository.GetDruidicOrder( druidicOrderId );
+            }
+            catch ( ArgumentException exception )
+            {
+                throw new CharacterManagementException( exception.Message );
+            }
+        }
+
         if ( ( ( characterClass.Id == "class.rogue" ) || ( deity is not null ) ) &&
              ( _skillRepository is null ) )
         {
@@ -234,7 +256,8 @@ public class CharacterBuilder : ICharacterBuilder
             divineFont,
             divineSanctification,
             deitySkillReplacementId,
-            huntersEdge );
+            huntersEdge,
+            druidicOrder );
     }
 
     public void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts )
@@ -281,7 +304,23 @@ public class CharacterBuilder : ICharacterBuilder
             characterClass,
             grantChoices,
             additionalChoices,
-            _skillRepository.GetAll() );
+            _skillRepository.GetAll(),
+            ResolveSelectedDruidicOrder() );
+    }
+
+    private DruidicOrder? ResolveSelectedDruidicOrder()
+    {
+        if ( _draftCharacter?.SelectedDruidicOrderId is null )
+        {
+            return null;
+        }
+
+        if ( _druidicOrderRepository is null )
+        {
+            throw new InvalidOperationException( "Druidic Order repository is not configured." );
+        }
+
+        return _druidicOrderRepository.GetDruidicOrder( _draftCharacter.SelectedDruidicOrderId );
     }
 
     public void IncreaseAbilityScores( IEnumerable<AbilityType> increasedAbilityTypes )

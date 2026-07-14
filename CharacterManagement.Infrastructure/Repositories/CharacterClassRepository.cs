@@ -51,9 +51,9 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
                 [
                     Spellcasting( "druid", "Primal spellcasting." ),
                     Feature( "druid.features", "Druid Features", "Anathema, Shield Block, Voice of Nature, and Wildsong." ),
-                    Choice( "druid.order", "Druidic Order", "Choose an order that grants a feat, order spell, and trained skill.", CharacterClassDependencyType.ClassChoiceCatalog )
+                    Choice( "druid.order", "Druidic Order", "Choose an order that grants a feat, order spell, and trained skill." )
                 ],
-                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.SpellCatalog, CharacterClassDependencyType.ClassFeatureRules, CharacterClassDependencyType.ClassChoiceCatalog ] ),
+                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.SpellCatalog, CharacterClassDependencyType.ClassFeatureRules ] ),
             Create(
                 "fighter", "Fighter", 136, 10, [ AbilityType.Strength, AbilityType.Dexterity ], 3, null,
                 [
@@ -308,7 +308,7 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
         string id,
         string name,
         string summary,
-        CharacterClassDependencyType dependency )
+        params CharacterClassDependencyType[] dependencies )
     {
         return Rule(
             $"class_choice.{id}",
@@ -316,7 +316,7 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
             name,
             summary,
             true,
-            dependency );
+            dependencies );
     }
 
     private static CharacterClassRuleDescriptor ClassFeat( string id, string name )

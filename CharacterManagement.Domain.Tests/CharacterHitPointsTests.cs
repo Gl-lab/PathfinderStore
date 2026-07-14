@@ -150,8 +150,32 @@ public sealed class CharacterHitPointsTests
             AbilityType.Dexterity );
         character.SetClassPackage(
             characterClass,
-            characterClass.KeyAbilityOptions.Single() );
+            characterClass.KeyAbilityOptions.Single(),
+            druidicOrder: characterClass.Id == "class.druid" ? CreateDruidicOrder() : null );
         return character;
+    }
+
+    private static DruidicOrder CreateDruidicOrder()
+    {
+        return new DruidicOrder(
+            "druidic_order.animal",
+            "Animal",
+            SourceReference.Unknown,
+            new ClassSkillGrantDescriptor(
+                "druidic_order.animal.skill.order",
+                [ "skill.athletics" ] ),
+            [
+                new DruidicOrderBenefitDescriptor(
+                    "feat.animal_companion",
+                    DruidicOrderBenefitKind.ClassFeat,
+                    "Animal Companion",
+                    [] ),
+                new DruidicOrderBenefitDescriptor(
+                    "spell.heal_animal",
+                    DruidicOrderBenefitKind.FocusSpell,
+                    "Heal Animal",
+                    [] ),
+            ] );
     }
 
     private static Ancestry CreateAncestry(

@@ -9,6 +9,7 @@ using Pathfinder.CharacterManagement.Application.UseCases.CharacterClasses;
 using Pathfinder.CharacterManagement.Application.UseCases.Deities;
 using Pathfinder.CharacterManagement.Application.UseCases.RogueRackets;
 using Pathfinder.CharacterManagement.Application.UseCases.HuntersEdges;
+using Pathfinder.CharacterManagement.Application.UseCases.DruidicOrders;
 using Pathfinder.Web.Controllers.Base;
 
 namespace Pathfinder.Web.Controllers;
@@ -49,6 +50,16 @@ public sealed class ClassesController : AuthorizedController
         IReadOnlyCollection<HuntersEdgeDto> huntersEdges = await _mediator.Send(
             new GetHuntersEdgesCommand() );
         return Ok( huntersEdges );
+    }
+
+    [HttpGet( "druid/orders" )]
+    [ProducesResponseType( typeof( IReadOnlyCollection<DruidicOrderDto> ), StatusCodes.Status200OK )]
+    [ProducesResponseType( StatusCodes.Status401Unauthorized )]
+    public async Task<ActionResult<IReadOnlyCollection<DruidicOrderDto>>> GetDruidicOrders()
+    {
+        IReadOnlyCollection<DruidicOrderDto> druidicOrders = await _mediator.Send(
+            new GetDruidicOrdersCommand() );
+        return Ok( druidicOrders );
     }
 
     [HttpGet( "cleric/doctrines" )]

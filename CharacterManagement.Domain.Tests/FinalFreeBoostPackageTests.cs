@@ -212,6 +212,57 @@ public sealed class FinalFreeBoostPackageTests
         Assert.Equal( 14, character.AbilityScores.Wisdom.Value );
     }
 
+    [Fact]
+    public void SetClassPackage_ChangingDruidToAnotherClass_RemovesOrderTraining()
+    {
+        DraftCharacter character = CreateCharacterWithoutClass();
+        CharacterClass druid = CreateDruidClass();
+        DruidicOrder druidicOrder = CreateDruidicOrder();
+        character.SetClassPackage(
+            druid,
+            AbilityType.Wisdom,
+            druidicOrder: druidicOrder );
+        character.SetFinalFreeBoosts(
+            [
+                AbilityType.Strength,
+                AbilityType.Dexterity,
+                AbilityType.Constitution,
+                AbilityType.Charisma,
+            ] );
+        character.SetClassTraining(
+            druid,
+            [
+                new ClassSkillGrantChoice( "class.druid.skill.nature", null, null ),
+                new ClassSkillGrantChoice( druidicOrder.SkillGrant.Id, null, null ),
+            ],
+            [ new ClassTrainingTargetChoice( "skill.arcana", null ) ],
+            [
+                new SkillDefinition(
+                    "skill.nature",
+                    "Nature",
+                    AbilityType.Wisdom,
+                    SourceReference.Unknown ),
+                new SkillDefinition(
+                    "skill.athletics",
+                    "Athletics",
+                    AbilityType.Strength,
+                    SourceReference.Unknown ),
+                new SkillDefinition(
+                    "skill.arcana",
+                    "Arcana",
+                    AbilityType.Intelligence,
+                    SourceReference.Unknown ),
+            ],
+            druidicOrder );
+
+        character.SetClassPackage( CreateClass( AbilityType.Dexterity ), AbilityType.Dexterity );
+
+        Assert.DoesNotContain(
+            character.TrainedSkills,
+            training => training.SourceGrantId.StartsWith( "druidic_order.", StringComparison.Ordinal ) );
+        Assert.Null( character.SelectedDruidicOrderId );
+    }
+
     public static IEnumerable<object[]> InvalidPackageSizes()
     {
         yield return
@@ -340,5 +391,49 @@ public sealed class FinalFreeBoostPackageTests
             null,
             [],
             [] );
+    }
+
+    private static CharacterClass CreateDruidClass()
+    {
+        return new CharacterClass(
+            "class.druid",
+            "Druid",
+            SourceReference.Unknown,
+            8,
+            [ AbilityType.Wisdom ],
+            [
+                new ProficiencyGrant(
+                    ProficiencyTargets.Perception,
+                    ProficiencyRank.Trained,
+                    "class.druid.initial_proficiencies" ),
+            ],
+            [ new ClassSkillGrantDescriptor( "class.druid.skill.nature", [ "skill.nature" ] ) ],
+            0,
+            SpellTradition.Primal,
+            [],
+            [] );
+    }
+
+    private static DruidicOrder CreateDruidicOrder()
+    {
+        return new DruidicOrder(
+            "druidic_order.animal",
+            "Animal",
+            SourceReference.Unknown,
+            new ClassSkillGrantDescriptor(
+                "druidic_order.animal.skill.order",
+                [ "skill.athletics" ] ),
+            [
+                new DruidicOrderBenefitDescriptor(
+                    "feat.animal_companion",
+                    DruidicOrderBenefitKind.ClassFeat,
+                    "Animal Companion",
+                    [] ),
+                new DruidicOrderBenefitDescriptor(
+                    "spell.heal_animal",
+                    DruidicOrderBenefitKind.FocusSpell,
+                    "Heal Animal",
+                    [] ),
+            ] );
     }
 }
