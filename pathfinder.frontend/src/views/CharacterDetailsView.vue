@@ -99,7 +99,8 @@ async function saveGender(): Promise<void> {
   errors.value = []
   try {
     await setCharacterGender(character.value.id, selectedGender.value)
-    await load()
+    character.value.gender = selectedGender.value
+    selectedGender.value = null
   } catch (error) {
     errors.value = getApiErrorMessages(error)
   } finally {
