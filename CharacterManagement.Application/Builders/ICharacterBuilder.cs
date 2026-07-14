@@ -10,7 +10,8 @@ public interface ICharacterBuilder
         string name,
         AncestryType ancestryType,
         string? concept = null,
-        int? age = null );
+        int? age = null,
+        CharacterGender gender = CharacterGender.NotSpecified );
 
     void SetAncestry( AncestryType ancestryType );
     void SetAncestryPackage( string heritageId, string ancestryFeatId );
@@ -47,7 +48,7 @@ public interface ICharacterBuilder
     void SetAlignment();
     void SetDeity();
     void SetAge();
-    void SetGender();
+    void SetGender( CharacterGender gender );
     void SetName( string name );
     DraftCharacter Build();
 }

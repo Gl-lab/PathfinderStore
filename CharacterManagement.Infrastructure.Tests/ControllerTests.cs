@@ -380,6 +380,39 @@ public sealed class ControllerTests
         Assert.Contains( "Character 19 was not found for current user.", errors );
     }
 
+    [Fact]
+    public async Task CharacterController_SetGender_WithOwnedLegacyCharacter_ReturnsOk()
+    {
+        TestMediator mediator = new TestMediator();
+        CharacterController controller = CreateCharacterController( mediator, 77 );
+
+        ActionResult actionResult = await controller.SetGender(
+            19,
+            new SetCharacterGenderRequestDto { Gender = CharacterGender.Female } );
+
+        Assert.IsType<OkResult>( actionResult );
+    }
+
+    [Fact]
+    public async Task CharacterController_SetGender_WhenAlreadySpecified_ReturnsBadRequest()
+    {
+        TestMediator mediator = new TestMediator();
+        mediator.RegisterException<SetCharacterGenderCommand>(
+            new Pathfinder.CharacterManagement.Domain.Exceptions.CharacterManagementException(
+                "Character gender has already been specified." ) );
+        CharacterController controller = CreateCharacterController( mediator, 77 );
+
+        ActionResult actionResult = await controller.SetGender(
+            19,
+            new SetCharacterGenderRequestDto { Gender = CharacterGender.Female } );
+
+        BadRequestObjectResult badRequestResult =
+            Assert.IsType<BadRequestObjectResult>( actionResult );
+        IReadOnlyCollection<string> errors =
+            Assert.IsAssignableFrom<IReadOnlyCollection<string>>( badRequestResult.Value );
+        Assert.Contains( "Character gender has already been specified.", errors );
+    }
+
     private static CharacterController CreateCharacterController( IMediator mediator, int? userId = null )
     {
         CharacterController controller = new CharacterController(

@@ -41,6 +41,7 @@ public sealed class GetCharacterQueriesTests
 
         Assert.Equal( draftCharacter.Id, result.Id );
         Assert.Equal( "Merisiel", result.Name );
+        Assert.Equal( CharacterGender.NotSpecified, result.Gender );
         Assert.Equal( 10, result.Characteristics.Strength.Value );
         Assert.Null( result.Backpack );
         Assert.Null( result.BackgroundPackage );

@@ -1,5 +1,10 @@
 import { http } from '@/api/http'
-import type { AbilityCode, AncestryCode, Proficiency } from '@/features/characters/api'
+import type {
+  AbilityCode,
+  AncestryCode,
+  CharacterGender,
+  Proficiency,
+} from '@/features/characters/api'
 
 export interface AncestryBoost {
   abilityType: AbilityCode | null
@@ -306,6 +311,7 @@ export interface CreateCharacterRequest {
   name: string
   concept: string | null
   age: number | null
+  gender: Exclude<CharacterGender, 'NotSpecified'>
   ancestryType: AncestryCode
   heritageId: string
   ancestryFeatId: string

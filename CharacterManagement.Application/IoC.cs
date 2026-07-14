@@ -19,6 +19,7 @@ public static class DependencyInjection
         services.AddSingleton<IAncestryChoiceAvailabilityPolicy, CommonAncestryChoiceAvailabilityPolicy>();
         services.AddScoped<CharacterDetailsDtoMapper>();
         services.AddTransient<IValidator<CreateCharacterCommand>, CreateCharacterCommandValidator>();
+        services.AddTransient<IValidator<SetCharacterGenderCommand>, SetCharacterGenderCommandValidator>();
         services.AddTransient( typeof( IPipelineBehavior<,> ), typeof( ValidationBehavior<,> ) );
         services.AddMediatR( cfg => cfg.RegisterServicesFromAssembly( typeof( DependencyInjection ).Assembly ) );
     }

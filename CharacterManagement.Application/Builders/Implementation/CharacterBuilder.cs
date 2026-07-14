@@ -60,8 +60,9 @@ public class CharacterBuilder : ICharacterBuilder
         string name,
         AncestryType ancestryType,
         string? concept = null,
-        int? age = null ) =>
-        _draftCharacter = DraftCharacter.Create( accountId, name, ancestryType, concept, age );
+        int? age = null,
+        CharacterGender gender = CharacterGender.NotSpecified ) =>
+        _draftCharacter = DraftCharacter.Create( accountId, name, ancestryType, concept, age, gender );
 
     public void SetAncestry( AncestryType ancestryType )
     {
@@ -469,7 +470,15 @@ public class CharacterBuilder : ICharacterBuilder
 
     public void SetAge() => throw new NotImplementedException();
 
-    public void SetGender() => throw new NotImplementedException();
+    public void SetGender( CharacterGender gender )
+    {
+        if ( _draftCharacter is null )
+        {
+            throw new InvalidOperationException( "Character must be created before setting gender." );
+        }
+
+        _draftCharacter.SetGender( gender );
+    }
 
     public void SetName( string name )
     {

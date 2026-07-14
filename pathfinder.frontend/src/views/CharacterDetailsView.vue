@@ -15,11 +15,16 @@ import { useI18n } from 'vue-i18n'
 import {
   deleteCharacter,
   getCharacter,
+  setCharacterGender,
   type Character,
   type ProficiencyCategory,
   type ProficiencyRank,
 } from '@/features/characters/api'
 import { formatSignedModifier } from '@/features/characters/hitPoints'
+import {
+  isLegacyGenderSelectionRequired,
+  type SelectableCharacterGender,
+} from '@/features/characters/gender'
 import {
   formatProficiency,
   groupProficiencies,
@@ -33,6 +38,11 @@ const errors = ref<string[]>([])
 const isLoading = ref(true)
 const isDeleting = ref(false)
 const confirmDelete = ref(false)
+const selectedGender = ref<SelectableCharacterGender | null>(null)
+const isSavingGender = ref(false)
+const mustSelectGender = computed(
+  () => character.value !== null && isLegacyGenderSelectionRequired(character.value.gender),
+)
 const proficiencyGroups = computed(() => groupProficiencies(character.value?.proficiencies ?? []))
 const abilityCodes = {
   strength: 'Strength',
@@ -82,6 +92,20 @@ async function remove(): Promise<void> {
     confirmDelete.value = false
   }
 }
+async function saveGender(): Promise<void> {
+  if (!character.value || !selectedGender.value) return
+
+  isSavingGender.value = true
+  errors.value = []
+  try {
+    await setCharacterGender(character.value.id, selectedGender.value)
+    await load()
+  } catch (error) {
+    errors.value = getApiErrorMessages(error)
+  } finally {
+    isSavingGender.value = false
+  }
+}
 onMounted(load)
 </script>
 
@@ -95,7 +119,38 @@ onMounted(load)
       variant="tonal"
       >{{ error }}</v-alert
     ><template v-if="character"
-      ><header>
+      ><v-dialog :model-value="mustSelectGender" persistent max-width="520">
+        <v-card>
+          <v-card-title>{{ t('characters.genderRequiredTitle') }}</v-card-title>
+          <v-card-text>
+            <p>{{ t('characters.genderRequiredText') }}</p>
+            <v-alert
+              v-for="error in errors"
+              :key="`gender-${error}`"
+              type="error"
+              variant="tonal"
+            >
+              {{ error }}
+            </v-alert>
+            <v-radio-group v-model="selectedGender" :label="t('characters.gender')">
+              <v-radio :label="t('characters.genders.Male')" value="Male" />
+              <v-radio :label="t('characters.genders.Female')" value="Female" />
+            </v-radio-group>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer />
+            <v-btn
+              color="primary"
+              :disabled="!selectedGender"
+              :loading="isSavingGender"
+              @click="saveGender"
+            >
+              {{ t('characters.saveGender') }}
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <header>
         <div>
           <p class="eyebrow">{{ getAncestryLabel(character.ancestryType) }}</p>
           <h1>{{ character.name }}</h1>
@@ -158,7 +213,10 @@ onMounted(load)
         >
         <v-card elevation="0"
           ><v-card-item :title="t('common.details')" /><v-card-text
-            ><p v-if="character.age">{{ t('characters.age', { age: character.age }) }}</p>
+            ><p v-if="character.gender !== 'NotSpecified'">
+              {{ t('characters.gender') }}: {{ t(`characters.genders.${character.gender}`) }}
+            </p>
+            <p v-if="character.age">{{ t('characters.age', { age: character.age }) }}</p>
             <p v-else>{{ t('characters.ageUnknown') }}</p></v-card-text
           ></v-card
         ><v-card v-if="character.ancestryPackage" elevation="0"

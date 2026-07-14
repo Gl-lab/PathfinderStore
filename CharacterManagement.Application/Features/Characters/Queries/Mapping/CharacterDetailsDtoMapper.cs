@@ -78,6 +78,7 @@ public sealed class CharacterDetailsDtoMapper
             Name = draftCharacter.Name,
             Concept = draftCharacter.Concept,
             Age = draftCharacter.Age,
+            Gender = draftCharacter.Gender,
             AncestryType = draftCharacter.AncestryType,
             AncestryPackage = ancestry is null ? null : AncestryDtoMapper.MapPackage( draftCharacter, ancestry ),
             BackgroundPackage = background is null

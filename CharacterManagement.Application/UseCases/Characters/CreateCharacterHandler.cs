@@ -45,7 +45,8 @@ public sealed class CreateCharacterHandler : IRequestHandler<CreateCharacterComm
             request.Character.Name,
             request.Character.AncestryType,
             request.Character.Concept,
-            request.Character.Age );
+            request.Character.Age,
+            request.Character.Gender );
         _characterBuilder.SetAncestryPackage( request.Character.HeritageId, request.Character.AncestryFeatId );
         _characterBuilder.ApplyFreeBoosts( request.Character.FreeBoosts );
         _characterBuilder.SetBackground(

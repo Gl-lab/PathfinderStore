@@ -1,6 +1,7 @@
 import { http } from '@/api/http'
 
 export type AncestryCode = 'Gnome' | 'Goblin' | 'Dwarf' | 'Halfling' | 'Human' | 'Elf'
+export type CharacterGender = 'NotSpecified' | 'Male' | 'Female'
 export type AbilityCode =
   | 'Strength'
   | 'Dexterity'
@@ -214,6 +215,7 @@ export interface Character {
   name: string
   concept: string | null
   age: number | null
+  gender: CharacterGender
   ancestryType: AncestryCode
   ancestryPackage: CharacterAncestryPackage | null
   backgroundPackage: CharacterBackgroundPackage | null
@@ -238,6 +240,13 @@ export async function getCharacters(): Promise<Character[]> {
 
 export async function getCharacter(id: number): Promise<Character> {
   return (await http.get<Character>(`/api/character/${id}`)).data
+}
+
+export async function setCharacterGender(
+  id: number,
+  gender: Exclude<CharacterGender, 'NotSpecified'>,
+): Promise<void> {
+  await http.put(`/api/character/${id}/gender`, { gender })
 }
 
 export async function deleteCharacter(id: number): Promise<void> {

@@ -23,6 +23,7 @@ public sealed class CreateCharacterHandlerTests
             Name = "Thorin",
             Concept = "A dwarf searching for a lost clanhold.",
             Age = 78,
+            Gender = CharacterGender.Male,
             AncestryType = AncestryType.Human,
             HeritageId = "human.skilled",
             AncestryFeatId = "human.cooperative_nature",
@@ -67,6 +68,7 @@ public sealed class CreateCharacterHandlerTests
         Assert.Equal( character.Name, savedCharacter.Name );
         Assert.Equal( character.Concept, savedCharacter.Concept );
         Assert.Equal( character.Age, savedCharacter.Age );
+        Assert.Equal( character.Gender, savedCharacter.Gender );
         Assert.Equal( character.AncestryType, savedCharacter.AncestryType );
         Assert.Equal( character.HeritageId, savedCharacter.SelectedHeritageId );
         Assert.Equal( character.AncestryFeatId, savedCharacter.SelectedAncestryFeatId );

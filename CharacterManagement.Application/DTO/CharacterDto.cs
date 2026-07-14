@@ -8,6 +8,7 @@ public class CharacterDto : BaseDto
     public string Name { get; set; }
     public string? Concept { get; set; }
     public int? Age { get; set; }
+    public CharacterGender Gender { get; set; }
     public AncestryType AncestryType { get; set; }
     public CharacterAncestryPackageDto? AncestryPackage { get; set; }
     public CharacterBackgroundPackageDto? BackgroundPackage { get; set; }

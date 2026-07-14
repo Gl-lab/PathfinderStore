@@ -20,6 +20,12 @@ public sealed class CreateCharacterCommandValidator : AbstractValidator<CreateCh
                 RuleFor( command => command.Character.Name )
                     .NotEmpty();
 
+                RuleFor( command => command.Character.Gender )
+                    .Must( gender =>
+                        ( gender == CharacterGender.Male ) ||
+                        ( gender == CharacterGender.Female ) )
+                    .WithMessage( "Character gender must be Male or Female." );
+
                 RuleFor( command => command.Character.AncestryType )
                     .NotEqual( AncestryType.None );
 
