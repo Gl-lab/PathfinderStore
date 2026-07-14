@@ -92,7 +92,7 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
                     Spellcasting( "wizard", "Arcane spellcasting." ),
                     Feature( "wizard.arcane_bond", "Arcane Bond", "Grants the Arcane Bond class feature." ),
                     Choice( "wizard.thesis", "Arcane Thesis", "Choose an Arcane Thesis.", CharacterClassDependencyType.ClassChoiceCatalog ),
-                    Choice( "wizard.school", "Arcane School", "Choose an Arcane School.", CharacterClassDependencyType.ClassChoiceCatalog )
+                    Choice( "wizard.school", "Arcane School", "Choose an Arcane School." )
                 ],
                 [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.SpellCatalog, CharacterClassDependencyType.ClassFeatureRules, CharacterClassDependencyType.ClassChoiceCatalog ] )
         ];

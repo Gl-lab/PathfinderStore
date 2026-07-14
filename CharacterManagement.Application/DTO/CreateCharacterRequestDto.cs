@@ -24,6 +24,7 @@ public class CreateCharacterRequestDto
     public string? BardMuseId { get; set; }
     public string? WitchPatronId { get; set; }
     public string? WitchPatronFamiliarSpellId { get; set; }
+    public string? ArcaneSchoolId { get; set; }
     public string? ClericDoctrineId { get; set; }
     public string? DeityId { get; set; }
     public DivineFont? DivineFont { get; set; }

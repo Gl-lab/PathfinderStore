@@ -263,6 +263,18 @@ onMounted(load)
                 {{ character.classPackage.witchPatron.selectedFamiliarSpell.name }}
               </p>
             </template>
+            <template v-if="character.classPackage.arcaneSchool">
+              <p>
+                {{ t('classUi.arcaneSchool') }}: {{ character.classPackage.arcaneSchool.name }}
+              </p>
+              <p
+                v-for="benefit in character.classPackage.arcaneSchool.benefits"
+                :key="benefit.id"
+              >
+                {{ t(`classUi.arcaneSchoolBenefitKinds.${benefit.kind}`) }}:
+                {{ benefit.name }} — {{ benefit.summary }}
+              </p>
+            </template>
             <template v-if="character.classPackage.clericDoctrine">
               <p>
                 {{ t('classUi.clericDoctrine') }}: {{ character.classPackage.clericDoctrine.name }}

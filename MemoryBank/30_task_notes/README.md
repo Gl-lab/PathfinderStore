@@ -22,6 +22,7 @@ Vikunja остаётся источником истины по фактичес
 - [`druidic_order_implementation.md`](druidic_order_implementation.md)
 - [`bard_muse_implementation.md`](bard_muse_implementation.md)
 - [`witch_patron_implementation.md`](witch_patron_implementation.md)
+- [`wizard_arcane_school_implementation.md`](wizard_arcane_school_implementation.md)
 - [`final_free_boosts_implementation.md`](final_free_boosts_implementation.md)
 - [`hit_points_v1_implementation.md`](hit_points_v1_implementation.md)
 - [`skills_lore_foundation_implementation.md`](skills_lore_foundation_implementation.md)

@@ -27,6 +27,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public string? SelectedBardMuseId { get; private set; }
     public string? SelectedWitchPatronId { get; private set; }
     public string? SelectedWitchPatronFamiliarSpellId { get; private set; }
+    public string? SelectedArcaneSchoolId { get; private set; }
     public string? SelectedClericDoctrineId { get; private set; }
     public string? SelectedDeityId { get; private set; }
     public DivineFont? SelectedDivineFont { get; private set; }
@@ -298,7 +299,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         DruidicOrder? druidicOrder = null,
         BardMuse? bardMuse = null,
         WitchPatron? witchPatron = null,
-        string? witchPatronFamiliarSpellId = null )
+        string? witchPatronFamiliarSpellId = null,
+        ArcaneSchool? arcaneSchool = null )
     {
         ArgumentNullException.ThrowIfNull( characterClass );
 
@@ -370,6 +372,18 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         {
             throw new CharacterManagementException(
                 "Witch Patron choices can only be selected for the Witch class." );
+        }
+
+        bool isWizard = characterClass.Id == "class.wizard";
+        if ( isWizard && ( arcaneSchool is null ) )
+        {
+            throw new CharacterManagementException( "Wizard class requires an Arcane School." );
+        }
+
+        if ( !isWizard && ( arcaneSchool is not null ) )
+        {
+            throw new CharacterManagementException(
+                "Arcane School can only be selected for the Wizard class." );
         }
 
         bool isCleric = characterClass.Id == "class.cleric";
@@ -485,6 +499,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         SelectedBardMuseId = bardMuse?.Id;
         SelectedWitchPatronId = witchPatron?.Id;
         SelectedWitchPatronFamiliarSpellId = familiarSpell?.Id;
+        SelectedArcaneSchoolId = arcaneSchool?.Id;
         SelectedClericDoctrineId = clericDoctrine?.Id;
         SelectedDeityId = deity?.Id;
         SelectedDivineFont = divineFont;
@@ -802,6 +817,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         SelectedBardMuseId = null;
         SelectedWitchPatronId = null;
         SelectedWitchPatronFamiliarSpellId = null;
+        SelectedArcaneSchoolId = null;
         SelectedClericDoctrineId = null;
         SelectedDeityId = null;
         SelectedDivineFont = null;

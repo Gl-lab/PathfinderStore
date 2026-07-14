@@ -397,6 +397,55 @@ public sealed class CreateCharacterHandlerTests
     }
 
     [Fact]
+    public async Task Handle_Wizard_PersistsArcaneSchool()
+    {
+        await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
+        Account account = await CreateAccountAsync( dbContext, 59, "Ezren", "Scholar" );
+        CreateCharacterHandler handler = CreateHandler( dbContext );
+        CreateCharacterRequestDto character = new CreateCharacterRequestDto
+        {
+            Name = "Ezren",
+            AncestryType = AncestryType.Human,
+            HeritageId = "human.skilled",
+            AncestryFeatId = "human.cooperative_nature",
+            FreeBoosts = [ AbilityType.Intelligence, AbilityType.Wisdom ],
+            BackgroundId = "background.acrobat",
+            BackgroundRestrictedBoost = AbilityType.Dexterity,
+            BackgroundFreeBoost = AbilityType.Charisma,
+            ClassId = "class.wizard",
+            ClassKeyAbility = AbilityType.Intelligence,
+            ArcaneSchoolId = "arcane_school.mentalism",
+            FinalFreeBoosts =
+            [
+                AbilityType.Strength,
+                AbilityType.Dexterity,
+                AbilityType.Constitution,
+                AbilityType.Intelligence,
+            ],
+            ClassSkillGrantChoices =
+            [
+                new ClassSkillGrantChoice( "class.wizard.skill.arcana", null, null ),
+            ],
+            AdditionalClassTrainingChoices = GeneralSkillChoices(
+                "skill.athletics",
+                "skill.crafting",
+                "skill.deception",
+                "skill.diplomacy",
+                "skill.intimidation" ),
+        };
+
+        await handler.Handle(
+            new CreateCharacterCommand( account.UserId, character ),
+            CancellationToken.None );
+        dbContext.ChangeTracker.Clear();
+
+        DraftCharacter savedCharacter = await dbContext.Character
+            .AsNoTracking()
+            .SingleAsync( entity => entity.AccountId == account.Id );
+        Assert.Equal( "arcane_school.mentalism", savedCharacter.SelectedArcaneSchoolId );
+    }
+
+    [Fact]
     public async Task Handle_Cleric_PersistsDoctrineSelection()
     {
         await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
@@ -503,7 +552,8 @@ public sealed class CreateCharacterHandlerTests
             huntersEdgeRepository: new HuntersEdgeRepository(),
             druidicOrderRepository: new DruidicOrderRepository(),
             bardMuseRepository: new BardMuseRepository(),
-            witchPatronRepository: new WitchPatronRepository() );
+            witchPatronRepository: new WitchPatronRepository(),
+            arcaneSchoolRepository: new ArcaneSchoolRepository() );
 
         TestUnitOfWork unitOfWork = new TestUnitOfWork( dbContext );
 

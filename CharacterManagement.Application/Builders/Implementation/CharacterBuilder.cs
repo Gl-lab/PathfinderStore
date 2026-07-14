@@ -19,6 +19,7 @@ public class CharacterBuilder : ICharacterBuilder
     private readonly IDruidicOrderRepository? _druidicOrderRepository;
     private readonly IBardMuseRepository? _bardMuseRepository;
     private readonly IWitchPatronRepository? _witchPatronRepository;
+    private readonly IArcaneSchoolRepository? _arcaneSchoolRepository;
 
     public CharacterBuilder(
         IAncestryRepository ancestryRepository,
@@ -32,7 +33,8 @@ public class CharacterBuilder : ICharacterBuilder
         IHuntersEdgeRepository? huntersEdgeRepository = null,
         IDruidicOrderRepository? druidicOrderRepository = null,
         IBardMuseRepository? bardMuseRepository = null,
-        IWitchPatronRepository? witchPatronRepository = null )
+        IWitchPatronRepository? witchPatronRepository = null,
+        IArcaneSchoolRepository? arcaneSchoolRepository = null )
     {
         _ancestryRepository = ancestryRepository;
         _ancestryChoiceAvailabilityPolicy = ancestryChoiceAvailabilityPolicy ?? new CommonAncestryChoiceAvailabilityPolicy();
@@ -46,6 +48,7 @@ public class CharacterBuilder : ICharacterBuilder
         _druidicOrderRepository = druidicOrderRepository;
         _bardMuseRepository = bardMuseRepository;
         _witchPatronRepository = witchPatronRepository;
+        _arcaneSchoolRepository = arcaneSchoolRepository;
     }
 
     public void CreateCharacter(
@@ -136,7 +139,8 @@ public class CharacterBuilder : ICharacterBuilder
         string? druidicOrderId = null,
         string? bardMuseId = null,
         string? witchPatronId = null,
-        string? witchPatronFamiliarSpellId = null )
+        string? witchPatronFamiliarSpellId = null,
+        string? arcaneSchoolId = null )
     {
         if ( _draftCharacter is null )
         {
@@ -284,6 +288,24 @@ public class CharacterBuilder : ICharacterBuilder
             }
         }
 
+        ArcaneSchool? arcaneSchool = null;
+        if ( !String.IsNullOrWhiteSpace( arcaneSchoolId ) )
+        {
+            if ( _arcaneSchoolRepository is null )
+            {
+                throw new InvalidOperationException( "Arcane School repository is not configured." );
+            }
+
+            try
+            {
+                arcaneSchool = _arcaneSchoolRepository.GetArcaneSchool( arcaneSchoolId );
+            }
+            catch ( ArgumentException exception )
+            {
+                throw new CharacterManagementException( exception.Message );
+            }
+        }
+
         if ( ( ( characterClass.Id == "class.rogue" ) || ( deity is not null ) ) &&
              ( _skillRepository is null ) )
         {
@@ -305,7 +327,8 @@ public class CharacterBuilder : ICharacterBuilder
             druidicOrder,
             bardMuse,
             witchPatron,
-            witchPatronFamiliarSpellId );
+            witchPatronFamiliarSpellId,
+            arcaneSchool );
     }
 
     public void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts )

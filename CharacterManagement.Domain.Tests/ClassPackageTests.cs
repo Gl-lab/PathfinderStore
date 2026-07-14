@@ -64,7 +64,10 @@ public sealed class ClassPackageTests
             AbilityType.Dexterity,
             AbilityType.Intelligence );
 
-        character.SetClassPackage( wizard, AbilityType.Intelligence );
+        character.SetClassPackage(
+            wizard,
+            AbilityType.Intelligence,
+            arcaneSchool: CreateArcaneSchool() );
 
         Assert.Equal( 16, character.AbilityScores.Intelligence.Value );
     }
@@ -80,7 +83,10 @@ public sealed class ClassPackageTests
             background,
             AbilityType.Dexterity,
             AbilityType.Intelligence );
-        character.SetClassPackage( wizard, AbilityType.Intelligence );
+        character.SetClassPackage(
+            wizard,
+            AbilityType.Intelligence,
+            arcaneSchool: CreateArcaneSchool() );
 
         character.SetClassPackage(
             bard,
@@ -491,6 +497,52 @@ public sealed class ClassPackageTests
     }
 
     [Fact]
+    public void SetClassPackage_WizardRequiresSchoolAndInvalidCallIsAtomic()
+    {
+        DraftCharacter character = CreateCharacter();
+        CharacterClass fighter = CreateClass( "class.fighter", AbilityType.Strength );
+        CharacterClass wizard = CreateClass( "class.wizard", AbilityType.Intelligence );
+        character.SetClassPackage( fighter, AbilityType.Strength );
+
+        Assert.Throws<CharacterManagementException>( () =>
+            character.SetClassPackage( wizard, AbilityType.Intelligence ) );
+
+        Assert.Equal( fighter.Id, character.SelectedClassId );
+        Assert.Null( character.SelectedArcaneSchoolId );
+    }
+
+    [Fact]
+    public void SetClassPackage_WizardStoresSchoolAndChangingClassClearsIt()
+    {
+        DraftCharacter character = CreateCharacter();
+        CharacterClass wizard = CreateClass( "class.wizard", AbilityType.Intelligence );
+        CharacterClass fighter = CreateClass( "class.fighter", AbilityType.Strength );
+        ArcaneSchool arcaneSchool = CreateArcaneSchool();
+        character.SetClassPackage(
+            wizard,
+            AbilityType.Intelligence,
+            arcaneSchool: arcaneSchool );
+
+        Assert.Equal( arcaneSchool.Id, character.SelectedArcaneSchoolId );
+
+        character.SetClassPackage( fighter, AbilityType.Strength );
+
+        Assert.Null( character.SelectedArcaneSchoolId );
+    }
+
+    [Fact]
+    public void SetClassPackage_NonWizardWithSchool_Throws()
+    {
+        DraftCharacter character = CreateCharacter();
+        CharacterClass fighter = CreateClass( "class.fighter", AbilityType.Strength );
+
+        Assert.Throws<CharacterManagementException>( () => character.SetClassPackage(
+            fighter,
+            AbilityType.Strength,
+            arcaneSchool: CreateArcaneSchool() ) );
+    }
+
+    [Fact]
     public void SetBackgroundPackage_AfterClassPackage_ThrowsWithoutRemovingClassEffects()
     {
         DraftCharacter character = CreateCharacter();
@@ -666,6 +718,35 @@ public sealed class ClassPackageTests
                 new WitchPatronBenefitDescriptor(
                     "familiar_ability.restored_spirit", WitchPatronBenefitKind.FamiliarAbility,
                     "Restored Spirit", "Familiar ability", [] ),
+            ] );
+    }
+
+    private static ArcaneSchool CreateArcaneSchool()
+    {
+        return new ArcaneSchool(
+            "arcane_school.mentalism",
+            "School of Mentalism",
+            SourceReference.Unknown,
+            Enumerable
+                .Range( 0, 10 )
+                .Select( rank => new ArcaneSchoolCurriculumSpellDescriptor(
+                    $"spell.curriculum_{rank}",
+                    $"Curriculum {rank}",
+                    rank ) )
+                .ToArray(),
+            [
+                new ArcaneSchoolBenefitDescriptor(
+                    "spell.charming_push",
+                    ArcaneSchoolBenefitKind.InitialSchoolSpell,
+                    "Charming Push",
+                    "Initial school spell.",
+                    [] ),
+                new ArcaneSchoolBenefitDescriptor(
+                    "spell.invisibility_cloak",
+                    ArcaneSchoolBenefitKind.AdvancedSchoolSpell,
+                    "Invisibility Cloak",
+                    "Advanced school spell.",
+                    [] ),
             ] );
     }
 

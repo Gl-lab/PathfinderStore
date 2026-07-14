@@ -17,6 +17,7 @@ using Pathfinder.CharacterManagement.Application.UseCases.HuntersEdges;
 using Pathfinder.CharacterManagement.Application.UseCases.DruidicOrders;
 using Pathfinder.CharacterManagement.Application.UseCases.BardMuses;
 using Pathfinder.CharacterManagement.Application.UseCases.WitchPatrons;
+using Pathfinder.CharacterManagement.Application.UseCases.ArcaneSchools;
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.Web.Controllers;
 
@@ -195,6 +196,30 @@ public sealed class ControllerTests
         OkObjectResult okResult = Assert.IsType<OkObjectResult>( actionResult.Result );
         IReadOnlyCollection<WitchPatronDto> payload =
             Assert.IsAssignableFrom<IReadOnlyCollection<WitchPatronDto>>( okResult.Value );
+        Assert.Same( expected, payload );
+    }
+
+    [Fact]
+    public async Task ClassesController_GetArcaneSchools_ReturnsOkWithPayload()
+    {
+        IReadOnlyCollection<ArcaneSchoolDto> expected =
+        [
+            new ArcaneSchoolDto
+            {
+                Id = "arcane_school.mentalism",
+                Name = "School of Mentalism",
+            },
+        ];
+        TestMediator mediator = new TestMediator();
+        mediator.Register( new GetArcaneSchoolsCommand(), expected );
+        ClassesController controller = new ClassesController( mediator );
+
+        ActionResult<IReadOnlyCollection<ArcaneSchoolDto>> actionResult =
+            await controller.GetArcaneSchools();
+
+        OkObjectResult okResult = Assert.IsType<OkObjectResult>( actionResult.Result );
+        IReadOnlyCollection<ArcaneSchoolDto> payload =
+            Assert.IsAssignableFrom<IReadOnlyCollection<ArcaneSchoolDto>>( okResult.Value );
         Assert.Same( expected, payload );
     }
 

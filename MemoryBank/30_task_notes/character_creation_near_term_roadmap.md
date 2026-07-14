@@ -122,6 +122,8 @@ Vikunja остаётся источником истины по карточка
 
 #### 1.6. Wizard Arcane School
 
+**Статус:** завершено 14 июля 2026 года; см. [план и результат реализации](wizard_arcane_school_implementation.md).
+
 **Проблема.** Wizard не требует Arcane School, поэтому отсутствует обязательный источник curriculum spells и school-specific benefits.
 
 **Ожидаемый результат.** Wizard выбирает School по stable id; curriculum и granted benefits доступны typed descriptors, но spellbook и дополнительные slots ещё не применяются.

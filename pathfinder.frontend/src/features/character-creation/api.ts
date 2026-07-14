@@ -210,6 +210,32 @@ export interface WitchPatron {
   benefits: WitchPatronBenefit[]
 }
 
+export type ArcaneSchoolBenefitKind =
+  | 'InitialSchoolSpell'
+  | 'AdvancedSchoolSpell'
+  | 'ExtraClassFeat'
+  | 'ExtraSpellbookSpellChoice'
+  | 'AdditionalDrainBondedItemUses'
+
+export interface ArcaneSchool {
+  id: string
+  name: string
+  hasCurriculum: boolean
+  curriculumSpells: {
+    id: string
+    name: string
+    rank: number
+    isUncommon: boolean
+  }[]
+  benefits: {
+    id: string
+    kind: ArcaneSchoolBenefitKind
+    name: string
+    summary: string
+    deferredDependencies: string[]
+  }[]
+}
+
 export interface RogueTrainingChoice {
   grantId: string
   selectedSkillId: string | null
@@ -272,6 +298,7 @@ export interface CreateCharacterRequest {
   bardMuseId: string | null
   witchPatronId: string | null
   witchPatronFamiliarSpellId: string | null
+  arcaneSchoolId: string | null
   clericDoctrineId: string | null
   deityId: string | null
   divineFont: DivineFont | null
@@ -312,6 +339,10 @@ export async function getBardMuses(): Promise<BardMuse[]> {
 
 export async function getWitchPatrons(): Promise<WitchPatron[]> {
   return (await http.get<WitchPatron[]>('/api/classes/witch/patrons')).data
+}
+
+export async function getArcaneSchools(): Promise<ArcaneSchool[]> {
+  return (await http.get<ArcaneSchool[]>('/api/classes/wizard/arcane-schools')).data
 }
 
 export async function getClericDoctrines(): Promise<ClericDoctrine[]> {

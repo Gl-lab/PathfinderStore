@@ -121,6 +121,24 @@ export interface CharacterClassPackage {
       deferredDependencies: string[]
     }
   } | null
+  arcaneSchool: {
+    id: string
+    name: string
+    hasCurriculum: boolean
+    curriculumSpells: {
+      id: string
+      name: string
+      rank: number
+      isUncommon: boolean
+    }[]
+    benefits: {
+      id: string
+      kind: string
+      name: string
+      summary: string
+      deferredDependencies: string[]
+    }[]
+  } | null
   clericDoctrine: {
     id: string
     name: string

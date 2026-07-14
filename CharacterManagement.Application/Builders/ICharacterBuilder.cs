@@ -32,7 +32,8 @@ public interface ICharacterBuilder
         string? druidicOrderId = null,
         string? bardMuseId = null,
         string? witchPatronId = null,
-        string? witchPatronFamiliarSpellId = null );
+        string? witchPatronFamiliarSpellId = null,
+        string? arcaneSchoolId = null );
     void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts );
     void SetClassTraining(
         string characterClassId,

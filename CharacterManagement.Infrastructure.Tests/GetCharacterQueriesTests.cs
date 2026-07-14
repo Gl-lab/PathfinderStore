@@ -502,6 +502,88 @@ public sealed class GetCharacterQueriesTests
     }
 
     [Fact]
+    public async Task GetCharacterById_WizardReturnsSelectedArcaneSchool()
+    {
+        await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
+        Account account = await CreateAccountAsync( dbContext, 414 );
+        AncestryRepository ancestryRepository = new AncestryRepository();
+        BackgroundRepository backgroundRepository = new BackgroundRepository();
+        CharacterClassRepository characterClassRepository = new CharacterClassRepository();
+        ArcaneSchoolRepository arcaneSchoolRepository = new ArcaneSchoolRepository();
+        CharacterBuilder builder = new CharacterBuilder(
+            ancestryRepository,
+            backgroundRepository: backgroundRepository,
+            characterClassRepository: characterClassRepository,
+            skillRepository: new SkillRepository(),
+            arcaneSchoolRepository: arcaneSchoolRepository );
+        builder.CreateCharacter( account.Id, "Ezren", AncestryType.Human );
+        builder.SetAncestryPackage( "human.skilled", "human.cooperative_nature" );
+        builder.ApplyFreeBoosts( [ AbilityType.Intelligence, AbilityType.Wisdom ] );
+        builder.SetBackground(
+            "background.acrobat",
+            AbilityType.Dexterity,
+            AbilityType.Charisma );
+        builder.SetClass(
+            "class.wizard",
+            AbilityType.Intelligence,
+            arcaneSchoolId: "arcane_school.mentalism" );
+        DraftCharacter draftCharacter = builder.Build();
+        dbContext.Character.Add( draftCharacter );
+        await dbContext.SaveChangesAsync();
+        dbContext.ChangeTracker.Clear();
+        CharacterConvertor converter = new CharacterConvertor(
+            ancestryRepository: ancestryRepository,
+            backgroundRepository: backgroundRepository,
+            characterClassRepository: characterClassRepository,
+            skillRepository: new SkillRepository(),
+            arcaneSchoolRepository: arcaneSchoolRepository );
+        GetCharacterByIdHandler handler = new GetCharacterByIdHandler(
+            new CharacterRepository( dbContext ),
+            converter );
+
+        CharacterDto result = await handler.Handle(
+            new GetCharacterByIdCommand( account.UserId, draftCharacter.Id ),
+            CancellationToken.None );
+
+        Assert.NotNull( result.ClassPackage?.ArcaneSchool );
+        Assert.Equal( SpellTradition.Arcane, result.ClassPackage.SpellTradition );
+        Assert.Equal( "arcane_school.mentalism", result.ClassPackage.ArcaneSchool.Id );
+        Assert.NotEmpty( result.ClassPackage.ArcaneSchool.CurriculumSpells );
+    }
+
+    [Fact]
+    public async Task GetCharacterById_LegacyWizardWithoutSchool_ReturnsNullablePackage()
+    {
+        await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
+        Account account = await CreateAccountAsync( dbContext, 415 );
+        DraftCharacter draftCharacter = DraftCharacter.Create(
+            account.Id,
+            "Legacy Ezren",
+            AncestryType.Human );
+        dbContext.Character.Add( draftCharacter );
+        dbContext.Entry( draftCharacter )
+            .Property( character => character.SelectedClassId )
+            .CurrentValue = "class.wizard";
+        dbContext.Entry( draftCharacter )
+            .Property( character => character.SelectedClassKeyAbility )
+            .CurrentValue = AbilityType.Intelligence;
+        await dbContext.SaveChangesAsync();
+        dbContext.ChangeTracker.Clear();
+        GetCharacterByIdHandler handler = CreateByIdHandler(
+            dbContext,
+            characterClassRepository: new CharacterClassRepository() );
+
+        CharacterDto result = await handler.Handle(
+            new GetCharacterByIdCommand( account.UserId, draftCharacter.Id ),
+            CancellationToken.None );
+
+        Assert.NotNull( result.ClassPackage );
+        Assert.Equal( "class.wizard", result.ClassPackage.ClassId );
+        Assert.Null( result.ClassPackage.ArcaneSchool );
+        Assert.Equal( SpellTradition.Arcane, result.ClassPackage.SpellTradition );
+    }
+
+    [Fact]
     public async Task GetCharacterById_LegacyClericWithoutDoctrine_ReturnsNullableDoctrinePackage()
     {
         await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
