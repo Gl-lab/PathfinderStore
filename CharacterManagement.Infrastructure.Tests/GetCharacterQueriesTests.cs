@@ -337,6 +337,88 @@ public sealed class GetCharacterQueriesTests
     }
 
     [Fact]
+    public async Task GetCharacterById_BardReturnsSelectedMuse()
+    {
+        await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
+        Account account = await CreateAccountAsync( dbContext, 410 );
+        AncestryRepository ancestryRepository = new AncestryRepository();
+        BackgroundRepository backgroundRepository = new BackgroundRepository();
+        CharacterClassRepository characterClassRepository = new CharacterClassRepository();
+        BardMuseRepository bardMuseRepository = new BardMuseRepository();
+        CharacterBuilder builder = new CharacterBuilder(
+            ancestryRepository,
+            backgroundRepository: backgroundRepository,
+            characterClassRepository: characterClassRepository,
+            skillRepository: new SkillRepository(),
+            bardMuseRepository: bardMuseRepository );
+        builder.CreateCharacter( account.Id, "Lem", AncestryType.Human );
+        builder.SetAncestryPackage( "human.skilled", "human.cooperative_nature" );
+        builder.ApplyFreeBoosts( [ AbilityType.Intelligence, AbilityType.Charisma ] );
+        builder.SetBackground(
+            "background.acrobat",
+            AbilityType.Dexterity,
+            AbilityType.Constitution );
+        builder.SetClass(
+            "class.bard",
+            AbilityType.Charisma,
+            bardMuseId: "bard_muse.enigma" );
+        DraftCharacter draftCharacter = builder.Build();
+        dbContext.Character.Add( draftCharacter );
+        await dbContext.SaveChangesAsync();
+        dbContext.ChangeTracker.Clear();
+        CharacterConvertor converter = new CharacterConvertor(
+            ancestryRepository,
+            backgroundRepository,
+            characterClassRepository,
+            new SkillRepository(),
+            bardMuseRepository: bardMuseRepository );
+        GetCharacterByIdHandler handler = new GetCharacterByIdHandler(
+            new CharacterRepository( dbContext ),
+            converter );
+
+        CharacterDto result = await handler.Handle(
+            new GetCharacterByIdCommand( account.UserId, draftCharacter.Id ),
+            CancellationToken.None );
+
+        Assert.NotNull( result.ClassPackage?.BardMuse );
+        Assert.Equal( "bard_muse.enigma", result.ClassPackage.BardMuse.Id );
+        Assert.Contains(
+            result.ClassPackage.BardMuse.Benefits,
+            benefit => benefit.Id == "feat.bardic_lore" );
+    }
+
+    [Fact]
+    public async Task GetCharacterById_LegacyBardWithoutMuse_ReturnsNullablePackage()
+    {
+        await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
+        Account account = await CreateAccountAsync( dbContext, 411 );
+        DraftCharacter draftCharacter = DraftCharacter.Create(
+            account.Id,
+            "Legacy Lem",
+            AncestryType.Human );
+        dbContext.Character.Add( draftCharacter );
+        dbContext.Entry( draftCharacter )
+            .Property( character => character.SelectedClassId )
+            .CurrentValue = "class.bard";
+        dbContext.Entry( draftCharacter )
+            .Property( character => character.SelectedClassKeyAbility )
+            .CurrentValue = AbilityType.Charisma;
+        await dbContext.SaveChangesAsync();
+        dbContext.ChangeTracker.Clear();
+        GetCharacterByIdHandler handler = CreateByIdHandler(
+            dbContext,
+            characterClassRepository: new CharacterClassRepository() );
+
+        CharacterDto result = await handler.Handle(
+            new GetCharacterByIdCommand( account.UserId, draftCharacter.Id ),
+            CancellationToken.None );
+
+        Assert.NotNull( result.ClassPackage );
+        Assert.Equal( "class.bard", result.ClassPackage.ClassId );
+        Assert.Null( result.ClassPackage.BardMuse );
+    }
+
+    [Fact]
     public async Task GetCharacterById_LegacyClericWithoutDoctrine_ReturnsNullableDoctrinePackage()
     {
         await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();

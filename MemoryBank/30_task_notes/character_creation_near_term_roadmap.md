@@ -91,6 +91,8 @@ Vikunja остаётся источником истины по карточка
 
 #### 1.4. Bard Muse
 
+**Статус:** завершено 14 июля 2026 года; см. [Implementation Plan](bard_muse_implementation.md).
+
 **Проблема.** Bard не требует Muse, хотя этот выбор на первом уровне определяет granted class feat и дополнительный spell repertoire entry.
 
 **Ожидаемый результат.** Bard выбирает Muse из типизированного каталога; выбор сохраняется, а feat и spell references возвращаются как проверенные descriptors без исполнения отсутствующих подсистем.

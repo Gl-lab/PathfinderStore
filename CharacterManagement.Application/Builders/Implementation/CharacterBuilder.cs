@@ -17,6 +17,7 @@ public class CharacterBuilder : ICharacterBuilder
     private readonly IDeityRepository? _deityRepository;
     private readonly IHuntersEdgeRepository? _huntersEdgeRepository;
     private readonly IDruidicOrderRepository? _druidicOrderRepository;
+    private readonly IBardMuseRepository? _bardMuseRepository;
 
     public CharacterBuilder(
         IAncestryRepository ancestryRepository,
@@ -28,7 +29,8 @@ public class CharacterBuilder : ICharacterBuilder
         IClericDoctrineRepository? clericDoctrineRepository = null,
         IDeityRepository? deityRepository = null,
         IHuntersEdgeRepository? huntersEdgeRepository = null,
-        IDruidicOrderRepository? druidicOrderRepository = null )
+        IDruidicOrderRepository? druidicOrderRepository = null,
+        IBardMuseRepository? bardMuseRepository = null )
     {
         _ancestryRepository = ancestryRepository;
         _ancestryChoiceAvailabilityPolicy = ancestryChoiceAvailabilityPolicy ?? new CommonAncestryChoiceAvailabilityPolicy();
@@ -40,6 +42,7 @@ public class CharacterBuilder : ICharacterBuilder
         _deityRepository = deityRepository;
         _huntersEdgeRepository = huntersEdgeRepository;
         _druidicOrderRepository = druidicOrderRepository;
+        _bardMuseRepository = bardMuseRepository;
     }
 
     public void CreateCharacter(
@@ -127,7 +130,8 @@ public class CharacterBuilder : ICharacterBuilder
         DivineSanctification? divineSanctification = null,
         string? deitySkillReplacementId = null,
         string? huntersEdgeId = null,
-        string? druidicOrderId = null )
+        string? druidicOrderId = null,
+        string? bardMuseId = null )
     {
         if ( _draftCharacter is null )
         {
@@ -239,6 +243,24 @@ public class CharacterBuilder : ICharacterBuilder
             }
         }
 
+        BardMuse? bardMuse = null;
+        if ( !String.IsNullOrWhiteSpace( bardMuseId ) )
+        {
+            if ( _bardMuseRepository is null )
+            {
+                throw new InvalidOperationException( "Bard Muse repository is not configured." );
+            }
+
+            try
+            {
+                bardMuse = _bardMuseRepository.GetBardMuse( bardMuseId );
+            }
+            catch ( ArgumentException exception )
+            {
+                throw new CharacterManagementException( exception.Message );
+            }
+        }
+
         if ( ( ( characterClass.Id == "class.rogue" ) || ( deity is not null ) ) &&
              ( _skillRepository is null ) )
         {
@@ -257,7 +279,8 @@ public class CharacterBuilder : ICharacterBuilder
             divineSanctification,
             deitySkillReplacementId,
             huntersEdge,
-            druidicOrder );
+            druidicOrder,
+            bardMuse );
     }
 
     public void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts )

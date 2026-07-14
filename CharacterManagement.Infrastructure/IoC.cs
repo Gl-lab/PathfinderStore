@@ -19,5 +19,6 @@ public static class DependencyInjection
         services.AddScoped<IDeityRepository, DeityRepository>();
         services.AddScoped<IHuntersEdgeRepository, HuntersEdgeRepository>();
         services.AddScoped<IDruidicOrderRepository, DruidicOrderRepository>();
+        services.AddScoped<IBardMuseRepository, BardMuseRepository>();
     }
 }

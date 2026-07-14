@@ -35,9 +35,9 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
                 "bard", "Bard", 94, 8, [ AbilityType.Charisma ], 4, SpellTradition.Occult,
                 [
                     Spellcasting( "bard", "Occult spellcasting, spell repertoire, and composition spells." ),
-                    Choice( "bard.muse", "Muse", "Choose a muse that grants a bard feat and a spell.", CharacterClassDependencyType.ClassChoiceCatalog )
+                    Choice( "bard.muse", "Muse", "Choose a muse that grants a bard feat and a spell." )
                 ],
-                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.SpellCatalog, CharacterClassDependencyType.ClassChoiceCatalog, CharacterClassDependencyType.ClassFeatCatalog ] ),
+                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.SpellCatalog, CharacterClassDependencyType.ClassFeatCatalog ] ),
             Create(
                 "cleric", "Cleric", 108, 8, [ AbilityType.Wisdom ], 2, SpellTradition.Divine,
                 [

@@ -10,6 +10,7 @@ using Pathfinder.CharacterManagement.Application.UseCases.Deities;
 using Pathfinder.CharacterManagement.Application.UseCases.RogueRackets;
 using Pathfinder.CharacterManagement.Application.UseCases.HuntersEdges;
 using Pathfinder.CharacterManagement.Application.UseCases.DruidicOrders;
+using Pathfinder.CharacterManagement.Application.UseCases.BardMuses;
 using Pathfinder.Web.Controllers.Base;
 
 namespace Pathfinder.Web.Controllers;
@@ -60,6 +61,16 @@ public sealed class ClassesController : AuthorizedController
         IReadOnlyCollection<DruidicOrderDto> druidicOrders = await _mediator.Send(
             new GetDruidicOrdersCommand() );
         return Ok( druidicOrders );
+    }
+
+    [HttpGet( "bard/muses" )]
+    [ProducesResponseType( typeof( IReadOnlyCollection<BardMuseDto> ), StatusCodes.Status200OK )]
+    [ProducesResponseType( StatusCodes.Status401Unauthorized )]
+    public async Task<ActionResult<IReadOnlyCollection<BardMuseDto>>> GetBardMuses()
+    {
+        IReadOnlyCollection<BardMuseDto> bardMuses = await _mediator.Send(
+            new GetBardMusesCommand() );
+        return Ok( bardMuses );
     }
 
     [HttpGet( "cleric/doctrines" )]

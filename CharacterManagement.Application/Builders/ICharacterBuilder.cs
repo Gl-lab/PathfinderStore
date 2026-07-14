@@ -29,7 +29,8 @@ public interface ICharacterBuilder
         DivineSanctification? divineSanctification = null,
         string? deitySkillReplacementId = null,
         string? huntersEdgeId = null,
-        string? druidicOrderId = null );
+        string? druidicOrderId = null,
+        string? bardMuseId = null );
     void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts );
     void SetClassTraining(
         string characterClassId,

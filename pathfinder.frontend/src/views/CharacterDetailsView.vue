@@ -231,6 +231,18 @@ onMounted(load)
                 {{ benefit.name }}. {{ t('classUi.deferredEffect') }}
               </p>
             </template>
+            <template v-if="character.classPackage.bardMuse">
+              <p>
+                {{ t('classUi.bardMuse') }}: {{ character.classPackage.bardMuse.name }}
+              </p>
+              <p
+                v-for="benefit in character.classPackage.bardMuse.benefits"
+                :key="benefit.id"
+              >
+                {{ t(`classUi.bardMuseBenefitKinds.${benefit.kind}`) }}:
+                {{ benefit.name }}. {{ t('classUi.deferredEffect') }}
+              </p>
+            </template>
             <template v-if="character.classPackage.clericDoctrine">
               <p>
                 {{ t('classUi.clericDoctrine') }}: {{ character.classPackage.clericDoctrine.name }}

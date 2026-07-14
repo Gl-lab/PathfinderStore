@@ -44,7 +44,10 @@ public sealed class ClassPackageTests
         CharacterClass bard = CreateClass( "class.bard", AbilityType.Charisma );
 
         Assert.Throws<CharacterManagementException>( () =>
-            character.SetClassPackage( bard, AbilityType.Strength ) );
+            character.SetClassPackage(
+                bard,
+                AbilityType.Strength,
+                bardMuse: CreateBardMuse() ) );
 
         Assert.Null( character.SelectedClassId );
         Assert.Equal( 10, character.AbilityScores.Strength.Value );
@@ -79,7 +82,10 @@ public sealed class ClassPackageTests
             AbilityType.Intelligence );
         character.SetClassPackage( wizard, AbilityType.Intelligence );
 
-        character.SetClassPackage( bard, AbilityType.Charisma );
+        character.SetClassPackage(
+            bard,
+            AbilityType.Charisma,
+            bardMuse: CreateBardMuse() );
 
         Assert.Equal( bard.Id, character.SelectedClassId );
         Assert.Equal( 14, character.AbilityScores.Intelligence.Value );
@@ -387,6 +393,53 @@ public sealed class ClassPackageTests
     }
 
     [Fact]
+    public void SetClassPackage_BardRequiresMuseAndInvalidCallIsAtomic()
+    {
+        DraftCharacter character = CreateCharacter();
+        CharacterClass fighter = CreateClass( "class.fighter", AbilityType.Strength );
+        CharacterClass bard = CreateClass( "class.bard", AbilityType.Charisma );
+        character.SetClassPackage( fighter, AbilityType.Strength );
+
+        Assert.Throws<CharacterManagementException>( () =>
+            character.SetClassPackage( bard, AbilityType.Charisma ) );
+
+        Assert.Equal( "class.fighter", character.SelectedClassId );
+        Assert.Null( character.SelectedBardMuseId );
+    }
+
+    [Fact]
+    public void SetClassPackage_BardStoresMuseAndChangingClassClearsIt()
+    {
+        DraftCharacter character = CreateCharacter();
+        CharacterClass bard = CreateClass( "class.bard", AbilityType.Charisma );
+        CharacterClass fighter = CreateClass( "class.fighter", AbilityType.Strength );
+        BardMuse bardMuse = CreateBardMuse();
+        character.SetClassPackage(
+            bard,
+            AbilityType.Charisma,
+            bardMuse: bardMuse );
+
+        Assert.Equal( bardMuse.Id, character.SelectedBardMuseId );
+
+        character.SetClassPackage( fighter, AbilityType.Strength );
+
+        Assert.Null( character.SelectedBardMuseId );
+    }
+
+    [Fact]
+    public void SetClassPackage_NonBardWithMuse_Throws()
+    {
+        DraftCharacter character = CreateCharacter();
+        CharacterClass fighter = CreateClass( "class.fighter", AbilityType.Strength );
+
+        Assert.Throws<CharacterManagementException>( () =>
+            character.SetClassPackage(
+                fighter,
+                AbilityType.Strength,
+                bardMuse: CreateBardMuse() ) );
+    }
+
+    [Fact]
     public void SetBackgroundPackage_AfterClassPackage_ThrowsWithoutRemovingClassEffects()
     {
         DraftCharacter character = CreateCharacter();
@@ -515,6 +568,26 @@ public sealed class ClassPackageTests
                     "spell.heal_animal",
                     DruidicOrderBenefitKind.FocusSpell,
                     "Heal Animal",
+                    [] ),
+            ] );
+    }
+
+    private static BardMuse CreateBardMuse()
+    {
+        return new BardMuse(
+            "bard_muse.enigma",
+            "Enigma",
+            SourceReference.Unknown,
+            [
+                new BardMuseBenefitDescriptor(
+                    "feat.bardic_lore",
+                    BardMuseBenefitKind.ClassFeat,
+                    "Bardic Lore",
+                    [] ),
+                new BardMuseBenefitDescriptor(
+                    "spell.sure_strike",
+                    BardMuseBenefitKind.RepertoireSpell,
+                    "Sure Strike",
                     [] ),
             ] );
     }

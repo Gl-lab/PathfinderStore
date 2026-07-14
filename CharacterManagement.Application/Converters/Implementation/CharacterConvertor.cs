@@ -13,6 +13,7 @@ public sealed class CharacterConvertor : ICharacterConvertor
     private readonly IRogueRacketRepository? _rogueRacketRepository;
     private readonly IHuntersEdgeRepository? _huntersEdgeRepository;
     private readonly IDruidicOrderRepository? _druidicOrderRepository;
+    private readonly IBardMuseRepository? _bardMuseRepository;
     private readonly IClericDoctrineRepository? _clericDoctrineRepository;
     private readonly IDeityRepository? _deityRepository;
 
@@ -24,6 +25,7 @@ public sealed class CharacterConvertor : ICharacterConvertor
         IRogueRacketRepository? rogueRacketRepository = null,
         IHuntersEdgeRepository? huntersEdgeRepository = null,
         IDruidicOrderRepository? druidicOrderRepository = null,
+        IBardMuseRepository? bardMuseRepository = null,
         IClericDoctrineRepository? clericDoctrineRepository = null,
         IDeityRepository? deityRepository = null )
     {
@@ -34,6 +36,7 @@ public sealed class CharacterConvertor : ICharacterConvertor
         _rogueRacketRepository = rogueRacketRepository;
         _huntersEdgeRepository = huntersEdgeRepository;
         _druidicOrderRepository = druidicOrderRepository;
+        _bardMuseRepository = bardMuseRepository;
         _clericDoctrineRepository = clericDoctrineRepository;
         _deityRepository = deityRepository;
     }
@@ -52,6 +55,7 @@ public sealed class CharacterConvertor : ICharacterConvertor
         RogueRacket? rogueRacket = ResolveRogueRacket( draftCharacter );
         HuntersEdge? huntersEdge = ResolveHuntersEdge( draftCharacter );
         DruidicOrder? druidicOrder = ResolveDruidicOrder( draftCharacter );
+        BardMuse? bardMuse = ResolveBardMuse( draftCharacter );
         ClericDoctrine? clericDoctrine = ResolveClericDoctrine( draftCharacter );
         Deity? deity = ResolveDeity( draftCharacter );
 
@@ -74,6 +78,7 @@ public sealed class CharacterConvertor : ICharacterConvertor
                     rogueRacket,
                     huntersEdge,
                     druidicOrder,
+                    bardMuse,
                     clericDoctrine,
                     deity ),
             FinalFreeBoosts = draftCharacter.AppliedFinalFreeBoosts.ToArray(),
@@ -167,6 +172,22 @@ public sealed class CharacterConvertor : ICharacterConvertor
         }
 
         return _druidicOrderRepository.GetDruidicOrder( character.SelectedDruidicOrderId );
+    }
+
+    private BardMuse? ResolveBardMuse( DraftCharacter character )
+    {
+        if ( character.SelectedBardMuseId is null )
+        {
+            return null;
+        }
+
+        if ( _bardMuseRepository is null )
+        {
+            throw new InvalidOperationException(
+                "Bard Muse repository is required to map a selected Muse." );
+        }
+
+        return _bardMuseRepository.GetBardMuse( character.SelectedBardMuseId );
     }
 
     private Deity? ResolveDeity( DraftCharacter character )

@@ -89,6 +89,16 @@ export interface CharacterClassPackage {
       deferredDependencies: string[]
     }[]
   } | null
+  bardMuse: {
+    id: string
+    name: string
+    benefits: {
+      id: string
+      kind: 'ClassFeat' | 'RepertoireSpell'
+      name: string
+      deferredDependencies: string[]
+    }[]
+  } | null
   clericDoctrine: {
     id: string
     name: string

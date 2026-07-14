@@ -15,6 +15,7 @@ using Pathfinder.CharacterManagement.Application.UseCases.Characters;
 using Pathfinder.CharacterManagement.Application.UseCases.Skills;
 using Pathfinder.CharacterManagement.Application.UseCases.HuntersEdges;
 using Pathfinder.CharacterManagement.Application.UseCases.DruidicOrders;
+using Pathfinder.CharacterManagement.Application.UseCases.BardMuses;
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.Web.Controllers;
 
@@ -145,6 +146,30 @@ public sealed class ControllerTests
         OkObjectResult okResult = Assert.IsType<OkObjectResult>( actionResult.Result );
         IReadOnlyCollection<DruidicOrderDto> payload =
             Assert.IsAssignableFrom<IReadOnlyCollection<DruidicOrderDto>>( okResult.Value );
+        Assert.Same( expected, payload );
+    }
+
+    [Fact]
+    public async Task ClassesController_GetBardMuses_ReturnsOkWithPayload()
+    {
+        IReadOnlyCollection<BardMuseDto> expected =
+        [
+            new BardMuseDto
+            {
+                Id = "bard_muse.enigma",
+                Name = "Enigma",
+            },
+        ];
+        TestMediator mediator = new TestMediator();
+        mediator.Register( new GetBardMusesCommand(), expected );
+        ClassesController controller = new ClassesController( mediator );
+
+        ActionResult<IReadOnlyCollection<BardMuseDto>> actionResult =
+            await controller.GetBardMuses();
+
+        OkObjectResult okResult = Assert.IsType<OkObjectResult>( actionResult.Result );
+        IReadOnlyCollection<BardMuseDto> payload =
+            Assert.IsAssignableFrom<IReadOnlyCollection<BardMuseDto>>( okResult.Value );
         Assert.Same( expected, payload );
     }
 

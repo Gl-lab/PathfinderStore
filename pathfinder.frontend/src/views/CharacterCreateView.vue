@@ -26,6 +26,7 @@ import {
   getBackgrounds,
   getCharacterClasses,
   getDruidicOrders,
+  getBardMuses,
   getHuntersEdges,
   getClericDoctrines,
   getDeities,
@@ -42,6 +43,7 @@ import {
   type DivineFont,
   type DivineSanctification,
   type DruidicOrder,
+  type BardMuse,
   type HuntersEdge,
   type RogueRacket,
   type RogueTrainingChoice,
@@ -91,6 +93,7 @@ import {
   isDruidicOrderChoiceComplete,
   withDruidicOrderSkillGrant,
 } from '@/features/character-creation/druidicOrder'
+import { isBardMuseChoiceComplete } from '@/features/character-creation/bardMuse'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -101,6 +104,7 @@ const characterClasses = ref<CharacterClass[]>([])
 const rogueRackets = ref<RogueRacket[]>([])
 const huntersEdges = ref<HuntersEdge[]>([])
 const druidicOrders = ref<DruidicOrder[]>([])
+const bardMuses = ref<BardMuse[]>([])
 const clericDoctrines = ref<ClericDoctrine[]>([])
 const deities = ref<Deity[]>([])
 const skills = ref<Skill[]>([])
@@ -125,6 +129,7 @@ const form = ref({
   rogueTrainingChoices: [] as RogueTrainingChoice[],
   huntersEdgeId: null as string | null,
   druidicOrderId: null as string | null,
+  bardMuseId: null as string | null,
   clericDoctrineId: null as string | null,
   deityId: null as string | null,
   divineFont: null as DivineFont | null,
@@ -168,6 +173,9 @@ const selectedHuntersEdge = computed(
 )
 const selectedDruidicOrder = computed(
   () => druidicOrders.value.find((item) => item.id === form.value.druidicOrderId) ?? null,
+)
+const selectedBardMuse = computed(
+  () => bardMuses.value.find((item) => item.id === form.value.bardMuseId) ?? null,
 )
 const effectiveCharacterClass = computed(() =>
   withDruidicOrderSkillGrant(selectedCharacterClass.value, selectedDruidicOrder.value),
@@ -275,6 +283,7 @@ const canContinue = computed(() => {
       isClericDoctrineChoiceComplete(selectedCharacterClass.value, selectedClericDoctrine.value) &&
       isHuntersEdgeChoiceComplete(selectedCharacterClass.value, selectedHuntersEdge.value) &&
       isDruidicOrderChoiceComplete(selectedCharacterClass.value, selectedDruidicOrder.value) &&
+      isBardMuseChoiceComplete(selectedCharacterClass.value, selectedBardMuse.value) &&
       isDeityChoiceComplete(
         selectedCharacterClass.value,
         selectedDeity.value,
@@ -359,6 +368,7 @@ function selectCharacterClass(classId: string | null): void {
   form.value.rogueTrainingChoices = []
   form.value.huntersEdgeId = null
   form.value.druidicOrderId = null
+  form.value.bardMuseId = null
   form.value.clericDoctrineId = null
   form.value.deityId = null
   form.value.divineFont = null
@@ -484,6 +494,7 @@ async function submit(): Promise<void> {
     !form.value.classKeyAbility ||
     !isHuntersEdgeChoiceComplete(selectedCharacterClass.value, selectedHuntersEdge.value) ||
     !isDruidicOrderChoiceComplete(selectedCharacterClass.value, selectedDruidicOrder.value) ||
+    !isBardMuseChoiceComplete(selectedCharacterClass.value, selectedBardMuse.value) ||
     !isClericDoctrineChoiceComplete(selectedCharacterClass.value, selectedClericDoctrine.value) ||
     !isDeityChoiceComplete(
       selectedCharacterClass.value,
@@ -529,6 +540,7 @@ async function submit(): Promise<void> {
       rogueTrainingChoices: form.value.rogueTrainingChoices,
       huntersEdgeId: form.value.huntersEdgeId,
       druidicOrderId: form.value.druidicOrderId,
+      bardMuseId: form.value.bardMuseId,
       clericDoctrineId: form.value.clericDoctrineId,
       deityId: form.value.deityId,
       divineFont: form.value.divineFont,
@@ -560,13 +572,14 @@ async function loadCatalogs(): Promise<void> {
   isLoadingCatalogs.value = true
   errorMessages.value = []
   try {
-    const [ancestryCatalog, backgroundCatalog, classCatalog, racketCatalog, huntersEdgeCatalog, druidicOrderCatalog, doctrineCatalog, deityCatalog, skillCatalog] = await Promise.all([
+    const [ancestryCatalog, backgroundCatalog, classCatalog, racketCatalog, huntersEdgeCatalog, druidicOrderCatalog, bardMuseCatalog, doctrineCatalog, deityCatalog, skillCatalog] = await Promise.all([
       getAncestries(),
       getBackgrounds(),
       getCharacterClasses(),
       getRogueRackets(),
       getHuntersEdges(),
       getDruidicOrders(),
+      getBardMuses(),
       getClericDoctrines(),
       getDeities(),
       getSkills(),
@@ -577,6 +590,7 @@ async function loadCatalogs(): Promise<void> {
     rogueRackets.value = racketCatalog
     huntersEdges.value = huntersEdgeCatalog
     druidicOrders.value = druidicOrderCatalog
+    bardMuses.value = bardMuseCatalog
     clericDoctrines.value = doctrineCatalog
     deities.value = deityCatalog
     skills.value = skillCatalog
@@ -774,6 +788,23 @@ watch(
             <p>
               {{ t('classUi.baseHitPoints') }}: {{ selectedCharacterClass.baseHitPoints }}
             </p>
+            <v-select
+              v-if="selectedCharacterClass.id === 'class.bard'"
+              v-model="form.bardMuseId"
+              :items="bardMuses"
+              item-title="name"
+              item-value="id"
+              :label="t('classUi.bardMuse')"
+            />
+            <v-alert
+              v-for="benefit in selectedBardMuse?.benefits ?? []"
+              :key="benefit.id"
+              type="info"
+              variant="tonal"
+            >
+              {{ t(`classUi.bardMuseBenefitKinds.${benefit.kind}`) }}:
+              {{ benefit.name }}. {{ t('classUi.deferredEffect') }}
+            </v-alert>
             <v-select
               v-if="selectedCharacterClass.id === 'class.druid'"
               :model-value="form.druidicOrderId"
@@ -1056,6 +1087,13 @@ watch(
               v-if="selectedDruidicOrder"
               :title="t('classUi.druidicOrder')"
               :subtitle="selectedDruidicOrder.name" /><v-list-item
+              v-if="selectedBardMuse"
+              :title="t('classUi.bardMuse')"
+              :subtitle="selectedBardMuse.name" /><v-list-item
+              v-for="benefit in selectedBardMuse?.benefits ?? []"
+              :key="`review-${benefit.id}`"
+              :title="t(`classUi.bardMuseBenefitKinds.${benefit.kind}`)"
+              :subtitle="`${benefit.name}. ${t('classUi.deferredEffect')}`" /><v-list-item
               v-if="selectedClericDoctrine"
               :title="t('classUi.clericDoctrine')"
               :subtitle="selectedClericDoctrine.name" /><v-list-item

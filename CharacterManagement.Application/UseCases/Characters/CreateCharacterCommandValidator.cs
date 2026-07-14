@@ -84,6 +84,14 @@ public sealed class CreateCharacterCommandValidator : AbstractValidator<CreateCh
                     () => RuleFor( command => command.Character.DruidicOrderId ).Empty() );
 
                 When(
+                    command => command.Character.ClassId == "class.bard",
+                    () => RuleFor( command => command.Character.BardMuseId ).NotEmpty() );
+
+                When(
+                    command => command.Character.ClassId != "class.bard",
+                    () => RuleFor( command => command.Character.BardMuseId ).Empty() );
+
+                When(
                     command => command.Character.ClassId == "class.cleric",
                     () =>
                     {

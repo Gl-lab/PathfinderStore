@@ -79,6 +79,7 @@ public static class CharacterClassDtoMapper
         RogueRacket? rogueRacket = null,
         HuntersEdge? huntersEdge = null,
         DruidicOrder? druidicOrder = null,
+        BardMuse? bardMuse = null,
         ClericDoctrine? clericDoctrine = null,
         Deity? deity = null )
     {
@@ -101,6 +102,7 @@ public static class CharacterClassDtoMapper
             RogueRacket = rogueRacket is null ? null : RogueRacketDtoMapper.MapPackage( rogueRacket ),
             HuntersEdge = huntersEdge is null ? null : HuntersEdgeDtoMapper.MapPackage( huntersEdge ),
             DruidicOrder = druidicOrder is null ? null : DruidicOrderDtoMapper.MapPackage( druidicOrder ),
+            BardMuse = bardMuse is null ? null : BardMuseDtoMapper.MapPackage( bardMuse ),
             ClericDoctrine = clericDoctrine is null
                 ? null
                 : ClericDoctrineDtoMapper.MapPackage( clericDoctrine ),

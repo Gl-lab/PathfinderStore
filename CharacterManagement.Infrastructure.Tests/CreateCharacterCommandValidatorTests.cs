@@ -295,6 +295,37 @@ public sealed class CreateCharacterCommandValidatorTests
         validator.ValidateAndThrow( new CreateCharacterCommand( 42, character ) );
     }
 
+    [Theory]
+    [InlineData( "class.bard", null )]
+    [InlineData( "class.fighter", "bard_muse.enigma" )]
+    public void Validate_WhenBardMuseDoesNotMatchClass_ThrowsValidationException(
+        string classId,
+        string? bardMuseId )
+    {
+        CreateCharacterCommandValidator validator = new CreateCharacterCommandValidator();
+        CreateCharacterRequestDto character = CreateValidRequest();
+        character.ClassId = classId;
+        character.ClassKeyAbility = classId == "class.bard"
+            ? AbilityType.Charisma
+            : AbilityType.Strength;
+        character.BardMuseId = bardMuseId;
+
+        Assert.Throws<ValidationException>( () => validator.ValidateAndThrow(
+            new CreateCharacterCommand( 42, character ) ) );
+    }
+
+    [Fact]
+    public void Validate_WhenBardHasMuse_DoesNotThrow()
+    {
+        CreateCharacterCommandValidator validator = new CreateCharacterCommandValidator();
+        CreateCharacterRequestDto character = CreateValidRequest();
+        character.ClassId = "class.bard";
+        character.ClassKeyAbility = AbilityType.Charisma;
+        character.BardMuseId = "bard_muse.enigma";
+
+        validator.ValidateAndThrow( new CreateCharacterCommand( 42, character ) );
+    }
+
     private static CreateCharacterRequestDto CreateValidRequest()
     {
         return new CreateCharacterRequestDto

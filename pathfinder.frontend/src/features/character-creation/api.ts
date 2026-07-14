@@ -179,6 +179,19 @@ export interface DruidicOrder {
   }[]
 }
 
+export type BardMuseBenefitKind = 'ClassFeat' | 'RepertoireSpell'
+
+export interface BardMuse {
+  id: string
+  name: string
+  benefits: {
+    id: string
+    kind: BardMuseBenefitKind
+    name: string
+    deferredDependencies: string[]
+  }[]
+}
+
 export interface RogueTrainingChoice {
   grantId: string
   selectedSkillId: string | null
@@ -238,6 +251,7 @@ export interface CreateCharacterRequest {
   rogueTrainingChoices: RogueTrainingChoice[]
   huntersEdgeId: string | null
   druidicOrderId: string | null
+  bardMuseId: string | null
   clericDoctrineId: string | null
   deityId: string | null
   divineFont: DivineFont | null
@@ -270,6 +284,10 @@ export async function getHuntersEdges(): Promise<HuntersEdge[]> {
 
 export async function getDruidicOrders(): Promise<DruidicOrder[]> {
   return (await http.get<DruidicOrder[]>('/api/classes/druid/orders')).data
+}
+
+export async function getBardMuses(): Promise<BardMuse[]> {
+  return (await http.get<BardMuse[]>('/api/classes/bard/muses')).data
 }
 
 export async function getClericDoctrines(): Promise<ClericDoctrine[]> {

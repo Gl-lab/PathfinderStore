@@ -236,6 +236,61 @@ public sealed class CreateCharacterHandlerTests
     }
 
     [Fact]
+    public async Task Handle_Bard_PersistsSelectedMuse()
+    {
+        await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
+        Account account = await CreateAccountAsync( dbContext, 58, "Lem", "Storyteller" );
+        CreateCharacterHandler handler = CreateHandler( dbContext );
+        CreateCharacterRequestDto character = new CreateCharacterRequestDto
+        {
+            Name = "Lem",
+            AncestryType = AncestryType.Human,
+            HeritageId = "human.skilled",
+            AncestryFeatId = "human.cooperative_nature",
+            FreeBoosts = [ AbilityType.Intelligence, AbilityType.Charisma ],
+            BackgroundId = "background.acrobat",
+            BackgroundRestrictedBoost = AbilityType.Dexterity,
+            BackgroundFreeBoost = AbilityType.Constitution,
+            ClassId = "class.bard",
+            ClassKeyAbility = AbilityType.Charisma,
+            BardMuseId = "bard_muse.maestro",
+            FinalFreeBoosts =
+            [
+                AbilityType.Strength,
+                AbilityType.Dexterity,
+                AbilityType.Constitution,
+                AbilityType.Wisdom,
+            ],
+            ClassSkillGrantChoices =
+            [
+                new ClassSkillGrantChoice( "class.bard.skill.occultism", null, null ),
+                new ClassSkillGrantChoice( "class.bard.skill.performance", null, null ),
+            ],
+            AdditionalClassTrainingChoices =
+            [
+                .. GeneralSkillChoices(
+                    "skill.athletics",
+                    "skill.crafting",
+                    "skill.deception",
+                    "skill.diplomacy",
+                    "skill.intimidation" ),
+            ],
+        };
+
+        await handler.Handle(
+            new CreateCharacterCommand( account.UserId, character ),
+            CancellationToken.None );
+        dbContext.ChangeTracker.Clear();
+
+        DraftCharacter savedCharacter = await dbContext.Character
+            .AsNoTracking()
+            .SingleAsync( entity => entity.AccountId == account.Id );
+        Assert.Equal( "bard_muse.maestro", savedCharacter.SelectedBardMuseId );
+        Assert.Contains( savedCharacter.TrainedSkills, training => training.SkillId == "skill.occultism" );
+        Assert.Contains( savedCharacter.TrainedSkills, training => training.SkillId == "skill.performance" );
+    }
+
+    [Fact]
     public async Task Handle_Ranger_PersistsHuntersEdge()
     {
         await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
@@ -389,7 +444,8 @@ public sealed class CreateCharacterHandlerTests
             clericDoctrineRepository: new ClericDoctrineRepository(),
             deityRepository: new DeityRepository(),
             huntersEdgeRepository: new HuntersEdgeRepository(),
-            druidicOrderRepository: new DruidicOrderRepository() );
+            druidicOrderRepository: new DruidicOrderRepository(),
+            bardMuseRepository: new BardMuseRepository() );
 
         TestUnitOfWork unitOfWork = new TestUnitOfWork( dbContext );
 
