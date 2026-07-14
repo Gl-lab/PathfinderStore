@@ -1,4 +1,5 @@
 using Pathfinder.CharacterManagement.Domain.Exceptions;
+using Pathfinder.CharacterManagement.Domain.Rules.Training;
 
 namespace Pathfinder.CharacterManagement.Domain.Entity;
 

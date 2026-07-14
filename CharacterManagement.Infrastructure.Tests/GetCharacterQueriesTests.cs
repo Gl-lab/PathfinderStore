@@ -204,7 +204,7 @@ public sealed class GetCharacterQueriesTests
         dbContext.Character.Add( draftCharacter );
         await dbContext.SaveChangesAsync();
         dbContext.ChangeTracker.Clear();
-        CharacterConvertor converter = new CharacterConvertor(
+        CharacterDetailsDtoMapper mapper = new CharacterDetailsDtoMapper(
             ancestryRepository,
             backgroundRepository,
             characterClassRepository,
@@ -212,7 +212,7 @@ public sealed class GetCharacterQueriesTests
             huntersEdgeRepository: huntersEdgeRepository );
         GetCharacterByIdHandler handler = new GetCharacterByIdHandler(
             new CharacterRepository( dbContext ),
-            converter );
+            mapper );
 
         CharacterDto result = await handler.Handle(
             new GetCharacterByIdCommand( account.UserId, draftCharacter.Id ),
@@ -286,7 +286,7 @@ public sealed class GetCharacterQueriesTests
         dbContext.Character.Add( draftCharacter );
         await dbContext.SaveChangesAsync();
         dbContext.ChangeTracker.Clear();
-        CharacterConvertor converter = new CharacterConvertor(
+        CharacterDetailsDtoMapper mapper = new CharacterDetailsDtoMapper(
             ancestryRepository,
             backgroundRepository,
             characterClassRepository,
@@ -294,7 +294,7 @@ public sealed class GetCharacterQueriesTests
             druidicOrderRepository: druidicOrderRepository );
         GetCharacterByIdHandler handler = new GetCharacterByIdHandler(
             new CharacterRepository( dbContext ),
-            converter );
+            mapper );
 
         CharacterDto result = await handler.Handle(
             new GetCharacterByIdCommand( account.UserId, draftCharacter.Id ),
@@ -367,7 +367,7 @@ public sealed class GetCharacterQueriesTests
         dbContext.Character.Add( draftCharacter );
         await dbContext.SaveChangesAsync();
         dbContext.ChangeTracker.Clear();
-        CharacterConvertor converter = new CharacterConvertor(
+        CharacterDetailsDtoMapper mapper = new CharacterDetailsDtoMapper(
             ancestryRepository,
             backgroundRepository,
             characterClassRepository,
@@ -375,7 +375,7 @@ public sealed class GetCharacterQueriesTests
             bardMuseRepository: bardMuseRepository );
         GetCharacterByIdHandler handler = new GetCharacterByIdHandler(
             new CharacterRepository( dbContext ),
-            converter );
+            mapper );
 
         CharacterDto result = await handler.Handle(
             new GetCharacterByIdCommand( account.UserId, draftCharacter.Id ),
@@ -450,7 +450,7 @@ public sealed class GetCharacterQueriesTests
         dbContext.Character.Add( draftCharacter );
         await dbContext.SaveChangesAsync();
         dbContext.ChangeTracker.Clear();
-        CharacterConvertor converter = new CharacterConvertor(
+        CharacterDetailsDtoMapper mapper = new CharacterDetailsDtoMapper(
             ancestryRepository: ancestryRepository,
             backgroundRepository: backgroundRepository,
             characterClassRepository: characterClassRepository,
@@ -458,7 +458,7 @@ public sealed class GetCharacterQueriesTests
             witchPatronRepository: patronRepository );
         GetCharacterByIdHandler handler = new GetCharacterByIdHandler(
             new CharacterRepository( dbContext ),
-            converter );
+            mapper );
 
         CharacterDto result = await handler.Handle(
             new GetCharacterByIdCommand( account.UserId, draftCharacter.Id ),
@@ -535,7 +535,7 @@ public sealed class GetCharacterQueriesTests
         dbContext.Character.Add( draftCharacter );
         await dbContext.SaveChangesAsync();
         dbContext.ChangeTracker.Clear();
-        CharacterConvertor converter = new CharacterConvertor(
+        CharacterDetailsDtoMapper mapper = new CharacterDetailsDtoMapper(
             ancestryRepository: ancestryRepository,
             backgroundRepository: backgroundRepository,
             characterClassRepository: characterClassRepository,
@@ -544,7 +544,7 @@ public sealed class GetCharacterQueriesTests
             arcaneThesisRepository: arcaneThesisRepository );
         GetCharacterByIdHandler handler = new GetCharacterByIdHandler(
             new CharacterRepository( dbContext ),
-            converter );
+            mapper );
 
         CharacterDto result = await handler.Handle(
             new GetCharacterByIdCommand( account.UserId, draftCharacter.Id ),
@@ -614,13 +614,13 @@ public sealed class GetCharacterQueriesTests
             .CurrentValue = "arcane_school.mentalism";
         await dbContext.SaveChangesAsync();
         dbContext.ChangeTracker.Clear();
-        CharacterConvertor converter = new CharacterConvertor(
+        CharacterDetailsDtoMapper mapper = new CharacterDetailsDtoMapper(
             characterClassRepository: new CharacterClassRepository(),
             skillRepository: new SkillRepository(),
             arcaneSchoolRepository: new ArcaneSchoolRepository() );
         GetCharacterByIdHandler handler = new GetCharacterByIdHandler(
             new CharacterRepository( dbContext ),
-            converter );
+            mapper );
 
         CharacterDto result = await handler.Handle(
             new GetCharacterByIdCommand( account.UserId, draftCharacter.Id ),
