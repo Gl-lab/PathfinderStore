@@ -17,7 +17,6 @@ Vikunja остаётся источником истины по фактичес
 ## Активный контекст
 
 - [`character_creation_near_term_roadmap.md`](character_creation_near_term_roadmap.md)
-- [`cleric_spell_flow_priority_2_implementation.md`](cleric_spell_flow_priority_2_implementation.md)
 - [`task_32_account_backfill.md`](task_32_account_backfill.md)
 - [`task_33_observability.md`](task_33_observability.md)
 - [`task_40_inventory.md`](task_40_inventory.md)
@@ -32,6 +31,8 @@ Vikunja остаётся источником истины по фактичес
 - [`wizard_arcane_school_implementation.md`](wizard_arcane_school_implementation.md)
 - [`wizard_arcane_thesis_implementation.md`](wizard_arcane_thesis_implementation.md)
 - [`priority_1_final_review.md`](priority_1_final_review.md)
+- [`cleric_spell_flow_priority_2_implementation.md`](cleric_spell_flow_priority_2_implementation.md)
+- [`priority_2_final_review.md`](priority_2_final_review.md)
 - [`final_free_boosts_implementation.md`](final_free_boosts_implementation.md)
 - [`hit_points_v1_implementation.md`](hit_points_v1_implementation.md)
 - [`skills_lore_foundation_implementation.md`](skills_lore_foundation_implementation.md)

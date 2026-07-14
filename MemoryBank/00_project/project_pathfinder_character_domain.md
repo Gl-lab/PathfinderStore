@@ -23,6 +23,7 @@
 - Rogue's Racket;
 - Cleric Doctrine, Deity package и primary Domain choice для Cloistered Cleric;
 - divine skill, favored weapon proficiency, Divine Font и sanctification;
+- Cleric spell loadout первого уровня: 5 cantrips, 2 prepared slots, 4 derived Divine Font slots и domain focus spell с Focus Pool `1`;
 - maximum HP первого уровня, вычисляемые из ancestry, class и Constitution modifier.
 
 `AbilityScores` хранит шесть характеристик с базовым значением `10`; boost и flaw изменяют значение на `2`, а modifier вычисляется, а не хранится. Полные правила и границы незавершённых подсистем описаны в [`../20_domain/character_creation/README.md`](../20_domain/character_creation/README.md).
@@ -31,7 +32,7 @@
 
 Слои `Domain`, `Application` и `Infrastructure` содержат aggregate, use cases/DTO/validators и EF Core persistence соответственно. `CharacterManagementDbContext` использует схему `character_management`; миграции расположены в `CharacterManagement.Infrastructure/Migrations`.
 
-Каталоги ancestry, backgrounds, classes, skills, racket, doctrines и deities доступны через application use cases и read-модели. Обновления aggregate, persistence, API и frontend выполняются одним vertical slice.
+Каталоги ancestry, backgrounds, classes, skills, racket, doctrines, deities, Cleric domains и spells доступны через application use cases и read-модели. Обновления aggregate, persistence, API и frontend выполняются одним vertical slice.
 
 ## Web API
 
@@ -44,6 +45,8 @@
 - `GET /api/classes/cleric/doctrines`
 - `GET /api/classes/cleric/deities`
 - `GET /api/classes/cleric/domains`
+- `GET /api/classes/cleric/spells`
+- `GET /api/classes/cleric/spells/available?deityId=...`
 - `GET /api/skills`
 - `GET /api/character`
 - `GET /api/character/{characterId}`
@@ -60,9 +63,9 @@ Legacy item endpoints в `CharacterController` не относятся к тек
 
 ## Открытые границы
 
-- skill feats, дополнительные class skills и progression proficiency;
-- spell preparation, Divine Font slots и domain focus pool;
-- spells, class features, equipment, languages и исполняемые ancestry effects;
+- skill feats и progression proficiency;
+- spellcasting lifecycle, current spell slots/Focus Points и progression выше первого уровня;
+- class features, equipment, languages и исполняемые ancestry effects;
 - расширенные derived statistics и состояние current/temporary HP;
 - remastered-поля ancestry: languages, granted items и granted rules.
 

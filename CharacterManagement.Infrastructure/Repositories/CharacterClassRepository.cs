@@ -41,11 +41,17 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
             Create(
                 "cleric", "Cleric", 108, 8, [ AbilityType.Wisdom ], 2, SpellTradition.Divine,
                 [
-                    Spellcasting( "cleric", "Divine spellcasting and Divine Font." ),
-                    Choice( "cleric.deity", "Deity", "Choose a deity that determines a skill, favored weapon, and spells.", CharacterClassDependencyType.DeityCatalog ),
-                    Choice( "cleric.doctrine", "Doctrine", "Choose a cleric doctrine.", CharacterClassDependencyType.ClericDoctrineCatalog )
+                    Rule(
+                        "class.cleric.spellcasting",
+                        CharacterClassRuleKind.Spellcasting,
+                        "Spellcasting",
+                        "Divine spell preparation, Divine Font, and Domain focus spell loadout.",
+                        true,
+                        [] ),
+                    Choice( "cleric.deity", "Deity", "Choose a deity that determines a skill, favored weapon, and spells." ),
+                    Choice( "cleric.doctrine", "Doctrine", "Choose a cleric doctrine." )
                 ],
-                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.SpellCatalog, CharacterClassDependencyType.DeityCatalog, CharacterClassDependencyType.ClericDoctrineCatalog ] ),
+                [ CharacterClassDependencyType.ProficiencyRules ] ),
             Create(
                 "druid", "Druid", 122, 8, [ AbilityType.Wisdom ], 2, SpellTradition.Primal,
                 [

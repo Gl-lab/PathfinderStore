@@ -17,10 +17,11 @@ Vikunja остаётся источником истины по карточка
 - типизированные стартовые proficiencies;
 - обязательные class choices всех восьми классов Player Core baseline;
 - divine skill replacement, favored weapon proficiency, Divine Font и sanctification;
+- полный Cleric spell loadout первого уровня: primary Domain, 5 cantrips, 2 prepared spells, 4 derived Font slots и Domain focus spell с Focus Pool `1`;
 - сохранение через EF, API/read-модели, список, карточку и удаление во frontend;
 - вычисляемые ability modifiers и maximum HP первого уровня.
 
-Стартовый pipeline характеристик, class skills и обязательных классовых выборов завершён. Deity domains, class-choice benefits и granted spells пока возвращаются только как typed descriptors. Background skill feat, class/ancestry feats, spells, equipment и большинство derived statistics ещё не применяются.
+Стартовый pipeline характеристик, class skills, обязательных классовых выборов и Cleric spells первого уровня завершён. Не связанные с Cleric spell flow class-choice benefits по-прежнему могут возвращаться typed descriptors. Background skill feat, class/ancestry feats, equipment, spellcasting lifecycle и большинство derived statistics ещё не применяются.
 
 ## Завершённый фундамент
 
@@ -194,6 +195,8 @@ Vikunja остаётся источником истины по карточка
 - casting, damage, healing, conditions и расходование ресурсов во время игры остаются вне character creation.
 
 Приоритет считается завершённым, когда новый Cleric первого уровня имеет валидные Domain, cantrips, prepared spells, Divine Font loadout и domain focus spell, а весь набор воспроизводится после чтения из БД.
+
+**Статус приоритета 2:** завершён 14 июля 2026 года; выполнен [итоговый cross-review](priority_2_final_review.md). Все четыре slice реализованы последовательно и прошли общий backend/frontend/EF quality gate.
 
 ### Приоритет 3 — полезная карточка персонажа
 

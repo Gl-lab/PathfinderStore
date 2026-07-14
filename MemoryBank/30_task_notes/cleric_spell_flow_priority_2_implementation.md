@@ -241,4 +241,5 @@ npm run build
 - проверки 2.3: Domain tests `151/151`, Infrastructure tests `174/174`, frontend tests `54/54`, lint и production build проходят;
 - slice 2.4 завершён: Domain Initiate разрешает полную focus spell definition и derived one-point Focus Pool с явным source grant ID;
 - проверки 2.4: Domain tests `155/155`, Infrastructure tests `174/174`, frontend tests `55/55`, lint и production build проходят;
-- все slices 2.1–2.4 реализованы; до закрытия Priority 2 требуется итоговый cross-review.
+- все slices 2.1–2.4 реализованы; итоговый cross-review завершён и зафиксирован в [priority_2_final_review.md](priority_2_final_review.md).
+- финальный quality gate после cross-review: Domain tests `155/155`, Infrastructure tests `175/175`, frontend tests `55/55`, Web/Infrastructure build, EF model check, lint и production build проходят.

@@ -108,6 +108,31 @@ public sealed class CharacterClassRepositoryTests
     }
 
     [Fact]
+    public void GetCharacterClass_ClericHasResolvedFirstLevelSpellFlow()
+    {
+        CharacterClassRepository repository = new CharacterClassRepository();
+
+        CharacterClass cleric = repository.GetCharacterClass( "class.cleric" );
+        CharacterClassRuleDescriptor spellcasting = Assert.Single(
+            cleric.Rules,
+            rule => rule.Id == "class.cleric.spellcasting" );
+
+        Assert.DoesNotContain(
+            CharacterClassDependencyType.SpellCatalog,
+            cleric.DeferredDependencies );
+        Assert.DoesNotContain(
+            CharacterClassDependencyType.DeityCatalog,
+            cleric.DeferredDependencies );
+        Assert.DoesNotContain(
+            CharacterClassDependencyType.ClericDoctrineCatalog,
+            cleric.DeferredDependencies );
+        Assert.Empty( spellcasting.DeferredDependencies );
+        Assert.All(
+            cleric.Rules.Where( rule => rule.Kind == CharacterClassRuleKind.MandatoryChoice ),
+            rule => Assert.Empty( rule.DeferredDependencies ) );
+    }
+
+    [Fact]
     public void GetAll_AfterPriorityOne_HasNoUnresolvedGenericClassChoices()
     {
         CharacterClassRepository repository = new CharacterClassRepository();
