@@ -35,7 +35,8 @@ public interface ICharacterBuilder
         string? witchPatronId = null,
         string? witchPatronFamiliarSpellId = null,
         string? arcaneSchoolId = null,
-        string? arcaneThesisId = null );
+        string? arcaneThesisId = null,
+        string? clericDomainId = null );
     void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts );
     void SetClassTraining(
         string characterClassId,

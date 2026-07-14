@@ -336,6 +336,16 @@ onMounted(load)
                 {{ character.classPackage.deity.grantedSpells.map((spell) => `${spell.rank}: ${spell.name}`).join(', ') }}
               </p>
             </template>
+            <template v-if="character.classPackage.clericDomain">
+              <p>
+                {{ t('classUi.clericDomain') }}:
+                {{ character.classPackage.clericDomain.name }}
+              </p>
+              <p>
+                {{ t('classUi.initialDomainSpell') }}:
+                {{ character.classPackage.clericDomain.initialFocusSpell.name }}
+              </p>
+            </template>
             <p><strong>{{ t('classUi.rules') }}</strong></p>
             <ul>
               <li v-for="rule in character.classPackage.rules" :key="rule.id">

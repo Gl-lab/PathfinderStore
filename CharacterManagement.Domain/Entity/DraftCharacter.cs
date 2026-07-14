@@ -32,6 +32,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public string? SelectedArcaneThesisId { get; private set; }
     public string? SelectedClericDoctrineId { get; private set; }
     public string? SelectedDeityId { get; private set; }
+    public string? SelectedClericDomainId { get; private set; }
     public DivineFont? SelectedDivineFont { get; private set; }
     public DivineSanctification? SelectedDivineSanctification { get; private set; }
     public IReadOnlyList<AbilityType> AppliedFinalFreeBoosts { get; private set; } = [];
@@ -303,7 +304,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         WitchPatron? witchPatron = null,
         string? witchPatronFamiliarSpellId = null,
         ArcaneSchool? arcaneSchool = null,
-        ArcaneThesis? arcaneThesis = null )
+        ArcaneThesis? arcaneThesis = null,
+        ClericDomain? clericDomain = null )
     {
         ArgumentNullException.ThrowIfNull( characterClass );
 
@@ -421,6 +423,29 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
             throw new CharacterManagementException( $"Deity '{deity.Id}' cannot grant Cleric powers." );
         }
 
+        bool isCloisteredCleric = isCleric &&
+                                  clericDoctrine?.Id == "cleric_doctrine.cloistered";
+        if ( isCloisteredCleric && clericDomain is null )
+        {
+            throw new CharacterManagementException(
+                "Cloistered Cleric requires a primary Deity domain." );
+        }
+
+        if ( isCleric && !isCloisteredCleric && clericDomain is not null )
+        {
+            throw new CharacterManagementException(
+                "A first-level Warpriest cannot select a Cleric domain." );
+        }
+
+        if ( isCloisteredCleric &&
+             deity is not null &&
+             clericDomain is not null &&
+             !deity.PrimaryDomainIds.Contains( clericDomain.Id, StringComparer.Ordinal ) )
+        {
+            throw new CharacterManagementException(
+                $"Domain '{clericDomain.Id}' is not a primary domain of deity '{deity.Id}'." );
+        }
+
         if ( isCleric && !divineFont.HasValue )
         {
             throw new CharacterManagementException( "Cleric class requires a Divine Font." );
@@ -456,6 +481,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
              ( deity is not null ||
                divineFont.HasValue ||
                divineSanctification.HasValue ||
+               clericDomain is not null ||
                !String.IsNullOrWhiteSpace( deitySkillReplacementId ) ) )
         {
             throw new CharacterManagementException( "Deity class choices can only be selected for the Cleric class." );
@@ -517,6 +543,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         SelectedArcaneThesisId = arcaneThesis?.Id;
         SelectedClericDoctrineId = clericDoctrine?.Id;
         SelectedDeityId = deity?.Id;
+        SelectedClericDomainId = clericDomain?.Id;
         SelectedDivineFont = divineFont;
         SelectedDivineSanctification = divineSanctification;
         if ( rogueTraining is not null )
@@ -836,6 +863,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         SelectedArcaneThesisId = null;
         SelectedClericDoctrineId = null;
         SelectedDeityId = null;
+        SelectedClericDomainId = null;
         SelectedDivineFont = null;
         SelectedDivineSanctification = null;
         RemoveClassTrainingEffects();

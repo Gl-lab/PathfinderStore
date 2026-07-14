@@ -42,6 +42,7 @@ public class CharacterManagementDbContext( DbContextOptions<CharacterManagementD
             b.Property( x => x.SelectedArcaneThesisId ).HasMaxLength( 100 );
             b.Property( x => x.SelectedClericDoctrineId ).HasMaxLength( 100 );
             b.Property( x => x.SelectedDeityId ).HasMaxLength( 100 );
+            b.Property( x => x.SelectedClericDomainId ).HasMaxLength( 100 );
             b.Property( x => x.SelectedDivineFont ).HasConversion<int>();
             b.Property( x => x.SelectedDivineSanctification ).HasConversion<int>();
 

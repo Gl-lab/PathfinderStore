@@ -451,7 +451,7 @@ public sealed class CreateCharacterHandlerTests
     }
 
     [Fact]
-    public async Task Handle_Cleric_PersistsDoctrineSelection()
+    public async Task Handle_CloisteredCleric_PersistsDoctrineDeityAndDomainSelection()
     {
         await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
         Account account = await CreateAccountAsync( dbContext, 56, "Kyra", "Dawn" );
@@ -468,8 +468,9 @@ public sealed class CreateCharacterHandlerTests
             BackgroundFreeBoost = AbilityType.Charisma,
             ClassId = "class.cleric",
             ClassKeyAbility = AbilityType.Wisdom,
-            ClericDoctrineId = "cleric_doctrine.warpriest",
+            ClericDoctrineId = "cleric_doctrine.cloistered",
             DeityId = "deity.iomedae",
+            ClericDomainId = "domain.might",
             DivineFont = DivineFont.Heal,
             DivineSanctification = DivineSanctification.Holy,
             FinalFreeBoosts =
@@ -499,8 +500,9 @@ public sealed class CreateCharacterHandlerTests
         DraftCharacter savedCharacter = await dbContext.Character
             .AsNoTracking()
             .SingleAsync( entity => entity.AccountId == account.Id );
-        Assert.Equal( "cleric_doctrine.warpriest", savedCharacter.SelectedClericDoctrineId );
+        Assert.Equal( "cleric_doctrine.cloistered", savedCharacter.SelectedClericDoctrineId );
         Assert.Equal( "deity.iomedae", savedCharacter.SelectedDeityId );
+        Assert.Equal( "domain.might", savedCharacter.SelectedClericDomainId );
         Assert.Equal( DivineFont.Heal, savedCharacter.SelectedDivineFont );
         Assert.Equal( DivineSanctification.Holy, savedCharacter.SelectedDivineSanctification );
     }
@@ -559,7 +561,8 @@ public sealed class CreateCharacterHandlerTests
             bardMuseRepository: new BardMuseRepository(),
             witchPatronRepository: new WitchPatronRepository(),
             arcaneSchoolRepository: new ArcaneSchoolRepository(),
-            arcaneThesisRepository: new ArcaneThesisRepository() );
+            arcaneThesisRepository: new ArcaneThesisRepository(),
+            clericDomainRepository: new ClericDomainRepository() );
 
         TestUnitOfWork unitOfWork = new TestUnitOfWork( dbContext );
 

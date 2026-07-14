@@ -136,13 +136,15 @@ public sealed class ClassPackageTests
         CharacterClass cleric = CreateClass( "class.cleric", AbilityType.Wisdom );
         ClericDoctrine doctrine = CreateDoctrine( "cloistered" );
         Deity deity = CreateDeity();
+        ClericDomain domain = CreateClericDomain();
         CharacterBuilder builder = new CharacterBuilder(
             new StubAncestryRepository( ancestry ),
             backgroundRepository: new StubBackgroundRepository( CreateBackground() ),
             characterClassRepository: new StubCharacterClassRepository( cleric ),
             skillRepository: new StubSkillRepository( CreateSkills() ),
             clericDoctrineRepository: new StubClericDoctrineRepository( doctrine ),
-            deityRepository: new StubDeityRepository( deity ) );
+            deityRepository: new StubDeityRepository( deity ),
+            clericDomainRepository: new StubClericDomainRepository( domain ) );
         builder.CreateCharacter( 1, "Tester", AncestryType.Human );
         builder.SetAncestry( AncestryType.Human );
         builder.ApplyFreeBoosts( [ AbilityType.Intelligence, AbilityType.Wisdom ] );
@@ -156,9 +158,11 @@ public sealed class ClassPackageTests
             AbilityType.Wisdom,
             clericDoctrineId: doctrine.Id,
             deityId: deity.Id,
-            divineFont: DivineFont.Heal );
+            divineFont: DivineFont.Heal,
+            clericDomainId: domain.Id );
 
         Assert.Equal( doctrine.Id, builder.Build().SelectedClericDoctrineId );
+        Assert.Equal( domain.Id, builder.Build().SelectedClericDomainId );
     }
 
     [Fact]
@@ -266,13 +270,15 @@ public sealed class ClassPackageTests
         CharacterClass fighter = CreateClass( "class.fighter", AbilityType.Strength );
         ClericDoctrine doctrine = CreateDoctrine( "cloistered" );
         Deity deity = CreateDeity();
+        ClericDomain domain = CreateClericDomain();
         character.SetClassPackage(
             cleric,
             AbilityType.Wisdom,
             skillCatalog: CreateSkills(),
             clericDoctrine: doctrine,
             deity: deity,
-            divineFont: DivineFont.Heal );
+            divineFont: DivineFont.Heal,
+            clericDomain: domain );
 
         Assert.Throws<CharacterManagementException>( () =>
             character.SetClassPackage(
@@ -282,6 +288,7 @@ public sealed class ClassPackageTests
 
         Assert.Equal( cleric.Id, character.SelectedClassId );
         Assert.Equal( doctrine.Id, character.SelectedClericDoctrineId );
+        Assert.Equal( domain.Id, character.SelectedClericDomainId );
         Assert.Equal( 14, character.AbilityScores.Wisdom.Value );
         Assert.Equal( 10, character.AbilityScores.Strength.Value );
     }
@@ -303,8 +310,75 @@ public sealed class ClassPackageTests
         character.SetClassPackage( fighter, AbilityType.Strength );
 
         Assert.Null( character.SelectedClericDoctrineId );
+        Assert.Null( character.SelectedClericDomainId );
         Assert.Equal( 12, character.AbilityScores.Wisdom.Value );
         Assert.Equal( 12, character.AbilityScores.Strength.Value );
+    }
+
+    [Fact]
+    public void SetClassPackage_CloisteredClericRequiresPrimaryDeityDomain()
+    {
+        DraftCharacter character = CreateCharacter();
+        CharacterClass cleric = CreateClass( "class.cleric", AbilityType.Wisdom );
+        ClericDoctrine doctrine = CreateDoctrine( "cloistered" );
+        Deity deity = CreateDeity();
+
+        Assert.Throws<CharacterManagementException>( () => character.SetClassPackage(
+            cleric,
+            AbilityType.Wisdom,
+            skillCatalog: CreateSkills(),
+            clericDoctrine: doctrine,
+            deity: deity,
+            divineFont: DivineFont.Heal ) );
+
+        ClericDomain invalidDomain = new ClericDomain(
+            "domain.fire",
+            "Fire",
+            SourceReference.Unknown,
+            new SpellReference( "spell.fire_ray", "Fire Ray", 1, SpellKind.Focus ) );
+        Assert.Throws<CharacterManagementException>( () => character.SetClassPackage(
+            cleric,
+            AbilityType.Wisdom,
+            skillCatalog: CreateSkills(),
+            clericDoctrine: doctrine,
+            deity: deity,
+            divineFont: DivineFont.Heal,
+            clericDomain: invalidDomain ) );
+    }
+
+    [Fact]
+    public void SetClassPackage_WarpriestForbidsDomainAndReplacementClearsPreviousChoice()
+    {
+        DraftCharacter character = CreateCharacter();
+        CharacterClass cleric = CreateClass( "class.cleric", AbilityType.Wisdom );
+        Deity deity = CreateDeity();
+        ClericDomain domain = CreateClericDomain();
+        character.SetClassPackage(
+            cleric,
+            AbilityType.Wisdom,
+            skillCatalog: CreateSkills(),
+            clericDoctrine: CreateDoctrine( "cloistered" ),
+            deity: deity,
+            divineFont: DivineFont.Heal,
+            clericDomain: domain );
+
+        character.SetClassPackage(
+            cleric,
+            AbilityType.Wisdom,
+            skillCatalog: CreateSkills(),
+            clericDoctrine: CreateDoctrine( "warpriest" ),
+            deity: deity,
+            divineFont: DivineFont.Heal );
+
+        Assert.Null( character.SelectedClericDomainId );
+        Assert.Throws<CharacterManagementException>( () => character.SetClassPackage(
+            cleric,
+            AbilityType.Wisdom,
+            skillCatalog: CreateSkills(),
+            clericDoctrine: CreateDoctrine( "warpriest" ),
+            deity: deity,
+            divineFont: DivineFont.Heal,
+            clericDomain: domain ) );
     }
 
     [Fact]
@@ -847,6 +921,15 @@ public sealed class ClassPackageTests
             [] );
     }
 
+    private static ClericDomain CreateClericDomain()
+    {
+        return new ClericDomain(
+            "domain.truth",
+            "Truth",
+            SourceReference.Unknown,
+            new SpellReference( "spell.word_of_truth", "Word of Truth", 1, SpellKind.Focus ) );
+    }
+
     private static IReadOnlyCollection<SkillDefinition> CreateSkills()
     {
         SourceReference source = new SourceReference( "Player Core", 227 );
@@ -926,6 +1009,20 @@ public sealed class ClassPackageTests
         public IReadOnlyCollection<Deity> GetAll() => [ _deity ];
 
         public Deity GetDeity( string deityId ) => _deity;
+    }
+
+    private sealed class StubClericDomainRepository : IClericDomainRepository
+    {
+        private readonly ClericDomain _clericDomain;
+
+        public StubClericDomainRepository( ClericDomain clericDomain )
+        {
+            _clericDomain = clericDomain;
+        }
+
+        public IReadOnlyCollection<ClericDomain> GetAll() => [ _clericDomain ];
+
+        public ClericDomain GetClericDomain( string clericDomainId ) => _clericDomain;
     }
 
     private sealed class StubSkillRepository : ISkillRepository

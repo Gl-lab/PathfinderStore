@@ -129,6 +129,16 @@ public sealed class CreateCharacterCommandValidator : AbstractValidator<CreateCh
                     } );
 
                 When(
+                    command => command.Character.ClassId == "class.cleric" &&
+                               command.Character.ClericDoctrineId == "cleric_doctrine.cloistered",
+                    () => RuleFor( command => command.Character.ClericDomainId ).NotEmpty() );
+
+                When(
+                    command => command.Character.ClassId != "class.cleric" ||
+                               command.Character.ClericDoctrineId != "cleric_doctrine.cloistered",
+                    () => RuleFor( command => command.Character.ClericDomainId ).Empty() );
+
+                When(
                     command => command.Character.ClassId != "class.cleric",
                     () =>
                     {
@@ -137,6 +147,7 @@ public sealed class CreateCharacterCommandValidator : AbstractValidator<CreateCh
                         RuleFor( command => command.Character.DivineFont ).Empty();
                         RuleFor( command => command.Character.DivineSanctification ).Empty();
                         RuleFor( command => command.Character.DeitySkillReplacementId ).Empty();
+                        RuleFor( command => command.Character.ClericDomainId ).Empty();
                     } );
 
                 RuleFor( command => command.Character.FinalFreeBoosts )

@@ -32,6 +32,7 @@ import {
   getArcaneTheses,
   getHuntersEdges,
   getClericDoctrines,
+  getClericDomains,
   getDeities,
   getRogueRackets,
   getSkills,
@@ -42,6 +43,7 @@ import {
   type ClassSkillGrantChoice,
   type ClassTrainingTargetChoice,
   type ClericDoctrine,
+  type ClericDomain,
   type Deity,
   type DivineFont,
   type DivineSanctification,
@@ -83,6 +85,10 @@ import {
   isDeityChoiceComplete,
   requiresDeitySkillReplacement,
 } from '@/features/character-creation/deity'
+import {
+  getAvailableClericDomains,
+  isClericDomainChoiceComplete,
+} from '@/features/character-creation/clericDomain'
 import {
   calculateAbilityScorePreview,
   isFinalFreeBoostDisabled,
@@ -133,6 +139,7 @@ const arcaneSchools = ref<ArcaneSchool[]>([])
 const arcaneTheses = ref<ArcaneThesis[]>([])
 const clericDoctrines = ref<ClericDoctrine[]>([])
 const deities = ref<Deity[]>([])
+const clericDomains = ref<ClericDomain[]>([])
 const skills = ref<Skill[]>([])
 const isLoadingCatalogs = ref(true)
 const isSubmitting = ref(false)
@@ -162,6 +169,7 @@ const form = ref({
   arcaneThesisId: null as string | null,
   clericDoctrineId: null as string | null,
   deityId: null as string | null,
+  clericDomainId: null as string | null,
   divineFont: null as DivineFont | null,
   divineSanctification: null as DivineSanctification | null,
   deitySkillReplacementId: null as string | null,
@@ -234,6 +242,9 @@ const selectedClericDoctrine = computed(
 const selectedDeity = computed(
   () => deities.value.find((item) => item.id === form.value.deityId) ?? null,
 )
+const selectedClericDomain = computed(
+  () => clericDomains.value.find((item) => item.id === form.value.clericDomainId) ?? null,
+)
 const classKeyAbilityOptions = computed(() => {
   if (!selectedCharacterClass.value) return []
 
@@ -242,6 +253,9 @@ const classKeyAbilityOptions = computed(() => {
     : selectedCharacterClass.value.keyAbilityOptions
 })
 const eligibleDeities = computed(() => deities.value.filter((deity) => deity.canGrantClericPowers))
+const availableClericDomains = computed(() =>
+  getAvailableClericDomains(selectedDeity.value, clericDomains.value),
+)
 const effectiveClassProficiencies = computed(() =>
   [
     ...getEffectiveClassProficiencies(selectedCharacterClass.value, selectedClericDoctrine.value),
@@ -365,6 +379,12 @@ const canContinue = computed(() => {
         backgroundSkillIds.value,
         skills.value,
       ) &&
+      isClericDomainChoiceComplete(
+        selectedCharacterClass.value,
+        selectedClericDoctrine.value,
+        selectedDeity.value,
+        selectedClericDomain.value,
+      ) &&
       isSelectedClassChoiceComplete()
     )
   if (step.value === 7)
@@ -442,6 +462,7 @@ function selectCharacterClass(classId: string | null): void {
   form.value.arcaneThesisId = null
   form.value.clericDoctrineId = null
   form.value.deityId = null
+  form.value.clericDomainId = null
   form.value.divineFont = null
   form.value.divineSanctification = null
   form.value.deitySkillReplacementId = null
@@ -456,7 +477,12 @@ function selectDeity(deityId: string | null): void {
   form.value.divineFont = deity?.divineFontOptions.length === 1 ? deity.divineFontOptions[0] : null
   form.value.divineSanctification = deity?.requiredSanctification ?? null
   form.value.deitySkillReplacementId = null
+  form.value.clericDomainId = null
   resetClassTrainingTargets()
+}
+function selectClericDoctrine(clericDoctrineId: string | null): void {
+  form.value.clericDoctrineId = clericDoctrineId
+  form.value.clericDomainId = null
 }
 function selectDruidicOrder(druidicOrderId: string | null): void {
   form.value.druidicOrderId = druidicOrderId
@@ -598,6 +624,12 @@ async function submit(): Promise<void> {
       backgroundSkillIds.value,
       skills.value,
     ) ||
+    !isClericDomainChoiceComplete(
+      selectedCharacterClass.value,
+      selectedClericDoctrine.value,
+      selectedDeity.value,
+      selectedClericDomain.value,
+    ) ||
     !isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts)
     || !isClassTrainingComplete(
       effectiveCharacterClass.value,
@@ -640,6 +672,7 @@ async function submit(): Promise<void> {
       arcaneThesisId: form.value.arcaneThesisId,
       clericDoctrineId: form.value.clericDoctrineId,
       deityId: form.value.deityId,
+      clericDomainId: form.value.clericDomainId,
       divineFont: form.value.divineFont,
       divineSanctification: form.value.divineSanctification,
       deitySkillReplacementId: form.value.deitySkillReplacementId,
@@ -669,7 +702,7 @@ async function loadCatalogs(): Promise<void> {
   isLoadingCatalogs.value = true
   errorMessages.value = []
   try {
-    const [ancestryCatalog, backgroundCatalog, classCatalog, racketCatalog, huntersEdgeCatalog, druidicOrderCatalog, bardMuseCatalog, witchPatronCatalog, arcaneSchoolCatalog, arcaneThesisCatalog, doctrineCatalog, deityCatalog, skillCatalog] = await Promise.all([
+    const [ancestryCatalog, backgroundCatalog, classCatalog, racketCatalog, huntersEdgeCatalog, druidicOrderCatalog, bardMuseCatalog, witchPatronCatalog, arcaneSchoolCatalog, arcaneThesisCatalog, doctrineCatalog, deityCatalog, clericDomainCatalog, skillCatalog] = await Promise.all([
       getAncestries(),
       getBackgrounds(),
       getCharacterClasses(),
@@ -682,6 +715,7 @@ async function loadCatalogs(): Promise<void> {
       getArcaneTheses(),
       getClericDoctrines(),
       getDeities(),
+      getClericDomains(),
       getSkills(),
     ])
     ancestries.value = ancestryCatalog
@@ -696,6 +730,7 @@ async function loadCatalogs(): Promise<void> {
     arcaneTheses.value = arcaneThesisCatalog
     clericDoctrines.value = doctrineCatalog
     deities.value = deityCatalog
+    clericDomains.value = clericDomainCatalog
     skills.value = skillCatalog
   } catch (error) {
     errorMessages.value = getApiErrorMessages(error)
@@ -1024,11 +1059,12 @@ watch(
             />
             <v-select
               v-if="selectedCharacterClass.id === 'class.cleric'"
-              v-model="form.clericDoctrineId"
+              :model-value="form.clericDoctrineId"
               :items="clericDoctrines"
               item-title="name"
               item-value="id"
               :label="t('classUi.clericDoctrine')"
+              @update:model-value="selectClericDoctrine"
             />
             <template v-if="selectedCharacterClass.id === 'class.cleric'">
               <v-select
@@ -1051,6 +1087,19 @@ watch(
                   :label="t(`classUi.divineFonts.${font}`)"
                 />
               </v-radio-group>
+              <v-select
+                v-if="selectedClericDoctrine?.id === 'cleric_doctrine.cloistered' && selectedDeity"
+                v-model="form.clericDomainId"
+                :items="availableClericDomains"
+                item-title="name"
+                item-value="id"
+                :label="t('classUi.clericDomain')"
+              />
+              <v-alert v-if="selectedClericDomain" type="info" variant="tonal">
+                {{ t('classUi.initialDomainSpell') }}:
+                {{ selectedClericDomain.initialFocusSpell.name }}.
+                {{ t('classUi.deferredEffect') }}
+              </v-alert>
               <v-radio-group
                 v-if="selectedDeity && selectedDeity.sanctificationOptions.length > 0"
                 v-model="form.divineSanctification"
@@ -1305,6 +1354,9 @@ watch(
               v-if="selectedDeity"
               :title="t('classUi.deity')"
               :subtitle="selectedDeity.name" /><v-list-item
+              v-if="selectedClericDomain"
+              :title="t('classUi.clericDomain')"
+              :subtitle="`${selectedClericDomain.name} — ${selectedClericDomain.initialFocusSpell.name}`" /><v-list-item
               v-if="selectedDeity && form.divineFont"
               :title="t('classUi.divineFont')"
               :subtitle="t(`classUi.divineFonts.${form.divineFont}`)" /><v-list-item

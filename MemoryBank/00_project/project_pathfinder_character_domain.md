@@ -21,7 +21,8 @@
 - Background: два boosts, trained general skill и Lore;
 - Class: key ability boost, base HP и стартовые proficiencies;
 - Rogue's Racket;
-- Cleric Doctrine и Deity package: divine skill, favored weapon proficiency, Divine Font и sanctification;
+- Cleric Doctrine, Deity package и primary Domain choice для Cloistered Cleric;
+- divine skill, favored weapon proficiency, Divine Font и sanctification;
 - maximum HP первого уровня, вычисляемые из ancestry, class и Constitution modifier.
 
 `AbilityScores` хранит шесть характеристик с базовым значением `10`; boost и flaw изменяют значение на `2`, а modifier вычисляется, а не хранится. Полные правила и границы незавершённых подсистем описаны в [`../20_domain/character_creation/README.md`](../20_domain/character_creation/README.md).
@@ -42,6 +43,7 @@
 - `GET /api/classes/rogue/rackets`
 - `GET /api/classes/cleric/doctrines`
 - `GET /api/classes/cleric/deities`
+- `GET /api/classes/cleric/domains`
 - `GET /api/skills`
 - `GET /api/character`
 - `GET /api/character/{characterId}`
@@ -59,7 +61,7 @@ Legacy item endpoints в `CharacterController` не относятся к тек
 ## Открытые границы
 
 - skill feats, дополнительные class skills и progression proficiency;
-- domain choice, spell preparation и Divine Font slots;
+- spell preparation, Divine Font slots и domain focus pool;
 - spells, class features, equipment, languages и исполняемые ancestry effects;
 - расширенные derived statistics и состояние current/temporary HP;
 - remastered-поля ancestry: languages, granted items и granted rules.

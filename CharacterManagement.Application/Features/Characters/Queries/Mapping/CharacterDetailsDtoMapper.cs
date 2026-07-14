@@ -20,6 +20,7 @@ public sealed class CharacterDetailsDtoMapper
     private readonly IArcaneThesisRepository? _arcaneThesisRepository;
     private readonly IClericDoctrineRepository? _clericDoctrineRepository;
     private readonly IDeityRepository? _deityRepository;
+    private readonly IClericDomainRepository? _clericDomainRepository;
 
     public CharacterDetailsDtoMapper(
         IAncestryRepository? ancestryRepository = null,
@@ -34,7 +35,8 @@ public sealed class CharacterDetailsDtoMapper
         IDeityRepository? deityRepository = null,
         IWitchPatronRepository? witchPatronRepository = null,
         IArcaneSchoolRepository? arcaneSchoolRepository = null,
-        IArcaneThesisRepository? arcaneThesisRepository = null )
+        IArcaneThesisRepository? arcaneThesisRepository = null,
+        IClericDomainRepository? clericDomainRepository = null )
     {
         _ancestryRepository = ancestryRepository;
         _backgroundRepository = backgroundRepository;
@@ -49,6 +51,7 @@ public sealed class CharacterDetailsDtoMapper
         _arcaneThesisRepository = arcaneThesisRepository;
         _clericDoctrineRepository = clericDoctrineRepository;
         _deityRepository = deityRepository;
+        _clericDomainRepository = clericDomainRepository;
     }
 
     public DraftCharacter Convert( CharacterDto character ) => throw new NotSupportedException();
@@ -71,6 +74,7 @@ public sealed class CharacterDetailsDtoMapper
         ArcaneThesis? arcaneThesis = ResolveArcaneThesis( draftCharacter );
         ClericDoctrine? clericDoctrine = ResolveClericDoctrine( draftCharacter );
         Deity? deity = ResolveDeity( draftCharacter );
+        ClericDomain? clericDomain = ResolveClericDomain( draftCharacter );
 
         return new CharacterDto
         {
@@ -96,7 +100,8 @@ public sealed class CharacterDetailsDtoMapper
                     deity,
                     witchPatron,
                     arcaneSchool,
-                    arcaneThesis ),
+                    arcaneThesis,
+                    clericDomain ),
             FinalFreeBoosts = draftCharacter.AppliedFinalFreeBoosts.ToArray(),
             DerivedStatistics = ancestry is null || characterClass is null
                 ? null
@@ -268,6 +273,22 @@ public sealed class CharacterDetailsDtoMapper
         }
 
         return _deityRepository.GetDeity( character.SelectedDeityId );
+    }
+
+    private ClericDomain? ResolveClericDomain( DraftCharacter character )
+    {
+        if ( character.SelectedClericDomainId is null )
+        {
+            return null;
+        }
+
+        if ( _clericDomainRepository is null )
+        {
+            throw new InvalidOperationException(
+                "Cleric domain repository is required to map a selected domain." );
+        }
+
+        return _clericDomainRepository.GetClericDomain( character.SelectedClericDomainId );
     }
 
     private CharacterClass? ResolveCharacterClass( DraftCharacter character )

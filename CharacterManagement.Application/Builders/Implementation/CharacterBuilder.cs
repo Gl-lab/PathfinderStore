@@ -16,6 +16,7 @@ public class CharacterBuilder : ICharacterBuilder
     private readonly IRogueRacketRepository? _rogueRacketRepository;
     private readonly IClericDoctrineRepository? _clericDoctrineRepository;
     private readonly IDeityRepository? _deityRepository;
+    private readonly IClericDomainRepository? _clericDomainRepository;
     private readonly IHuntersEdgeRepository? _huntersEdgeRepository;
     private readonly IDruidicOrderRepository? _druidicOrderRepository;
     private readonly IBardMuseRepository? _bardMuseRepository;
@@ -37,7 +38,8 @@ public class CharacterBuilder : ICharacterBuilder
         IBardMuseRepository? bardMuseRepository = null,
         IWitchPatronRepository? witchPatronRepository = null,
         IArcaneSchoolRepository? arcaneSchoolRepository = null,
-        IArcaneThesisRepository? arcaneThesisRepository = null )
+        IArcaneThesisRepository? arcaneThesisRepository = null,
+        IClericDomainRepository? clericDomainRepository = null )
     {
         _ancestryRepository = ancestryRepository;
         _ancestryChoiceAvailabilityPolicy = ancestryChoiceAvailabilityPolicy ?? new CommonAncestryChoiceAvailabilityPolicy();
@@ -47,6 +49,7 @@ public class CharacterBuilder : ICharacterBuilder
         _rogueRacketRepository = rogueRacketRepository;
         _clericDoctrineRepository = clericDoctrineRepository;
         _deityRepository = deityRepository;
+        _clericDomainRepository = clericDomainRepository;
         _huntersEdgeRepository = huntersEdgeRepository;
         _druidicOrderRepository = druidicOrderRepository;
         _bardMuseRepository = bardMuseRepository;
@@ -145,7 +148,8 @@ public class CharacterBuilder : ICharacterBuilder
         string? witchPatronId = null,
         string? witchPatronFamiliarSpellId = null,
         string? arcaneSchoolId = null,
-        string? arcaneThesisId = null )
+        string? arcaneThesisId = null,
+        string? clericDomainId = null )
     {
         if ( _draftCharacter is null )
         {
@@ -214,6 +218,24 @@ public class CharacterBuilder : ICharacterBuilder
             try
             {
                 deity = _deityRepository.GetDeity( deityId );
+            }
+            catch ( ArgumentException exception )
+            {
+                throw new CharacterManagementException( exception.Message );
+            }
+        }
+
+        ClericDomain? clericDomain = null;
+        if ( !String.IsNullOrWhiteSpace( clericDomainId ) )
+        {
+            if ( _clericDomainRepository is null )
+            {
+                throw new InvalidOperationException( "Cleric domain repository is not configured." );
+            }
+
+            try
+            {
+                clericDomain = _clericDomainRepository.GetClericDomain( clericDomainId );
             }
             catch ( ArgumentException exception )
             {
@@ -352,7 +374,8 @@ public class CharacterBuilder : ICharacterBuilder
             witchPatron,
             witchPatronFamiliarSpellId,
             arcaneSchool,
-            arcaneThesis );
+            arcaneThesis,
+            clericDomain );
     }
 
     public void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts )

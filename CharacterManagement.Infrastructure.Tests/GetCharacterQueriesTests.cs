@@ -62,13 +62,15 @@ public sealed class GetCharacterQueriesTests
         CharacterClassRepository characterClassRepository = new CharacterClassRepository();
         ClericDoctrineRepository clericDoctrineRepository = new ClericDoctrineRepository();
         DeityRepository deityRepository = new DeityRepository();
+        ClericDomainRepository clericDomainRepository = new ClericDomainRepository();
         CharacterBuilder builder = new CharacterBuilder(
             ancestryRepository,
             backgroundRepository: backgroundRepository,
             characterClassRepository: characterClassRepository,
             skillRepository: new SkillRepository(),
             clericDoctrineRepository: clericDoctrineRepository,
-            deityRepository: deityRepository );
+            deityRepository: deityRepository,
+            clericDomainRepository: clericDomainRepository );
         builder.CreateCharacter( account.Id, "Kyra", AncestryType.Human );
         builder.SetAncestryPackage( "human.skilled", "human.cooperative_nature" );
         builder.ApplyFreeBoosts( [ AbilityType.Strength, AbilityType.Wisdom ] );
@@ -81,6 +83,7 @@ public sealed class GetCharacterQueriesTests
             AbilityType.Wisdom,
             clericDoctrineId: "cleric_doctrine.cloistered",
             deityId: "deity.iomedae",
+            clericDomainId: "domain.might",
             divineFont: DivineFont.Heal,
             divineSanctification: DivineSanctification.Holy );
         builder.SetFinalFreeBoosts(
@@ -101,7 +104,8 @@ public sealed class GetCharacterQueriesTests
             characterClassRepository,
             new SkillRepository(),
             clericDoctrineRepository: clericDoctrineRepository,
-            deityRepository: deityRepository );
+            deityRepository: deityRepository,
+            clericDomainRepository: clericDomainRepository );
         GetCharacterByIdHandler handler = new GetCharacterByIdHandler(
             characterRepository,
             characterDetailsDtoMapper );
@@ -134,6 +138,11 @@ public sealed class GetCharacterQueriesTests
         Assert.Equal( "cleric_doctrine.cloistered", result.ClassPackage.ClericDoctrine.Id );
         Assert.NotNull( result.ClassPackage.Deity );
         Assert.Equal( "deity.iomedae", result.ClassPackage.Deity.Id );
+        Assert.NotNull( result.ClassPackage.ClericDomain );
+        Assert.Equal( "domain.might", result.ClassPackage.ClericDomain.Id );
+        Assert.Equal(
+            "spell.athletic_rush",
+            result.ClassPackage.ClericDomain.InitialFocusSpell.Id );
         Assert.Equal( DivineFont.Heal, result.ClassPackage.Deity.DivineFont );
         Assert.Equal( DivineSanctification.Holy, result.ClassPackage.Deity.Sanctification );
         Assert.Equal( "skill.intimidation", result.ClassPackage.Deity.DivineSkillId );

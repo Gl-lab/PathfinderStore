@@ -199,7 +199,7 @@ Frontend:
 
 ```powershell
 Set-Location pathfinder.frontend
-npm run test:unit -- --run
+npm test
 npm run lint
 npm run build
 ```
@@ -231,4 +231,8 @@ npm run build
 
 - implementation plan проверен по актуальному коду, roadmap и Player Core rules;
 - plan review исправил effective divine tradition для deity-granted spells и границу rank-1 focus catalog;
-- реализация ещё не начата.
+- slice 2.1 завершён: нормализованы 39 primary domains, добавлены catalog API, выбор Cloistered Cleric, nullable persistence, read-модель и frontend flow;
+- миграция `AddClericDomain` создана через `dotnet ef`, legacy rows остаются читаемыми;
+- review 2.1 исправил устаревшую frontend test command в плане и naming статического catalog field;
+- backend tests, frontend tests, lint и production build для 2.1 проходят;
+- slices 2.2–2.4 ещё не реализованы.

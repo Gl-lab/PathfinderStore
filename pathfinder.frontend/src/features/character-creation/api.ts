@@ -282,6 +282,21 @@ export interface ClericDoctrine {
   deferredDependencies: string[]
 }
 
+export type SpellKind = 'Cantrip' | 'Spell' | 'Focus'
+
+export interface SpellReference {
+  id: string
+  name: string
+  rank: number
+  kind: SpellKind
+}
+
+export interface ClericDomain {
+  id: string
+  name: string
+  initialFocusSpell: SpellReference
+}
+
 export type DivineFont = 'Heal' | 'Harm'
 export type DivineSanctification = 'Holy' | 'Unholy'
 
@@ -327,6 +342,7 @@ export interface CreateCharacterRequest {
   arcaneThesisId: string | null
   clericDoctrineId: string | null
   deityId: string | null
+  clericDomainId: string | null
   divineFont: DivineFont | null
   divineSanctification: DivineSanctification | null
   deitySkillReplacementId: string | null
@@ -381,6 +397,10 @@ export async function getClericDoctrines(): Promise<ClericDoctrine[]> {
 
 export async function getDeities(): Promise<Deity[]> {
   return (await http.get<Deity[]>('/api/classes/cleric/deities')).data
+}
+
+export async function getClericDomains(): Promise<ClericDomain[]> {
+  return (await http.get<ClericDomain[]>('/api/classes/cleric/domains')).data
 }
 
 export async function getSkills(): Promise<Skill[]> {

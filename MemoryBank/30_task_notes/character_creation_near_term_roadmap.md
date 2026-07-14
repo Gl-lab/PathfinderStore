@@ -158,6 +158,8 @@ Vikunja остаётся источником истины по карточка
 
 #### 2.1. Player Core Domain Catalog + Cleric Domain Choice
 
+**Статус:** завершено 14 июля 2026 года; см. [Priority 2 Implementation Plan](cleric_spell_flow_priority_2_implementation.md).
+
 - Cloistered Cleric выбирает один primary domain выбранной Deity;
 - Warpriest и non-Cleric не могут передать этот выбор без отдельного источника правила;
 - смена Doctrine или Deity очищает несовместимый domain;

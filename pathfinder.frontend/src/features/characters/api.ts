@@ -173,6 +173,16 @@ export interface CharacterClassPackage {
     primaryDomainIds: string[]
     grantedSpells: { rank: number; id: string; name: string }[]
   } | null
+  clericDomain: {
+    id: string
+    name: string
+    initialFocusSpell: {
+      id: string
+      name: string
+      rank: number
+      kind: 'Focus'
+    }
+  } | null
   rules: {
     id: string
     kind: string

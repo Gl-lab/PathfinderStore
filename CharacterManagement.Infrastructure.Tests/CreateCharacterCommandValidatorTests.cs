@@ -208,10 +208,27 @@ public sealed class CreateCharacterCommandValidatorTests
         character.ClassKeyAbility = AbilityType.Wisdom;
         character.ClericDoctrineId = "cleric_doctrine.cloistered";
         character.DeityId = "deity.iomedae";
+        character.ClericDomainId = "domain.might";
         character.DivineFont = DivineFont.Heal;
         character.DivineSanctification = DivineSanctification.Holy;
 
         validator.ValidateAndThrow( new CreateCharacterCommand( 42, character ) );
+    }
+
+    [Fact]
+    public void Validate_WhenCloisteredDomainIsMissing_ThrowsValidationException()
+    {
+        CreateCharacterCommandValidator validator = new CreateCharacterCommandValidator();
+        CreateCharacterRequestDto character = CreateValidRequest();
+        character.ClassId = "class.cleric";
+        character.ClassKeyAbility = AbilityType.Wisdom;
+        character.ClericDoctrineId = "cleric_doctrine.cloistered";
+        character.DeityId = "deity.iomedae";
+        character.DivineFont = DivineFont.Heal;
+        character.DivineSanctification = DivineSanctification.Holy;
+
+        Assert.Throws<ValidationException>( () => validator.ValidateAndThrow(
+            new CreateCharacterCommand( 42, character ) ) );
     }
 
     [Theory]

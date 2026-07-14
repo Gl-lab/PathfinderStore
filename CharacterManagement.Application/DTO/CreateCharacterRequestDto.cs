@@ -29,6 +29,7 @@ public class CreateCharacterRequestDto
     public string? ArcaneThesisId { get; set; }
     public string? ClericDoctrineId { get; set; }
     public string? DeityId { get; set; }
+    public string? ClericDomainId { get; set; }
     public DivineFont? DivineFont { get; set; }
     public DivineSanctification? DivineSanctification { get; set; }
     public string? DeitySkillReplacementId { get; set; }
