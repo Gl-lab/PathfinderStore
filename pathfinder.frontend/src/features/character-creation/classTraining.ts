@@ -27,6 +27,33 @@ export function createAdditionalClassTrainingChoices(count: number): ClassTraini
   return Array.from({ length: count }, () => ({ skillId: null, customLoreTopic: null }))
 }
 
+export function getAvailableClassTrainingSkills(
+  skills: Skill[],
+  characterClass: CharacterClass | null,
+  grantChoices: ClassSkillGrantChoice[],
+  additionalChoices: ClassTrainingTargetChoice[],
+  existingTargetIds: string[],
+  currentChoice: ClassTrainingTargetChoice | null,
+): Skill[] {
+  const usedSkillIds = new Set(existingTargetIds)
+  const choices = new Map(grantChoices.map((choice) => [choice.grantId, choice]))
+
+  for (const grant of characterClass?.initialSkillGrants ?? []) {
+    const choice = choices.get(grant.id)
+    const initialSkillId = grant.skillOptions.length === 1 ? grant.skillOptions[0] : choice?.selectedSkillId
+    if (initialSkillId) usedSkillIds.add(initialSkillId)
+    if (choice?.replacementTarget !== currentChoice && choice?.replacementTarget?.skillId) {
+      usedSkillIds.add(choice.replacementTarget.skillId)
+    }
+  }
+
+  for (const choice of additionalChoices) {
+    if (choice !== currentChoice && choice.skillId) usedSkillIds.add(choice.skillId)
+  }
+
+  return skills.filter((skill) => !usedSkillIds.has(skill.id) || skill.id === currentChoice?.skillId)
+}
+
 export function isClassTrainingComplete(
   characterClass: CharacterClass | null,
   grantChoices: ClassSkillGrantChoice[],

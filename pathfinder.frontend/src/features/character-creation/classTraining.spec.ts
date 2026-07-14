@@ -4,6 +4,7 @@ import {
   createAdditionalClassTrainingChoices,
   createClassSkillGrantChoices,
   getAdditionalClassTrainingCount,
+  getAvailableClassTrainingSkills,
   getCustomLoreId,
   isClassTrainingComplete,
 } from './classTraining'
@@ -43,6 +44,24 @@ describe('class training', () => {
     ]
 
     expect(isClassTrainingComplete(wizard, grants, additional, 2, [], skills)).toBe(false)
+  })
+
+  it('hides skills trained by earlier packages and other class choices', () => {
+    const grants = createClassSkillGrantChoices(wizard)
+    const currentChoice = { skillId: 'skill.crafting', customLoreTopic: null }
+    const additional = [
+      currentChoice,
+      { skillId: 'skill.athletics', customLoreTopic: null },
+    ]
+
+    expect(getAvailableClassTrainingSkills(
+      skills,
+      wizard,
+      grants,
+      additional,
+      [],
+      currentChoice,
+    )).toEqual([skills[2]])
   })
 
   it('creates the requested number of empty slots', () => {

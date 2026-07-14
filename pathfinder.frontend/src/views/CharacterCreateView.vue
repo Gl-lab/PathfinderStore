@@ -92,6 +92,7 @@ import {
   createAdditionalClassTrainingChoices,
   createClassSkillGrantChoices,
   getAdditionalClassTrainingCount,
+  getAvailableClassTrainingSkills,
   getClassTrainingLabels,
   getCustomLoreId,
   isClassTrainingComplete,
@@ -501,6 +502,16 @@ function classGrantRequiresReplacement(grantId: string): boolean {
     effectiveCharacterClass.value,
     form.value.classSkillGrantChoices,
     existingClassTrainingSkillIds.value,
+  )
+}
+function getClassTrainingSkillOptions(currentChoice: ClassTrainingTargetChoice | null): Skill[] {
+  return getAvailableClassTrainingSkills(
+    skills.value,
+    effectiveCharacterClass.value,
+    form.value.classSkillGrantChoices,
+    form.value.additionalClassTrainingChoices,
+    existingClassTrainingSkillIds.value,
+    currentChoice,
   )
 }
 function setTrainingSkill(target: ClassTrainingTargetChoice, skillId: string | null): void {
@@ -1183,7 +1194,7 @@ watch(
               <p class="hint">{{ t('classUi.classSkillReplacementHint') }}</p>
               <v-select
                 :model-value="getClassGrantChoice(grant.id)?.replacementTarget?.skillId"
-                :items="skills"
+                :items="getClassTrainingSkillOptions(getClassGrantChoice(grant.id)?.replacementTarget ?? null)"
                 item-title="name"
                 item-value="id"
                 clearable
@@ -1206,7 +1217,7 @@ watch(
           >
             <v-select
               :model-value="choice.skillId"
-              :items="skills"
+              :items="getClassTrainingSkillOptions(choice)"
               item-title="name"
               item-value="id"
               clearable
