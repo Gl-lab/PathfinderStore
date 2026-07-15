@@ -89,7 +89,9 @@ public sealed class AvatarSelectorTests
     [Theory]
     [InlineData( "class.bard", CharacterGender.Male, 2 )]
     [InlineData( "class.bard", CharacterGender.Female, 2 )]
-    [InlineData( "class.cleric", CharacterGender.Male, 1 )]
+    [InlineData( "class.cleric", CharacterGender.Male, 2 )]
+    [InlineData( "class.cleric", CharacterGender.Female, 2 )]
+    [InlineData( "class.druid", CharacterGender.Male, 2 )]
     public void RuntimeCatalogReturnsOnlyAcceptedDwarfAssets(
         string characterClassId,
         CharacterGender gender,
@@ -104,7 +106,8 @@ public sealed class AvatarSelectorTests
 
         Assert.Equal( expectedCount, result.Count );
         Assert.All( result, avatar => Assert.NotNull( avatar.Variant ) );
-        Assert.All( result, avatar => Assert.StartsWith( "/avatars/pc/00000", avatar.Path ) );
+        Assert.All( result, avatar => Assert.StartsWith( "/avatars/pc/", avatar.Path ) );
+        Assert.All( result, avatar => Assert.EndsWith( ".webp", avatar.Path ) );
     }
 
     [Fact]
@@ -114,7 +117,7 @@ public sealed class AvatarSelectorTests
 
         IReadOnlyList<AvatarDefinition> result = catalog.FindMatches( new AvatarSelectionCriteria(
             AncestryType.Dwarf,
-            "class.cleric",
+            "class.druid",
             CharacterGender.Female ) );
 
         Assert.Empty( result );

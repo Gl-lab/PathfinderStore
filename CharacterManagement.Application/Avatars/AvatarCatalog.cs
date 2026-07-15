@@ -43,7 +43,42 @@ public sealed class AvatarCatalog : IAvatarCatalog
             AncestryType.Dwarf,
             "class.cleric",
             CharacterGender.Male,
-            Variant: 1 )
+            Variant: 1 ),
+        new AvatarDefinition(
+            AvatarId.Create( "avatar.pc.000006" ),
+            "/avatars/pc/000006.webp",
+            AncestryType.Dwarf,
+            "class.cleric",
+            CharacterGender.Male,
+            Variant: 2 ),
+        new AvatarDefinition(
+            AvatarId.Create( "avatar.pc.000007" ),
+            "/avatars/pc/000007.webp",
+            AncestryType.Dwarf,
+            "class.cleric",
+            CharacterGender.Female,
+            Variant: 1 ),
+        new AvatarDefinition(
+            AvatarId.Create( "avatar.pc.000008" ),
+            "/avatars/pc/000008.webp",
+            AncestryType.Dwarf,
+            "class.cleric",
+            CharacterGender.Female,
+            Variant: 2 ),
+        new AvatarDefinition(
+            AvatarId.Create( "avatar.pc.000009" ),
+            "/avatars/pc/000009.webp",
+            AncestryType.Dwarf,
+            "class.druid",
+            CharacterGender.Male,
+            Variant: 1 ),
+        new AvatarDefinition(
+            AvatarId.Create( "avatar.pc.000010" ),
+            "/avatars/pc/000010.webp",
+            AncestryType.Dwarf,
+            "class.druid",
+            CharacterGender.Male,
+            Variant: 2 )
     ];
 
     private readonly IReadOnlyList<AvatarDefinition> _avatars;
