@@ -87,6 +87,13 @@ public sealed class CharacterDetailsDtoMapper
             draftCharacter,
             deity );
         ClericFocusPoolDto? clericFocusPool = ResolveClericFocusPool( clericDomain );
+        IReadOnlyList<EffectiveProficiency> effectiveProficiencies = characterClass is null
+            ? []
+            : ProficiencyResolver.Resolve(
+                characterClass.InitialProficiencies
+                    .Concat( rogueRacket?.ProficiencyGrants ?? [] )
+                    .Concat( clericDoctrine?.ProficiencyGrants ?? [] )
+                    .Concat( deity?.ProficiencyGrants ?? [] ) );
 
         return new CharacterDto
         {
@@ -125,15 +132,12 @@ public sealed class CharacterDetailsDtoMapper
                 : CharacterDerivedStatisticsDtoMapper.Map(
                     draftCharacter,
                     ancestry,
-                    characterClass ),
+                    characterClass,
+                    effectiveProficiencies ),
             Training = CharacterTrainingDtoMapper.Map( draftCharacter, _skillRepository ),
             Proficiencies = characterClass is null
                 ? []
-                : CharacterClassDtoMapper.MapProficiencies( ProficiencyResolver.Resolve(
-                    characterClass.InitialProficiencies
-                        .Concat( rogueRacket?.ProficiencyGrants ?? [] )
-                        .Concat( clericDoctrine?.ProficiencyGrants ?? [] )
-                        .Concat( deity?.ProficiencyGrants ?? [] ) ) ),
+                : CharacterClassDtoMapper.MapProficiencies( effectiveProficiencies ),
             Characteristics = new GroupCharacteristicDto
             {
                 Strength = Convert( draftCharacter.AbilityScores.Strength ),

@@ -800,6 +800,19 @@ public sealed class GetCharacterQueriesTests
         CharacterDto character = Assert.Single( result );
         Assert.NotNull( character.DerivedStatistics );
         Assert.Equal( 21, character.DerivedStatistics.HitPoints.Maximum );
+        Assert.Equal( 6, character.DerivedStatistics.Perception.Total );
+        Assert.Equal( AbilityType.Wisdom, character.DerivedStatistics.Perception.Ability );
+        Assert.Equal( ProficiencyRank.Expert, character.DerivedStatistics.Perception.ProficiencyRank );
+        Assert.Equal( 5, character.DerivedStatistics.Perception.ProficiencyBonus );
+        Assert.Equal(
+            [ "class.fighter.initial_proficiencies" ],
+            character.DerivedStatistics.Perception.SourceGrantIds );
+        Assert.Equal( 8, character.DerivedStatistics.SavingThrows.Fortitude.Total );
+        Assert.Equal( AbilityType.Constitution, character.DerivedStatistics.SavingThrows.Fortitude.Ability );
+        Assert.Equal( 6, character.DerivedStatistics.SavingThrows.Reflex.Total );
+        Assert.Equal( AbilityType.Dexterity, character.DerivedStatistics.SavingThrows.Reflex.Ability );
+        Assert.Equal( 4, character.DerivedStatistics.SavingThrows.Will.Total );
+        Assert.Equal( AbilityType.Wisdom, character.DerivedStatistics.SavingThrows.Will.Ability );
         Assert.Equal( "skill.intimidation", Assert.Single( character.Training.Skills ).Id );
         Assert.Equal( "lore.warfare", Assert.Single( character.Training.Lore ).Id );
     }

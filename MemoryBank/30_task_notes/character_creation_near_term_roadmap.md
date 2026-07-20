@@ -202,6 +202,8 @@ Vikunja остаётся источником истины по карточка
 
 #### 3.1. Saves и Perception
 
+**Статус:** завершено 20 июля 2026 года; см. [Implementation Plan](saves_perception_implementation.md).
+
 **Проблема.** Ability modifiers и proficiency ranks уже существуют, но пользователь не видит итоговые Fortitude, Reflex, Will и Perception.
 
 **Ожидаемый результат.** Сервер вычисляет значения первого уровня и возвращает объяснимый breakdown; frontend показывает их в карточке.

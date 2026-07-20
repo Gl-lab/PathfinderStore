@@ -216,6 +216,23 @@ export interface CharacterHitPoints {
 
 export interface CharacterDerivedStatistics {
   hitPoints: CharacterHitPoints
+  perception: CharacterProficiencyStatistic
+  savingThrows: {
+    fortitude: CharacterProficiencyStatistic
+    reflex: CharacterProficiencyStatistic
+    will: CharacterProficiencyStatistic
+  }
+}
+
+export interface CharacterProficiencyStatistic {
+  targetId: string
+  name: string
+  ability: AbilityCode
+  abilityModifier: number
+  proficiencyRank: ProficiencyRank
+  proficiencyBonus: number
+  total: number
+  sourceGrantIds: string[]
 }
 
 export interface CharacterTraining {

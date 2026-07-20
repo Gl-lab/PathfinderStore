@@ -17,10 +17,12 @@ import {
   getCharacter,
   setCharacterGender,
   type Character,
+  type CharacterProficiencyStatistic,
   type ProficiencyCategory,
   type ProficiencyRank,
 } from '@/features/characters/api'
 import { formatSignedModifier } from '@/features/characters/hitPoints'
+import { formatStatisticBreakdown } from '@/features/characters/statistics'
 import {
   isLegacyGenderSelectionRequired,
   type SelectableCharacterGender,
@@ -45,6 +47,27 @@ const mustSelectGender = computed(
   () => character.value !== null && isLegacyGenderSelectionRequired(character.value.gender),
 )
 const proficiencyGroups = computed(() => groupProficiencies(character.value?.proficiencies ?? []))
+const statisticRows = computed<
+  { key: string; label: string; statistic: CharacterProficiencyStatistic }[]
+>(() => {
+  const statistics = character.value?.derivedStatistics
+  if (!statistics) return []
+
+  return [
+    { key: 'perception', label: t('statistics.perception'), statistic: statistics.perception },
+    {
+      key: 'fortitude',
+      label: t('statistics.fortitude'),
+      statistic: statistics.savingThrows.fortitude,
+    },
+    {
+      key: 'reflex',
+      label: t('statistics.reflex'),
+      statistic: statistics.savingThrows.reflex,
+    },
+    { key: 'will', label: t('statistics.will'), statistic: statistics.savingThrows.will },
+  ]
+})
 const abilityCodes = {
   strength: 'Strength',
   dexterity: 'Dexterity',
@@ -68,6 +91,12 @@ function getProficiencyRankLabel(rank: ProficiencyRank): string {
 }
 function getProficiencyCategoryLabel(category: ProficiencyCategory): string {
   return t(`proficiencies.categories.${category}`)
+}
+function getStatisticBreakdown(statistic: CharacterProficiencyStatistic): string {
+  return t(
+    'statistics.breakdown',
+    formatStatisticBreakdown(statistic, formatSignedModifier),
+  )
 }
 async function load(): Promise<void> {
   isLoading.value = true
@@ -220,6 +249,28 @@ onMounted(load)
             </dl>
           </v-card-text></v-card
         >
+        <v-card v-if="character.derivedStatistics" elevation="0" class="derived-statistics-card">
+          <v-card-item :title="t('statistics.savesAndPerception')">
+            <template #prepend><v-icon color="primary" icon="mdi-shield-account" /></template>
+          </v-card-item>
+          <v-card-text class="derived-statistics-card__grid">
+            <div v-for="row in statisticRows" :key="row.key" class="derived-statistics-card__item">
+              <div>
+                <strong>{{ row.label }}</strong>
+                <small>
+                  {{ getAbilityLabel(row.statistic.ability) }} ·
+                  {{ getProficiencyRankLabel(row.statistic.proficiencyRank) }}
+                </small>
+              </div>
+              <div class="derived-statistics-card__value">
+                <strong>{{ formatSignedModifier(row.statistic.total) }}</strong>
+                <small>
+                  {{ getStatisticBreakdown(row.statistic) }}
+                </small>
+              </div>
+            </div>
+          </v-card-text>
+        </v-card>
         <v-card elevation="0"
           ><v-card-item :title="t('common.details')" /><v-card-text
             ><p v-if="character.gender !== 'NotSpecified'">
@@ -561,6 +612,29 @@ h1 {
 .hit-points-card__breakdown dd {
   margin: 0;
   font-weight: 700;
+}
+.derived-statistics-card__grid {
+  display: grid;
+  gap: 12px;
+}
+.derived-statistics-card__item {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid rgb(var(--v-theme-surface-variant));
+  padding-bottom: 10px;
+}
+.derived-statistics-card__item > div {
+  display: grid;
+  gap: 2px;
+}
+.derived-statistics-card__value {
+  text-align: right;
+}
+.derived-statistics-card__value strong {
+  color: rgb(var(--v-theme-primary));
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.5rem;
 }
 .proficiency-group + .proficiency-group {
   margin-top: 12px;
