@@ -130,6 +130,7 @@ import { isDruidSpellLoadoutComplete } from '@/features/character-creation/druid
 import { isWitchSpellLoadoutComplete } from '@/features/character-creation/witchSpellLoadout'
 import {
   isWizardSpellLoadoutComplete,
+  reconcileWizardSpellLoadoutForSchool,
   type WizardSpellOptions,
 } from '@/features/character-creation/wizardSpellLoadout'
 import {
@@ -706,7 +707,25 @@ function resetWizardSpellLoadout(): void {
 }
 function selectArcaneSchool(arcaneSchoolId: string | null): void {
   form.value.arcaneSchoolId = arcaneSchoolId
-  resetWizardSpellLoadout()
+  const school = arcaneSchools.value.find((item) => item.id === arcaneSchoolId) ?? null
+  const reconciled = reconcileWizardSpellLoadoutForSchool(school, {
+    spellbookCantripIds: form.value.wizardSpellbookCantripIds,
+    spellbookSpellIds: form.value.wizardSpellbookSpellIds,
+    curriculumCantripId: form.value.wizardCurriculumCantripId,
+    curriculumSpellIds: form.value.wizardCurriculumSpellIds,
+    preparedCantripIds: form.value.wizardPreparedCantripIds,
+    preparedSpellIds: form.value.wizardPreparedSpellIds,
+    preparedCurriculumCantripId: form.value.wizardPreparedCurriculumCantripId,
+    preparedCurriculumSpellId: form.value.wizardPreparedCurriculumSpellId,
+  })
+  form.value.wizardSpellbookCantripIds = reconciled.spellbookCantripIds
+  form.value.wizardSpellbookSpellIds = reconciled.spellbookSpellIds
+  form.value.wizardCurriculumCantripId = reconciled.curriculumCantripId
+  form.value.wizardCurriculumSpellIds = reconciled.curriculumSpellIds
+  form.value.wizardPreparedCantripIds = reconciled.preparedCantripIds
+  form.value.wizardPreparedSpellIds = reconciled.preparedSpellIds
+  form.value.wizardPreparedCurriculumCantripId = reconciled.preparedCurriculumCantripId
+  form.value.wizardPreparedCurriculumSpellId = reconciled.preparedCurriculumSpellId
 }
 function selectBardMuse(bardMuseId: string | null): void {
   form.value.bardMuseId = bardMuseId
@@ -730,7 +749,7 @@ function selectWitchPatron(witchPatronId: string | null): void {
     form.value.witchFamiliarSpellIds = []
     form.value.witchPreparedCantripIds = []
     form.value.witchPreparedSpellIds = nextPatron ? [null, null] : []
-    form.value.witchFocusHexId = null
+    if (!nextPatron) form.value.witchFocusHexId = null
   } else {
     form.value.witchPreparedSpellIds = form.value.witchPreparedSpellIds.map((id) =>
       id === previousPatronSpellId ? null : id,

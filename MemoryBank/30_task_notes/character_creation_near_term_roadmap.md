@@ -240,6 +240,8 @@ AC, attacks, damage, current/temporary HP и equipment bonuses не входят
 
 ### Приоритет 4 — spell flow остальных классов первого уровня
 
+**Статус:** завершён 20 июля 2026 года; выполнен [итоговый cross-review](priority_4_final_review.md). Общий Player Core spell catalog и spell flows Bard, Druid, Witch и Wizard реализованы с persistence, API, wizard/review/details и tests.
+
 **Цель.** Довести создание всех spellcasting-классов текущего Player Core baseline до того же уровня целостности, который уже достигнут для Cleric: персонаж имеет валидный стартовый spell loadout, а карточка объясняет источник каждого spell, slot и focus resource.
 
 **Проблема.** Bard, Druid, Witch и Wizard уже требуют обязательные class choices, но связанные с ними repertoire, preparation, spellbook, curriculum, order/familiar spells и focus resources остаются descriptors. Формально персонаж создаётся, но его основная классовая механика первого уровня не собрана.

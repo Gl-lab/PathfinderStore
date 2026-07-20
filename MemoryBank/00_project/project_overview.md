@@ -152,6 +152,7 @@ Seed users:
   - `GET /api/classes/rogue/rackets`;
   - `GET /api/classes/cleric/doctrines`;
   - `GET /api/classes/cleric/deities`;
+  - `GET /api/spells` с фильтрами tradition/rank/kind;
   - `GET /api/skills`;
   - `GET /api/character`;
   - `GET /api/character/{id}`;
@@ -161,7 +162,7 @@ Seed users:
 
 ### Текущий character creation focus
 
-Frontend MVP создания персонажа реализован на Vue 3. Текущий flow включает пол и постоянный аватар, полный Ancestry/Background/Class package, обязательные классовые выборы восьми классов Player Core baseline, четыре финальных свободных boosts и полный Cleric spell loadout первого уровня. Карточка серверно вычисляет maximum HP, Perception, Fortitude, Reflex, Will, modifiers всех general skills и сохранённых Lore entries с ability/proficiency breakdown. Background skill feat, class/ancestry feats, equipment, progression и остальные combat statistics пока возвращаются декларативно или ожидают отдельные подсистемы.
+Frontend MVP создания персонажа реализован на Vue 3. Текущий flow включает пол и постоянный аватар, полный Ancestry/Background/Class package, обязательные классовые выборы восьми классов Player Core baseline, четыре финальных свободных boosts и полный стартовый spell loadout Cleric, Bard, Druid, Witch и Wizard. Общий Player Core spell catalog фильтруется сервером по tradition, rank и kind; class flows сохраняют repertoire/preparation/spellbook, granted spells, отдельные slots и focus resources. Карточка серверно вычисляет maximum HP, Perception, Fortitude, Reflex, Will, modifiers всех general skills и сохранённых Lore entries с ability/proficiency breakdown. Background skill feat, class/ancestry feats, runtime casting, equipment, progression и остальные combat statistics пока возвращаются декларативно или ожидают отдельные подсистемы.
 
 Смотреть:
 

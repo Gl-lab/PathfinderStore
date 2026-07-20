@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import type { ArcaneSchool, CharacterClass, SpellDefinition } from './api'
-import { isWizardSpellLoadoutComplete } from './wizardSpellLoadout'
+import {
+  isWizardSpellLoadoutComplete,
+  reconcileWizardSpellLoadoutForSchool,
+} from './wizardSpellLoadout'
 
 const wizard = { id: 'class.wizard' } as CharacterClass
 const formalSchool = {
@@ -51,5 +54,25 @@ describe('Wizard spell loadout', () => {
       null,
       options,
     )).toBe(true)
+  })
+
+  it('preserves compatible base choices and clears only incompatible school choices', () => {
+    const result = reconcileWizardSpellLoadoutForSchool(formalSchool, {
+      spellbookCantripIds: options.cantrips.map((spell) => spell.id),
+      spellbookSpellIds: options.rankOneSpells.map((spell) => spell.id),
+      curriculumCantripId: 'spell.old_cantrip',
+      curriculumSpellIds: ['spell.force_barrage', 'spell.old_spell'],
+      preparedCantripIds: options.cantrips.slice(0, 5).map((spell) => spell.id),
+      preparedSpellIds: ['spell.0', 'spell.5'],
+      preparedCurriculumCantripId: 'spell.telekinetic_projectile',
+      preparedCurriculumSpellId: 'spell.old_spell',
+    })
+
+    expect(result.spellbookCantripIds).toHaveLength(10)
+    expect(result.spellbookSpellIds).toHaveLength(5)
+    expect(result.preparedSpellIds).toEqual(['spell.0', null])
+    expect(result.curriculumSpellIds).toEqual(['spell.force_barrage'])
+    expect(result.preparedCurriculumCantripId).toBe('spell.telekinetic_projectile')
+    expect(result.preparedCurriculumSpellId).toBeNull()
   })
 })

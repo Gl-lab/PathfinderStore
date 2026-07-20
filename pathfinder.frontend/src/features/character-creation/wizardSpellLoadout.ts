@@ -5,6 +5,54 @@ export interface WizardSpellOptions {
   rankOneSpells: SpellDefinition[]
 }
 
+export interface WizardSpellLoadoutState {
+  spellbookCantripIds: string[]
+  spellbookSpellIds: string[]
+  curriculumCantripId: string | null
+  curriculumSpellIds: string[]
+  preparedCantripIds: string[]
+  preparedSpellIds: (string | null)[]
+  preparedCurriculumCantripId: string | null
+  preparedCurriculumSpellId: string | null
+}
+
+export function reconcileWizardSpellLoadoutForSchool(
+  school: ArcaneSchool | null,
+  state: WizardSpellLoadoutState,
+): WizardSpellLoadoutState {
+  const baseSpellCount = school?.hasCurriculum ? 5 : 6
+  const spellbookSpellIds = state.spellbookSpellIds.slice(0, baseSpellCount)
+  const knownSpellIds = new Set(spellbookSpellIds)
+  const knownCantripIds = new Set(state.spellbookCantripIds)
+  const curriculumCantripIds = new Set(
+    school?.curriculumSpells.filter((spell) => spell.rank === 0).map((spell) => spell.id) ?? [],
+  )
+  const curriculumSpellIds = new Set(
+    school?.curriculumSpells.filter((spell) => spell.rank === 1).map((spell) => spell.id) ?? [],
+  )
+
+  return {
+    spellbookCantripIds: [...state.spellbookCantripIds],
+    spellbookSpellIds,
+    curriculumCantripId: state.curriculumCantripId && curriculumCantripIds.has(state.curriculumCantripId)
+      ? state.curriculumCantripId
+      : null,
+    curriculumSpellIds: state.curriculumSpellIds
+      .filter((id) => curriculumSpellIds.has(id))
+      .slice(0, 2),
+    preparedCantripIds: state.preparedCantripIds.filter((id) => knownCantripIds.has(id)),
+    preparedSpellIds: state.preparedSpellIds.map((id) => id && knownSpellIds.has(id) ? id : null),
+    preparedCurriculumCantripId: state.preparedCurriculumCantripId
+      && curriculumCantripIds.has(state.preparedCurriculumCantripId)
+      ? state.preparedCurriculumCantripId
+      : null,
+    preparedCurriculumSpellId: state.preparedCurriculumSpellId
+      && curriculumSpellIds.has(state.preparedCurriculumSpellId)
+      ? state.preparedCurriculumSpellId
+      : null,
+  }
+}
+
 export function isWizardSpellLoadoutComplete(
   characterClass: CharacterClass | null,
   school: ArcaneSchool | null,
