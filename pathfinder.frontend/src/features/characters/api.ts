@@ -329,6 +329,11 @@ export interface CharacterTraining {
     keyAbility: AbilityCode
     sourceGrantId: string
   }[]
+  deferredFeatGrants: {
+    featId: string
+    targetId: string
+    reason: 'ReplacementChoiceRequired'
+  }[]
 }
 
 export interface Character {

@@ -6,6 +6,14 @@ public sealed class CharacterTrainingDto
 {
     public IReadOnlyList<CharacterSkillTrainingDto> Skills { get; set; } = [];
     public IReadOnlyList<CharacterLoreTrainingDto> Lore { get; set; } = [];
+    public IReadOnlyList<DeferredFeatTrainingGrantDto> DeferredFeatGrants { get; set; } = [];
+}
+
+public sealed class DeferredFeatTrainingGrantDto
+{
+    public string FeatId { get; set; } = String.Empty;
+    public string TargetId { get; set; } = String.Empty;
+    public string Reason { get; set; } = String.Empty;
 }
 
 public sealed class CharacterSkillTrainingDto

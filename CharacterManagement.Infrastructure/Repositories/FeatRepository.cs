@@ -132,10 +132,10 @@ public sealed class FeatRepository : IFeatRepository
     {
         return
         [
-            ClassFeat( "feat.bardic_lore", "Bardic Lore", 100, "Bard", "enigma muse", FeatDependencyType.SkillCatalog, FeatDependencyType.LoreCatalog ),
+            ClassFeat( "feat.bardic_lore", "Bardic Lore", 100, "Bard", "enigma muse", FeatDependencyType.ProficiencyRules ),
             ClassFeat( "feat.hymn_of_healing", "Hymn of Healing", 101, "Bard", dependencies: [ FeatDependencyType.FocusSpellRules ] ),
             ClassFeat( "feat.lingering_composition", "Lingering Composition", 101, "Bard", "maestro muse", FeatDependencyType.FocusSpellRules ),
-            ClassFeat( "feat.martial_performance", "Martial Performance", 101, "Bard", "warrior muse", FeatDependencyType.WeaponCatalog, FeatDependencyType.ProficiencyRules ),
+            ClassFeat( "feat.martial_performance", "Martial Performance", 101, "Bard", "warrior muse", FeatDependencyType.Spellcasting, FeatDependencyType.CombatRules ),
             ClassFeat( "feat.versatile_performance", "Versatile Performance", 101, "Bard", "polymath muse", FeatDependencyType.SkillCatalog ),
             ClassFeat( "feat.well_versed", "Well-Versed", 101, "Bard", dependencies: [ FeatDependencyType.ConditionRules ] ),
             ClassFeat( "feat.deadly_simplicity", "Deadly Simplicity", 113, "Cleric", "Deity with a simple or unarmed favored weapon; trained with that weapon.", FeatDependencyType.WeaponCatalog, FeatDependencyType.CombatRules ),

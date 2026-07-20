@@ -11,7 +11,9 @@ public static class CharacterSkillModifiersDtoMapper
     public static CharacterSkillModifiersDto Map(
         DraftCharacter character,
         ISkillRepository? skillRepository,
-        int characterLevel )
+        int characterLevel,
+        IReadOnlyList<TrainedSkill>? effectiveSkills = null,
+        IReadOnlyList<TrainedLore>? effectiveLore = null )
     {
         ArgumentNullException.ThrowIfNull( character );
 
@@ -20,7 +22,7 @@ public static class CharacterSkillModifiersDtoMapper
             throw new InvalidOperationException( "Skill repository is required to map skill modifiers." );
         }
 
-        IReadOnlyDictionary<string, TrainedSkill> trainedSkills = character.TrainedSkills
+        IReadOnlyDictionary<string, TrainedSkill> trainedSkills = ( effectiveSkills ?? character.TrainedSkills )
             .ToDictionary( training => training.SkillId, StringComparer.Ordinal );
 
         return new CharacterSkillModifiersDto
@@ -34,7 +36,7 @@ public static class CharacterSkillModifiersDtoMapper
                     trainedSkills,
                     characterLevel ) )
                 .ToArray(),
-            Lore = character.TrainedLore
+            Lore = ( effectiveLore ?? character.TrainedLore )
                 .OrderBy( lore => lore.Name, StringComparer.Ordinal )
                 .Select( lore => Map( character, lore, characterLevel ) )
                 .ToArray(),

@@ -348,6 +348,18 @@ onMounted(load)
             </v-list>
           </v-card-text
         ></v-card
+        ><v-card v-if="character.training.deferredFeatGrants.length" elevation="0"
+          ><v-card-item :title="t('feats.deferredTrainingTitle')" /><v-card-text>
+            <v-alert
+              v-for="grant in character.training.deferredFeatGrants"
+              :key="`${grant.featId}-${grant.targetId}`"
+              type="warning"
+              variant="tonal"
+            >
+              {{ t('feats.replacementRequired', { feat: formatChoiceId(grant.featId), target: formatChoiceId(grant.targetId) }) }}
+            </v-alert>
+          </v-card-text
+        ></v-card
         ><v-card v-if="skillModifierSections.length" elevation="0" class="skill-modifiers-card">
           <v-card-item :title="t('statistics.skillsAndLore')" />
           <v-card-text>

@@ -59,7 +59,7 @@ public sealed class AncestryRepository : IAncestryRepository
             ancestryFeats:
             [
                 Feat( "dwarf.dwarven_doughtiness", "Dwarven Doughtiness", 43, "Reduces frightened at end of turn.", [ AncestryDependencyType.ConditionRules ] ),
-                Feat( "dwarf.dwarven_lore", "Dwarven Lore", 43, "Grants Crafting, Religion, and Dwarf Lore.", [ AncestryDependencyType.SkillCatalog, AncestryDependencyType.LoreCatalog ], AncestryEffectKind.DeferredChoice ),
+                Feat( "dwarf.dwarven_lore", "Dwarven Lore", 43, "Grants Crafting, Religion, and Dwarf Lore.", [ AncestryDependencyType.ProficiencyRules ] ),
                 Feat( "dwarf.dwarven_weapon_familiarity", "Dwarven Weapon Familiarity", 44, "Grants dwarf weapon familiarity.", [ AncestryDependencyType.WeaponCatalog, AncestryDependencyType.ProficiencyRules ] ),
                 Feat( "dwarf.mountain_strategy", "Mountain Strategy", 44, "Adds damage against specified creature traits.", [ AncestryDependencyType.CombatRules ] ),
                 Feat( "dwarf.rock_runner", "Rock Runner", 44, "Improves movement over rocky terrain.", [ AncestryDependencyType.MovementRules ] ),
@@ -99,7 +99,7 @@ public sealed class AncestryRepository : IAncestryRepository
             ancestryFeats:
             [
                 Feat( "elf.ancestral_longevity", "Ancestral Longevity", 47, "Temporarily gains a trained skill.", [ AncestryDependencyType.SkillCatalog, AncestryDependencyType.RuleEngine ], AncestryEffectKind.DeferredChoice ),
-                Feat( "elf.elven_lore", "Elven Lore", 47, "Grants skills and Elven Lore.", [ AncestryDependencyType.SkillCatalog, AncestryDependencyType.LoreCatalog ], AncestryEffectKind.DeferredChoice ),
+                Feat( "elf.elven_lore", "Elven Lore", 47, "Grants skills and Elven Lore.", [ AncestryDependencyType.ProficiencyRules ] ),
                 Feat( "elf.elven_weapon_familiarity", "Elven Weapon Familiarity", 48, "Grants elven weapon familiarity.", [ AncestryDependencyType.WeaponCatalog, AncestryDependencyType.ProficiencyRules ] ),
                 Feat( "elf.forlorn", "Forlorn", 48, "Changes emotion and mental effect outcomes.", [ AncestryDependencyType.ConditionRules ] ),
                 Feat( "elf.nimble_elf", "Nimble Elf", 48, "Increases Speed.", [ AncestryDependencyType.MovementRules ] ),
@@ -177,7 +177,7 @@ public sealed class AncestryRepository : IAncestryRepository
             ancestryFeats:
             [
                 Feat( "goblin.burn_it", "Burn It!", 55, "Increases fire damage.", [ AncestryDependencyType.Spellcasting, AncestryDependencyType.CombatRules ] ),
-                Feat( "goblin.goblin_lore", "Goblin Lore", 55, "Grants skills and Goblin Lore.", [ AncestryDependencyType.SkillCatalog, AncestryDependencyType.LoreCatalog ], AncestryEffectKind.DeferredChoice ),
+                Feat( "goblin.goblin_lore", "Goblin Lore", 55, "Grants skills and Goblin Lore.", [ AncestryDependencyType.ProficiencyRules ] ),
                 Feat( "goblin.goblin_scuttle", "Goblin Scuttle", 56, "Reaction that grants a Step.", [ AncestryDependencyType.MovementRules, AncestryDependencyType.RuleEngine ] ),
                 Feat( "goblin.goblin_song", "Goblin Song", 56, "Performance action that penalizes targets.", [ AncestryDependencyType.SkillCatalog, AncestryDependencyType.ConditionRules ] ),
                 Feat( "goblin.goblin_weapon_familiarity", "Goblin Weapon Familiarity", 56, "Grants goblin weapon familiarity.", [ AncestryDependencyType.WeaponCatalog, AncestryDependencyType.ProficiencyRules ] ),
@@ -218,10 +218,10 @@ public sealed class AncestryRepository : IAncestryRepository
             ancestryFeats:
             [
                 Feat( "halfling.distracting_shadows", "Distracting Shadows", 60, "Uses larger creatures as cover.", [ AncestryDependencyType.SkillCatalog, AncestryDependencyType.ConditionRules ] ),
-                Feat( "halfling.halfling_lore", "Halfling Lore", 60, "Grants skills and Halfling Lore.", [ AncestryDependencyType.SkillCatalog, AncestryDependencyType.LoreCatalog ], AncestryEffectKind.DeferredChoice ),
+                Feat( "halfling.halfling_lore", "Halfling Lore", 60, "Grants skills and Halfling Lore.", [ AncestryDependencyType.ProficiencyRules ] ),
                 Feat( "halfling.halfling_luck", "Halfling Luck", 60, "Rerolls a failed skill check or save.", [ AncestryDependencyType.RuleEngine ], incompatibleChoiceIds: [ "halfling.jinxed" ] ),
                 Feat( "halfling.halfling_weapon_familiarity", "Halfling Weapon Familiarity", 60, "Grants halfling weapon familiarity.", [ AncestryDependencyType.WeaponCatalog, AncestryDependencyType.ProficiencyRules ] ),
-                Feat( "halfling.prairie_rider", "Prairie Rider", 60, "Grants Nature and mount benefits.", [ AncestryDependencyType.SkillCatalog, AncestryDependencyType.AnimalCompanionRules ] ),
+                Feat( "halfling.prairie_rider", "Prairie Rider", 60, "Grants Nature and mount benefits.", [ AncestryDependencyType.AnimalCompanionRules ] ),
                 Feat( "halfling.sure_feet", "Sure Feet", 60, "Improves Balance and Climb outcomes.", [ AncestryDependencyType.MovementRules, AncestryDependencyType.ConditionRules ] )
             ] );
     }

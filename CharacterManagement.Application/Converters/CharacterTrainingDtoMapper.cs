@@ -2,6 +2,7 @@ using Pathfinder.CharacterManagement.Application.DTO;
 using Pathfinder.CharacterManagement.Application.Repositories;
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.CharacterManagement.Domain.Rules.Training;
+using Pathfinder.CharacterManagement.Domain.Rules.Feats;
 
 namespace Pathfinder.CharacterManagement.Application.Converters;
 
@@ -9,21 +10,24 @@ public static class CharacterTrainingDtoMapper
 {
     public static CharacterTrainingDto Map(
         DraftCharacter character,
-        ISkillRepository? skillRepository )
+        ISkillRepository? skillRepository,
+        FeatTrainingResult? featTraining = null )
     {
         ArgumentNullException.ThrowIfNull( character );
 
-        if ( character.TrainedSkills.Count > 0 && skillRepository is null )
+        IReadOnlyList<TrainedSkill> trainedSkills = featTraining?.Skills ?? character.TrainedSkills;
+        IReadOnlyList<TrainedLore> trainedLore = featTraining?.Lore ?? character.TrainedLore;
+        if ( trainedSkills.Count > 0 && skillRepository is null )
         {
             throw new InvalidOperationException( "Skill repository is required to map trained skills." );
         }
 
         return new CharacterTrainingDto
         {
-            Skills = character.TrainedSkills
+            Skills = trainedSkills
                 .Select( training => Map( training, skillRepository ) )
                 .ToList(),
-            Lore = character.TrainedLore
+            Lore = trainedLore
                 .Select( training => new CharacterLoreTrainingDto
                 {
                     Id = training.LoreId,
@@ -32,6 +36,14 @@ public static class CharacterTrainingDtoMapper
                     SourceGrantId = training.SourceGrantId,
                 } )
                 .ToList(),
+            DeferredFeatGrants = featTraining?.DeferredGrants
+                .Select( grant => new DeferredFeatTrainingGrantDto
+                {
+                    FeatId = grant.FeatId,
+                    TargetId = grant.TargetId,
+                    Reason = grant.Reason.ToString(),
+                } )
+                .ToArray() ?? [],
         };
     }
 

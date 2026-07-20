@@ -120,6 +120,24 @@ public sealed class CharacterDetailsDtoMapper
                     .Concat( rogueRacket?.ProficiencyGrants ?? [] )
                     .Concat( clericDoctrine?.ProficiencyGrants ?? [] )
                     .Concat( deity?.ProficiencyGrants ?? [] ) );
+        IReadOnlyCollection<CharacterFeat> characterFeats = _featRepository is null
+            ? []
+            : CharacterFeatResolver.Resolve(
+                draftCharacter,
+                background,
+                characterClass,
+                bardMuse,
+                druidicOrder,
+                clericDoctrine,
+                arcaneSchool,
+                arcaneThesis,
+                _featRepository.GetAll() );
+        FeatTrainingResult? featTraining = _featRepository is null
+            ? null
+            : FeatTrainingResolver.Resolve(
+                characterFeats,
+                draftCharacter.TrainedSkills,
+                draftCharacter.TrainedLore );
 
         return new CharacterDto
         {
@@ -168,26 +186,15 @@ public sealed class CharacterDetailsDtoMapper
                     ancestry,
                     characterClass,
                     effectiveProficiencies,
-                    _skillRepository ),
-            Training = CharacterTrainingDtoMapper.Map( draftCharacter, _skillRepository ),
+                    _skillRepository,
+                    featTraining ),
+            Training = CharacterTrainingDtoMapper.Map( draftCharacter, _skillRepository, featTraining ),
             Proficiencies = characterClass is null
                 ? []
                 : CharacterClassDtoMapper.MapProficiencies( effectiveProficiencies ),
-            Feats = _featRepository is null
-                ? []
-                : CharacterFeatResolver
-                    .Resolve(
-                        draftCharacter,
-                        background,
-                        characterClass,
-                        bardMuse,
-                        druidicOrder,
-                        clericDoctrine,
-                        arcaneSchool,
-                        arcaneThesis,
-                        _featRepository.GetAll() )
-                    .Select( CharacterFeatDtoMapper.Map )
-                    .ToArray(),
+            Feats = characterFeats
+                .Select( CharacterFeatDtoMapper.Map )
+                .ToArray(),
             Characteristics = new GroupCharacteristicDto
             {
                 Strength = Convert( draftCharacter.AbilityScores.Strength ),

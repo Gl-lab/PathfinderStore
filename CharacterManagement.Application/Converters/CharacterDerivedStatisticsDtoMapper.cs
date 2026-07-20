@@ -2,6 +2,7 @@ using Pathfinder.CharacterManagement.Application.DTO;
 using Pathfinder.CharacterManagement.Application.Repositories;
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.CharacterManagement.Domain.Rules.Statistics;
+using Pathfinder.CharacterManagement.Domain.Rules.Feats;
 
 namespace Pathfinder.CharacterManagement.Application.Converters;
 
@@ -14,7 +15,8 @@ public static class CharacterDerivedStatisticsDtoMapper
         Ancestry ancestry,
         CharacterClass characterClass,
         IReadOnlyList<EffectiveProficiency> proficiencies,
-        ISkillRepository? skillRepository )
+        ISkillRepository? skillRepository,
+        FeatTrainingResult? featTraining = null )
     {
         ArgumentNullException.ThrowIfNull( proficiencies );
 
@@ -58,7 +60,9 @@ public static class CharacterDerivedStatisticsDtoMapper
             SkillModifiers = CharacterSkillModifiersDtoMapper.Map(
                 character,
                 skillRepository,
-                CharacterLevel ),
+                CharacterLevel,
+                featTraining?.Skills,
+                featTraining?.Lore ),
         };
     }
 
