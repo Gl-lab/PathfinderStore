@@ -1,0 +1,4 @@
+interface:
+  display_name: "Generate Pathfinder Avatar"
+  short_description: "Generate and connect the next Pathfinder avatar"
+  default_prompt: "Use $generate-pathfinder-avatar to generate the next missing Pathfinder character avatar."

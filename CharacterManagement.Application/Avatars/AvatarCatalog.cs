@@ -148,6 +148,20 @@ public sealed class AvatarCatalog : IAvatarCatalog
             AncestryType.Dwarf,
             "class.ranger",
             CharacterGender.Female,
+            Variant: 2 ),
+        new AvatarDefinition(
+            AvatarId.Create( "avatar.pc.000021" ),
+            "/avatars/pc/000021.webp",
+            AncestryType.Dwarf,
+            "class.rogue",
+            CharacterGender.Male,
+            Variant: 1 ),
+        new AvatarDefinition(
+            AvatarId.Create( "avatar.pc.000022" ),
+            "/avatars/pc/000022.webp",
+            AncestryType.Dwarf,
+            "class.rogue",
+            CharacterGender.Male,
             Variant: 2 )
     ];
 
