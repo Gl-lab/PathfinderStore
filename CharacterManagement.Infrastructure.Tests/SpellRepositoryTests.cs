@@ -7,16 +7,16 @@ namespace CharacterManagement.Infrastructure.Tests;
 public sealed class SpellRepositoryTests
 {
     [Fact]
-    public void GetAll_ReturnsCompleteUniqueLevelOneClericCatalog()
+    public void GetAll_ReturnsCompleteUniquePlayerCoreLevelOneCatalog()
     {
         SpellRepository repository = new SpellRepository();
 
         IReadOnlyCollection<SpellDefinition> spells = repository.GetAll();
 
-        Assert.Equal( 94, spells.Count );
-        Assert.Equal( 94, spells.Select( spell => spell.Id ).Distinct( StringComparer.Ordinal ).Count() );
-        Assert.Equal( 16, spells.Count( spell => spell.Kind == SpellKind.Cantrip ) );
-        Assert.Equal( 39, spells.Count( spell => spell.Kind == SpellKind.Spell ) );
+        Assert.Equal( 122, spells.Count );
+        Assert.Equal( 122, spells.Select( spell => spell.Id ).Distinct( StringComparer.Ordinal ).Count() );
+        Assert.Equal( 25, spells.Count( spell => spell.Kind == SpellKind.Cantrip ) );
+        Assert.Equal( 58, spells.Count( spell => spell.Kind == SpellKind.Spell ) );
         Assert.Equal( 39, spells.Count( spell => spell.Kind == SpellKind.Focus ) );
         Assert.All( spells, spell => Assert.Equal( 1, spell.Rank ) );
     }
@@ -65,6 +65,31 @@ public sealed class SpellRepositoryTests
         Assert.DoesNotContain( repository.GetAll(), spell => spell.Id == "spell.bullhorn" );
         Assert.DoesNotContain( repository.GetAll(), spell => spell.Id == "spell.haunting_hymn" );
         Assert.DoesNotContain( repository.GetAll(), spell => spell.Id == "spell.concordant_choir" );
+    }
+
+    [Theory]
+    [InlineData( SpellTradition.Arcane, SpellKind.Cantrip, 19 )]
+    [InlineData( SpellTradition.Arcane, SpellKind.Spell, 42 )]
+    [InlineData( SpellTradition.Divine, SpellKind.Cantrip, 16 )]
+    [InlineData( SpellTradition.Divine, SpellKind.Spell, 23 )]
+    [InlineData( SpellTradition.Occult, SpellKind.Cantrip, 16 )]
+    [InlineData( SpellTradition.Occult, SpellKind.Spell, 33 )]
+    [InlineData( SpellTradition.Primal, SpellKind.Cantrip, 15 )]
+    [InlineData( SpellTradition.Primal, SpellKind.Spell, 31 )]
+    public void GetAll_ContainsExpectedCommonTraditionOptions(
+        SpellTradition tradition,
+        SpellKind kind,
+        int expectedCount )
+    {
+        SpellRepository repository = new SpellRepository();
+
+        IReadOnlyList<SpellDefinition> spells = SpellCatalogResolver.ResolveCommonOptions(
+            repository.GetAll(),
+            tradition,
+            1,
+            kind );
+
+        Assert.Equal( expectedCount, spells.Count );
     }
 
     [Fact]
