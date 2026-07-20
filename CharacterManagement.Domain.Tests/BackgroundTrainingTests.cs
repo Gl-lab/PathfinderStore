@@ -25,6 +25,28 @@ public sealed class BackgroundTrainingTests
         Assert.Equal( "lore.circus", lore.LoreId );
         Assert.Equal( "Circus Lore", lore.Name );
         Assert.Equal( "background.test.lore", lore.SourceGrantId );
+        Assert.Equal( "skill_feat.test", character.SelectedBackgroundSkillFeatId );
+    }
+
+    [Fact]
+    public void SetBackgroundPackage_SkillFeatChoice_PersistsSelectedCatalogId()
+    {
+        DraftCharacter character = CreateCharacter();
+        Background background = CreateSkillFeatChoiceBackground();
+
+        character.SetBackgroundPackage(
+            background,
+            AbilityType.Dexterity,
+            AbilityType.Intelligence,
+            [
+                new BackgroundTrainingChoice(
+                    "background.martial.feat",
+                    "skill_feat.quick_jump",
+                    null ),
+            ],
+            CreateSkills() );
+
+        Assert.Equal( "skill_feat.quick_jump", character.SelectedBackgroundSkillFeatId );
     }
 
     [Fact]
@@ -257,6 +279,35 @@ public sealed class BackgroundTrainingTests
                     BackgroundGrantKind.SkillFeat,
                     "skill_feat.test",
                     "Test Feat" ),
+            ] );
+    }
+
+    private static Background CreateSkillFeatChoiceBackground()
+    {
+        return new Background(
+            "background.martial",
+            "Martial Disciple",
+            SourceReference.Unknown,
+            [ AbilityType.Strength, AbilityType.Dexterity ],
+            1,
+            [
+                FixedGrant(
+                    "background.martial.skill",
+                    BackgroundGrantKind.SkillTraining,
+                    "skill.acrobatics",
+                    "Acrobatics" ),
+                FixedGrant(
+                    "background.martial.lore",
+                    BackgroundGrantKind.LoreTraining,
+                    "lore.warfare",
+                    "Warfare Lore" ),
+                ChoiceGrant(
+                    "background.martial.feat",
+                    BackgroundGrantKind.SkillFeat,
+                    [
+                        new BackgroundGrantOption( "skill_feat.cat_fall", "Cat Fall" ),
+                        new BackgroundGrantOption( "skill_feat.quick_jump", "Quick Jump" ),
+                    ] ),
             ] );
     }
 

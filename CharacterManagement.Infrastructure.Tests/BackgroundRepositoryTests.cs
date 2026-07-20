@@ -99,7 +99,8 @@ public sealed class BackgroundRepositoryTests
                 .Where( grant =>
                     grant.RequiresChoice &&
                     ( grant.Kind == BackgroundGrantKind.SkillTraining ||
-                      grant.Kind == BackgroundGrantKind.LoreTraining ) )
+                      grant.Kind == BackgroundGrantKind.LoreTraining ||
+                      grant.Kind == BackgroundGrantKind.SkillFeat ) )
                 .Select( grant => grant.AllowsCustomLore
                     ? new BackgroundTrainingChoice( grant.Id, null, "Test Terrain" )
                     : new BackgroundTrainingChoice( grant.Id, grant.Options.First().Id, null ) )
@@ -112,6 +113,7 @@ public sealed class BackgroundRepositoryTests
 
             Assert.Single( result.Skills );
             Assert.Single( result.Lore );
+            Assert.False( String.IsNullOrWhiteSpace( result.SkillFeatId ) );
         }
     }
 }

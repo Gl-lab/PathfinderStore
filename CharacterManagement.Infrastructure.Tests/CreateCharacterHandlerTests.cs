@@ -77,6 +77,7 @@ public sealed class CreateCharacterHandlerTests
         Assert.Equal( character.BackgroundId, savedCharacter.SelectedBackgroundId );
         Assert.Equal( character.BackgroundRestrictedBoost, savedCharacter.SelectedBackgroundRestrictedBoost );
         Assert.Equal( character.BackgroundFreeBoost, savedCharacter.SelectedBackgroundFreeBoost );
+        Assert.Equal( "skill_feat.steady_balance", savedCharacter.SelectedBackgroundSkillFeatId );
         Assert.Equal( character.ClassId, savedCharacter.SelectedClassId );
         Assert.Equal( character.ClassKeyAbility, savedCharacter.SelectedClassKeyAbility );
         Assert.Equal( character.FinalFreeBoosts, savedCharacter.AppliedFinalFreeBoosts );

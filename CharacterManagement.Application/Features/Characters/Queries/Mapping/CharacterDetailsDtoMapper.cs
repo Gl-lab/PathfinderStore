@@ -3,6 +3,7 @@ using Pathfinder.CharacterManagement.Application.Avatars;
 using Pathfinder.CharacterManagement.Application.DTO;
 using Pathfinder.CharacterManagement.Application.Repositories;
 using Pathfinder.CharacterManagement.Domain.Entity;
+using Pathfinder.CharacterManagement.Domain.Rules.Feats;
 using Pathfinder.CharacterManagement.Domain.Rules.Spells;
 
 namespace Pathfinder.CharacterManagement.Application.Features.Characters.Queries.Mapping;
@@ -25,6 +26,7 @@ public sealed class CharacterDetailsDtoMapper
     private readonly IClericDomainRepository? _clericDomainRepository;
     private readonly ISpellRepository? _spellRepository;
     private readonly IAvatarCatalog? _avatarCatalog;
+    private readonly IFeatRepository? _featRepository;
 
     public CharacterDetailsDtoMapper(
         IAncestryRepository? ancestryRepository = null,
@@ -42,7 +44,8 @@ public sealed class CharacterDetailsDtoMapper
         IArcaneThesisRepository? arcaneThesisRepository = null,
         IClericDomainRepository? clericDomainRepository = null,
         ISpellRepository? spellRepository = null,
-        IAvatarCatalog? avatarCatalog = null )
+        IAvatarCatalog? avatarCatalog = null,
+        IFeatRepository? featRepository = null )
     {
         _ancestryRepository = ancestryRepository;
         _backgroundRepository = backgroundRepository;
@@ -60,6 +63,7 @@ public sealed class CharacterDetailsDtoMapper
         _clericDomainRepository = clericDomainRepository;
         _spellRepository = spellRepository;
         _avatarCatalog = avatarCatalog;
+        _featRepository = featRepository;
     }
 
     public DraftCharacter Convert( CharacterDto character ) => throw new NotSupportedException();
@@ -169,6 +173,15 @@ public sealed class CharacterDetailsDtoMapper
             Proficiencies = characterClass is null
                 ? []
                 : CharacterClassDtoMapper.MapProficiencies( effectiveProficiencies ),
+            Feats = _featRepository is null
+                ? []
+                : CharacterFeatResolver
+                    .ResolveAncestryAndBackground(
+                        draftCharacter,
+                        background,
+                        _featRepository.GetAll() )
+                    .Select( CharacterFeatDtoMapper.Map )
+                    .ToArray(),
             Characteristics = new GroupCharacteristicDto
             {
                 Strength = Convert( draftCharacter.AbilityScores.Strength ),

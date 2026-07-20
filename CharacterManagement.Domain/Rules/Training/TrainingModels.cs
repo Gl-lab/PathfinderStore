@@ -16,7 +16,8 @@ public sealed record TrainedLore(
 
 public sealed record BackgroundTrainingResult(
     IReadOnlyList<TrainedSkill> Skills,
-    IReadOnlyList<TrainedLore> Lore );
+    IReadOnlyList<TrainedLore> Lore,
+    string? SkillFeatId );
 
 public sealed record RogueTrainingChoice(
     string GrantId,

@@ -17,6 +17,7 @@ import {
   getCharacter,
   setCharacterGender,
   type Character,
+  type CharacterFeat,
   type CharacterProficiencyStatistic,
   type ProficiencyCategory,
   type ProficiencyRank,
@@ -107,6 +108,20 @@ function getStatisticBreakdown(statistic: CharacterProficiencyStatistic): string
     'statistics.breakdown',
     formatStatisticBreakdown(statistic, formatSignedModifier),
   )
+}
+function getFeatSubtitle(feat: CharacterFeat): string {
+  const deferred = feat.deferredDependencies.length
+    ? t('feats.deferred', { dependencies: feat.deferredDependencies.join(', ') })
+    : t('feats.resolved')
+
+  return [
+    t(`feats.categories.${feat.category}`),
+    t(`feats.acquisition.${feat.acquisitionType}`),
+    t(`feats.sources.${feat.sourceType}`),
+    formatChoiceId(feat.sourceId),
+    `${feat.source.book}, ${t('feats.page', { page: feat.source.page })}`,
+    deferred,
+  ].join(' · ')
 }
 async function load(): Promise<void> {
   isLoading.value = true
@@ -317,6 +332,20 @@ onMounted(load)
                 {{ grant.name }}
               </li>
             </ul>
+          </v-card-text
+        ></v-card
+        ><v-card v-if="character.feats.length" elevation="0"
+          ><v-card-item :title="t('feats.title')" /><v-card-text>
+            <v-list density="compact">
+              <v-list-item
+                v-for="feat in character.feats"
+                :key="`${feat.acquisitionType}-${feat.sourceId}-${feat.id}`"
+                :title="feat.name"
+                :subtitle="getFeatSubtitle(feat)"
+              >
+                <template #append><v-chip size="small">{{ t(`feats.categories.${feat.category}`) }}</v-chip></template>
+              </v-list-item>
+            </v-list>
           </v-card-text
         ></v-card
         ><v-card v-if="skillModifierSections.length" elevation="0" class="skill-modifiers-card">

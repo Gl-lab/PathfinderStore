@@ -27,6 +27,7 @@ export interface Ancestry {
   grantedRules: GrantedRule[]
   heritages: Heritage[]
   ancestryFeats: AncestryFeat[]
+  source?: { book: string; page: number }
 }
 
 export type VisionType = 'None' | 'LowLight' | 'Darkvision'
@@ -47,6 +48,7 @@ export interface Heritage {
   incompatibleChoiceIds: string[]
   effects: AncestryEffect[]
   deferredDependencies: string[]
+  source?: { book: string; page: number }
 }
 
 export interface AncestryFeat extends Heritage {
@@ -97,6 +99,22 @@ export interface Background {
   restrictedBoostOptions: AbilityCode[]
   freeBoostCount: number
   grants: BackgroundGrant[]
+  source?: { book: string; page: number }
+}
+
+export type FeatCategory = 'Ancestry' | 'Skill' | 'Class'
+
+export interface FeatDefinition {
+  id: string
+  name: string
+  category: FeatCategory
+  level: number
+  traits: string[]
+  rarity: 'Common' | 'Uncommon'
+  prerequisites: string[]
+  summary: string
+  deferredDependencies: string[]
+  source: { book: string; page: number }
 }
 
 export type SpellTradition = 'Arcane' | 'Divine' | 'Occult' | 'Primal'
@@ -500,6 +518,18 @@ export async function getSpellOptions(
 
 export async function getSkills(): Promise<Skill[]> {
   return (await http.get<Skill[]>('/api/skills')).data
+}
+
+export async function getFeatOptions(
+  category: FeatCategory,
+  level: number,
+  requiredTrait?: string,
+): Promise<FeatDefinition[]> {
+  return (
+    await http.get<FeatDefinition[]>('/api/feats', {
+      params: { category, level, requiredTrait },
+    })
+  ).data
 }
 
 export async function createCharacter(request: CreateCharacterRequest): Promise<void> {

@@ -23,6 +23,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public string? SelectedBackgroundId { get; private set; }
     public AbilityType? SelectedBackgroundRestrictedBoost { get; private set; }
     public AbilityType? SelectedBackgroundFreeBoost { get; private set; }
+    public string? SelectedBackgroundSkillFeatId { get; private set; }
     public string? SelectedClassId { get; private set; }
     public AbilityType? SelectedClassKeyAbility { get; private set; }
     public string? SelectedRogueRacketId { get; private set; }
@@ -329,6 +330,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         SelectedBackgroundId = background.Id;
         SelectedBackgroundRestrictedBoost = restrictedBoost;
         SelectedBackgroundFreeBoost = freeBoost;
+        SelectedBackgroundSkillFeatId = training.SkillFeatId;
         TrainedSkills = training.Skills.ToArray();
         TrainedLore = training.Lore.ToArray();
 
@@ -968,6 +970,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         SelectedBackgroundId = null;
         SelectedBackgroundRestrictedBoost = null;
         SelectedBackgroundFreeBoost = null;
+        SelectedBackgroundSkillFeatId = null;
         TrainedSkills = [];
         TrainedLore = [];
     }

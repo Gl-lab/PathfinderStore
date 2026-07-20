@@ -19,6 +19,7 @@ public class CharacterDto : BaseDto
     public CharacterDerivedStatisticsDto? DerivedStatistics { get; set; }
     public CharacterTrainingDto Training { get; set; } = new CharacterTrainingDto();
     public IReadOnlyList<ProficiencyDto> Proficiencies { get; set; } = [];
+    public IReadOnlyList<CharacterFeatDto> Feats { get; set; } = [];
     public virtual BackpackDto? Backpack { get; set; }
     public virtual GroupCharacteristicDto Characteristics { get; set; }
 }

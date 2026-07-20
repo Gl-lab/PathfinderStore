@@ -42,6 +42,7 @@ import {
   getDeities,
   getRogueRackets,
   getSkills,
+  getFeatOptions,
   type Ancestry,
   type Background,
   type BackgroundTrainingChoice,
@@ -67,6 +68,7 @@ import {
   type RogueRacket,
   type RogueTrainingChoice,
   type Skill,
+  type FeatDefinition,
 } from '@/features/character-creation/api'
 import {
   getBackgroundFreeBoostOptions,
@@ -174,6 +176,8 @@ const witchSpellOptionsByTradition = ref<Record<SpellTradition, WitchSpellOption
 })
 const wizardSpellOptions = ref<WizardSpellOptions>({ cantrips: [], rankOneSpells: [] })
 const skills = ref<Skill[]>([])
+const ancestryFeatOptions = ref<FeatDefinition[]>([])
+const skillFeatOptions = ref<FeatDefinition[]>([])
 const isLoadingCatalogs = ref(true)
 const isSubmitting = ref(false)
 const errorMessages = ref<string[]>([])
@@ -253,6 +257,18 @@ const selectedAncestryFeat = computed(
 const selectedBackground = computed(
   () => backgrounds.value.find((item) => item.id === form.value.backgroundId) ?? null,
 )
+const selectedAncestryFeatDefinition = computed(
+  () => ancestryFeatOptions.value.find((feat) => feat.id === form.value.ancestryFeatId) ?? null,
+)
+const selectedBackgroundFeatDefinition = computed(() => {
+  const grant = selectedBackground.value?.grants.find((item) => item.kind === 'SkillFeat')
+  if (!grant) return null
+
+  const featId = grant.requiresChoice
+    ? form.value.backgroundTrainingChoices.find((choice) => choice.grantId === grant.id)?.targetId
+    : grant.targetId
+  return skillFeatOptions.value.find((feat) => feat.id === featId) ?? null
+})
 const selectedCharacterClass = computed(
   () => characterClasses.value.find((item) => item.id === form.value.classId) ?? null,
 )
@@ -853,6 +869,24 @@ function getProficiencyCategoryLabel(category: ProficiencyCategory): string {
 function formatAbilities(types: AbilityCode[]): string {
   return types.map(getAbilityLabel).join(', ') || t('wizard.none')
 }
+function formatFeatReview(
+  feat: FeatDefinition,
+  acquisition: 'Selected' | 'Granted',
+  sourceLabel: string,
+): string {
+  const deferred = feat.deferredDependencies.length
+    ? t('feats.deferred', { dependencies: feat.deferredDependencies.join(', ') })
+    : t('feats.resolved')
+
+  return [
+    feat.name,
+    t(`feats.categories.${feat.category}`),
+    t(`feats.acquisition.${acquisition}`),
+    sourceLabel,
+    `${feat.source.book}, ${t('feats.page', { page: feat.source.page })}`,
+    deferred,
+  ].join(' · ')
+}
 function selectClericCantrips(spellIds: string[]): void {
   form.value.clericCantripIds = spellIds.slice(0, 5)
 }
@@ -1069,7 +1103,7 @@ async function loadCatalogs(): Promise<void> {
   isLoadingCatalogs.value = true
   errorMessages.value = []
   try {
-    const [ancestryCatalog, backgroundCatalog, classCatalog, racketCatalog, huntersEdgeCatalog, druidicOrderCatalog, bardMuseCatalog, witchPatronCatalog, arcaneSchoolCatalog, arcaneThesisCatalog, doctrineCatalog, deityCatalog, clericDomainCatalog, skillCatalog, arcaneCantripCatalog, arcaneRankOneSpellCatalog, divineCantripCatalog, divineRankOneSpellCatalog, occultCantripCatalog, occultRankOneSpellCatalog, primalCantripCatalog, primalRankOneSpellCatalog] = await Promise.all([
+    const [ancestryCatalog, backgroundCatalog, classCatalog, racketCatalog, huntersEdgeCatalog, druidicOrderCatalog, bardMuseCatalog, witchPatronCatalog, arcaneSchoolCatalog, arcaneThesisCatalog, doctrineCatalog, deityCatalog, clericDomainCatalog, skillCatalog, ancestryFeatCatalog, skillFeatCatalog, arcaneCantripCatalog, arcaneRankOneSpellCatalog, divineCantripCatalog, divineRankOneSpellCatalog, occultCantripCatalog, occultRankOneSpellCatalog, primalCantripCatalog, primalRankOneSpellCatalog] = await Promise.all([
       getAncestries(),
       getBackgrounds(),
       getCharacterClasses(),
@@ -1084,6 +1118,8 @@ async function loadCatalogs(): Promise<void> {
       getDeities(),
       getClericDomains(),
       getSkills(),
+      getFeatOptions('Ancestry', 1),
+      getFeatOptions('Skill', 1),
       getSpellOptions('Arcane', 1, 'Cantrip'),
       getSpellOptions('Arcane', 1, 'Spell'),
       getSpellOptions('Divine', 1, 'Cantrip'),
@@ -1107,6 +1143,8 @@ async function loadCatalogs(): Promise<void> {
     deities.value = deityCatalog
     clericDomains.value = clericDomainCatalog
     skills.value = skillCatalog
+    ancestryFeatOptions.value = ancestryFeatCatalog
+    skillFeatOptions.value = skillFeatCatalog
     bardSpellOptions.value = {
       cantrips: occultCantripCatalog,
       rankOneSpells: occultRankOneSpellCatalog,
@@ -1287,7 +1325,7 @@ watch(
               <h3>{{ t('wizard.backgroundTraining') }}</h3>
               <template v-for="grant in selectedBackground.grants" :key="grant.id">
                 <v-select
-                  v-if="grant.requiresChoice && !grant.allowsCustomLore && (grant.kind === 'SkillTraining' || grant.kind === 'LoreTraining')"
+                  v-if="grant.requiresChoice && !grant.allowsCustomLore"
                   :model-value="getBackgroundTrainingChoice(grant.id)?.targetId"
                   :items="grant.options"
                   item-title="name"
@@ -1910,7 +1948,7 @@ watch(
               :title="t('wizard.heritage')"
               :subtitle="selectedHeritage ? getAncestryChoiceLabel(selectedHeritage.id, selectedHeritage.name) : ''" /><v-list-item
               :title="t('wizard.ancestryFeat')"
-              :subtitle="selectedAncestryFeat ? getAncestryChoiceLabel(selectedAncestryFeat.id, selectedAncestryFeat.name) : ''" /><v-list-item
+              :subtitle="selectedAncestryFeatDefinition ? formatFeatReview(selectedAncestryFeatDefinition, 'Selected', getAncestryLabel(selectedAncestry.type)) : (selectedAncestryFeat ? getAncestryChoiceLabel(selectedAncestryFeat.id, selectedAncestryFeat.name) : '')" /><v-list-item
               :title="t('wizard.selectedBoosts')"
               :subtitle="formatAbilities(form.freeBoosts)" /><v-list-item
               v-if="selectedBackground"
@@ -1922,6 +1960,9 @@ watch(
               v-if="selectedBackground"
               :title="t('wizard.backgroundTraining')"
               :subtitle="getBackgroundTrainingLabels(selectedBackground, form.backgroundTrainingChoices).join(', ')" /><v-list-item
+              v-if="selectedBackground && selectedBackgroundFeatDefinition"
+              :title="t('feats.backgroundFeat')"
+              :subtitle="formatFeatReview(selectedBackgroundFeatDefinition, 'Granted', getBackgroundLabel(selectedBackground.id, selectedBackground.name))" /><v-list-item
               v-if="selectedCharacterClass"
               :title="t('classUi.characterClass')"
               :subtitle="getCharacterClassLabel(selectedCharacterClass.id, selectedCharacterClass.name)" /><v-list-item

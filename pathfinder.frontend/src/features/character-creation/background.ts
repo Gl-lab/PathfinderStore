@@ -25,7 +25,9 @@ export function createBackgroundTrainingChoices(
     .filter(
       (grant) =>
         grant.requiresChoice &&
-        (grant.kind === 'SkillTraining' || grant.kind === 'LoreTraining'),
+        (grant.kind === 'SkillTraining' ||
+          grant.kind === 'LoreTraining' ||
+          grant.kind === 'SkillFeat'),
     )
     .map((grant) => ({
       grantId: grant.id,
@@ -43,7 +45,9 @@ export function isBackgroundTrainingComplete(
   const requiredGrants = background.grants.filter(
     (grant) =>
       grant.requiresChoice &&
-      (grant.kind === 'SkillTraining' || grant.kind === 'LoreTraining'),
+      (grant.kind === 'SkillTraining' ||
+        grant.kind === 'LoreTraining' ||
+        grant.kind === 'SkillFeat'),
   )
   return requiredGrants.every((grant) => {
     const choice = choices.find((item) => item.grantId === grant.id)
@@ -66,7 +70,12 @@ export function getBackgroundTrainingLabels(
   if (!background) return []
 
   return background.grants
-    .filter((grant) => grant.kind === 'SkillTraining' || grant.kind === 'LoreTraining')
+    .filter(
+      (grant) =>
+        grant.kind === 'SkillTraining' ||
+        grant.kind === 'LoreTraining' ||
+        grant.kind === 'SkillFeat',
+    )
     .map((grant) => {
       if (!grant.requiresChoice) return grant.name
       const choice = choices.find((item) => item.grantId === grant.id)

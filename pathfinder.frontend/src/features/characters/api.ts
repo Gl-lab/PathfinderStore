@@ -18,6 +18,24 @@ export type ProficiencyCategory =
   | 'Defense'
   | 'ClassDc'
 export type SpellTradition = 'Arcane' | 'Divine' | 'Occult' | 'Primal'
+export type FeatCategory = 'Ancestry' | 'Skill' | 'Class'
+export type CharacterFeatAcquisitionType = 'Selected' | 'Granted'
+export type CharacterFeatSourceType = 'Ancestry' | 'Background' | 'Class' | 'ClassChoice'
+
+export interface CharacterFeat {
+  id: string
+  name: string
+  category: FeatCategory
+  level: number
+  traits: string[]
+  prerequisites: string[]
+  summary: string
+  deferredDependencies: string[]
+  source: { book: string; page: number }
+  acquisitionType: CharacterFeatAcquisitionType
+  sourceType: CharacterFeatSourceType
+  sourceId: string
+}
 
 export interface Proficiency {
   targetId: string
@@ -329,6 +347,7 @@ export interface Character {
   derivedStatistics: CharacterDerivedStatistics | null
   training: CharacterTraining
   proficiencies: Proficiency[]
+  feats: CharacterFeat[]
   characteristics: {
     strength: Characteristic
     dexterity: Characteristic

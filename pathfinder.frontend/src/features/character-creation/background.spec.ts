@@ -51,6 +51,29 @@ const hermit: Background = {
   ],
 }
 
+const martialDisciple: Background = {
+  id: 'background.martial_disciple',
+  name: 'Martial Disciple',
+  restrictedBoostOptions: ['Strength', 'Dexterity'],
+  freeBoostCount: 1,
+  grants: [
+    {
+      id: 'background.martial_disciple.feat',
+      kind: 'SkillFeat',
+      name: 'Martial discipline feat',
+      summary: 'Choose Cat Fall or Quick Jump.',
+      requiresChoice: true,
+      allowsCustomLore: false,
+      targetId: null,
+      options: [
+        { id: 'skill_feat.cat_fall', name: 'Cat Fall' },
+        { id: 'skill_feat.quick_jump', name: 'Quick Jump' },
+      ],
+      deferredDependencies: [],
+    },
+  ],
+}
+
 describe('background choice', () => {
   it('accepts one restricted and one different free boost', () => {
     expect(isBackgroundChoiceComplete(acrobat, 'Dexterity', 'Intelligence')).toBe(true)
@@ -93,5 +116,17 @@ describe('background choice', () => {
     choices[1].customLoreTopic = 'Forest'
 
     expect(isBackgroundTrainingComplete(hermit, choices)).toBe(false)
+  })
+
+  it('requires and labels a background skill feat choice', () => {
+    const choices = createBackgroundTrainingChoices(martialDisciple)
+
+    expect(choices).toHaveLength(1)
+    expect(isBackgroundTrainingComplete(martialDisciple, choices)).toBe(false)
+
+    choices[0].targetId = 'skill_feat.quick_jump'
+
+    expect(isBackgroundTrainingComplete(martialDisciple, choices)).toBe(true)
+    expect(getBackgroundTrainingLabels(martialDisciple, choices)).toEqual(['Quick Jump'])
   })
 })

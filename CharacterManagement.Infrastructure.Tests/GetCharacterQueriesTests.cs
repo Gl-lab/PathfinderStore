@@ -111,7 +111,8 @@ public sealed class GetCharacterQueriesTests
             clericDoctrineRepository: clericDoctrineRepository,
             deityRepository: deityRepository,
             clericDomainRepository: clericDomainRepository,
-            spellRepository: new SpellRepository() );
+            spellRepository: new SpellRepository(),
+            featRepository: new FeatRepository( ancestryRepository, backgroundRepository ) );
         GetCharacterByIdHandler handler = new GetCharacterByIdHandler(
             characterRepository,
             characterDetailsDtoMapper );
@@ -135,6 +136,20 @@ public sealed class GetCharacterQueriesTests
         CharacterLoreTrainingDto trainedLore = Assert.Single( result.Training.Lore );
         Assert.Equal( "lore.scribing", trainedLore.Id );
         Assert.Equal( "Scribing Lore", trainedLore.Name );
+        Assert.Collection(
+            result.Feats.OrderBy( feat => feat.Category ),
+            feat =>
+            {
+                Assert.Equal( "human.cooperative_nature", feat.Id );
+                Assert.Equal( FeatCategory.Ancestry, feat.Category );
+                Assert.Equal( "ancestry.human", feat.SourceId );
+            },
+            feat =>
+            {
+                Assert.Equal( "skill_feat.student_of_the_canon", feat.Id );
+                Assert.Equal( FeatCategory.Skill, feat.Category );
+                Assert.Equal( "background.acolyte", feat.SourceId );
+            } );
         Assert.NotNull( result.ClassPackage );
         Assert.Equal( "class.cleric", result.ClassPackage.ClassId );
         Assert.Equal( 8, result.ClassPackage.BaseHitPoints );

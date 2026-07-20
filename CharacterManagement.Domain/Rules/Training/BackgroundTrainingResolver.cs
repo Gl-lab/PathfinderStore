@@ -23,7 +23,8 @@ public static class BackgroundTrainingResolver
         IReadOnlyList<BackgroundGrantDescriptor> trainingGrants = background.Grants
             .Where( grant =>
                 grant.Kind == BackgroundGrantKind.SkillTraining ||
-                grant.Kind == BackgroundGrantKind.LoreTraining )
+                grant.Kind == BackgroundGrantKind.LoreTraining ||
+                grant.Kind == BackgroundGrantKind.SkillFeat )
             .ToList();
         if ( trainingGrants.Any( grant => grant.Kind == BackgroundGrantKind.SkillTraining ) &&
              generalSkills.Count == 0 )
@@ -42,6 +43,7 @@ public static class BackgroundTrainingResolver
 
         List<TrainedSkill> trainedSkills = [];
         List<TrainedLore> trainedLore = [];
+        string? skillFeatId = null;
 
         foreach ( BackgroundGrantDescriptor grant in trainingGrants )
         {
@@ -52,9 +54,13 @@ public static class BackgroundTrainingResolver
             {
                 trainedSkills.Add( ResolveSkill( grant, choice, generalSkills ) );
             }
-            else
+            else if ( grant.Kind == BackgroundGrantKind.LoreTraining )
             {
                 trainedLore.Add( ResolveLore( grant, choice, generalSkills ) );
+            }
+            else
+            {
+                skillFeatId = ResolveTargetId( grant, choice );
             }
         }
 
@@ -68,7 +74,13 @@ public static class BackgroundTrainingResolver
             throw new CharacterManagementException( "Background cannot grant the same Lore training more than once." );
         }
 
-        return new BackgroundTrainingResult( trainedSkills, trainedLore );
+        if ( trainingGrants.Any( grant => grant.Kind == BackgroundGrantKind.SkillFeat ) &&
+             String.IsNullOrWhiteSpace( skillFeatId ) )
+        {
+            throw new CharacterManagementException( "Background must grant exactly one skill feat." );
+        }
+
+        return new BackgroundTrainingResult( trainedSkills, trainedLore, skillFeatId );
     }
 
     private static TrainedSkill ResolveSkill(
