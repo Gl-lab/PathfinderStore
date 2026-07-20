@@ -129,6 +129,10 @@ import {
 import { isDruidSpellLoadoutComplete } from '@/features/character-creation/druidSpellLoadout'
 import { isWitchSpellLoadoutComplete } from '@/features/character-creation/witchSpellLoadout'
 import {
+  isWizardSpellLoadoutComplete,
+  type WizardSpellOptions,
+} from '@/features/character-creation/wizardSpellLoadout'
+import {
   getWitchPatronFamiliarSpellOptions,
   isWitchPatronChoiceComplete,
   withWitchPatron,
@@ -167,6 +171,7 @@ const witchSpellOptionsByTradition = ref<Record<SpellTradition, WitchSpellOption
   Occult: { cantrips: [], rankOneSpells: [] },
   Primal: { cantrips: [], rankOneSpells: [] },
 })
+const wizardSpellOptions = ref<WizardSpellOptions>({ cantrips: [], rankOneSpells: [] })
 const skills = ref<Skill[]>([])
 const isLoadingCatalogs = ref(true)
 const isSubmitting = ref(false)
@@ -212,6 +217,14 @@ const form = ref({
   witchPreparedCantripIds: [] as string[],
   witchPreparedSpellIds: [] as (string | null)[],
   witchFocusHexId: null as string | null,
+  wizardSpellbookCantripIds: [] as string[],
+  wizardSpellbookSpellIds: [] as string[],
+  wizardCurriculumCantripId: null as string | null,
+  wizardCurriculumSpellIds: [] as string[],
+  wizardPreparedCantripIds: [] as string[],
+  wizardPreparedSpellIds: [] as (string | null)[],
+  wizardPreparedCurriculumCantripId: null as string | null,
+  wizardPreparedCurriculumSpellId: null as string | null,
   finalFreeBoosts: [] as AbilityCode[],
   classSkillGrantChoices: [] as ClassSkillGrantChoice[],
   additionalClassTrainingChoices: [] as ClassTrainingTargetChoice[],
@@ -322,6 +335,22 @@ const selectedArcaneSchool = computed(
 )
 const arcaneSchoolCurriculum = computed(() =>
   groupArcaneSchoolCurriculum(selectedArcaneSchool.value),
+)
+const wizardCurriculumCantripOptions = computed(() =>
+  selectedArcaneSchool.value?.curriculumSpells.filter((spell) => spell.rank === 0) ?? [],
+)
+const wizardCurriculumRankOneOptions = computed(() =>
+  selectedArcaneSchool.value?.curriculumSpells.filter((spell) => spell.rank === 1) ?? [],
+)
+const selectedWizardSpellbookCantrips = computed(() =>
+  form.value.wizardSpellbookCantripIds
+    .map((id) => wizardSpellOptions.value.cantrips.find((spell) => spell.id === id))
+    .filter((spell) => spell !== undefined),
+)
+const selectedWizardSpellbookSpells = computed(() =>
+  form.value.wizardSpellbookSpellIds
+    .map((id) => wizardSpellOptions.value.rankOneSpells.find((spell) => spell.id === id))
+    .filter((spell) => spell !== undefined),
 )
 const selectedArcaneThesis = computed(
   () => arcaneTheses.value.find((item) => item.id === form.value.arcaneThesisId) ?? null,
@@ -525,6 +554,19 @@ const canContinue = computed(() => {
         form.value.witchPreparedSpellIds,
         form.value.witchFocusHexId,
         witchSpellOptions.value,
+      ) &&
+      isWizardSpellLoadoutComplete(
+        selectedCharacterClass.value,
+        selectedArcaneSchool.value,
+        form.value.wizardSpellbookCantripIds,
+        form.value.wizardSpellbookSpellIds,
+        form.value.wizardCurriculumCantripId,
+        form.value.wizardCurriculumSpellIds,
+        form.value.wizardPreparedCantripIds,
+        form.value.wizardPreparedSpellIds,
+        form.value.wizardPreparedCurriculumCantripId,
+        form.value.wizardPreparedCurriculumSpellId,
+        wizardSpellOptions.value,
       )
     )
   if (step.value === 8)
@@ -617,6 +659,7 @@ function selectCharacterClass(classId: string | null): void {
   form.value.witchPreparedCantripIds = []
   form.value.witchPreparedSpellIds = characterClass?.id === 'class.witch' ? [null, null] : []
   form.value.witchFocusHexId = null
+  resetWizardSpellLoadout()
   clericSpellOptions.value = { cantrips: [], rankOneSpells: [] }
   form.value.classSkillGrantChoices = createClassSkillGrantChoices(
     characterClasses.value.find((item) => item.id === classId) ?? null,
@@ -650,6 +693,20 @@ function selectClericDoctrine(clericDoctrineId: string | null): void {
 function selectDruidicOrder(druidicOrderId: string | null): void {
   form.value.druidicOrderId = druidicOrderId
   resetClassTraining()
+}
+function resetWizardSpellLoadout(): void {
+  form.value.wizardSpellbookCantripIds = []
+  form.value.wizardSpellbookSpellIds = []
+  form.value.wizardCurriculumCantripId = null
+  form.value.wizardCurriculumSpellIds = []
+  form.value.wizardPreparedCantripIds = []
+  form.value.wizardPreparedSpellIds = form.value.classId === 'class.wizard' ? [null, null] : []
+  form.value.wizardPreparedCurriculumCantripId = null
+  form.value.wizardPreparedCurriculumSpellId = null
+}
+function selectArcaneSchool(arcaneSchoolId: string | null): void {
+  form.value.arcaneSchoolId = arcaneSchoolId
+  resetWizardSpellLoadout()
 }
 function selectBardMuse(bardMuseId: string | null): void {
   form.value.bardMuseId = bardMuseId
@@ -880,6 +937,19 @@ async function submit(): Promise<void> {
       form.value.witchFocusHexId,
       witchSpellOptions.value,
     ) ||
+    !isWizardSpellLoadoutComplete(
+      selectedCharacterClass.value,
+      selectedArcaneSchool.value,
+      form.value.wizardSpellbookCantripIds,
+      form.value.wizardSpellbookSpellIds,
+      form.value.wizardCurriculumCantripId,
+      form.value.wizardCurriculumSpellIds,
+      form.value.wizardPreparedCantripIds,
+      form.value.wizardPreparedSpellIds,
+      form.value.wizardPreparedCurriculumCantripId,
+      form.value.wizardPreparedCurriculumSpellId,
+      wizardSpellOptions.value,
+    ) ||
     !isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts) ||
     !isClassTrainingComplete(
       effectiveCharacterClass.value,
@@ -944,6 +1014,16 @@ async function submit(): Promise<void> {
         (spellId): spellId is string => spellId !== null,
       ),
       witchFocusHexId: form.value.witchFocusHexId,
+      wizardSpellbookCantripIds: form.value.wizardSpellbookCantripIds,
+      wizardSpellbookSpellIds: form.value.wizardSpellbookSpellIds,
+      wizardCurriculumCantripId: form.value.wizardCurriculumCantripId,
+      wizardCurriculumSpellIds: form.value.wizardCurriculumSpellIds,
+      wizardPreparedCantripIds: form.value.wizardPreparedCantripIds,
+      wizardPreparedSpellIds: form.value.wizardPreparedSpellIds.filter(
+        (spellId): spellId is string => spellId !== null,
+      ),
+      wizardPreparedCurriculumCantripId: form.value.wizardPreparedCurriculumCantripId,
+      wizardPreparedCurriculumSpellId: form.value.wizardPreparedCurriculumSpellId,
       finalFreeBoosts: form.value.finalFreeBoosts,
       classSkillGrantChoices: form.value.classSkillGrantChoices.map((choice) => ({
         ...choice,
@@ -1021,6 +1101,10 @@ async function loadCatalogs(): Promise<void> {
       Divine: { cantrips: divineCantripCatalog, rankOneSpells: divineRankOneSpellCatalog },
       Occult: { cantrips: occultCantripCatalog, rankOneSpells: occultRankOneSpellCatalog },
       Primal: { cantrips: primalCantripCatalog, rankOneSpells: primalRankOneSpellCatalog },
+    }
+    wizardSpellOptions.value = {
+      cantrips: arcaneCantripCatalog,
+      rankOneSpells: arcaneRankOneSpellCatalog,
     }
   } catch (error) {
     errorMessages.value = getApiErrorMessages(error)
@@ -1271,11 +1355,12 @@ watch(
             </v-alert>
             <v-select
               v-if="selectedCharacterClass.id === 'class.wizard'"
-              v-model="form.arcaneSchoolId"
+              :model-value="form.arcaneSchoolId"
               :items="arcaneSchools"
               item-title="name"
               item-value="id"
               :label="t('classUi.arcaneSchool')"
+              @update:model-value="selectArcaneSchool"
             />
             <v-list v-if="selectedArcaneSchool" density="compact">
               <v-list-item
@@ -1648,6 +1733,71 @@ watch(
               :label="t('classUi.witchFocusHex')"
             />
           </template>
+          <template v-else-if="selectedCharacterClass?.id === 'class.wizard'">
+            <p class="hint">{{ t('classUi.wizardSpellsHint') }}</p>
+            <v-select
+              v-model="form.wizardSpellbookCantripIds"
+              :items="wizardSpellOptions.cantrips"
+              item-title="name" item-value="id"
+              :label="t('classUi.wizardSpellbookCantrips')"
+              multiple chips closable-chips :counter="10"
+            />
+            <v-select
+              v-model="form.wizardSpellbookSpellIds"
+              :items="wizardSpellOptions.rankOneSpells"
+              item-title="name" item-value="id"
+              :label="t('classUi.wizardSpellbookSpells', { count: selectedArcaneSchool?.hasCurriculum ? 5 : 6 })"
+              multiple chips closable-chips
+              :counter="selectedArcaneSchool?.hasCurriculum ? 5 : 6"
+            />
+            <template v-if="selectedArcaneSchool?.hasCurriculum">
+              <v-select
+                v-model="form.wizardCurriculumCantripId"
+                :items="wizardCurriculumCantripOptions"
+                item-title="name" item-value="id"
+                :label="t('classUi.wizardCurriculumCantrip')"
+              />
+              <v-select
+                v-model="form.wizardCurriculumSpellIds"
+                :items="wizardCurriculumRankOneOptions"
+                item-title="name" item-value="id"
+                :label="t('classUi.wizardCurriculumSpells')"
+                multiple chips closable-chips :counter="2"
+              />
+            </template>
+            <v-select
+              v-model="form.wizardPreparedCantripIds"
+              :items="selectedWizardSpellbookCantrips"
+              item-title="name" item-value="id"
+              :label="t('classUi.wizardPreparedCantrips')"
+              multiple chips closable-chips :counter="5"
+            />
+            <v-select
+              v-for="(_, index) in form.wizardPreparedSpellIds"
+              :key="`wizard-slot-${index}`"
+              v-model="form.wizardPreparedSpellIds[index]"
+              :items="selectedWizardSpellbookSpells"
+              item-title="name" item-value="id"
+              :label="t('classUi.wizardSpellSlot', { number: index + 1 })"
+            />
+            <template v-if="selectedArcaneSchool?.hasCurriculum">
+              <v-select
+                v-model="form.wizardPreparedCurriculumCantripId"
+                :items="wizardCurriculumCantripOptions"
+                item-title="name" item-value="id"
+                :label="t('classUi.wizardCurriculumCantripSlot')"
+              />
+              <v-select
+                v-model="form.wizardPreparedCurriculumSpellId"
+                :items="wizardCurriculumRankOneOptions"
+                item-title="name" item-value="id"
+                :label="t('classUi.wizardCurriculumSpellSlot')"
+              />
+            </template>
+            <v-alert type="info" variant="tonal">
+              {{ t('classUi.wizardSchoolMagicSummary') }}
+            </v-alert>
+          </template>
           <v-alert v-else type="info" variant="tonal">{{ t('wizard.none') }}</v-alert>
         </section>
         <section v-else-if="step === 8">
@@ -1808,6 +1958,24 @@ watch(
               v-if="selectedArcaneSchool"
               :title="t('classUi.arcaneSchool')"
               :subtitle="selectedArcaneSchool.name" /><v-list-item
+              v-if="form.wizardSpellbookCantripIds.length"
+              :title="t('classUi.wizardSpellbookCantrips')"
+              :subtitle="selectedWizardSpellbookCantrips.map((spell) => spell.name).join(', ')" /><v-list-item
+              v-if="form.wizardSpellbookSpellIds.length"
+              :title="t('classUi.wizardSpellbookSpells', { count: form.wizardSpellbookSpellIds.length })"
+              :subtitle="selectedWizardSpellbookSpells.map((spell) => spell.name).join(', ')" /><v-list-item
+              v-if="form.wizardCurriculumCantripId"
+              :title="t('classUi.wizardCurriculumCantrip')"
+              :subtitle="wizardCurriculumCantripOptions.find((spell) => spell.id === form.wizardCurriculumCantripId)?.name" /><v-list-item
+              v-if="form.wizardCurriculumSpellIds.length"
+              :title="t('classUi.wizardCurriculumSpells')"
+              :subtitle="form.wizardCurriculumSpellIds.map((id) => wizardCurriculumRankOneOptions.find((spell) => spell.id === id)?.name).filter(Boolean).join(', ')" /><v-list-item
+              v-if="form.wizardPreparedCantripIds.length"
+              :title="t('classUi.wizardPreparedCantrips')"
+              :subtitle="form.wizardPreparedCantripIds.map((id) => selectedWizardSpellbookCantrips.find((spell) => spell.id === id)?.name).filter(Boolean).join(', ')" /><v-list-item
+              v-if="form.wizardPreparedSpellIds.some(Boolean)"
+              :title="t('classUi.wizardSpellSlot', { number: '1–2' })"
+              :subtitle="form.wizardPreparedSpellIds.map((id) => selectedWizardSpellbookSpells.find((spell) => spell.id === id)?.name).filter(Boolean).join(', ')" /><v-list-item
               v-for="benefit in selectedArcaneSchool?.benefits ?? []"
               :key="`review-school-${benefit.id}`"
               :title="t(`classUi.arcaneSchoolBenefitKinds.${benefit.kind}`)"

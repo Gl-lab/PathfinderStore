@@ -166,7 +166,15 @@ public class CharacterBuilder : ICharacterBuilder
         IReadOnlyList<string>? witchFamiliarSpellIds = null,
         IReadOnlyList<string>? witchPreparedCantripIds = null,
         IReadOnlyList<string>? witchPreparedSpellIds = null,
-        string? witchFocusHexId = null )
+        string? witchFocusHexId = null,
+        IReadOnlyList<string>? wizardSpellbookCantripIds = null,
+        IReadOnlyList<string>? wizardSpellbookSpellIds = null,
+        string? wizardCurriculumCantripId = null,
+        IReadOnlyList<string>? wizardCurriculumSpellIds = null,
+        IReadOnlyList<string>? wizardPreparedCantripIds = null,
+        IReadOnlyList<string>? wizardPreparedSpellIds = null,
+        string? wizardPreparedCurriculumCantripId = null,
+        string? wizardPreparedCurriculumSpellId = null )
     {
         if ( _draftCharacter is null )
         {
@@ -471,6 +479,42 @@ public class CharacterBuilder : ICharacterBuilder
                 "Witch spell choices can only be selected for the Witch class." );
         }
 
+        WizardSpellLoadout? wizardSpellLoadout = null;
+        bool isWizard = characterClass.Id == "class.wizard";
+        bool hasWizardSpellChoices =
+            ( wizardSpellbookCantripIds?.Count > 0 ) ||
+            ( wizardSpellbookSpellIds?.Count > 0 ) ||
+            !String.IsNullOrWhiteSpace( wizardCurriculumCantripId ) ||
+            ( wizardCurriculumSpellIds?.Count > 0 ) ||
+            ( wizardPreparedCantripIds?.Count > 0 ) ||
+            ( wizardPreparedSpellIds?.Count > 0 ) ||
+            !String.IsNullOrWhiteSpace( wizardPreparedCurriculumCantripId ) ||
+            !String.IsNullOrWhiteSpace( wizardPreparedCurriculumSpellId );
+        if ( isWizard && hasWizardSpellChoices )
+        {
+            if ( ( arcaneSchool is null ) || ( _spellRepository is null ) )
+            {
+                throw new InvalidOperationException( "Wizard Arcane School and spell repositories are required." );
+            }
+
+            wizardSpellLoadout = WizardSpellLoadoutResolver.Resolve(
+                arcaneSchool,
+                wizardSpellbookCantripIds ?? [],
+                wizardSpellbookSpellIds ?? [],
+                wizardCurriculumCantripId,
+                wizardCurriculumSpellIds ?? [],
+                wizardPreparedCantripIds ?? [],
+                wizardPreparedSpellIds ?? [],
+                wizardPreparedCurriculumCantripId,
+                wizardPreparedCurriculumSpellId,
+                _spellRepository.GetAll() );
+        }
+        else if ( !isWizard && hasWizardSpellChoices )
+        {
+            throw new CharacterManagementException(
+                "Wizard spell choices can only be selected for the Wizard class." );
+        }
+
         _draftCharacter.SetClassPackage(
             characterClass,
             keyAbility,
@@ -493,7 +537,8 @@ public class CharacterBuilder : ICharacterBuilder
             clericSpellLoadout,
             bardSpellLoadout,
             druidSpellLoadout,
-            witchSpellLoadout );
+            witchSpellLoadout,
+            wizardSpellLoadout );
     }
 
     public void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts )

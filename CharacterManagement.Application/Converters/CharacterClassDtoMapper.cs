@@ -93,7 +93,9 @@ public static class CharacterClassDtoMapper
         DruidSpellLoadoutDto? druidSpellLoadout = null,
         DruidFocusPoolDto? druidFocusPool = null,
         WitchSpellLoadoutDto? witchSpellLoadout = null,
-        WitchHexPackageDto? witchHexPackage = null )
+        WitchHexPackageDto? witchHexPackage = null,
+        WizardSpellLoadoutDto? wizardSpellLoadout = null,
+        WizardSchoolMagicDto? wizardSchoolMagic = null )
     {
         ArgumentNullException.ThrowIfNull( character );
         ArgumentNullException.ThrowIfNull( characterClass );
@@ -128,6 +130,8 @@ public static class CharacterClassDtoMapper
             WitchSpellLoadout = witchSpellLoadout,
             WitchHexPackage = witchHexPackage,
             ArcaneSchool = arcaneSchool is null ? null : ArcaneSchoolDtoMapper.MapPackage( arcaneSchool ),
+            WizardSpellLoadout = wizardSpellLoadout,
+            WizardSchoolMagic = wizardSchoolMagic,
             ArcaneThesis = arcaneThesis is null ? null : ArcaneThesisDtoMapper.MapPackage( arcaneThesis ),
             ClericDoctrine = clericDoctrine is null
                 ? null

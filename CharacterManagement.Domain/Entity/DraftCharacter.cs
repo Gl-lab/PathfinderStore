@@ -49,6 +49,14 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public IReadOnlyList<string> PreparedWitchCantripIds { get; private set; } = [];
     public IReadOnlyList<string> PreparedWitchSpellIds { get; private set; } = [];
     public string? SelectedWitchFocusHexId { get; private set; }
+    public IReadOnlyList<string> WizardSpellbookCantripIds { get; private set; } = [];
+    public IReadOnlyList<string> WizardSpellbookSpellIds { get; private set; } = [];
+    public string? SelectedWizardCurriculumCantripId { get; private set; }
+    public IReadOnlyList<string> WizardCurriculumSpellIds { get; private set; } = [];
+    public IReadOnlyList<string> PreparedWizardCantripIds { get; private set; } = [];
+    public IReadOnlyList<string> PreparedWizardSpellIds { get; private set; } = [];
+    public string? SelectedPreparedWizardCurriculumCantripId { get; private set; }
+    public string? SelectedPreparedWizardCurriculumSpellId { get; private set; }
     public IReadOnlyList<AbilityType> AppliedFinalFreeBoosts { get; private set; } = [];
     public IReadOnlyList<TrainedSkill> TrainedSkills { get; private set; } = [];
     public IReadOnlyList<TrainedLore> TrainedLore { get; private set; } = [];
@@ -349,7 +357,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         ClericSpellLoadout? clericSpellLoadout = null,
         BardSpellLoadout? bardSpellLoadout = null,
         DruidSpellLoadout? druidSpellLoadout = null,
-        WitchSpellLoadout? witchSpellLoadout = null )
+        WitchSpellLoadout? witchSpellLoadout = null,
+        WizardSpellLoadout? wizardSpellLoadout = null )
     {
         ArgumentNullException.ThrowIfNull( characterClass );
 
@@ -612,6 +621,12 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
             throw new CharacterManagementException( "Witch Patron spell does not match the familiar loadout." );
         }
 
+        if ( !isWizard && ( wizardSpellLoadout is not null ) )
+        {
+            throw new CharacterManagementException(
+                "Wizard spell loadout can only be selected for the Wizard class." );
+        }
+
         RemoveClassEffects();
 
         AbilityScores.ApplyAbilityBoost( keyAbility );
@@ -641,6 +656,14 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         PreparedWitchCantripIds = witchSpellLoadout?.PreparedCantripIds.ToArray() ?? [];
         PreparedWitchSpellIds = witchSpellLoadout?.PreparedSpellIds.ToArray() ?? [];
         SelectedWitchFocusHexId = witchSpellLoadout?.FocusHexId;
+        WizardSpellbookCantripIds = wizardSpellLoadout?.SpellbookCantripIds.ToArray() ?? [];
+        WizardSpellbookSpellIds = wizardSpellLoadout?.SpellbookRankOneSpellIds.ToArray() ?? [];
+        SelectedWizardCurriculumCantripId = wizardSpellLoadout?.CurriculumCantripId;
+        WizardCurriculumSpellIds = wizardSpellLoadout?.CurriculumRankOneSpellIds.ToArray() ?? [];
+        PreparedWizardCantripIds = wizardSpellLoadout?.PreparedCantripIds.ToArray() ?? [];
+        PreparedWizardSpellIds = wizardSpellLoadout?.PreparedRankOneSpellIds.ToArray() ?? [];
+        SelectedPreparedWizardCurriculumCantripId = wizardSpellLoadout?.PreparedCurriculumCantripId;
+        SelectedPreparedWizardCurriculumSpellId = wizardSpellLoadout?.PreparedCurriculumRankOneSpellId;
         if ( rogueTraining is not null )
         {
             TrainedSkills = rogueTraining.Skills.ToArray();
@@ -982,6 +1005,14 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         PreparedWitchCantripIds = [];
         PreparedWitchSpellIds = [];
         SelectedWitchFocusHexId = null;
+        WizardSpellbookCantripIds = [];
+        WizardSpellbookSpellIds = [];
+        SelectedWizardCurriculumCantripId = null;
+        WizardCurriculumSpellIds = [];
+        PreparedWizardCantripIds = [];
+        PreparedWizardSpellIds = [];
+        SelectedPreparedWizardCurriculumCantripId = null;
+        SelectedPreparedWizardCurriculumSpellId = null;
         RemoveClassTrainingEffects();
         TrainedSkills = TrainedSkills
             .Where( training =>

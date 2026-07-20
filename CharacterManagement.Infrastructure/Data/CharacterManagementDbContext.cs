@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.CharacterManagement.Domain.Rules.Training;
@@ -174,6 +175,12 @@ public class CharacterManagementDbContext( DbContextOptions<CharacterManagementD
                 .HasDefaultValueSql( "'[]'::jsonb" )
                 .Metadata.SetValueComparer( StringListComparer() );
 
+            ConfigureStringList( b.Property( x => x.WizardSpellbookCantripIds ) );
+            ConfigureStringList( b.Property( x => x.WizardSpellbookSpellIds ) );
+            ConfigureStringList( b.Property( x => x.WizardCurriculumSpellIds ) );
+            ConfigureStringList( b.Property( x => x.PreparedWizardCantripIds ) );
+            ConfigureStringList( b.Property( x => x.PreparedWizardSpellIds ) );
+
             b.Property( x => x.AppliedFreeBoosts )
                 .HasConversion(
                     v => JsonSerializer.Serialize( v.ToList(), (JsonSerializerOptions?)null ),
@@ -281,5 +288,18 @@ public class CharacterManagementDbContext( DbContextOptions<CharacterManagementD
                 ( ( first != null ) && ( second != null ) ) && first.SequenceEqual( second ),
             collection => collection.Aggregate( 0, ( hash, item ) => HashCode.Combine( hash, item ) ),
             collection => collection.ToList() );
+    }
+
+    private static void ConfigureStringList( PropertyBuilder<IReadOnlyList<string>> property )
+    {
+        property
+            .HasConversion(
+                value => JsonSerializer.Serialize( value.ToList(), (JsonSerializerOptions?)null ),
+                value => String.IsNullOrEmpty( value )
+                    ? (IReadOnlyList<string>)Array.Empty<string>()
+                    : (IReadOnlyList<string>)( JsonSerializer.Deserialize<List<string>>( value, (JsonSerializerOptions?)null ) ?? new List<string>() ) )
+            .HasColumnType( "jsonb" )
+            .HasDefaultValueSql( "'[]'::jsonb" )
+            .Metadata.SetValueComparer( StringListComparer() );
     }
 }

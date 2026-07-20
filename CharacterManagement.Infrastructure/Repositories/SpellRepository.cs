@@ -172,6 +172,13 @@ public sealed class SpellRepository : ISpellRepository
             FocusWithTradition( "Untamed Shift", "P", "Concentrate|Druid|Focus|Manipulate|Morph|Uncommon", "Player Core", 380 ),
             FocusWithTradition( "Patron's Puppet", "ADOP", "Concentrate|Focus|Hex|Manipulate|Uncommon|Witch", "Player Core", 385 ),
             FocusWithTradition( "Phase Familiar", "ADOP", "Focus|Hex|Manipulate|Uncommon|Witch", "Player Core", 385 ),
+            FocusWithTradition( "Protective Wards", "A", "Arcane|Aura|Concentrate|Focus|Manipulate|Uncommon|Wizard", "Player Core", 389 ),
+            FocusWithTradition( "Fortify Summoning", "A", "Arcane|Concentrate|Focus|Uncommon|Wizard", "Player Core", 388 ),
+            FocusWithTradition( "Earthworks", "A", "Arcane|Concentrate|Earth|Focus|Manipulate|Uncommon|Wizard", "Player Core", 388 ),
+            FocusWithTradition( "Charming Push", "A", "Arcane|Concentrate|Emotion|Focus|Mental|Uncommon|Wizard", "Player Core", 388 ),
+            FocusWithTradition( "Scramble Body", "A", "Arcane|Concentrate|Focus|Manipulate|Morph|Uncommon|Wizard", "Player Core", 389 ),
+            FocusWithTradition( "Hand of the Apprentice", "A", "Arcane|Attack|Focus|Manipulate|Uncommon|Wizard", "Player Core", 389 ),
+            FocusWithTradition( "Force Bolt", "A", "Arcane|Concentrate|Force|Focus|Manipulate|Uncommon|Wizard", "Player Core", 388 ),
         ];
     }
 

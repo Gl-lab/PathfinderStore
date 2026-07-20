@@ -45,6 +45,14 @@ public class CreateCharacterRequestDto
     public IReadOnlyList<string> WitchPreparedCantripIds { get; set; } = [];
     public IReadOnlyList<string> WitchPreparedSpellIds { get; set; } = [];
     public string? WitchFocusHexId { get; set; }
+    public IReadOnlyList<string> WizardSpellbookCantripIds { get; set; } = [];
+    public IReadOnlyList<string> WizardSpellbookSpellIds { get; set; } = [];
+    public string? WizardCurriculumCantripId { get; set; }
+    public IReadOnlyList<string> WizardCurriculumSpellIds { get; set; } = [];
+    public IReadOnlyList<string> WizardPreparedCantripIds { get; set; } = [];
+    public IReadOnlyList<string> WizardPreparedSpellIds { get; set; } = [];
+    public string? WizardPreparedCurriculumCantripId { get; set; }
+    public string? WizardPreparedCurriculumSpellId { get; set; }
     public IReadOnlyList<AbilityType>? FinalFreeBoosts { get; set; }
     public IReadOnlyList<ClassSkillGrantChoice> ClassSkillGrantChoices { get; set; } = [];
     public IReadOnlyList<ClassTrainingTargetChoice> AdditionalClassTrainingChoices { get; set; } = [];

@@ -103,6 +103,12 @@ public sealed class CharacterDetailsDtoMapper
         WitchHexPackageDto? witchHexPackage = ResolveWitchHexPackage(
             draftCharacter,
             witchPatron );
+        WizardSpellLoadoutDto? wizardSpellLoadout = ResolveWizardSpellLoadout(
+            draftCharacter,
+            arcaneSchool );
+        WizardSchoolMagicDto? wizardSchoolMagic = ResolveWizardSchoolMagic(
+            draftCharacter,
+            arcaneSchool );
         IReadOnlyList<EffectiveProficiency> effectiveProficiencies = characterClass is null
             ? []
             : ProficiencyResolver.Resolve(
@@ -147,7 +153,9 @@ public sealed class CharacterDetailsDtoMapper
                     druidSpellLoadout,
                     druidFocusPool,
                     witchSpellLoadout,
-                    witchHexPackage ),
+                    witchHexPackage,
+                    wizardSpellLoadout,
+                    wizardSchoolMagic ),
             FinalFreeBoosts = draftCharacter.AppliedFinalFreeBoosts.ToArray(),
             DerivedStatistics = ancestry is null || characterClass is null
                 ? null
@@ -594,6 +602,71 @@ public sealed class CharacterDetailsDtoMapper
         return _spellRepository
             .GetAll()
             .ToDictionary( spell => spell.Id, StringComparer.Ordinal );
+    }
+
+    private WizardSpellLoadoutDto? ResolveWizardSpellLoadout(
+        DraftCharacter character,
+        ArcaneSchool? school )
+    {
+        if ( ( school is null ) ||
+             ( character.WizardSpellbookCantripIds.Count == 0 ) ||
+             ( character.WizardSpellbookSpellIds.Count == 0 ) ||
+             ( character.PreparedWizardCantripIds.Count == 0 ) ||
+             ( character.PreparedWizardSpellIds.Count == 0 ) )
+        {
+            return null;
+        }
+
+        IReadOnlyDictionary<string, SpellDefinition> definitions = GetSpellDefinitions();
+        return new WizardSpellLoadoutDto
+        {
+            SpellbookCantrips = MapSpells( character.WizardSpellbookCantripIds, definitions ),
+            SpellbookRankOneSpells = MapSpells( character.WizardSpellbookSpellIds, definitions ),
+            CurriculumCantrip = MapOptionalSpell( character.SelectedWizardCurriculumCantripId, definitions ),
+            CurriculumRankOneSpells = MapSpells( character.WizardCurriculumSpellIds, definitions ),
+            PreparedCantrips = MapSpells( character.PreparedWizardCantripIds, definitions ),
+            PreparedRankOneSpells = MapSpells( character.PreparedWizardSpellIds, definitions ),
+            PreparedCurriculumCantrip = MapOptionalSpell(
+                character.SelectedPreparedWizardCurriculumCantripId,
+                definitions ),
+            PreparedCurriculumRankOneSpell = MapOptionalSpell(
+                character.SelectedPreparedWizardCurriculumSpellId,
+                definitions ),
+            CurriculumRankOneSpellSlotCount = school.HasCurriculum ? 1 : 0,
+        };
+    }
+
+    private WizardSchoolMagicDto? ResolveWizardSchoolMagic(
+        DraftCharacter character,
+        ArcaneSchool? school )
+    {
+        if ( ( character.SelectedClassId != "class.wizard" ) ||
+             ( school is null ) ||
+             ( character.WizardSpellbookCantripIds.Count == 0 ) )
+        {
+            return null;
+        }
+
+        string initialSchoolSpellId = school.Benefits
+            .Single( benefit => benefit.Kind == ArcaneSchoolBenefitKind.InitialSchoolSpell )
+            .Id;
+        IReadOnlyDictionary<string, SpellDefinition> definitions = GetSpellDefinitions();
+        return new WizardSchoolMagicDto
+        {
+            MaximumFocusPoints = 1,
+            DrainBondedItemUsesPerDay = 1,
+            InitialSchoolSpell = SpellDefinitionDtoMapper.Map( definitions[ initialSchoolSpellId ] ),
+            SourceGrantId = school.Id,
+        };
+    }
+
+    private static SpellDefinitionDto? MapOptionalSpell(
+        string? spellId,
+        IReadOnlyDictionary<string, SpellDefinition> definitions )
+    {
+        return String.IsNullOrWhiteSpace( spellId )
+            ? null
+            : SpellDefinitionDtoMapper.Map( definitions[ spellId ] );
     }
 
     private static IReadOnlyList<SpellDefinitionDto> MapSpells(

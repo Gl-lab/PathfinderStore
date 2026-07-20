@@ -601,7 +601,8 @@ public sealed class GetCharacterQueriesTests
             characterClassRepository: characterClassRepository,
             skillRepository: new SkillRepository(),
             arcaneSchoolRepository: arcaneSchoolRepository,
-            arcaneThesisRepository: arcaneThesisRepository );
+            arcaneThesisRepository: arcaneThesisRepository,
+            spellRepository: new SpellRepository() );
         builder.CreateCharacter( account.Id, "Ezren", AncestryType.Human );
         builder.SetAncestryPackage( "human.skilled", "human.cooperative_nature" );
         builder.ApplyFreeBoosts( [ AbilityType.Intelligence, AbilityType.Wisdom ] );
@@ -613,7 +614,21 @@ public sealed class GetCharacterQueriesTests
             "class.wizard",
             AbilityType.Intelligence,
             arcaneSchoolId: "arcane_school.mentalism",
-            arcaneThesisId: "arcane_thesis.spell_substitution" );
+            arcaneThesisId: "arcane_thesis.spell_substitution",
+            wizardSpellbookCantripIds:
+            [
+                "spell.detect_magic", "spell.light", "spell.message", "spell.prestidigitation", "spell.read_aura",
+                "spell.shield", "spell.sigil", "spell.summon_instrument", "spell.telekinetic_hand", "spell.telekinetic_projectile",
+            ],
+            wizardSpellbookSpellIds:
+            [ "spell.air_bubble", "spell.alarm", "spell.command", "spell.disguise_magic", "spell.enfeeble" ],
+            wizardCurriculumCantripId: "spell.daze",
+            wizardCurriculumSpellIds: [ "spell.dizzying_colors", "spell.sleep" ],
+            wizardPreparedCantripIds:
+            [ "spell.detect_magic", "spell.light", "spell.message", "spell.prestidigitation", "spell.read_aura" ],
+            wizardPreparedSpellIds: [ "spell.air_bubble", "spell.air_bubble" ],
+            wizardPreparedCurriculumCantripId: "spell.figment",
+            wizardPreparedCurriculumSpellId: "spell.sure_strike" );
         DraftCharacter draftCharacter = builder.Build();
         dbContext.Character.Add( draftCharacter );
         await dbContext.SaveChangesAsync();
@@ -624,7 +639,8 @@ public sealed class GetCharacterQueriesTests
             characterClassRepository: characterClassRepository,
             skillRepository: new SkillRepository(),
             arcaneSchoolRepository: arcaneSchoolRepository,
-            arcaneThesisRepository: arcaneThesisRepository );
+            arcaneThesisRepository: arcaneThesisRepository,
+            spellRepository: new SpellRepository() );
         GetCharacterByIdHandler handler = new GetCharacterByIdHandler(
             new CharacterRepository( dbContext ),
             mapper );
@@ -641,6 +657,11 @@ public sealed class GetCharacterQueriesTests
         Assert.Equal(
             "arcane_thesis.spell_substitution",
             result.ClassPackage.ArcaneThesis.Id );
+        Assert.Equal( 10, result.ClassPackage.WizardSpellLoadout?.SpellbookCantrips.Count );
+        Assert.Equal( 2, result.ClassPackage.WizardSpellLoadout?.PreparedRankOneSpells.Count );
+        Assert.Equal( "spell.sure_strike", result.ClassPackage.WizardSpellLoadout?.PreparedCurriculumRankOneSpell?.Id );
+        Assert.Equal( "spell.charming_push", result.ClassPackage.WizardSchoolMagic?.InitialSchoolSpell?.Id );
+        Assert.Equal( 1, result.ClassPackage.WizardSchoolMagic?.MaximumFocusPoints );
     }
 
     [Fact]

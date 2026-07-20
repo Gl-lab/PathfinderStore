@@ -13,11 +13,11 @@ public sealed class SpellRepositoryTests
 
         IReadOnlyCollection<SpellDefinition> spells = repository.GetAll();
 
-        Assert.Equal( 137, spells.Count );
-        Assert.Equal( 137, spells.Select( spell => spell.Id ).Distinct( StringComparer.Ordinal ).Count() );
+        Assert.Equal( 144, spells.Count );
+        Assert.Equal( 144, spells.Select( spell => spell.Id ).Distinct( StringComparer.Ordinal ).Count() );
         Assert.Equal( 33, spells.Count( spell => spell.Kind == SpellKind.Cantrip ) );
         Assert.Equal( 58, spells.Count( spell => spell.Kind == SpellKind.Spell ) );
-        Assert.Equal( 46, spells.Count( spell => spell.Kind == SpellKind.Focus ) );
+        Assert.Equal( 53, spells.Count( spell => spell.Kind == SpellKind.Focus ) );
         Assert.All( spells, spell => Assert.Equal( 1, spell.Rank ) );
     }
 

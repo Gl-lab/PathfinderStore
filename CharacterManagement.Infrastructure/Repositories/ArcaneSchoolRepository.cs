@@ -160,8 +160,7 @@ public sealed class ArcaneSchoolRepository : IArcaneSchoolRepository
                     "Extra Wizard Class Feat", "Grants an additional 1st-level wizard class feat.",
                     CharacterClassDependencyType.ClassFeatCatalog ),
                 Benefit( schoolId, "extra_spellbook_spell_choice", ArcaneSchoolBenefitKind.ExtraSpellbookSpellChoice,
-                    "Extra Spellbook Spell", "Adds one 1st-rank spell of your choice to your spellbook.",
-                    CharacterClassDependencyType.SpellCatalog ),
+                    "Extra Spellbook Spell", "Adds one 1st-rank spell of your choice to your spellbook." ),
                 Benefit( schoolId, "additional_drain_bonded_item_uses", ArcaneSchoolBenefitKind.AdditionalDrainBondedItemUses,
                     "Expanded Drain Bonded Item", "Allows one Drain Bonded Item use per spell rank each day.",
                     CharacterClassDependencyType.ClassFeatureRules ),
@@ -200,7 +199,9 @@ public sealed class ArcaneSchoolRepository : IArcaneSchoolRepository
             kind == ArcaneSchoolBenefitKind.InitialSchoolSpell
                 ? "Initial school focus spell."
                 : "Advanced school focus spell available through a later class feat.",
-            [ CharacterClassDependencyType.SpellCatalog, CharacterClassDependencyType.ClassFeatureRules ] );
+            kind == ArcaneSchoolBenefitKind.InitialSchoolSpell
+                ? []
+                : [ CharacterClassDependencyType.SpellCatalog, CharacterClassDependencyType.ClassFeatureRules ] );
     }
 
     private static ArcaneSchoolBenefitDescriptor Benefit(
@@ -209,9 +210,13 @@ public sealed class ArcaneSchoolRepository : IArcaneSchoolRepository
         ArcaneSchoolBenefitKind kind,
         string name,
         string summary,
-        CharacterClassDependencyType dependency )
+        CharacterClassDependencyType? dependency = null )
     {
         return new ArcaneSchoolBenefitDescriptor(
-            $"{schoolId}.benefit.{id}", kind, name, summary, [ dependency ] );
+            $"{schoolId}.benefit.{id}",
+            kind,
+            name,
+            summary,
+            dependency.HasValue ? [ dependency.Value ] : [] );
     }
 }

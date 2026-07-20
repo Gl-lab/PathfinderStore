@@ -509,6 +509,43 @@ onMounted(load)
                 {{ benefit.name }} — {{ benefit.summary }}
               </p>
             </template>
+            <template v-if="character.classPackage.wizardSpellLoadout">
+              <p>
+                {{ t('classUi.wizardSpellbookCantrips') }}:
+                {{ character.classPackage.wizardSpellLoadout.spellbookCantrips.map((spell) => spell.name).join(', ') }}
+              </p>
+              <p>
+                {{ t('classUi.wizardSpellbookSpells', { count: character.classPackage.wizardSpellLoadout.spellbookRankOneSpells.length }) }}:
+                {{ character.classPackage.wizardSpellLoadout.spellbookRankOneSpells.map((spell) => spell.name).join(', ') }}
+              </p>
+              <p v-if="character.classPackage.wizardSpellLoadout.curriculumCantrip">
+                {{ t('classUi.wizardCurriculumCantrip') }}:
+                {{ character.classPackage.wizardSpellLoadout.curriculumCantrip.name }}
+              </p>
+              <p v-if="character.classPackage.wizardSpellLoadout.curriculumRankOneSpells.length">
+                {{ t('classUi.wizardCurriculumSpells') }}:
+                {{ character.classPackage.wizardSpellLoadout.curriculumRankOneSpells.map((spell) => spell.name).join(', ') }}
+              </p>
+              <p>
+                {{ t('classUi.wizardPreparedCantrips') }}:
+                {{ character.classPackage.wizardSpellLoadout.preparedCantrips.map((spell) => spell.name).join(', ') }}
+              </p>
+              <p>
+                {{ t('classUi.wizardSpellSlot', { number: '1–2' }) }}:
+                {{ character.classPackage.wizardSpellLoadout.preparedRankOneSpells.map((spell) => spell.name).join(', ') }}
+              </p>
+              <p v-if="character.classPackage.wizardSpellLoadout.preparedCurriculumRankOneSpell">
+                {{ t('classUi.wizardCurriculumSpellSlot') }}:
+                {{ character.classPackage.wizardSpellLoadout.preparedCurriculumRankOneSpell.name }}
+              </p>
+            </template>
+            <template v-if="character.classPackage.wizardSchoolMagic">
+              <p>
+                {{ character.classPackage.wizardSchoolMagic.initialSchoolSpell?.name }} ·
+                {{ t('classUi.focusPoints') }}: {{ character.classPackage.wizardSchoolMagic.maximumFocusPoints }}
+              </p>
+              <p>Drain Bonded Item: {{ character.classPackage.wizardSchoolMagic.drainBondedItemUsesPerDay }}</p>
+            </template>
             <template v-if="character.classPackage.arcaneThesis">
               <p>
                 {{ t('classUi.arcaneThesis') }}: {{ character.classPackage.arcaneThesis.name }}

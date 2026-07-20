@@ -49,7 +49,15 @@ public interface ICharacterBuilder
         IReadOnlyList<string>? witchFamiliarSpellIds = null,
         IReadOnlyList<string>? witchPreparedCantripIds = null,
         IReadOnlyList<string>? witchPreparedSpellIds = null,
-        string? witchFocusHexId = null );
+        string? witchFocusHexId = null,
+        IReadOnlyList<string>? wizardSpellbookCantripIds = null,
+        IReadOnlyList<string>? wizardSpellbookSpellIds = null,
+        string? wizardCurriculumCantripId = null,
+        IReadOnlyList<string>? wizardCurriculumSpellIds = null,
+        IReadOnlyList<string>? wizardPreparedCantripIds = null,
+        IReadOnlyList<string>? wizardPreparedSpellIds = null,
+        string? wizardPreparedCurriculumCantripId = null,
+        string? wizardPreparedCurriculumSpellId = null );
     void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts );
     void SetClassTraining(
         string characterClassId,

@@ -409,6 +409,14 @@ export interface CreateCharacterRequest {
   witchPreparedCantripIds: string[]
   witchPreparedSpellIds: string[]
   witchFocusHexId: string | null
+  wizardSpellbookCantripIds: string[]
+  wizardSpellbookSpellIds: string[]
+  wizardCurriculumCantripId: string | null
+  wizardCurriculumSpellIds: string[]
+  wizardPreparedCantripIds: string[]
+  wizardPreparedSpellIds: string[]
+  wizardPreparedCurriculumCantripId: string | null
+  wizardPreparedCurriculumSpellId: string | null
   finalFreeBoosts: AbilityCode[]
   classSkillGrantChoices: ClassSkillGrantChoice[]
   additionalClassTrainingChoices: ClassTrainingTargetChoice[]

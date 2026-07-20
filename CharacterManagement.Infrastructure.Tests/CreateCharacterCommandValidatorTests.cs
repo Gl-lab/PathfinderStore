@@ -434,6 +434,7 @@ public sealed class CreateCharacterCommandValidatorTests
         character.ClassKeyAbility = AbilityType.Intelligence;
         character.ArcaneSchoolId = "arcane_school.mentalism";
         character.ArcaneThesisId = "arcane_thesis.spell_substitution";
+        SetWizardSpellLoadout( character );
 
         validator.ValidateAndThrow( new CreateCharacterCommand( 42, character ) );
     }
@@ -469,6 +470,7 @@ public sealed class CreateCharacterCommandValidatorTests
         character.ClassKeyAbility = AbilityType.Intelligence;
         character.ArcaneSchoolId = "arcane_school.mentalism";
         character.ArcaneThesisId = "arcane_thesis.spell_substitution";
+        SetWizardSpellLoadout( character );
 
         validator.ValidateAndThrow( new CreateCharacterCommand( 42, character ) );
     }
@@ -541,5 +543,22 @@ public sealed class CreateCharacterCommandValidatorTests
     private static string[] ClericCantripIds()
     {
         return [ "spell.daze", "spell.detect_magic", "spell.divine_lance", "spell.guidance", "spell.light" ];
+    }
+
+    private static void SetWizardSpellLoadout( CreateCharacterRequestDto character )
+    {
+        character.WizardSpellbookCantripIds =
+        [
+            "spell.detect_magic", "spell.light", "spell.message", "spell.prestidigitation", "spell.read_aura",
+            "spell.shield", "spell.sigil", "spell.summon_instrument", "spell.telekinetic_hand", "spell.telekinetic_projectile",
+        ];
+        character.WizardSpellbookSpellIds =
+        [ "spell.air_bubble", "spell.alarm", "spell.command", "spell.disguise_magic", "spell.enfeeble" ];
+        character.WizardCurriculumCantripId = "spell.daze";
+        character.WizardCurriculumSpellIds = [ "spell.dizzying_colors", "spell.sleep" ];
+        character.WizardPreparedCantripIds = character.WizardSpellbookCantripIds.Take( 5 ).ToArray();
+        character.WizardPreparedSpellIds = [ "spell.air_bubble", "spell.air_bubble" ];
+        character.WizardPreparedCurriculumCantripId = "spell.figment";
+        character.WizardPreparedCurriculumSpellId = "spell.sure_strike";
     }
 }

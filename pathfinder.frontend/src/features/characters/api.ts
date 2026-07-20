@@ -179,6 +179,24 @@ export interface CharacterClassPackage {
       deferredDependencies: string[]
     }[]
   } | null
+  wizardSpellLoadout: {
+    spellbookCantrips: { id: string; name: string }[]
+    spellbookRankOneSpells: { id: string; name: string }[]
+    curriculumCantrip: { id: string; name: string } | null
+    curriculumRankOneSpells: { id: string; name: string }[]
+    preparedCantrips: { id: string; name: string }[]
+    preparedRankOneSpells: { id: string; name: string }[]
+    preparedCurriculumCantrip: { id: string; name: string } | null
+    preparedCurriculumRankOneSpell: { id: string; name: string } | null
+    baseRankOneSpellSlotCount: number
+    curriculumRankOneSpellSlotCount: number
+  } | null
+  wizardSchoolMagic: {
+    maximumFocusPoints: number
+    drainBondedItemUsesPerDay: number
+    initialSchoolSpell: { id: string; name: string } | null
+    sourceGrantId: string
+  } | null
   arcaneThesis: {
     id: string
     name: string

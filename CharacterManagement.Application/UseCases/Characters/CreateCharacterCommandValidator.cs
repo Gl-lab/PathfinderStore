@@ -174,11 +174,37 @@ public sealed class CreateCharacterCommandValidator : AbstractValidator<CreateCh
 
                 When(
                     command => command.Character.ClassId == "class.wizard",
-                    () => RuleFor( command => command.Character.ArcaneSchoolId ).NotEmpty() );
+                    () =>
+                    {
+                        RuleFor( command => command.Character.ArcaneSchoolId ).NotEmpty();
+                        RuleFor( command => command.Character.WizardSpellbookCantripIds )
+                            .NotNull()
+                            .Must( spellIds => spellIds.Count == 10 );
+                        RuleFor( command => command.Character.WizardSpellbookSpellIds )
+                            .NotNull()
+                            .Must( spellIds => ( spellIds.Count == 5 ) || ( spellIds.Count == 6 ) );
+                        RuleFor( command => command.Character.WizardPreparedCantripIds )
+                            .NotNull()
+                            .Must( spellIds => spellIds.Count == 5 );
+                        RuleFor( command => command.Character.WizardPreparedSpellIds )
+                            .NotNull()
+                            .Must( spellIds => spellIds.Count == 2 );
+                    } );
 
                 When(
                     command => command.Character.ClassId != "class.wizard",
-                    () => RuleFor( command => command.Character.ArcaneSchoolId ).Empty() );
+                    () =>
+                    {
+                        RuleFor( command => command.Character.ArcaneSchoolId ).Empty();
+                        RuleFor( command => command.Character.WizardSpellbookCantripIds ).Empty();
+                        RuleFor( command => command.Character.WizardSpellbookSpellIds ).Empty();
+                        RuleFor( command => command.Character.WizardCurriculumCantripId ).Empty();
+                        RuleFor( command => command.Character.WizardCurriculumSpellIds ).Empty();
+                        RuleFor( command => command.Character.WizardPreparedCantripIds ).Empty();
+                        RuleFor( command => command.Character.WizardPreparedSpellIds ).Empty();
+                        RuleFor( command => command.Character.WizardPreparedCurriculumCantripId ).Empty();
+                        RuleFor( command => command.Character.WizardPreparedCurriculumSpellId ).Empty();
+                    } );
 
                 When(
                     command => command.Character.ClassId == "class.wizard",

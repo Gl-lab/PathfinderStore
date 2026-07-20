@@ -322,8 +322,7 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
             CharacterClassRuleKind.Spellcasting,
             "Spellcasting",
             summary,
-            true,
-            CharacterClassDependencyType.SpellCatalog );
+            true );
     }
 
     private static CharacterClassRuleDescriptor Feature( string id, string name, string summary )

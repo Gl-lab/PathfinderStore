@@ -31,6 +31,7 @@ Vikunja остаётся источником истины по фактичес
 - [`witch_patron_implementation.md`](witch_patron_implementation.md)
 - [`wizard_arcane_school_implementation.md`](wizard_arcane_school_implementation.md)
 - [`wizard_arcane_thesis_implementation.md`](wizard_arcane_thesis_implementation.md)
+- [`wizard_spell_flow_priority_4_implementation.md`](wizard_spell_flow_priority_4_implementation.md)
 - [`priority_1_final_review.md`](priority_1_final_review.md)
 - [`cleric_spell_flow_priority_2_implementation.md`](cleric_spell_flow_priority_2_implementation.md)
 - [`spell_catalog_player_core_implementation.md`](spell_catalog_player_core_implementation.md)

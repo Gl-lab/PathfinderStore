@@ -443,6 +443,14 @@ public sealed class CreateCharacterHandlerTests
             ClassKeyAbility = AbilityType.Intelligence,
             ArcaneSchoolId = "arcane_school.mentalism",
             ArcaneThesisId = "arcane_thesis.spell_substitution",
+            WizardSpellbookCantripIds = WizardCantripIds(),
+            WizardSpellbookSpellIds = WizardSpellIds(),
+            WizardCurriculumCantripId = "spell.daze",
+            WizardCurriculumSpellIds = [ "spell.dizzying_colors", "spell.sleep" ],
+            WizardPreparedCantripIds = WizardCantripIds().Take( 5 ).ToArray(),
+            WizardPreparedSpellIds = [ "spell.air_bubble", "spell.air_bubble" ],
+            WizardPreparedCurriculumCantripId = "spell.figment",
+            WizardPreparedCurriculumSpellId = "spell.sure_strike",
             FinalFreeBoosts =
             [
                 AbilityType.Strength,
@@ -474,6 +482,9 @@ public sealed class CreateCharacterHandlerTests
         Assert.Equal(
             "arcane_thesis.spell_substitution",
             savedCharacter.SelectedArcaneThesisId );
+        Assert.Equal( WizardCantripIds(), savedCharacter.WizardSpellbookCantripIds );
+        Assert.Equal( 5, savedCharacter.WizardSpellbookSpellIds.Count );
+        Assert.Equal( "spell.sure_strike", savedCharacter.SelectedPreparedWizardCurriculumSpellId );
     }
 
     [Fact]
@@ -619,6 +630,15 @@ public sealed class CreateCharacterHandlerTests
     {
         return [ "spell.caustic_blast", "spell.detect_magic", "spell.electric_arc", "spell.guidance", "spell.light" ];
     }
+
+    private static string[] WizardCantripIds() =>
+    [
+        "spell.detect_magic", "spell.light", "spell.message", "spell.prestidigitation", "spell.read_aura",
+        "spell.shield", "spell.sigil", "spell.summon_instrument", "spell.telekinetic_hand", "spell.telekinetic_projectile",
+    ];
+
+    private static string[] WizardSpellIds() =>
+        [ "spell.air_bubble", "spell.alarm", "spell.command", "spell.disguise_magic", "spell.enfeeble" ];
 
     private static async Task<Account> CreateAccountAsync(
         CharacterManagementDbContext dbContext,
