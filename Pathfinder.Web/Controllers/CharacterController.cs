@@ -153,6 +153,63 @@ public sealed class CharacterController : AuthorizedController
         }
     }
 
+    [HttpPut( "{characterId:int}/gender" )]
+    [ProducesResponseType( StatusCodes.Status200OK )]
+    [ProducesResponseType( StatusCodes.Status401Unauthorized )]
+    [ProducesResponseType( typeof( IReadOnlyCollection<string> ), StatusCodes.Status400BadRequest )]
+    [ProducesResponseType( typeof( IReadOnlyCollection<string> ), StatusCodes.Status404NotFound )]
+    [ProducesResponseType( typeof( IReadOnlyCollection<string> ), StatusCodes.Status503ServiceUnavailable )]
+    public async Task<ActionResult> SetGender(
+        int characterId,
+        [FromBody] SetCharacterGenderRequestDto request )
+    {
+        try
+        {
+            int userId = GetCurrentUserId();
+            await _mediator.Send( new SetCharacterGenderCommand(
+                userId,
+                characterId,
+                request.Gender ) );
+            return Ok();
+        }
+        catch ( InvalidOperationException )
+        {
+            return Unauthorized();
+        }
+        catch ( ValidationException exception )
+        {
+            return BadRequest( MapValidationErrors( exception ) );
+        }
+        catch ( CharacterManagementException exception )
+        {
+            return NotFound( MapErrorMessage( exception.Message ) );
+        }
+        catch ( Pathfinder.CharacterManagement.Domain.Exceptions.CharacterManagementException exception )
+        {
+            return BadRequest( MapErrorMessage( exception.Message ) );
+        }
+        catch ( DbUpdateException exception )
+        {
+            _logger.LogError(
+                exception,
+                "Failed to set gender for character {CharacterId}.",
+                characterId );
+            return StatusCode(
+                StatusCodes.Status503ServiceUnavailable,
+                MapErrorMessage( "Character data is temporarily unavailable." ) );
+        }
+        catch ( PostgresException exception )
+        {
+            _logger.LogError(
+                exception,
+                "PostgreSQL failed while setting gender for character {CharacterId}.",
+                characterId );
+            return StatusCode(
+                StatusCodes.Status503ServiceUnavailable,
+                MapErrorMessage( "Character data is temporarily unavailable." ) );
+        }
+    }
+
     [HttpDelete( "{characterId:int}" )]
     [ProducesResponseType( StatusCodes.Status200OK )]
     [ProducesResponseType( StatusCodes.Status401Unauthorized )]

@@ -13,6 +13,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public string Name { get; private set; }
     public string? Concept { get; private set; }
     public int? Age { get; private set; }
+    public CharacterGender Gender { get; private set; }
+    public AvatarId AvatarId { get; private set; }
     public AncestryType AncestryType { get; private set; }
     public AbilityScores AbilityScores { get; private set; }
     public IReadOnlyList<AbilityType> AppliedFreeBoosts { get; private set; } = [];
@@ -69,7 +71,9 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         string name,
         AncestryType ancestryType,
         string? concept = null,
-        int? age = null )
+        int? age = null,
+        CharacterGender gender = CharacterGender.NotSpecified,
+        AvatarId? avatarId = null )
     {
         if ( accountId <= 0 )
         {
@@ -86,12 +90,19 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
             throw new CharacterManagementException( "AncestryType must be specified" );
         }
 
+        if ( !Enum.IsDefined( gender ) )
+        {
+            throw new CharacterManagementException( $"Unknown character gender '{gender}'." );
+        }
+
         return new DraftCharacter
         {
             AccountId = accountId,
             Name = name.Trim(),
             Concept = NormalizeConcept( concept ),
             Age = NormalizeAge( age ),
+            Gender = gender,
+            AvatarId = avatarId ?? AvatarIds.Unknown,
             AncestryType = ancestryType,
             AbilityScores = AbilityScores.CreateDefault()
         };
@@ -111,6 +122,23 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
             Name = newName.Trim();
             EnsureInvariants();
         }
+    }
+
+    public void SetGender( CharacterGender gender )
+    {
+        if ( Gender != CharacterGender.NotSpecified )
+        {
+            throw new CharacterManagementException( "Character gender has already been specified." );
+        }
+
+        if ( ( gender != CharacterGender.Male ) &&
+             ( gender != CharacterGender.Female ) )
+        {
+            throw new CharacterManagementException( "Character gender must be Male or Female." );
+        }
+
+        Gender = gender;
+        EnsureInvariants();
     }
 
     private static string? NormalizeConcept( string? concept )
@@ -717,6 +745,16 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         if ( AbilityScores == null )
         {
             throw new CharacterManagementException( "Character must have ability scores" );
+        }
+
+        if ( !Enum.IsDefined( Gender ) )
+        {
+            throw new CharacterManagementException( "Character must have a valid gender state." );
+        }
+
+        if ( AvatarId is null )
+        {
+            throw new CharacterManagementException( "Character must have an avatar identifier." );
         }
     }
 

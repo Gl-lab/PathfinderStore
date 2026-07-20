@@ -1,4 +1,5 @@
 using Pathfinder.CharacterManagement.Application.Builders.Implementation;
+using Pathfinder.CharacterManagement.Application.Avatars;
 using Pathfinder.CharacterManagement.Application.DTO;
 using Pathfinder.CharacterManagement.Application.Exceptions;
 using Pathfinder.CharacterManagement.Application.Features.Characters.Queries.Mapping;
@@ -41,6 +42,7 @@ public sealed class GetCharacterQueriesTests
 
         Assert.Equal( draftCharacter.Id, result.Id );
         Assert.Equal( "Merisiel", result.Name );
+        Assert.Equal( CharacterGender.NotSpecified, result.Gender );
         Assert.Equal( 10, result.Characteristics.Strength.Value );
         Assert.Null( result.Backpack );
         Assert.Null( result.BackgroundPackage );
@@ -823,6 +825,18 @@ public sealed class GetCharacterQueriesTests
         CharacterDetailsDtoMapper mapper = new CharacterDetailsDtoMapper();
 
         Assert.Throws<InvalidOperationException>( () => mapper.Convert( builder.Build() ) );
+    }
+
+    [Fact]
+    public void Convert_IncludesStoredAvatarIdentifierAndResolvedPath()
+    {
+        DraftCharacter character = DraftCharacter.Create( 1, "Avatar Test", AncestryType.Human );
+        CharacterDetailsDtoMapper mapper = new CharacterDetailsDtoMapper( avatarCatalog: new AvatarCatalog() );
+
+        CharacterDto result = mapper.Convert( character );
+
+        Assert.Equal( AvatarIds.Unknown.Value, result.AvatarId );
+        Assert.Equal( AvatarCatalog.UnknownPath, result.AvatarPath );
     }
 
     [Fact]

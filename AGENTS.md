@@ -44,6 +44,7 @@
 
 | Файл | Содержимое |
 |------|-----------|
+| `MemoryBank/10_workflow/avatar_assets.md` | Пошаговый workflow генерации, проверки, конвертации и подключения аватаров |
 | `MemoryBank/00_project/project_pathfinder_character_domain.md` | Детальный анализ CharacterManagement: что реализовано, что нет |
 | `MemoryBank/30_task_notes/mvp_character_creation_backend.md` | Статус backend MVP создания персонажа |
 | `MemoryBank/30_task_notes/mvp_character_creation_frontend.md` | Статус frontend MVP создания персонажа |
@@ -58,6 +59,18 @@
 Актуальный стек, структура solution, dev setup, API и статус модулей описаны только в [`MemoryBank/00_project/project_overview.md`](MemoryBank/00_project/project_overview.md).
 
 Не дублировать в этом файле изменчивые сведения о реализации и статусе задач: это приводит к рассинхронизации правил для агентов и проектной документации.
+
+---
+
+## C# Language Server
+
+Перед первым анализом или изменением C#-кода в каждой сессии:
+
+1. Определить корень текущего Git-репозитория командой `git rev-parse --show-toplevel`.
+2. Преобразовать полученный путь в абсолютный путь текущей операционной системы.
+3. Вызвать `csharp_set_workspace`, передав полученный абсолютный путь.
+4. Не использовать захардкоженные пути к локальному каталогу проекта.
+5. Если `csharp_set_workspace` недоступен или завершился ошибкой, явно сообщить об этом перед продолжением работы с C#.
 
 ---
 

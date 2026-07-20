@@ -16,6 +16,7 @@ Vikunja остаётся источником истины по фактичес
 
 ## Активный контекст
 
+- [`character_gender_and_avatars.md`](character_gender_and_avatars.md)
 - [`character_creation_near_term_roadmap.md`](character_creation_near_term_roadmap.md)
 - [`task_32_account_backfill.md`](task_32_account_backfill.md)
 - [`task_33_observability.md`](task_33_observability.md)

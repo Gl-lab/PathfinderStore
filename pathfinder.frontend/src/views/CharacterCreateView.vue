@@ -21,6 +21,10 @@ import {
   groupProficiencies,
 } from '@/features/characters/proficiencies'
 import {
+  isSelectableCharacterGender,
+  type SelectableCharacterGender,
+} from '@/features/characters/gender'
+import {
   createCharacter,
   getAncestries,
   getBackgrounds,
@@ -152,6 +156,7 @@ const form = ref({
   name: '',
   concept: '',
   age: null as number | null,
+  gender: null as SelectableCharacterGender | null,
   ancestryType: null as AncestryCode | null,
   heritageId: null as string | null,
   ancestryFeatId: null as string | null,
@@ -359,6 +364,7 @@ const canContinue = computed(() => {
   if (step.value === 1)
     return (
       Boolean(form.value.name.trim()) &&
+      isSelectableCharacterGender(form.value.gender) &&
       (form.value.age === null || (Number.isInteger(form.value.age) && form.value.age > 0))
   )
   if (step.value === 2) return selectedAncestry.value !== null
@@ -640,6 +646,7 @@ async function submit(): Promise<void> {
     !selectedAncestry.value ||
     !selectedBackground.value ||
     !selectedCharacterClass.value ||
+    !isSelectableCharacterGender(form.value.gender) ||
     !form.value.backgroundRestrictedBoost ||
     !form.value.backgroundFreeBoost ||
     !form.value.classKeyAbility ||
@@ -694,6 +701,7 @@ async function submit(): Promise<void> {
       name: form.value.name.trim(),
       concept: form.value.concept.trim() || null,
       age: form.value.age,
+      gender: form.value.gender,
       ancestryType: selectedAncestry.value.type,
       heritageId: selectedHeritage.value?.id ?? '',
       ancestryFeatId: selectedAncestryFeat.value?.id ?? '',
@@ -843,6 +851,15 @@ watch(
             :hint="t('wizard.conceptHint')"
             persistent-hint
           /><v-text-field v-model.number="form.age" :label="t('wizard.age')" type="number" min="1" />
+          <v-radio-group
+            v-model="form.gender"
+            :label="t('wizard.gender')"
+            :rules="[(value) => Boolean(value) || t('wizard.genderRequired')]"
+            required
+          >
+            <v-radio :label="t('wizard.genders.Male')" value="Male" />
+            <v-radio :label="t('wizard.genders.Female')" value="Female" />
+          </v-radio-group>
         </section>
         <section v-else-if="step === 2">
           <h2>{{ t('wizard.ancestry') }}</h2>
@@ -1370,6 +1387,9 @@ watch(
           <h2>{{ t('wizard.review') }}</h2>
           <v-list lines="two"
             ><v-list-item :title="t('common.name')" :subtitle="form.name" /><v-list-item
+              v-if="form.gender"
+              :title="t('wizard.gender')"
+              :subtitle="t(`wizard.genders.${form.gender}`)" /><v-list-item
               :title="t('wizard.selectedAncestry')"
               :subtitle="getAncestryLabel(selectedAncestry.type)" /><v-list-item
               :title="t('wizard.heritage')"

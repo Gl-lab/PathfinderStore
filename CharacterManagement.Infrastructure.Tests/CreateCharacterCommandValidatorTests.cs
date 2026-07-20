@@ -16,6 +16,7 @@ public sealed class CreateCharacterCommandValidatorTests
             new CreateCharacterRequestDto
             {
                 Name = "Thorin",
+                Gender = CharacterGender.Male,
                 AncestryType = AncestryType.Human,
                 HeritageId = "human.skilled",
                 AncestryFeatId = "human.cooperative_nature",
@@ -62,6 +63,7 @@ public sealed class CreateCharacterCommandValidatorTests
             new CreateCharacterRequestDto
             {
                 Name = "Thorin",
+                Gender = CharacterGender.Male,
                 AncestryType = AncestryType.Human,
                 HeritageId = "human.skilled",
                 AncestryFeatId = "human.cooperative_nature",
@@ -81,6 +83,20 @@ public sealed class CreateCharacterCommandValidatorTests
             } );
 
         validator.ValidateAndThrow( command );
+    }
+
+    [Theory]
+    [InlineData( CharacterGender.NotSpecified )]
+    [InlineData( ( CharacterGender )99 )]
+    public void Validate_WhenGenderIsNotSelectable_ThrowsValidationException(
+        CharacterGender gender )
+    {
+        CreateCharacterCommandValidator validator = new CreateCharacterCommandValidator();
+        CreateCharacterRequestDto character = CreateValidRequest();
+        character.Gender = gender;
+
+        Assert.Throws<ValidationException>( () => validator.ValidateAndThrow(
+            new CreateCharacterCommand( 42, character ) ) );
     }
 
     [Fact]
@@ -452,6 +468,7 @@ public sealed class CreateCharacterCommandValidatorTests
         return new CreateCharacterRequestDto
         {
             Name = "Thorin",
+            Gender = CharacterGender.Male,
             AncestryType = AncestryType.Human,
             HeritageId = "human.skilled",
             AncestryFeatId = "human.cooperative_nature",
