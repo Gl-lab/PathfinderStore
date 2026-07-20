@@ -47,6 +47,7 @@ Vikunja остаётся источником истины по фактичес
 - [`skill_lore_modifiers_implementation.md`](skill_lore_modifiers_implementation.md)
 - [`priority_3_final_review.md`](priority_3_final_review.md)
 - [`priority_4_final_review.md`](priority_4_final_review.md)
+- [`priority_5_final_review.md`](priority_5_final_review.md)
 - [`final_free_boosts_implementation.md`](final_free_boosts_implementation.md)
 - [`hit_points_v1_implementation.md`](hit_points_v1_implementation.md)
 - [`skills_lore_foundation_implementation.md`](skills_lore_foundation_implementation.md)

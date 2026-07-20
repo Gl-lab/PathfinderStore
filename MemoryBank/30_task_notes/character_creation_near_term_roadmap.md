@@ -12,16 +12,17 @@ Vikunja остаётся источником истины по карточка
 
 - имя, концепцию и возраст;
 - `Ancestry`, heritage, ancestry feat и ancestry boosts/flaws;
-- `Background`, два boosts и фактический skill/Lore training;
+- `Background`, два boosts, фактический skill/Lore training и background skill feat;
 - `Class`, key ability boost и четыре финальных свободных boosts;
 - типизированные стартовые proficiencies;
 - обязательные class choices всех восьми классов Player Core baseline;
 - divine skill replacement, favored weapon proficiency, Divine Font и sanctification;
 - полный Cleric spell loadout первого уровня: primary Domain, 5 cantrips, 2 prepared spells, 4 derived Font slots и Domain focus spell с Focus Pool `1`;
+- единый Player Core feat catalog и inventory выбранных/granted ancestry, background skill и class feats;
 - сохранение через EF, API/read-модели, список, карточку и удаление во frontend;
 - вычисляемые ability modifiers и maximum HP первого уровня.
 
-Стартовый pipeline характеристик, class skills, обязательных классовых выборов и Cleric spells первого уровня завершён. Не связанные с Cleric spell flow class-choice benefits по-прежнему могут возвращаться typed descriptors. Background skill feat, class/ancestry feats, equipment, spellcasting lifecycle и большинство derived statistics ещё не применяются.
+Стартовый pipeline характеристик, class skills, обязательных классовых выборов, spell loadout и feat inventory первого уровня завершён. Поддерживаемые постоянные training effects feats влияют на Skills/Lore и modifiers; остальные spell/action/combat/inventory effects остаются typed dependencies. Equipment, spellcasting lifecycle и большинство combat statistics ещё не реализованы.
 
 ## Завершённый фундамент
 
@@ -264,6 +265,8 @@ AC, attacks, damage, current/temporary HP и equipment bonuses не входят
 
 ### Приоритет 5 — feat subsystem первого уровня
 
+**Статус:** завершён 20 июля 2026 года; выполнен [итоговый cross-review](priority_5_final_review.md). Все четыре slice реализованы последовательно: Player Core catalog, общий ancestry/background inventory, обязательные class/skill feat choices и поддерживаемые training effects.
+
 **Цель.** Представить ancestry, background skill и class feats единым типизированным набором выбранных и granted feats, который можно валидировать, сохранять и показывать в карточке.
 
 **Проблема.** Ancestry feat уже выбирается, Background содержит декларативный skill feat, а часть классов и class choices требует class feat. Эти источники не образуют общего feat inventory; поэтому карточка не показывает полный набор feats, а prerequisites и повторяющиеся grants нельзя проверять единообразно.
@@ -282,6 +285,8 @@ AC, attacks, damage, current/temporary HP и equipment bonuses не входят
 - смена ancestry/background/class очищает зависимые feat choices без потери независимых grants;
 - wizard и карточка показывают название, источник, category и явно отложенные effects;
 - задача не вводит частичный combat engine ради отдельных feat descriptions.
+
+Все критерии выполнены в пределах явно зафиксированного baseline. Feats с дополнительными parameter choices, временным training, weapon/combat/spell/inventory mechanics и higher-level progression остаются типизированными deferred dependencies, а не частично исполненными правилами.
 
 ### Приоритет 6 — языки и финализация создания персонажа
 

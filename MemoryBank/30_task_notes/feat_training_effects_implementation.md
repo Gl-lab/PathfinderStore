@@ -39,9 +39,9 @@ Feat inventory показывает выбранные и granted feats, но д
 
 ## Проверки
 
-- `dotnet test CharacterManagement.Domain.Tests/CharacterManagement.Domain.Tests.csproj --no-restore` — пройдено, 204 tests.
-- `dotnet test CharacterManagement.Infrastructure.Tests/CharacterManagement.Infrastructure.Tests.csproj --no-restore` — пройдено, 242 tests.
-- `npm test -- --run` — пройдено, 79 tests.
+- `dotnet test CharacterManagement.Domain.Tests/CharacterManagement.Domain.Tests.csproj --no-restore` — пройдено, 205 tests.
+- `dotnet test CharacterManagement.Infrastructure.Tests/CharacterManagement.Infrastructure.Tests.csproj --no-restore` — пройдено, 243 tests.
+- `npm test -- --run` — пройдено, 80 tests.
 - `npm run build` — пройдено; остаётся существующее предупреждение Vite о размере chunk.
 
 ## Результат review
