@@ -12,6 +12,8 @@
 
 Полная матрица ID и metadata: [avatar_asset_matrix.md](avatar_asset_matrix.md).
 
+Пошаговый порядок выбора строк, формирования конкретного промта, визуальной приёмки, конвертации и подключения ассета: [avatar_assets.md](../10_workflow/avatar_assets.md).
+
 ## Проверенные источники ancestry
 
 Все записи относятся к `Player Core`. Формулировки ниже являются кратким пересказом разделов Summary и Physical Description.

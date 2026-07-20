@@ -44,6 +44,7 @@
 
 | Файл | Содержимое |
 |------|-----------|
+| `MemoryBank/10_workflow/avatar_assets.md` | Пошаговый workflow генерации, проверки, конвертации и подключения аватаров |
 | `MemoryBank/00_project/project_pathfinder_character_domain.md` | Детальный анализ CharacterManagement: что реализовано, что нет |
 | `MemoryBank/30_task_notes/mvp_character_creation_backend.md` | Статус backend MVP создания персонажа |
 | `MemoryBank/30_task_notes/mvp_character_creation_frontend.md` | Статус frontend MVP создания персонажа |
