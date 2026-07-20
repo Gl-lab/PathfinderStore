@@ -6,6 +6,7 @@ using Pathfinder.CharacterManagement.Application.Avatars;
 using Pathfinder.CharacterManagement.Application.Builders;
 using Pathfinder.CharacterManagement.Application.Builders.Implementation;
 using Pathfinder.CharacterManagement.Application.Converters;
+using Pathfinder.CharacterManagement.Application.Completion;
 using Pathfinder.CharacterManagement.Application.Features.Characters.Queries.Mapping;
 using Pathfinder.CharacterManagement.Application.UseCases.Characters;
 using Pathfinder.CharacterManagement.Domain.Entity;
@@ -22,6 +23,7 @@ public static class DependencyInjection
         services.AddSingleton<IAvatarSelector, AvatarSelector>();
         services.AddSingleton<IAncestryChoiceAvailabilityPolicy, CommonAncestryChoiceAvailabilityPolicy>();
         services.AddScoped<CharacterDetailsDtoMapper>();
+        services.AddScoped<CharacterCompletionEvaluator>();
         services.AddTransient<IValidator<CreateCharacterCommand>, CreateCharacterCommandValidator>();
         services.AddTransient<IValidator<SetCharacterGenderCommand>, SetCharacterGenderCommandValidator>();
         services.AddTransient( typeof( IPipelineBehavior<,> ), typeof( ValidationBehavior<,> ) );

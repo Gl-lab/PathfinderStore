@@ -1,6 +1,7 @@
 using Pathfinder.CharacterManagement.Application.Converters;
 using Pathfinder.CharacterManagement.Application.Avatars;
 using Pathfinder.CharacterManagement.Application.DTO;
+using Pathfinder.CharacterManagement.Application.Completion;
 using Pathfinder.CharacterManagement.Application.Repositories;
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.CharacterManagement.Domain.Rules.Feats;
@@ -27,6 +28,7 @@ public sealed class CharacterDetailsDtoMapper
     private readonly ISpellRepository? _spellRepository;
     private readonly IAvatarCatalog? _avatarCatalog;
     private readonly IFeatRepository? _featRepository;
+    private readonly CharacterCompletionEvaluator? _completionEvaluator;
 
     public CharacterDetailsDtoMapper(
         IAncestryRepository? ancestryRepository = null,
@@ -45,7 +47,8 @@ public sealed class CharacterDetailsDtoMapper
         IClericDomainRepository? clericDomainRepository = null,
         ISpellRepository? spellRepository = null,
         IAvatarCatalog? avatarCatalog = null,
-        IFeatRepository? featRepository = null )
+        IFeatRepository? featRepository = null,
+        CharacterCompletionEvaluator? completionEvaluator = null )
     {
         _ancestryRepository = ancestryRepository;
         _backgroundRepository = backgroundRepository;
@@ -64,6 +67,7 @@ public sealed class CharacterDetailsDtoMapper
         _spellRepository = spellRepository;
         _avatarCatalog = avatarCatalog;
         _featRepository = featRepository;
+        _completionEvaluator = completionEvaluator;
     }
 
     public DraftCharacter Convert( CharacterDto character ) => throw new NotSupportedException();
@@ -195,6 +199,7 @@ public sealed class CharacterDetailsDtoMapper
             Feats = characterFeats
                 .Select( CharacterFeatDtoMapper.Map )
                 .ToArray(),
+            Completion = _completionEvaluator?.Evaluate( draftCharacter ) ?? new CharacterCompletionDto(),
             Characteristics = new GroupCharacteristicDto
             {
                 Strength = Convert( draftCharacter.AbilityScores.Strength ),
@@ -583,8 +588,11 @@ public sealed class CharacterDetailsDtoMapper
         }
 
         IReadOnlyDictionary<string, SpellDefinition> definitions = GetSpellDefinitions();
+        string? familiarSpellChoiceId = patron.FamiliarSpellOptions.Count > 1
+            ? character.SelectedWitchPatronFamiliarSpellId
+            : null;
         string patronSpellId = patron
-            .ResolveFamiliarSpell( character.SelectedWitchPatronFamiliarSpellId )
+            .ResolveFamiliarSpell( familiarSpellChoiceId )
             .Id;
         return new WitchSpellLoadoutDto
         {

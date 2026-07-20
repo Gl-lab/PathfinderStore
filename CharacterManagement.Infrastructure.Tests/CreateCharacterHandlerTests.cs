@@ -3,6 +3,7 @@ using Pathfinder.CharacterManagement.Application.Builders.Implementation;
 using Pathfinder.CharacterManagement.Application.DTO;
 using Pathfinder.CharacterManagement.Application.UseCases.Characters;
 using Pathfinder.CharacterManagement.Application.Avatars;
+using Pathfinder.CharacterManagement.Application.Completion;
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.CharacterManagement.Domain.Rules.Training;
 using Pathfinder.CharacterManagement.Domain.Rules.Feats;
@@ -14,6 +15,24 @@ namespace CharacterManagement.Infrastructure.Tests;
 
 public sealed class CreateCharacterHandlerTests
 {
+    [Fact]
+    public void Completion_LegacySkeleton_ReturnsStructuredMissingPackageIssues()
+    {
+        DraftCharacter character = DraftCharacter.Create(
+            1,
+            "Legacy",
+            AncestryType.Human );
+
+        CharacterCompletionDto completion = CreateCompletionEvaluator().Evaluate( character );
+
+        Assert.False( completion.IsComplete );
+        Assert.Contains( completion.Issues, issue => issue.Code == CharacterCompletionIssueCode.Identity );
+        Assert.Contains( completion.Issues, issue => issue.Code == CharacterCompletionIssueCode.AncestryPackage );
+        Assert.Contains( completion.Issues, issue => issue.Code == CharacterCompletionIssueCode.BackgroundPackage );
+        Assert.Contains( completion.Issues, issue => issue.Code == CharacterCompletionIssueCode.ClassPackage );
+        Assert.Contains( completion.Issues, issue => issue.Code == CharacterCompletionIssueCode.FinalBoosts );
+    }
+
     [Fact]
     public async Task Handle_ValidRequest_PersistsDraftCharacterForCurrentUser()
     {
@@ -69,6 +88,7 @@ public sealed class CreateCharacterHandlerTests
             .SingleOrDefaultAsync( entity => entity.AccountId == account.Id );
 
         Assert.NotNull( savedCharacter );
+        AssertComplete( savedCharacter );
         Assert.Equal( character.Name, savedCharacter.Name );
         Assert.Equal( character.Concept, savedCharacter.Concept );
         Assert.Equal( character.Age, savedCharacter.Age );
@@ -132,6 +152,7 @@ public sealed class CreateCharacterHandlerTests
         CreateCharacterRequestDto character = new CreateCharacterRequestDto
         {
             Name = "Lini",
+            Gender = CharacterGender.Female,
             AncestryType = AncestryType.Human,
             HeritageId = "human.skilled",
             AncestryFeatId = "human.cooperative_nature",
@@ -187,6 +208,7 @@ public sealed class CreateCharacterHandlerTests
         Assert.Contains( savedCharacter.TrainedSkills, training => training.SkillId == "skill.nature" );
         Assert.Contains( savedCharacter.TrainedSkills, training => training.SkillId == "skill.diplomacy" );
         Assert.Equal( "druidic_order.leaf", savedCharacter.SelectedDruidicOrderId );
+        AssertComplete( savedCharacter );
         Assert.Equal( DruidCantripIds(), savedCharacter.PreparedDruidCantripIds );
         Assert.Equal( [ "spell.heal", "spell.heal" ], savedCharacter.PreparedDruidSpellIds );
         TrainedLore lore = Assert.Single( savedCharacter.TrainedLore );
@@ -203,6 +225,7 @@ public sealed class CreateCharacterHandlerTests
         CreateCharacterRequestDto character = new CreateCharacterRequestDto
         {
             Name = "Merisiel",
+            Gender = CharacterGender.Female,
             AncestryType = AncestryType.Human,
             HeritageId = "human.skilled",
             AncestryFeatId = "human.cooperative_nature",
@@ -251,6 +274,7 @@ public sealed class CreateCharacterHandlerTests
             .AsNoTracking()
             .SingleAsync( entity => entity.AccountId == account.Id );
         Assert.Equal( "rogue_racket.thief", savedCharacter.SelectedRogueRacketId );
+        AssertComplete( savedCharacter );
         Assert.Contains( savedCharacter.TrainedSkills, skill =>
             skill.SkillId == "skill.stealth" &&
             skill.SourceGrantId == "class.rogue.skill.stealth" );
@@ -268,6 +292,7 @@ public sealed class CreateCharacterHandlerTests
         CreateCharacterRequestDto character = new CreateCharacterRequestDto
         {
             Name = "Lem",
+            Gender = CharacterGender.Male,
             AncestryType = AncestryType.Human,
             HeritageId = "human.skilled",
             AncestryFeatId = "human.cooperative_nature",
@@ -320,6 +345,7 @@ public sealed class CreateCharacterHandlerTests
             .AsNoTracking()
             .SingleAsync( entity => entity.AccountId == account.Id );
         Assert.Equal( "bard_muse.maestro", savedCharacter.SelectedBardMuseId );
+        AssertComplete( savedCharacter );
         Assert.Equal( 5, savedCharacter.BardCantripIds.Count );
         Assert.Equal( [ "spell.command", "spell.fear" ], savedCharacter.BardSpellIds );
         Assert.Contains( savedCharacter.TrainedSkills, training => training.SkillId == "skill.occultism" );
@@ -335,6 +361,7 @@ public sealed class CreateCharacterHandlerTests
         CreateCharacterRequestDto character = new CreateCharacterRequestDto
         {
             Name = "Feiya",
+            Gender = CharacterGender.Female,
             AncestryType = AncestryType.Human,
             HeritageId = "human.skilled",
             AncestryFeatId = "human.cooperative_nature",
@@ -383,6 +410,7 @@ public sealed class CreateCharacterHandlerTests
             .AsNoTracking()
             .SingleAsync( entity => entity.AccountId == account.Id );
         Assert.Equal( "witch_patron.faiths_flamekeeper", savedCharacter.SelectedWitchPatronId );
+        AssertComplete( savedCharacter );
         Assert.Equal( "spell.command", savedCharacter.SelectedWitchPatronFamiliarSpellId );
         Assert.Equal( WitchSpellTestData.DivineCantrips(), savedCharacter.WitchFamiliarCantripIds );
         Assert.Equal( "spell.patron_s_puppet", savedCharacter.SelectedWitchFocusHexId );
@@ -400,6 +428,7 @@ public sealed class CreateCharacterHandlerTests
         CreateCharacterRequestDto character = new CreateCharacterRequestDto
         {
             Name = "Harsk",
+            Gender = CharacterGender.Male,
             AncestryType = AncestryType.Human,
             HeritageId = "human.skilled",
             AncestryFeatId = "human.cooperative_nature",
@@ -440,6 +469,7 @@ public sealed class CreateCharacterHandlerTests
             .AsNoTracking()
             .SingleAsync( entity => entity.AccountId == account.Id );
         Assert.Equal( "hunters_edge.precision", savedCharacter.SelectedHuntersEdgeId );
+        AssertComplete( savedCharacter );
     }
 
     [Fact]
@@ -451,6 +481,7 @@ public sealed class CreateCharacterHandlerTests
         CreateCharacterRequestDto character = new CreateCharacterRequestDto
         {
             Name = "Ezren",
+            Gender = CharacterGender.Male,
             AncestryType = AncestryType.Human,
             HeritageId = "human.skilled",
             AncestryFeatId = "human.cooperative_nature",
@@ -499,6 +530,7 @@ public sealed class CreateCharacterHandlerTests
             .AsNoTracking()
             .SingleAsync( entity => entity.AccountId == account.Id );
         Assert.Equal( "arcane_school.mentalism", savedCharacter.SelectedArcaneSchoolId );
+        AssertComplete( savedCharacter );
         Assert.Equal(
             "arcane_thesis.spell_substitution",
             savedCharacter.SelectedArcaneThesisId );
@@ -516,6 +548,7 @@ public sealed class CreateCharacterHandlerTests
         CreateCharacterRequestDto character = new CreateCharacterRequestDto
         {
             Name = "Kyra",
+            Gender = CharacterGender.Female,
             AncestryType = AncestryType.Human,
             HeritageId = "human.skilled",
             AncestryFeatId = "human.cooperative_nature",
@@ -561,6 +594,7 @@ public sealed class CreateCharacterHandlerTests
             .AsNoTracking()
             .SingleAsync( entity => entity.AccountId == account.Id );
         Assert.Equal( "cleric_doctrine.cloistered", savedCharacter.SelectedClericDoctrineId );
+        AssertComplete( savedCharacter );
         Assert.Equal( "deity.iomedae", savedCharacter.SelectedDeityId );
         Assert.Equal( "domain.might", savedCharacter.SelectedClericDomainId );
         Assert.Equal( DivineFont.Heal, savedCharacter.SelectedDivineFont );
@@ -635,6 +669,37 @@ public sealed class CreateCharacterHandlerTests
             new AvatarCatalog(),
             new RandomAvatarSelectionIndexProvider() );
         return new CreateCharacterHandler( accountRepository, characterBuilder, unitOfWork, avatarSelector );
+    }
+
+    private static void AssertComplete( DraftCharacter character )
+    {
+        CharacterCompletionEvaluator evaluator = CreateCompletionEvaluator();
+        CharacterCompletionDto completion = evaluator.Evaluate( character );
+
+        Assert.True(
+            completion.IsComplete,
+            String.Join( Environment.NewLine, completion.Issues.Select( issue => $"{issue.Code}: {issue.Message}" ) ) );
+    }
+
+    private static CharacterCompletionEvaluator CreateCompletionEvaluator()
+    {
+        return new CharacterCompletionEvaluator(
+            new AncestryRepository(),
+            new BackgroundRepository(),
+            new CharacterClassRepository(),
+            new RogueRacketRepository(),
+            new HuntersEdgeRepository(),
+            new DruidicOrderRepository(),
+            new BardMuseRepository(),
+            new WitchPatronRepository(),
+            new ArcaneSchoolRepository(),
+            new ArcaneThesisRepository(),
+            new ClericDoctrineRepository(),
+            new DeityRepository(),
+            new ClericDomainRepository(),
+            new SpellRepository(),
+            new FeatRepository( new AncestryRepository(), new BackgroundRepository() ),
+            new LanguageRepository() );
     }
 
     private static IReadOnlyList<ClassTrainingTargetChoice> GeneralSkillChoices( params string[] skillIds )

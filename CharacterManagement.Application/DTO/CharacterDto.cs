@@ -20,6 +20,7 @@ public class CharacterDto : BaseDto
     public CharacterTrainingDto Training { get; set; } = new CharacterTrainingDto();
     public IReadOnlyList<ProficiencyDto> Proficiencies { get; set; } = [];
     public IReadOnlyList<CharacterFeatDto> Feats { get; set; } = [];
+    public CharacterCompletionDto Completion { get; set; } = new CharacterCompletionDto();
     public virtual BackpackDto? Backpack { get; set; }
     public virtual GroupCharacteristicDto Characteristics { get; set; }
 }

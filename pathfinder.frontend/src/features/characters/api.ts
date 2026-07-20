@@ -355,6 +355,13 @@ export interface Character {
   training: CharacterTraining
   proficiencies: Proficiency[]
   feats: CharacterFeat[]
+  completion: {
+    isComplete: boolean
+    issues: {
+      code: 'Identity' | 'AncestryPackage' | 'BackgroundPackage' | 'ClassPackage' | 'ClassChoices' | 'SpellLoadout' | 'FeatChoices' | 'ClassTraining' | 'Languages' | 'FinalBoosts'
+      message: string
+    }[]
+  }
   characteristics: {
     strength: Characteristic
     dexterity: Characteristic
