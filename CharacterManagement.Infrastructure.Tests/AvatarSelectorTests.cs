@@ -98,6 +98,7 @@ public sealed class AvatarSelectorTests
     [InlineData( "class.ranger", CharacterGender.Male, 2 )]
     [InlineData( "class.ranger", CharacterGender.Female, 2 )]
     [InlineData( "class.rogue", CharacterGender.Male, 2 )]
+    [InlineData( "class.rogue", CharacterGender.Female, 1 )]
     public void RuntimeCatalogReturnsOnlyAcceptedDwarfAssets(
         string characterClassId,
         CharacterGender gender,
@@ -123,8 +124,8 @@ public sealed class AvatarSelectorTests
 
         IReadOnlyList<AvatarDefinition> result = catalog.FindMatches( new AvatarSelectionCriteria(
             AncestryType.Dwarf,
-            "class.rogue",
-            CharacterGender.Female ) );
+            "class.witch",
+            CharacterGender.Male ) );
 
         Assert.Empty( result );
     }
