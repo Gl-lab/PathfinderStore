@@ -98,7 +98,7 @@ public sealed class AvatarSelectorTests
     [InlineData( "class.ranger", CharacterGender.Male, 2 )]
     [InlineData( "class.ranger", CharacterGender.Female, 2 )]
     [InlineData( "class.rogue", CharacterGender.Male, 2 )]
-    [InlineData( "class.rogue", CharacterGender.Female, 1 )]
+    [InlineData( "class.rogue", CharacterGender.Female, 2 )]
     public void RuntimeCatalogReturnsOnlyAcceptedDwarfAssets(
         string characterClassId,
         CharacterGender gender,
