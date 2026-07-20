@@ -813,6 +813,26 @@ public sealed class GetCharacterQueriesTests
         Assert.Equal( AbilityType.Dexterity, character.DerivedStatistics.SavingThrows.Reflex.Ability );
         Assert.Equal( 4, character.DerivedStatistics.SavingThrows.Will.Total );
         Assert.Equal( AbilityType.Wisdom, character.DerivedStatistics.SavingThrows.Will.Ability );
+        Assert.Equal( 16, character.DerivedStatistics.SkillModifiers.General.Count );
+        CharacterProficiencyStatisticDto acrobatics = character.DerivedStatistics.SkillModifiers.General
+            .Single( skill => skill.TargetId == "skill.acrobatics" );
+        Assert.Equal( ProficiencyRank.Untrained, acrobatics.ProficiencyRank );
+        Assert.Equal( AbilityType.Dexterity, acrobatics.Ability );
+        Assert.Equal( 1, acrobatics.Total );
+        CharacterProficiencyStatisticDto intimidation = character.DerivedStatistics.SkillModifiers.General
+            .Single( skill => skill.TargetId == "skill.intimidation" );
+        Assert.Equal( ProficiencyRank.Trained, intimidation.ProficiencyRank );
+        Assert.Equal( AbilityType.Charisma, intimidation.Ability );
+        Assert.Equal( 3, intimidation.Total );
+        Assert.Equal(
+            [ "background.warrior.skill" ],
+            intimidation.SourceGrantIds );
+        CharacterProficiencyStatisticDto warfareLore = Assert.Single(
+            character.DerivedStatistics.SkillModifiers.Lore );
+        Assert.Equal( "lore.warfare", warfareLore.TargetId );
+        Assert.Equal( AbilityType.Intelligence, warfareLore.Ability );
+        Assert.Equal( ProficiencyRank.Trained, warfareLore.ProficiencyRank );
+        Assert.Equal( 3, warfareLore.Total );
         Assert.Equal( "skill.intimidation", Assert.Single( character.Training.Skills ).Id );
         Assert.Equal( "lore.warfare", Assert.Single( character.Training.Lore ).Id );
     }

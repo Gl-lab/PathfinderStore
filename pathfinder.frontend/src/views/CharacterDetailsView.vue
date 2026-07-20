@@ -23,6 +23,7 @@ import {
 } from '@/features/characters/api'
 import { formatSignedModifier } from '@/features/characters/hitPoints'
 import { formatStatisticBreakdown } from '@/features/characters/statistics'
+import { getSkillModifierSections } from '@/features/characters/skillModifiers'
 import {
   isLegacyGenderSelectionRequired,
   type SelectableCharacterGender,
@@ -67,6 +68,15 @@ const statisticRows = computed<
     },
     { key: 'will', label: t('statistics.will'), statistic: statistics.savingThrows.will },
   ]
+})
+const skillModifierSections = computed(() => {
+  const modifiers = character.value?.derivedStatistics?.skillModifiers
+  if (!modifiers) return []
+
+  return getSkillModifierSections(modifiers).map((section) => ({
+    ...section,
+    label: t(`statistics.${section.key === 'general' ? 'generalSkills' : 'lore'}`),
+  }))
 })
 const abilityCodes = {
   strength: 'Strength',
@@ -309,20 +319,27 @@ onMounted(load)
             </ul>
           </v-card-text
         ></v-card
-        ><v-card
-          v-if="character.training.skills.length || character.training.lore.length"
-          elevation="0"
-        >
-          <v-card-item :title="t('characters.training')" />
+        ><v-card v-if="skillModifierSections.length" elevation="0" class="skill-modifiers-card">
+          <v-card-item :title="t('statistics.skillsAndLore')" />
           <v-card-text>
-            <p v-if="character.training.skills.length">
-              <strong>{{ t('characters.trainedSkills') }}:</strong>
-              {{ character.training.skills.map((skill) => skill.name).join(', ') }}
-            </p>
-            <p v-if="character.training.lore.length">
-              <strong>{{ t('characters.trainedLore') }}:</strong>
-              {{ character.training.lore.map((lore) => lore.name).join(', ') }}
-            </p>
+            <section v-for="section in skillModifierSections" :key="section.key">
+              <h3>{{ section.label }}</h3>
+              <div class="skill-modifiers-card__grid">
+                <div v-for="skill in section.items" :key="skill.targetId" class="skill-modifiers-card__item">
+                  <div>
+                    <strong>{{ skill.name }}</strong>
+                    <small>
+                      {{ getAbilityLabel(skill.ability) }} ·
+                      {{ getProficiencyRankLabel(skill.proficiencyRank) }}
+                    </small>
+                  </div>
+                  <div class="skill-modifiers-card__value">
+                    <strong>{{ formatSignedModifier(skill.total) }}</strong>
+                    <small>{{ getStatisticBreakdown(skill) }}</small>
+                  </div>
+                </div>
+              </div>
+            </section>
           </v-card-text>
         </v-card
         ><v-card v-if="character.classPackage" elevation="0"
@@ -636,6 +653,38 @@ h1 {
   font-family: Georgia, 'Times New Roman', serif;
   font-size: 1.5rem;
 }
+.skill-modifiers-card {
+  grid-column: 1 / -1;
+}
+.skill-modifiers-card section + section {
+  margin-top: 20px;
+}
+.skill-modifiers-card h3 {
+  margin: 0 0 10px;
+}
+.skill-modifiers-card__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 20px;
+}
+.skill-modifiers-card__item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid rgb(var(--v-theme-surface-variant));
+  padding-bottom: 8px;
+}
+.skill-modifiers-card__item > div {
+  display: grid;
+  gap: 2px;
+}
+.skill-modifiers-card__value {
+  text-align: right;
+}
+.skill-modifiers-card__value strong {
+  color: rgb(var(--v-theme-primary));
+  font-size: 1.125rem;
+}
 .proficiency-group + .proficiency-group {
   margin-top: 12px;
 }
@@ -665,6 +714,9 @@ small {
     flex-direction: column;
   }
   .stats {
+    grid-template-columns: 1fr;
+  }
+  .skill-modifiers-card__grid {
     grid-template-columns: 1fr;
   }
 }

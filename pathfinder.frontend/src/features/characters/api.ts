@@ -222,6 +222,7 @@ export interface CharacterDerivedStatistics {
     reflex: CharacterProficiencyStatistic
     will: CharacterProficiencyStatistic
   }
+  skillModifiers: CharacterSkillModifiers
 }
 
 export interface CharacterProficiencyStatistic {
@@ -233,6 +234,11 @@ export interface CharacterProficiencyStatistic {
   proficiencyBonus: number
   total: number
   sourceGrantIds: string[]
+}
+
+export interface CharacterSkillModifiers {
+  general: CharacterProficiencyStatistic[]
+  lore: CharacterProficiencyStatistic[]
 }
 
 export interface CharacterTraining {

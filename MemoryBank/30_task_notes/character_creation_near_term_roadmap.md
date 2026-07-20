@@ -217,6 +217,8 @@ Vikunja остаётся источником истины по карточка
 
 #### 3.2. Skill и Lore Modifiers
 
+**Статус:** завершено 20 июля 2026 года; см. [Implementation Plan](skill_lore_modifiers_implementation.md).
+
 **Проблема.** Training виден как список, но карточка не показывает пригодные для игры числовые modifiers.
 
 **Ожидаемый результат.** Каждый general skill и Lore entry получает вычисляемый modifier и breakdown с учётом ability и effective proficiency.

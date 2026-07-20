@@ -7,6 +7,7 @@ public sealed class CharacterDerivedStatisticsDto
     public CharacterHitPointsDto HitPoints { get; set; } = new CharacterHitPointsDto();
     public CharacterProficiencyStatisticDto Perception { get; set; } = new CharacterProficiencyStatisticDto();
     public CharacterSavingThrowsDto SavingThrows { get; set; } = new CharacterSavingThrowsDto();
+    public CharacterSkillModifiersDto SkillModifiers { get; set; } = new CharacterSkillModifiersDto();
 }
 
 public sealed class CharacterHitPointsDto
@@ -22,6 +23,12 @@ public sealed class CharacterSavingThrowsDto
     public CharacterProficiencyStatisticDto Fortitude { get; set; } = new CharacterProficiencyStatisticDto();
     public CharacterProficiencyStatisticDto Reflex { get; set; } = new CharacterProficiencyStatisticDto();
     public CharacterProficiencyStatisticDto Will { get; set; } = new CharacterProficiencyStatisticDto();
+}
+
+public sealed class CharacterSkillModifiersDto
+{
+    public IReadOnlyList<CharacterProficiencyStatisticDto> General { get; set; } = [];
+    public IReadOnlyList<CharacterProficiencyStatisticDto> Lore { get; set; } = [];
 }
 
 public sealed class CharacterProficiencyStatisticDto

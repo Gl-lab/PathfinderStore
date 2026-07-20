@@ -1,4 +1,5 @@
 using Pathfinder.CharacterManagement.Application.DTO;
+using Pathfinder.CharacterManagement.Application.Repositories;
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.CharacterManagement.Domain.Rules.Statistics;
 
@@ -12,7 +13,8 @@ public static class CharacterDerivedStatisticsDtoMapper
         DraftCharacter character,
         Ancestry ancestry,
         CharacterClass characterClass,
-        IReadOnlyList<EffectiveProficiency> proficiencies )
+        IReadOnlyList<EffectiveProficiency> proficiencies,
+        ISkillRepository? skillRepository )
     {
         ArgumentNullException.ThrowIfNull( proficiencies );
 
@@ -53,6 +55,9 @@ public static class CharacterDerivedStatisticsDtoMapper
                     ProficiencyTargets.Will,
                     AbilityType.Wisdom ),
             },
+            SkillModifiers = CharacterSkillModifiersDtoMapper.Map(
+                character,
+                skillRepository ),
         };
     }
 

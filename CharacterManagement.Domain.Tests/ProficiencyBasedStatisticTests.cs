@@ -52,4 +52,24 @@ public sealed class ProficiencyBasedStatisticTests
             [ "class.fighter.initial_proficiencies" ],
             result.SourceGrantIds );
     }
+
+    [Theory]
+    [InlineData( ProficiencyRank.Untrained, 1 )]
+    [InlineData( ProficiencyRank.Trained, 4 )]
+    public void Calculate_ExplicitRank_SupportsSkillModifiers(
+        ProficiencyRank rank,
+        int expectedTotal )
+    {
+        ProficiencyBasedStatistic result = ProficiencyBasedStatistic.Calculate(
+            AbilityType.Dexterity,
+            new Characteristic( 12 ),
+            rank,
+            rank == ProficiencyRank.Trained ? [ "training.source" ] : [],
+            1 );
+
+        Assert.Equal( expectedTotal, result.Total );
+        Assert.Equal(
+            rank == ProficiencyRank.Trained ? [ "training.source" ] : [],
+            result.SourceGrantIds );
+    }
 }

@@ -19,15 +19,33 @@ public sealed record ProficiencyBasedStatistic(
         ArgumentNullException.ThrowIfNull( characteristic );
         ArgumentNullException.ThrowIfNull( proficiency );
 
-        int proficiencyBonus = ProficiencyBonusCalculator.Calculate( proficiency.Rank, level );
+        return Calculate(
+            ability,
+            characteristic,
+            proficiency.Rank,
+            proficiency.SourceGrantIds,
+            level );
+    }
+
+    public static ProficiencyBasedStatistic Calculate(
+        AbilityType ability,
+        Characteristic characteristic,
+        ProficiencyRank proficiencyRank,
+        IReadOnlyList<string> sourceGrantIds,
+        int level )
+    {
+        ArgumentNullException.ThrowIfNull( characteristic );
+        ArgumentNullException.ThrowIfNull( sourceGrantIds );
+
+        int proficiencyBonus = ProficiencyBonusCalculator.Calculate( proficiencyRank, level );
 
         return new ProficiencyBasedStatistic(
             ability,
             characteristic.Modifier,
-            proficiency.Rank,
+            proficiencyRank,
             proficiencyBonus,
             characteristic.Modifier + proficiencyBonus,
-            proficiency.SourceGrantIds );
+            sourceGrantIds.ToArray() );
     }
 }
 

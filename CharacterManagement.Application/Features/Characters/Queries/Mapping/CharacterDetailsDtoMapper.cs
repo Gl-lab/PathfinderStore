@@ -133,7 +133,8 @@ public sealed class CharacterDetailsDtoMapper
                     draftCharacter,
                     ancestry,
                     characterClass,
-                    effectiveProficiencies ),
+                    effectiveProficiencies,
+                    _skillRepository ),
             Training = CharacterTrainingDtoMapper.Map( draftCharacter, _skillRepository ),
             Proficiencies = characterClass is null
                 ? []
