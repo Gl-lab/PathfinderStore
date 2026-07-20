@@ -461,6 +461,42 @@ onMounted(load)
                 {{ character.classPackage.witchPatron.selectedFamiliarSpell.name }}
               </p>
             </template>
+            <template v-if="character.classPackage.witchSpellLoadout">
+              <p>
+                {{ t('classUi.witchFamiliarCantrips') }}:
+                {{ character.classPackage.witchSpellLoadout.familiarCantrips.map((spell) => spell.name).join(', ') }}
+              </p>
+              <p>
+                {{ t('classUi.witchFamiliarSpells') }}:
+                {{ character.classPackage.witchSpellLoadout.familiarRankOneSpells.map((spell) => spell.name).join(', ') }}
+              </p>
+              <p>
+                {{ t('classUi.witchPatronGrantedSpell') }}:
+                {{ character.classPackage.witchSpellLoadout.patronGrantedSpell?.name }}
+              </p>
+              <p>
+                {{ t('classUi.witchPreparedCantrips') }}:
+                {{ character.classPackage.witchSpellLoadout.preparedCantrips.map((spell) => spell.name).join(', ') }}
+              </p>
+              <p>
+                {{ t('classUi.witchPreparedSpells') }}:
+                {{ character.classPackage.witchSpellLoadout.preparedSpells.map((spell) => spell.name).join(', ') }}
+              </p>
+            </template>
+            <template v-if="character.classPackage.witchHexPackage">
+              <p>
+                {{ t('classUi.witchPatronHex') }}:
+                {{ character.classPackage.witchHexPackage.patronHexCantrip?.name }}
+              </p>
+              <p>
+                {{ t('classUi.witchFocusHex') }}:
+                {{ character.classPackage.witchHexPackage.focusHex?.name }}
+              </p>
+              <p>
+                {{ t('classUi.focusPoints') }}:
+                {{ character.classPackage.witchHexPackage.maximumFocusPoints }}
+              </p>
+            </template>
             <template v-if="character.classPackage.arcaneSchool">
               <p>
                 {{ t('classUi.arcaneSchool') }}: {{ character.classPackage.arcaneSchool.name }}

@@ -141,7 +141,23 @@ public sealed class CreateCharacterCommandValidator : AbstractValidator<CreateCh
 
                 When(
                     command => command.Character.ClassId == "class.witch",
-                    () => RuleFor( command => command.Character.WitchPatronId ).NotEmpty() );
+                    () =>
+                    {
+                        RuleFor( command => command.Character.WitchPatronId ).NotEmpty();
+                        RuleFor( command => command.Character.WitchFamiliarCantripIds )
+                            .NotNull()
+                            .Must( spellIds => spellIds.Count == 10 );
+                        RuleFor( command => command.Character.WitchFamiliarSpellIds )
+                            .NotNull()
+                            .Must( spellIds => spellIds.Count == 5 );
+                        RuleFor( command => command.Character.WitchPreparedCantripIds )
+                            .NotNull()
+                            .Must( spellIds => spellIds.Count == 5 );
+                        RuleFor( command => command.Character.WitchPreparedSpellIds )
+                            .NotNull()
+                            .Must( spellIds => spellIds.Count == 2 );
+                        RuleFor( command => command.Character.WitchFocusHexId ).NotEmpty();
+                    } );
 
                 When(
                     command => command.Character.ClassId != "class.witch",
@@ -149,6 +165,11 @@ public sealed class CreateCharacterCommandValidator : AbstractValidator<CreateCh
                     {
                         RuleFor( command => command.Character.WitchPatronId ).Empty();
                         RuleFor( command => command.Character.WitchPatronFamiliarSpellId ).Empty();
+                        RuleFor( command => command.Character.WitchFamiliarCantripIds ).Empty();
+                        RuleFor( command => command.Character.WitchFamiliarSpellIds ).Empty();
+                        RuleFor( command => command.Character.WitchPreparedCantripIds ).Empty();
+                        RuleFor( command => command.Character.WitchPreparedSpellIds ).Empty();
+                        RuleFor( command => command.Character.WitchFocusHexId ).Empty();
                     } );
 
                 When(

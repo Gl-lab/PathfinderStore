@@ -58,6 +58,13 @@ public sealed class SpellRepository : ISpellRepository
             Create( "Vitality Lash", SpellKind.Cantrip, "DP", "Cantrip|Concentrate|Manipulate|Vitality", SpellRarity.Common, "Player Core", 366 ),
             Create( "Void Warp", SpellKind.Cantrip, "ADO", "Cantrip|Concentrate|Manipulate|Void", SpellRarity.Common, "Player Core", 366 ),
             Create( "Courageous Anthem", SpellKind.Cantrip, "O", "Bard|Cantrip|Composition|Concentrate|Emotion|Mental|Uncommon", SpellRarity.Uncommon, "Player Core", 370 ),
+            Create( "Stoke the Heart", SpellKind.Cantrip, "D", "Cantrip|Concentrate|Emotion|Hex|Manipulate|Uncommon|Witch", SpellRarity.Uncommon, "Player Core", 386 ),
+            Create( "Discern Secrets", SpellKind.Cantrip, "A", "Cantrip|Concentrate|Hex|Uncommon|Witch", SpellRarity.Uncommon, "Player Core", 383 ),
+            Create( "Evil Eye", SpellKind.Cantrip, "O", "Cantrip|Concentrate|Curse|Hex|Mental|Uncommon|Witch", SpellRarity.Uncommon, "Player Core", 383 ),
+            Create( "Clinging Ice", SpellKind.Cantrip, "P", "Cantrip|Cold|Concentrate|Hex|Uncommon|Witch", SpellRarity.Uncommon, "Player Core", 382 ),
+            Create( "Nudge Fate", SpellKind.Cantrip, "O", "Cantrip|Concentrate|Fortune|Hex|Uncommon|Witch", SpellRarity.Uncommon, "Player Core", 384 ),
+            Create( "Shroud of Night", SpellKind.Cantrip, "O", "Cantrip|Concentrate|Darkness|Hex|Uncommon|Witch", SpellRarity.Uncommon, "Player Core", 386 ),
+            Create( "Wilding Word", SpellKind.Cantrip, "P", "Cantrip|Concentrate|Hex|Uncommon|Witch", SpellRarity.Uncommon, "Player Core", 387 ),
 
             Create( "Air Bubble", SpellKind.Spell, "ADP", "Air|Concentrate", SpellRarity.Common, "Player Core", 314 ),
             Create( "Alarm", SpellKind.Spell, "ADOP", "Concentrate|Manipulate", SpellRarity.Common, "Player Core", 314 ),
@@ -163,6 +170,8 @@ public sealed class SpellRepository : ISpellRepository
             FocusWithTradition( "Cornucopia", "P", "Concentrate|Druid|Focus|Healing|Manipulate|Plant|Uncommon|Vitality", "Player Core", 371 ),
             FocusWithTradition( "Tempest Surge", "P", "Air|Concentrate|Druid|Electricity|Focus|Manipulate|Uncommon", "Player Core", 379 ),
             FocusWithTradition( "Untamed Shift", "P", "Concentrate|Druid|Focus|Manipulate|Morph|Uncommon", "Player Core", 380 ),
+            FocusWithTradition( "Patron's Puppet", "ADOP", "Concentrate|Focus|Hex|Manipulate|Uncommon|Witch", "Player Core", 385 ),
+            FocusWithTradition( "Phase Familiar", "ADOP", "Focus|Hex|Manipulate|Uncommon|Witch", "Player Core", 385 ),
         ];
     }
 

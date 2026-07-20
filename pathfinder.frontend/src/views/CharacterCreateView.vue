@@ -53,6 +53,8 @@ import {
   type ClericSpellOptions,
   type BardSpellOptions,
   type DruidSpellOptions,
+  type WitchSpellOptions,
+  type SpellTradition,
   type Deity,
   type DivineFont,
   type DivineSanctification,
@@ -125,6 +127,7 @@ import {
   isBardSpellLoadoutComplete,
 } from '@/features/character-creation/bardSpellLoadout'
 import { isDruidSpellLoadoutComplete } from '@/features/character-creation/druidSpellLoadout'
+import { isWitchSpellLoadoutComplete } from '@/features/character-creation/witchSpellLoadout'
 import {
   getWitchPatronFamiliarSpellOptions,
   isWitchPatronChoiceComplete,
@@ -158,6 +161,12 @@ const clericDomains = ref<ClericDomain[]>([])
 const clericSpellOptions = ref<ClericSpellOptions>({ cantrips: [], rankOneSpells: [] })
 const bardSpellOptions = ref<BardSpellOptions>({ cantrips: [], rankOneSpells: [] })
 const druidSpellOptions = ref<DruidSpellOptions>({ cantrips: [], rankOneSpells: [] })
+const witchSpellOptionsByTradition = ref<Record<SpellTradition, WitchSpellOptions>>({
+  Arcane: { cantrips: [], rankOneSpells: [] },
+  Divine: { cantrips: [], rankOneSpells: [] },
+  Occult: { cantrips: [], rankOneSpells: [] },
+  Primal: { cantrips: [], rankOneSpells: [] },
+})
 const skills = ref<Skill[]>([])
 const isLoadingCatalogs = ref(true)
 const isSubmitting = ref(false)
@@ -198,6 +207,11 @@ const form = ref({
   bardSpellIds: [] as string[],
   druidCantripIds: [] as string[],
   druidPreparedSpellIds: [] as (string | null)[],
+  witchFamiliarCantripIds: [] as string[],
+  witchFamiliarSpellIds: [] as string[],
+  witchPreparedCantripIds: [] as string[],
+  witchPreparedSpellIds: [] as (string | null)[],
+  witchFocusHexId: null as string | null,
   finalFreeBoosts: [] as AbilityCode[],
   classSkillGrantChoices: [] as ClassSkillGrantChoice[],
   additionalClassTrainingChoices: [] as ClassTrainingTargetChoice[],
@@ -273,6 +287,36 @@ const selectedWitchPatron = computed(
 const witchPatronFamiliarSpellOptions = computed(() =>
   getWitchPatronFamiliarSpellOptions(selectedWitchPatron.value),
 )
+const witchSpellOptions = computed<WitchSpellOptions>(() =>
+  selectedWitchPatron.value
+    ? witchSpellOptionsByTradition.value[selectedWitchPatron.value.spellTradition]
+    : { cantrips: [], rankOneSpells: [] },
+)
+const selectedWitchPatronSpell = computed(() => {
+  const options = witchPatronFamiliarSpellOptions.value
+  return options.length === 1
+    ? options[0] ?? null
+    : options.find((spell) => spell.id === form.value.witchPatronFamiliarSpellId) ?? null
+})
+const witchFamiliarRankOneOptions = computed(() =>
+  witchSpellOptions.value.rankOneSpells.filter(
+    (spell) => spell.id !== selectedWitchPatronSpell.value?.id,
+  ),
+)
+const selectedWitchFamiliarCantrips = computed(() =>
+  form.value.witchFamiliarCantripIds
+    .map((id) => witchSpellOptions.value.cantrips.find((spell) => spell.id === id))
+    .filter((spell) => spell !== undefined),
+)
+const selectedWitchFamiliarSpells = computed(() =>
+  form.value.witchFamiliarSpellIds
+    .map((id) => witchSpellOptions.value.rankOneSpells.find((spell) => spell.id === id))
+    .filter((spell) => spell !== undefined),
+)
+const witchKnownRankOneOptions = computed(() => [
+  ...selectedWitchFamiliarSpells.value,
+  ...(selectedWitchPatronSpell.value ? [selectedWitchPatronSpell.value] : []),
+])
 const selectedArcaneSchool = computed(
   () => arcaneSchools.value.find((item) => item.id === form.value.arcaneSchoolId) ?? null,
 )
@@ -470,6 +514,17 @@ const canContinue = computed(() => {
         form.value.druidCantripIds,
         form.value.druidPreparedSpellIds,
         druidSpellOptions.value,
+      ) &&
+      isWitchSpellLoadoutComplete(
+        selectedCharacterClass.value,
+        selectedWitchPatron.value,
+        form.value.witchPatronFamiliarSpellId,
+        form.value.witchFamiliarCantripIds,
+        form.value.witchFamiliarSpellIds,
+        form.value.witchPreparedCantripIds,
+        form.value.witchPreparedSpellIds,
+        form.value.witchFocusHexId,
+        witchSpellOptions.value,
       )
     )
   if (step.value === 8)
@@ -557,6 +612,11 @@ function selectCharacterClass(classId: string | null): void {
   form.value.bardSpellIds = []
   form.value.druidCantripIds = []
   form.value.druidPreparedSpellIds = characterClass?.id === 'class.druid' ? [null, null] : []
+  form.value.witchFamiliarCantripIds = []
+  form.value.witchFamiliarSpellIds = []
+  form.value.witchPreparedCantripIds = []
+  form.value.witchPreparedSpellIds = characterClass?.id === 'class.witch' ? [null, null] : []
+  form.value.witchFocusHexId = null
   clericSpellOptions.value = { cantrips: [], rankOneSpells: [] }
   form.value.classSkillGrantChoices = createClassSkillGrantChoices(
     characterClasses.value.find((item) => item.id === classId) ?? null,
@@ -600,8 +660,25 @@ function selectBardMuse(bardMuseId: string | null): void {
   )
 }
 function selectWitchPatron(witchPatronId: string | null): void {
+  const previousPatron = selectedWitchPatron.value
+  const previousPatronSpellOptions = getWitchPatronFamiliarSpellOptions(previousPatron)
+  const previousPatronSpellId = previousPatronSpellOptions.length === 1
+    ? previousPatronSpellOptions[0]?.id
+    : form.value.witchPatronFamiliarSpellId
+  const nextPatron = witchPatrons.value.find((item) => item.id === witchPatronId) ?? null
   form.value.witchPatronId = witchPatronId
   form.value.witchPatronFamiliarSpellId = null
+  if (!nextPatron || previousPatron?.spellTradition !== nextPatron.spellTradition) {
+    form.value.witchFamiliarCantripIds = []
+    form.value.witchFamiliarSpellIds = []
+    form.value.witchPreparedCantripIds = []
+    form.value.witchPreparedSpellIds = nextPatron ? [null, null] : []
+    form.value.witchFocusHexId = null
+  } else {
+    form.value.witchPreparedSpellIds = form.value.witchPreparedSpellIds.map((id) =>
+      id === previousPatronSpellId ? null : id,
+    )
+  }
   resetClassTraining()
 }
 function selectRogueRacket(racketId: string | null): void {
@@ -712,6 +789,25 @@ function selectBardSpells(spellIds: string[]): void {
 function selectDruidCantrips(spellIds: string[]): void {
   form.value.druidCantripIds = spellIds.slice(0, 5)
 }
+function selectWitchFamiliarCantrips(spellIds: string[]): void {
+  form.value.witchFamiliarCantripIds = spellIds.slice(0, 10)
+  form.value.witchPreparedCantripIds = form.value.witchPreparedCantripIds.filter((id) =>
+    form.value.witchFamiliarCantripIds.includes(id),
+  )
+}
+function selectWitchFamiliarSpells(spellIds: string[]): void {
+  form.value.witchFamiliarSpellIds = spellIds.slice(0, 5)
+  const knownIds = new Set([
+    ...form.value.witchFamiliarSpellIds,
+    ...(selectedWitchPatronSpell.value ? [selectedWitchPatronSpell.value.id] : []),
+  ])
+  form.value.witchPreparedSpellIds = form.value.witchPreparedSpellIds.map((id) =>
+    id && knownIds.has(id) ? id : null,
+  )
+}
+function selectWitchPreparedCantrips(spellIds: string[]): void {
+  form.value.witchPreparedCantripIds = spellIds.slice(0, 5)
+}
 function next(): void {
   if (canContinue.value && step.value < 10) step.value += 1
 }
@@ -773,6 +869,17 @@ async function submit(): Promise<void> {
       form.value.druidPreparedSpellIds,
       druidSpellOptions.value,
     ) ||
+    !isWitchSpellLoadoutComplete(
+      selectedCharacterClass.value,
+      selectedWitchPatron.value,
+      form.value.witchPatronFamiliarSpellId,
+      form.value.witchFamiliarCantripIds,
+      form.value.witchFamiliarSpellIds,
+      form.value.witchPreparedCantripIds,
+      form.value.witchPreparedSpellIds,
+      form.value.witchFocusHexId,
+      witchSpellOptions.value,
+    ) ||
     !isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts) ||
     !isClassTrainingComplete(
       effectiveCharacterClass.value,
@@ -830,6 +937,13 @@ async function submit(): Promise<void> {
       druidPreparedSpellIds: form.value.druidPreparedSpellIds.filter(
         (spellId): spellId is string => spellId !== null,
       ),
+      witchFamiliarCantripIds: form.value.witchFamiliarCantripIds,
+      witchFamiliarSpellIds: form.value.witchFamiliarSpellIds,
+      witchPreparedCantripIds: form.value.witchPreparedCantripIds,
+      witchPreparedSpellIds: form.value.witchPreparedSpellIds.filter(
+        (spellId): spellId is string => spellId !== null,
+      ),
+      witchFocusHexId: form.value.witchFocusHexId,
       finalFreeBoosts: form.value.finalFreeBoosts,
       classSkillGrantChoices: form.value.classSkillGrantChoices.map((choice) => ({
         ...choice,
@@ -856,7 +970,7 @@ async function loadCatalogs(): Promise<void> {
   isLoadingCatalogs.value = true
   errorMessages.value = []
   try {
-    const [ancestryCatalog, backgroundCatalog, classCatalog, racketCatalog, huntersEdgeCatalog, druidicOrderCatalog, bardMuseCatalog, witchPatronCatalog, arcaneSchoolCatalog, arcaneThesisCatalog, doctrineCatalog, deityCatalog, clericDomainCatalog, skillCatalog, bardCantripCatalog, bardRankOneSpellCatalog, druidCantripCatalog, druidRankOneSpellCatalog] = await Promise.all([
+    const [ancestryCatalog, backgroundCatalog, classCatalog, racketCatalog, huntersEdgeCatalog, druidicOrderCatalog, bardMuseCatalog, witchPatronCatalog, arcaneSchoolCatalog, arcaneThesisCatalog, doctrineCatalog, deityCatalog, clericDomainCatalog, skillCatalog, arcaneCantripCatalog, arcaneRankOneSpellCatalog, divineCantripCatalog, divineRankOneSpellCatalog, occultCantripCatalog, occultRankOneSpellCatalog, primalCantripCatalog, primalRankOneSpellCatalog] = await Promise.all([
       getAncestries(),
       getBackgrounds(),
       getCharacterClasses(),
@@ -871,6 +985,10 @@ async function loadCatalogs(): Promise<void> {
       getDeities(),
       getClericDomains(),
       getSkills(),
+      getSpellOptions('Arcane', 1, 'Cantrip'),
+      getSpellOptions('Arcane', 1, 'Spell'),
+      getSpellOptions('Divine', 1, 'Cantrip'),
+      getSpellOptions('Divine', 1, 'Spell'),
       getSpellOptions('Occult', 1, 'Cantrip'),
       getSpellOptions('Occult', 1, 'Spell'),
       getSpellOptions('Primal', 1, 'Cantrip'),
@@ -891,12 +1009,18 @@ async function loadCatalogs(): Promise<void> {
     clericDomains.value = clericDomainCatalog
     skills.value = skillCatalog
     bardSpellOptions.value = {
-      cantrips: bardCantripCatalog,
-      rankOneSpells: bardRankOneSpellCatalog,
+      cantrips: occultCantripCatalog,
+      rankOneSpells: occultRankOneSpellCatalog,
     }
     druidSpellOptions.value = {
-      cantrips: druidCantripCatalog,
-      rankOneSpells: druidRankOneSpellCatalog,
+      cantrips: primalCantripCatalog,
+      rankOneSpells: primalRankOneSpellCatalog,
+    }
+    witchSpellOptionsByTradition.value = {
+      Arcane: { cantrips: arcaneCantripCatalog, rankOneSpells: arcaneRankOneSpellCatalog },
+      Divine: { cantrips: divineCantripCatalog, rankOneSpells: divineRankOneSpellCatalog },
+      Occult: { cantrips: occultCantripCatalog, rankOneSpells: occultRankOneSpellCatalog },
+      Primal: { cantrips: primalCantripCatalog, rankOneSpells: primalRankOneSpellCatalog },
     }
   } catch (error) {
     errorMessages.value = getApiErrorMessages(error)
@@ -1474,6 +1598,56 @@ watch(
               {{ t('classUi.focusPoints') }}: 1
             </v-alert>
           </template>
+          <template v-else-if="selectedCharacterClass?.id === 'class.witch'">
+            <p class="hint">{{ t('classUi.witchSpellsHint') }}</p>
+            <v-select
+              :model-value="form.witchFamiliarCantripIds"
+              :items="witchSpellOptions.cantrips"
+              item-title="name"
+              item-value="id"
+              :label="t('classUi.witchFamiliarCantrips')"
+              multiple chips closable-chips :counter="10"
+              @update:model-value="selectWitchFamiliarCantrips"
+            />
+            <v-select
+              :model-value="form.witchFamiliarSpellIds"
+              :items="witchFamiliarRankOneOptions"
+              item-title="name"
+              item-value="id"
+              :label="t('classUi.witchFamiliarSpells')"
+              multiple chips closable-chips :counter="5"
+              @update:model-value="selectWitchFamiliarSpells"
+            />
+            <v-alert v-if="selectedWitchPatronSpell" type="info" variant="tonal">
+              {{ t('classUi.witchPatronGrantedSpell') }}: {{ selectedWitchPatronSpell.name }}
+            </v-alert>
+            <v-select
+              :model-value="form.witchPreparedCantripIds"
+              :items="selectedWitchFamiliarCantrips"
+              item-title="name"
+              item-value="id"
+              :label="t('classUi.witchPreparedCantrips')"
+              multiple chips closable-chips :counter="5"
+              @update:model-value="selectWitchPreparedCantrips"
+            />
+            <h3>{{ t('classUi.witchPreparedSpells') }}</h3>
+            <v-select
+              v-for="(_, index) in form.witchPreparedSpellIds"
+              :key="index"
+              v-model="form.witchPreparedSpellIds[index]"
+              :items="witchKnownRankOneOptions"
+              item-title="name"
+              item-value="id"
+              :label="t('classUi.witchSpellSlot', { number: index + 1 })"
+            />
+            <v-select
+              v-model="form.witchFocusHexId"
+              :items="selectedWitchPatron?.initialFocusHexOptions ?? []"
+              item-title="name"
+              item-value="id"
+              :label="t('classUi.witchFocusHex')"
+            />
+          </template>
           <v-alert v-else type="info" variant="tonal">{{ t('wizard.none') }}</v-alert>
         </section>
         <section v-else-if="step === 8">
@@ -1609,6 +1783,21 @@ watch(
               v-if="selectedWitchPatron"
               :title="t('classUi.witchPatron')"
               :subtitle="selectedWitchPatron.name" /><v-list-item
+              v-if="form.witchFamiliarCantripIds.length"
+              :title="t('classUi.witchFamiliarCantrips')"
+              :subtitle="selectedWitchFamiliarCantrips.map((spell) => spell.name).join(', ')" /><v-list-item
+              v-if="selectedWitchFamiliarSpells.length"
+              :title="t('classUi.witchFamiliarSpells')"
+              :subtitle="selectedWitchFamiliarSpells.map((spell) => spell.name).join(', ')" /><v-list-item
+              v-if="form.witchPreparedCantripIds.length"
+              :title="t('classUi.witchPreparedCantrips')"
+              :subtitle="form.witchPreparedCantripIds.map((id) => selectedWitchFamiliarCantrips.find((spell) => spell.id === id)?.name).filter(Boolean).join(', ')" /><v-list-item
+              v-if="form.witchPreparedSpellIds.some(Boolean)"
+              :title="t('classUi.witchPreparedSpells')"
+              :subtitle="form.witchPreparedSpellIds.map((id) => witchKnownRankOneOptions.find((spell) => spell.id === id)?.name).filter(Boolean).join(', ')" /><v-list-item
+              v-if="form.witchFocusHexId"
+              :title="t('classUi.witchFocusHex')"
+              :subtitle="selectedWitchPatron?.initialFocusHexOptions.find((spell) => spell.id === form.witchFocusHexId)?.name" /><v-list-item
               v-if="selectedWitchPatron"
               :title="t('classUi.spellTradition')"
               :subtitle="t(`classUi.spellTraditions.${selectedWitchPatron.spellTradition}`)" /><v-list-item

@@ -113,10 +113,10 @@ public sealed class WitchPatronRepository : IWitchPatronRepository
             tradition,
             new ClassSkillGrantDescriptor( $"{patronId}.skill.patron", [ $"skill.{skillId}" ] ),
             [
-                Benefit( $"lesson.{lessonId}", WitchPatronBenefitKind.Lesson, lessonName, "Defines the Patron's first lesson.", CharacterClassDependencyType.ClassFeatureRules ),
-                Benefit( $"spell.{hexId}", WitchPatronBenefitKind.HexCantrip, hexName, "Granted hex cantrip.", CharacterClassDependencyType.SpellCatalog ),
-                .. familiarSpells.Select( spell => Benefit( $"spell.{spell.Id}", WitchPatronBenefitKind.FamiliarSpell, spell.Name, "Spell learned by the familiar.", CharacterClassDependencyType.SpellCatalog ) ),
-                Benefit( $"familiar_ability.{familiarAbilityId}", WitchPatronBenefitKind.FamiliarAbility, familiarAbilityName, familiarAbilitySummary, CharacterClassDependencyType.FamiliarRules ),
+                Benefit( $"lesson.{lessonId}", WitchPatronBenefitKind.Lesson, lessonName, "Defines the Patron's first lesson.", [ CharacterClassDependencyType.ClassFeatureRules ] ),
+                Benefit( $"spell.{hexId}", WitchPatronBenefitKind.HexCantrip, hexName, "Granted hex cantrip.", [] ),
+                .. familiarSpells.Select( spell => Benefit( $"spell.{spell.Id}", WitchPatronBenefitKind.FamiliarSpell, spell.Name, "Spell learned by the familiar.", [] ) ),
+                Benefit( $"familiar_ability.{familiarAbilityId}", WitchPatronBenefitKind.FamiliarAbility, familiarAbilityName, familiarAbilitySummary, [ CharacterClassDependencyType.FamiliarRules ] ),
             ] );
     }
 
@@ -125,8 +125,8 @@ public sealed class WitchPatronRepository : IWitchPatronRepository
         WitchPatronBenefitKind kind,
         string name,
         string summary,
-        CharacterClassDependencyType dependency )
+        IReadOnlyList<CharacterClassDependencyType> dependencies )
     {
-        return new WitchPatronBenefitDescriptor( id, kind, name, summary, [ dependency ] );
+        return new WitchPatronBenefitDescriptor( id, kind, name, summary, dependencies );
     }
 }

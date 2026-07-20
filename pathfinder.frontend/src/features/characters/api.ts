@@ -147,6 +147,20 @@ export interface CharacterClassPackage {
       deferredDependencies: string[]
     }
   } | null
+  witchSpellLoadout: {
+    familiarCantrips: { id: string; name: string }[]
+    familiarRankOneSpells: { id: string; name: string }[]
+    patronGrantedSpell: { id: string; name: string } | null
+    preparedCantrips: { id: string; name: string }[]
+    preparedSpells: { id: string; name: string }[]
+    rankOneSpellSlotCount: number
+  } | null
+  witchHexPackage: {
+    maximumFocusPoints: number
+    patronHexCantrip: { id: string; name: string } | null
+    focusHex: { id: string; name: string } | null
+    sourceGrantId: string
+  } | null
   arcaneSchool: {
     id: string
     name: string

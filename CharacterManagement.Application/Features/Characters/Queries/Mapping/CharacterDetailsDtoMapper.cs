@@ -97,6 +97,12 @@ public sealed class CharacterDetailsDtoMapper
             draftCharacter,
             druidicOrder );
         DruidFocusPoolDto? druidFocusPool = ResolveDruidFocusPool( druidicOrder );
+        WitchSpellLoadoutDto? witchSpellLoadout = ResolveWitchSpellLoadout(
+            draftCharacter,
+            witchPatron );
+        WitchHexPackageDto? witchHexPackage = ResolveWitchHexPackage(
+            draftCharacter,
+            witchPatron );
         IReadOnlyList<EffectiveProficiency> effectiveProficiencies = characterClass is null
             ? []
             : ProficiencyResolver.Resolve(
@@ -139,7 +145,9 @@ public sealed class CharacterDetailsDtoMapper
                     bardSpellLoadout,
                     bardComposition,
                     druidSpellLoadout,
-                    druidFocusPool ),
+                    druidFocusPool,
+                    witchSpellLoadout,
+                    witchHexPackage ),
             FinalFreeBoosts = draftCharacter.AppliedFinalFreeBoosts.ToArray(),
             DerivedStatistics = ancestry is null || characterClass is null
                 ? null
@@ -525,6 +533,76 @@ public sealed class CharacterDetailsDtoMapper
             FocusSpell = SpellDefinitionDtoMapper.Map( focusPool.FocusSpell ),
             SourceGrantId = focusPool.SourceGrantId,
         };
+    }
+
+    private WitchSpellLoadoutDto? ResolveWitchSpellLoadout(
+        DraftCharacter character,
+        WitchPatron? patron )
+    {
+        if ( ( patron is null ) ||
+             ( character.WitchFamiliarCantripIds.Count == 0 ) ||
+             ( character.WitchFamiliarSpellIds.Count == 0 ) ||
+             ( character.PreparedWitchCantripIds.Count == 0 ) ||
+             ( character.PreparedWitchSpellIds.Count == 0 ) )
+        {
+            return null;
+        }
+
+        IReadOnlyDictionary<string, SpellDefinition> definitions = GetSpellDefinitions();
+        string patronSpellId = patron
+            .ResolveFamiliarSpell( character.SelectedWitchPatronFamiliarSpellId )
+            .Id;
+        return new WitchSpellLoadoutDto
+        {
+            FamiliarCantrips = MapSpells( character.WitchFamiliarCantripIds, definitions ),
+            FamiliarRankOneSpells = MapSpells( character.WitchFamiliarSpellIds, definitions ),
+            PatronGrantedSpell = SpellDefinitionDtoMapper.Map( definitions[ patronSpellId ] ),
+            PreparedCantrips = MapSpells( character.PreparedWitchCantripIds, definitions ),
+            PreparedSpells = MapSpells( character.PreparedWitchSpellIds, definitions ),
+        };
+    }
+
+    private WitchHexPackageDto? ResolveWitchHexPackage(
+        DraftCharacter character,
+        WitchPatron? patron )
+    {
+        if ( ( patron is null ) || String.IsNullOrWhiteSpace( character.SelectedWitchFocusHexId ) )
+        {
+            return null;
+        }
+
+        WitchHexPackage package = WitchHexPackageResolver.Resolve(
+            patron,
+            character.SelectedWitchFocusHexId,
+            GetSpellDefinitions().Values.ToArray() );
+        return new WitchHexPackageDto
+        {
+            MaximumFocusPoints = package.MaximumFocusPoints,
+            PatronHexCantrip = SpellDefinitionDtoMapper.Map( package.PatronHexCantrip ),
+            FocusHex = SpellDefinitionDtoMapper.Map( package.FocusHex ),
+            SourceGrantId = package.SourceGrantId,
+        };
+    }
+
+    private IReadOnlyDictionary<string, SpellDefinition> GetSpellDefinitions()
+    {
+        if ( _spellRepository is null )
+        {
+            throw new InvalidOperationException( "Spell repository is required to map Witch spells." );
+        }
+
+        return _spellRepository
+            .GetAll()
+            .ToDictionary( spell => spell.Id, StringComparer.Ordinal );
+    }
+
+    private static IReadOnlyList<SpellDefinitionDto> MapSpells(
+        IReadOnlyList<string> spellIds,
+        IReadOnlyDictionary<string, SpellDefinition> definitions )
+    {
+        return spellIds
+            .Select( spellId => SpellDefinitionDtoMapper.Map( definitions[ spellId ] ) )
+            .ToArray();
     }
 
     private CharacterClass? ResolveCharacterClass( DraftCharacter character )

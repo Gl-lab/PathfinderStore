@@ -401,6 +401,7 @@ public sealed class CreateCharacterCommandValidatorTests
         character.ClassKeyAbility = AbilityType.Intelligence;
         character.WitchPatronId = "witch_patron.wilding_steward";
         character.WitchPatronFamiliarSpellId = "spell.summon_animal";
+        WitchSpellTestData.ApplyPrimal( character );
 
         validator.ValidateAndThrow( new CreateCharacterCommand( 42, character ) );
     }

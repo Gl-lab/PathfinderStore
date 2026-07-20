@@ -40,6 +40,11 @@ public class CreateCharacterRequestDto
     public IReadOnlyList<string> BardSpellIds { get; set; } = [];
     public IReadOnlyList<string> DruidCantripIds { get; set; } = [];
     public IReadOnlyList<string> DruidPreparedSpellIds { get; set; } = [];
+    public IReadOnlyList<string> WitchFamiliarCantripIds { get; set; } = [];
+    public IReadOnlyList<string> WitchFamiliarSpellIds { get; set; } = [];
+    public IReadOnlyList<string> WitchPreparedCantripIds { get; set; } = [];
+    public IReadOnlyList<string> WitchPreparedSpellIds { get; set; } = [];
+    public string? WitchFocusHexId { get; set; }
     public IReadOnlyList<AbilityType>? FinalFreeBoosts { get; set; }
     public IReadOnlyList<ClassSkillGrantChoice> ClassSkillGrantChoices { get; set; } = [];
     public IReadOnlyList<ClassTrainingTargetChoice> AdditionalClassTrainingChoices { get; set; } = [];

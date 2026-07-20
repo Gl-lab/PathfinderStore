@@ -91,7 +91,12 @@ public sealed class CreateCharacterHandler : IRequestHandler<CreateCharacterComm
             request.Character.BardCantripIds,
             request.Character.BardSpellIds,
             request.Character.DruidCantripIds,
-            request.Character.DruidPreparedSpellIds );
+            request.Character.DruidPreparedSpellIds,
+            request.Character.WitchFamiliarCantripIds,
+            request.Character.WitchFamiliarSpellIds,
+            request.Character.WitchPreparedCantripIds,
+            request.Character.WitchPreparedSpellIds,
+            request.Character.WitchFocusHexId );
         _characterBuilder.SetFinalFreeBoosts( finalFreeBoosts );
         _characterBuilder.SetClassTraining(
             request.Character.ClassId,

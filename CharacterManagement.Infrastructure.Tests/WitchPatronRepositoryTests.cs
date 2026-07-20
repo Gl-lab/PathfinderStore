@@ -56,4 +56,17 @@ public sealed class WitchPatronRepositoryTests
             patron.FamiliarSpellOptions.Select( spell => spell.Id ) );
         Assert.Equal( 185, patron.Source.Page );
     }
+
+    [Fact]
+    public void GetAll_HasResolvedPatronSpells()
+    {
+        IReadOnlyCollection<WitchPatron> patrons = new WitchPatronRepository().GetAll();
+
+        Assert.All(
+            patrons.SelectMany( patron => patron.Benefits )
+                .Where( benefit =>
+                    ( benefit.Kind == WitchPatronBenefitKind.HexCantrip ) ||
+                    ( benefit.Kind == WitchPatronBenefitKind.FamiliarSpell ) ),
+            benefit => Assert.Empty( benefit.DeferredDependencies ) );
+    }
 }

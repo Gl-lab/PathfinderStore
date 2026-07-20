@@ -19,6 +19,7 @@ public sealed class WitchPatronDto
     public SpellTradition SpellTradition { get; set; }
     public ClassSkillGrantDto SkillGrant { get; set; } = new ClassSkillGrantDto();
     public IReadOnlyList<WitchPatronBenefitDto> Benefits { get; set; } = [];
+    public IReadOnlyList<SpellReferenceDto> InitialFocusHexOptions { get; set; } = [];
 }
 
 public sealed class WitchPatronPackageDto

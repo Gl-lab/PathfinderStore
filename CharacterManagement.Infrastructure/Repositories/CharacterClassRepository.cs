@@ -99,11 +99,17 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
             Create(
                 "witch", "Witch", 178, 6, [ AbilityType.Intelligence ], 3, null,
                 [
-                    Spellcasting( "witch", "Spell tradition and spellcasting depend on the patron." ),
+                    Rule(
+                        "class.witch.spellcasting",
+                        CharacterClassRuleKind.Spellcasting,
+                        "Spellcasting",
+                        "Patron-tradition familiar spell storage, prepared spells, and hexes.",
+                        true,
+                        [] ),
                     Feature( "witch.familiar", "Familiar", "Grants a familiar and familiar spell rules." ),
                     Choice( "witch.patron", "Patron", "Choose a patron that determines tradition and related rules." )
                 ],
-                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.SpellCatalog, CharacterClassDependencyType.FamiliarRules, CharacterClassDependencyType.ClassFeatureRules ] ),
+                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.FamiliarRules, CharacterClassDependencyType.ClassFeatureRules ] ),
             Create(
                 "wizard", "Wizard", 192, 6, [ AbilityType.Intelligence ], 2, SpellTradition.Arcane,
                 [

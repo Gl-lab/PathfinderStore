@@ -21,7 +21,29 @@ public static class WitchPatronDtoMapper
             SpellTradition = patron.SpellTradition,
             SkillGrant = Map( patron.SkillGrant ),
             Benefits = patron.Benefits.Select( Map ).ToArray(),
+            InitialFocusHexOptions = InitialFocusHexOptions(),
         };
+    }
+
+    private static IReadOnlyList<SpellReferenceDto> InitialFocusHexOptions()
+    {
+        return
+        [
+            new SpellReferenceDto
+            {
+                Id = "spell.patron_s_puppet",
+                Name = "Patron's Puppet",
+                Rank = 1,
+                Kind = SpellKind.Focus,
+            },
+            new SpellReferenceDto
+            {
+                Id = "spell.phase_familiar",
+                Name = "Phase Familiar",
+                Rank = 1,
+                Kind = SpellKind.Focus,
+            },
+        ];
     }
 
     public static WitchPatronPackageDto MapPackage(

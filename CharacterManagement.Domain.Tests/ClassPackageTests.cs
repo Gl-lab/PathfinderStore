@@ -573,7 +573,8 @@ public sealed class ClassPackageTests
         character.SetClassPackage(
             witch,
             AbilityType.Intelligence,
-            witchPatron: patron );
+            witchPatron: patron,
+            witchSpellLoadout: WitchSpellTestData.CreateLoadout( patron ) );
 
         Assert.Equal( patron.Id, character.SelectedWitchPatronId );
         Assert.Equal( "spell.command", character.SelectedWitchPatronFamiliarSpellId );
@@ -603,10 +604,12 @@ public sealed class ClassPackageTests
         DraftCharacter character = CreateCharacter();
         CharacterClass witch = CreateClass( "class.witch", AbilityType.Intelligence );
         CharacterClass fighter = CreateClass( "class.fighter", AbilityType.Strength );
+        WitchPatron patron = CreateWitchPatron( "command" );
         character.SetClassPackage(
             witch,
             AbilityType.Intelligence,
-            witchPatron: CreateWitchPatron( "command" ) );
+            witchPatron: patron,
+            witchSpellLoadout: WitchSpellTestData.CreateLoadout( patron ) );
 
         character.SetClassPackage( fighter, AbilityType.Strength );
 

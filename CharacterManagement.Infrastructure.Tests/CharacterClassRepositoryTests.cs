@@ -145,6 +145,18 @@ public sealed class CharacterClassRepositoryTests
     }
 
     [Fact]
+    public void GetCharacterClass_WitchHasResolvedFirstLevelSpellFlow()
+    {
+        CharacterClass witch = new CharacterClassRepository().GetCharacterClass( "class.witch" );
+        CharacterClassRuleDescriptor spellcasting = Assert.Single(
+            witch.Rules,
+            rule => rule.Id == "class.witch.spellcasting" );
+
+        Assert.DoesNotContain( CharacterClassDependencyType.SpellCatalog, witch.DeferredDependencies );
+        Assert.Empty( spellcasting.DeferredDependencies );
+    }
+
+    [Fact]
     public void GetAll_AfterPriorityOne_HasNoUnresolvedGenericClassChoices()
     {
         CharacterClassRepository repository = new CharacterClassRepository();

@@ -504,7 +504,8 @@ public sealed class GetCharacterQueriesTests
             backgroundRepository: backgroundRepository,
             characterClassRepository: characterClassRepository,
             skillRepository: new SkillRepository(),
-            witchPatronRepository: patronRepository );
+            witchPatronRepository: patronRepository,
+            spellRepository: new SpellRepository() );
         builder.CreateCharacter( account.Id, "Feiya", AncestryType.Human );
         builder.SetAncestryPackage( "human.skilled", "human.cooperative_nature" );
         builder.ApplyFreeBoosts( [ AbilityType.Intelligence, AbilityType.Wisdom ] );
@@ -516,7 +517,12 @@ public sealed class GetCharacterQueriesTests
             "class.witch",
             AbilityType.Intelligence,
             witchPatronId: "witch_patron.wilding_steward",
-            witchPatronFamiliarSpellId: "spell.summon_animal" );
+            witchPatronFamiliarSpellId: "spell.summon_animal",
+            witchFamiliarCantripIds: WitchSpellTestData.PrimalCantrips(),
+            witchFamiliarSpellIds: WitchSpellTestData.PrimalSpells(),
+            witchPreparedCantripIds: WitchSpellTestData.PrimalCantrips().Take( 5 ).ToArray(),
+            witchPreparedSpellIds: [ "spell.heal", "spell.heal" ],
+            witchFocusHexId: "spell.phase_familiar" );
         DraftCharacter draftCharacter = builder.Build();
         dbContext.Character.Add( draftCharacter );
         await dbContext.SaveChangesAsync();
@@ -526,7 +532,8 @@ public sealed class GetCharacterQueriesTests
             backgroundRepository: backgroundRepository,
             characterClassRepository: characterClassRepository,
             skillRepository: new SkillRepository(),
-            witchPatronRepository: patronRepository );
+            witchPatronRepository: patronRepository,
+            spellRepository: new SpellRepository() );
         GetCharacterByIdHandler handler = new GetCharacterByIdHandler(
             new CharacterRepository( dbContext ),
             mapper );
@@ -539,6 +546,11 @@ public sealed class GetCharacterQueriesTests
         Assert.Equal( SpellTradition.Primal, result.ClassPackage.SpellTradition );
         Assert.Equal( "witch_patron.wilding_steward", result.ClassPackage.WitchPatron.Id );
         Assert.Equal( "spell.summon_animal", result.ClassPackage.WitchPatron.SelectedFamiliarSpell.Id );
+        Assert.Equal( 10, result.ClassPackage.WitchSpellLoadout?.FamiliarCantrips.Count );
+        Assert.Equal( "spell.summon_animal", result.ClassPackage.WitchSpellLoadout?.PatronGrantedSpell?.Id );
+        Assert.Equal( "spell.wilding_word", result.ClassPackage.WitchHexPackage?.PatronHexCantrip?.Id );
+        Assert.Equal( "spell.phase_familiar", result.ClassPackage.WitchHexPackage?.FocusHex?.Id );
+        Assert.Equal( 1, result.ClassPackage.WitchHexPackage?.MaximumFocusPoints );
     }
 
     [Fact]

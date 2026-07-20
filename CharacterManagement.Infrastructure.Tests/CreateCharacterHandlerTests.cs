@@ -329,6 +329,11 @@ public sealed class CreateCharacterHandlerTests
             ClassId = "class.witch",
             ClassKeyAbility = AbilityType.Intelligence,
             WitchPatronId = "witch_patron.faiths_flamekeeper",
+            WitchFamiliarCantripIds = WitchSpellTestData.DivineCantrips(),
+            WitchFamiliarSpellIds = WitchSpellTestData.DivineSpells(),
+            WitchPreparedCantripIds = WitchSpellTestData.DivineCantrips().Take( 5 ).ToArray(),
+            WitchPreparedSpellIds = [ "spell.heal", "spell.heal" ],
+            WitchFocusHexId = "spell.patron_s_puppet",
             FinalFreeBoosts =
             [
                 AbilityType.Strength,
@@ -362,6 +367,8 @@ public sealed class CreateCharacterHandlerTests
             .SingleAsync( entity => entity.AccountId == account.Id );
         Assert.Equal( "witch_patron.faiths_flamekeeper", savedCharacter.SelectedWitchPatronId );
         Assert.Equal( "spell.command", savedCharacter.SelectedWitchPatronFamiliarSpellId );
+        Assert.Equal( WitchSpellTestData.DivineCantrips(), savedCharacter.WitchFamiliarCantripIds );
+        Assert.Equal( "spell.patron_s_puppet", savedCharacter.SelectedWitchFocusHexId );
         Assert.Contains( savedCharacter.TrainedSkills, training =>
             ( training.SkillId == "skill.religion" ) &&
             training.SourceGrantId.StartsWith( "witch_patron.", StringComparison.Ordinal ) );

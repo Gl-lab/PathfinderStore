@@ -161,7 +161,12 @@ public class CharacterBuilder : ICharacterBuilder
         IReadOnlyList<string>? bardCantripIds = null,
         IReadOnlyList<string>? bardSpellIds = null,
         IReadOnlyList<string>? druidCantripIds = null,
-        IReadOnlyList<string>? druidPreparedSpellIds = null )
+        IReadOnlyList<string>? druidPreparedSpellIds = null,
+        IReadOnlyList<string>? witchFamiliarCantripIds = null,
+        IReadOnlyList<string>? witchFamiliarSpellIds = null,
+        IReadOnlyList<string>? witchPreparedCantripIds = null,
+        IReadOnlyList<string>? witchPreparedSpellIds = null,
+        string? witchFocusHexId = null )
     {
         if ( _draftCharacter is null )
         {
@@ -437,6 +442,35 @@ public class CharacterBuilder : ICharacterBuilder
                 _spellRepository.GetAll() );
         }
 
+        WitchSpellLoadout? witchSpellLoadout = null;
+        bool isWitch = characterClass.Id == "class.witch";
+        if ( isWitch )
+        {
+            if ( ( witchPatron is null ) || ( _spellRepository is null ) )
+            {
+                throw new InvalidOperationException( "Witch Patron and spell repositories are required." );
+            }
+
+            witchSpellLoadout = WitchSpellLoadoutResolver.Resolve(
+                witchPatron,
+                witchPatronFamiliarSpellId,
+                witchFamiliarCantripIds ?? [],
+                witchFamiliarSpellIds ?? [],
+                witchPreparedCantripIds ?? [],
+                witchPreparedSpellIds ?? [],
+                witchFocusHexId ?? String.Empty,
+                _spellRepository.GetAll() );
+        }
+        else if ( ( witchFamiliarCantripIds?.Count > 0 ) ||
+                  ( witchFamiliarSpellIds?.Count > 0 ) ||
+                  ( witchPreparedCantripIds?.Count > 0 ) ||
+                  ( witchPreparedSpellIds?.Count > 0 ) ||
+                  !String.IsNullOrWhiteSpace( witchFocusHexId ) )
+        {
+            throw new CharacterManagementException(
+                "Witch spell choices can only be selected for the Witch class." );
+        }
+
         _draftCharacter.SetClassPackage(
             characterClass,
             keyAbility,
@@ -458,7 +492,8 @@ public class CharacterBuilder : ICharacterBuilder
             clericDomain,
             clericSpellLoadout,
             bardSpellLoadout,
-            druidSpellLoadout );
+            druidSpellLoadout,
+            witchSpellLoadout );
     }
 
     public void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts )

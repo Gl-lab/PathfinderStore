@@ -213,6 +213,7 @@ export interface WitchPatron {
   spellTradition: SpellTradition
   skillGrant: ClassSkillGrant
   benefits: WitchPatronBenefit[]
+  initialFocusHexOptions: SpellReference[]
 }
 
 export type ArcaneSchoolBenefitKind =
@@ -331,6 +332,11 @@ export interface DruidSpellOptions {
   rankOneSpells: SpellDefinition[]
 }
 
+export interface WitchSpellOptions {
+  cantrips: SpellDefinition[]
+  rankOneSpells: SpellDefinition[]
+}
+
 export interface ClericDomain {
   id: string
   name: string
@@ -398,6 +404,11 @@ export interface CreateCharacterRequest {
   bardSpellIds: string[]
   druidCantripIds: string[]
   druidPreparedSpellIds: string[]
+  witchFamiliarCantripIds: string[]
+  witchFamiliarSpellIds: string[]
+  witchPreparedCantripIds: string[]
+  witchPreparedSpellIds: string[]
+  witchFocusHexId: string | null
   finalFreeBoosts: AbilityCode[]
   classSkillGrantChoices: ClassSkillGrantChoice[]
   additionalClassTrainingChoices: ClassTrainingTargetChoice[]
