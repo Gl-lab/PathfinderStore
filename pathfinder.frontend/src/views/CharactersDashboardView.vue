@@ -79,17 +79,26 @@ onMounted(loadCharacters)
           ><v-card-subtitle>{{ getAncestryLabel(character.ancestryType) }}</v-card-subtitle></v-card-item
         ><v-card-text class="character-card__content"
           ><span>{{ character.concept || t('characters.noConcept') }}</span
-          ><v-chip
-            v-if="character.derivedStatistics"
-            color="secondary"
-            prepend-icon="mdi-heart-pulse"
-            size="small"
-            variant="tonal"
-            >{{
-              t('characters.hitPointsValue', {
-                value: character.derivedStatistics.hitPoints.maximum,
-              })
-            }}</v-chip
+          ><div class="character-card__chips">
+            <v-chip
+              :color="character.creationStatus === 'Completed' ? 'success' : 'warning'"
+              :prepend-icon="character.creationStatus === 'Completed' ? 'mdi-check-decagram' : 'mdi-pencil-outline'"
+              size="small"
+              variant="tonal"
+            >{{ t(`characters.creationStatuses.${character.creationStatus}`) }}</v-chip>
+            <v-chip
+              v-if="character.derivedStatistics"
+              color="secondary"
+              prepend-icon="mdi-heart-pulse"
+              size="small"
+              variant="tonal"
+              >{{
+                t('characters.hitPointsValue', {
+                  value: character.derivedStatistics.hitPoints.maximum,
+                })
+              }}</v-chip
+            >
+          </div
           ></v-card-text
         ><v-card-actions
           ><v-btn variant="text" color="primary">{{ t('common.open') }}</v-btn></v-card-actions
@@ -148,6 +157,12 @@ h1 {
   justify-content: space-between;
   gap: 12px;
   align-items: start;
+}
+.character-card__chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: end;
+  gap: 8px;
 }
 @media (max-width: 600px) {
   .dashboard__header {

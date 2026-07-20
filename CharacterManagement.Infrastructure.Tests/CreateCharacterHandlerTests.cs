@@ -121,6 +121,48 @@ public sealed class CreateCharacterHandlerTests
         Assert.Equal( 12, savedCharacter.AbilityScores.Constitution.Value );
         Assert.Equal( 12, savedCharacter.AbilityScores.Wisdom.Value );
         Assert.Equal( 12, savedCharacter.AbilityScores.Charisma.Value );
+
+        FinalizeCharacterHandler finalizationHandler = CreateFinalizationHandler( dbContext );
+        CharacterCreationStateDto finalizedState = await finalizationHandler.Handle(
+            new FinalizeCharacterCommand( account.UserId, savedCharacter.Id ),
+            CancellationToken.None );
+        CharacterCreationStateDto repeatedState = await finalizationHandler.Handle(
+            new FinalizeCharacterCommand( account.UserId, savedCharacter.Id ),
+            CancellationToken.None );
+
+        Assert.Equal( CharacterCreationStatus.Completed, finalizedState.CreationStatus );
+        Assert.NotNull( finalizedState.CompletedAtUtc );
+        Assert.True( finalizedState.Completion.IsComplete );
+        Assert.Equal( finalizedState.CompletedAtUtc, repeatedState.CompletedAtUtc );
+        dbContext.ChangeTracker.Clear();
+        DraftCharacter finalizedCharacter = await dbContext.Character
+            .AsNoTracking()
+            .SingleAsync( entity => entity.Id == savedCharacter.Id );
+        Assert.Equal( CharacterCreationStatus.Completed, finalizedCharacter.CreationStatus );
+        Assert.Throws<Pathfinder.CharacterManagement.Domain.Exceptions.CharacterManagementException>( () =>
+            finalizedCharacter.Rename( "Cannot respec" ) );
+    }
+
+    [Fact]
+    public async Task Finalize_IncompleteDraft_ThrowsAndKeepsDraftStatus()
+    {
+        await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
+        Account account = await CreateAccountAsync( dbContext, 60, "Legacy", "Draft" );
+        DraftCharacter character = DraftCharacter.Create(
+            account.Id,
+            "Incomplete",
+            AncestryType.Human );
+        dbContext.Character.Add( character );
+        await dbContext.SaveChangesAsync();
+        FinalizeCharacterHandler handler = CreateFinalizationHandler( dbContext );
+
+        await Assert.ThrowsAsync<Pathfinder.CharacterManagement.Domain.Exceptions.CharacterManagementException>( () =>
+            handler.Handle(
+                new FinalizeCharacterCommand( account.UserId, character.Id ),
+                CancellationToken.None ) );
+
+        Assert.Equal( CharacterCreationStatus.Draft, character.CreationStatus );
+        Assert.Null( character.CompletedAtUtc );
     }
 
     [Fact]
@@ -700,6 +742,15 @@ public sealed class CreateCharacterHandlerTests
             new SpellRepository(),
             new FeatRepository( new AncestryRepository(), new BackgroundRepository() ),
             new LanguageRepository() );
+    }
+
+    private static FinalizeCharacterHandler CreateFinalizationHandler(
+        CharacterManagementDbContext dbContext )
+    {
+        return new FinalizeCharacterHandler(
+            new CharacterRepository( dbContext ),
+            CreateCompletionEvaluator(),
+            new TestUnitOfWork( dbContext ) );
     }
 
     private static IReadOnlyList<ClassTrainingTargetChoice> GeneralSkillChoices( params string[] skillIds )

@@ -346,6 +346,8 @@ export interface Character {
   gender: CharacterGender
   avatarId: string
   avatarPath: string
+  creationStatus: 'Draft' | 'Completed'
+  completedAtUtc: string | null
   ancestryType: AncestryCode
   ancestryPackage: CharacterAncestryPackage | null
   backgroundPackage: CharacterBackgroundPackage | null
@@ -378,6 +380,16 @@ export async function getCharacters(): Promise<Character[]> {
 
 export async function getCharacter(id: number): Promise<Character> {
   return (await http.get<Character>(`/api/character/${id}`)).data
+}
+
+export interface CharacterCreationState {
+  creationStatus: 'Draft' | 'Completed'
+  completedAtUtc: string | null
+  completion: Character['completion']
+}
+
+export async function finalizeCharacter(id: number): Promise<CharacterCreationState> {
+  return (await http.post<CharacterCreationState>(`/api/character/${id}/finalize`)).data
 }
 
 export async function setCharacterGender(

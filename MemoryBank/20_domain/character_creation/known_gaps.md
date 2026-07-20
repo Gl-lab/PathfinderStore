@@ -66,7 +66,7 @@ Player Core каталог оформлен в [deities_player_core.md](deities_
 
 ### Languages
 
-Общий Player Core catalog, ancestry language rules, выбор и persistence дополнительных языков реализованы. Единый server-side completion report проверяет языки вместе с остальными обязательными пакетами. Источники access к uncommon языкам и явная финализация draft остаются открытыми.
+Общий Player Core catalog, ancestry language rules, выбор и persistence дополнительных языков реализованы. Единый server-side completion report и явная финализация `Draft` → `Completed` проверяют языки вместе с остальными обязательными пакетами. Источники access к uncommon языкам и отдельный respec workflow остаются открытыми.
 
 ### Ancestry Choice Effects
 
@@ -90,6 +90,6 @@ Heritage и ancestry feats 1 уровня каталогизированы и в
 
 Актуальная ближайшая очередь и критерии готовности зафиксированы в [Character Creation Near-Term Roadmap](../../30_task_notes/character_creation_near_term_roadmap.md).
 
-1. Добавить явную финализацию character creation и persisted status.
-2. Добавить starting equipment после фиксации inventory ownership boundary.
-3. Поверх equipment расширить карточку до AC, attacks, damage, DC и combat HP state.
+1. Добавить starting equipment после фиксации inventory ownership boundary.
+2. Поверх equipment расширить карточку до AC, attacks, damage, DC и combat HP state.
+3. Спроектировать отдельный respec workflow для завершённых персонажей.

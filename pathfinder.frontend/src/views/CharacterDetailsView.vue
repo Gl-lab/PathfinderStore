@@ -14,6 +14,7 @@ import {
 import { useI18n } from 'vue-i18n'
 import {
   deleteCharacter,
+  finalizeCharacter,
   getCharacter,
   setCharacterGender,
   type Character,
@@ -42,6 +43,7 @@ const character = ref<Character | null>(null)
 const errors = ref<string[]>([])
 const isLoading = ref(true)
 const isDeleting = ref(false)
+const isFinalizing = ref(false)
 const confirmDelete = ref(false)
 const selectedGender = ref<SelectableCharacterGender | null>(null)
 const isSavingGender = ref(false)
@@ -147,6 +149,22 @@ async function remove(): Promise<void> {
     confirmDelete.value = false
   }
 }
+async function finalize(): Promise<void> {
+  if (!character.value || !character.value.completion.isComplete) return
+
+  isFinalizing.value = true
+  errors.value = []
+  try {
+    const state = await finalizeCharacter(character.value.id)
+    character.value.creationStatus = state.creationStatus
+    character.value.completedAtUtc = state.completedAtUtc
+    character.value.completion = state.completion
+  } catch (error) {
+    errors.value = getApiErrorMessages(error)
+  } finally {
+    isFinalizing.value = false
+  }
+}
 async function saveGender(): Promise<void> {
   if (!character.value || !selectedGender.value) return
 
@@ -154,8 +172,8 @@ async function saveGender(): Promise<void> {
   errors.value = []
   try {
     await setCharacterGender(character.value.id, selectedGender.value)
-    character.value.gender = selectedGender.value
     selectedGender.value = null
+    await load()
   } catch (error) {
     errors.value = getApiErrorMessages(error)
   } finally {
@@ -219,14 +237,41 @@ onMounted(load)
             <p v-if="character.concept">{{ character.concept }}</p>
           </div>
         </div>
-        <v-btn
-          color="error"
-          variant="tonal"
-          prepend-icon="mdi-delete-outline"
-          @click="confirmDelete = true"
-          >{{ t('common.delete') }}</v-btn
-        >
+        <div class="header-actions">
+          <v-chip
+            :color="character.creationStatus === 'Completed' ? 'success' : 'warning'"
+            :prepend-icon="character.creationStatus === 'Completed' ? 'mdi-check-decagram' : 'mdi-pencil-outline'"
+            variant="tonal"
+          >{{ t(`characters.creationStatuses.${character.creationStatus}`) }}</v-chip>
+          <v-btn
+            v-if="character.creationStatus === 'Draft'"
+            color="success"
+            prepend-icon="mdi-check-decagram-outline"
+            :disabled="!character.completion.isComplete"
+            :loading="isFinalizing"
+            @click="finalize"
+          >{{ t('characters.finalize') }}</v-btn>
+          <v-btn
+            color="error"
+            variant="tonal"
+            prepend-icon="mdi-delete-outline"
+            @click="confirmDelete = true"
+            >{{ t('common.delete') }}</v-btn
+          >
+        </div>
       </header>
+      <v-alert
+        v-if="character.creationStatus === 'Draft' && !character.completion.isComplete"
+        type="warning"
+        variant="tonal"
+        :title="t('characters.incompleteTitle')"
+      >
+        <ul>
+          <li v-for="issue in character.completion.issues" :key="issue.code">
+            {{ issue.message }}
+          </li>
+        </ul>
+      </v-alert>
       <div class="stats">
         <v-card v-if="character.derivedStatistics" elevation="0" class="hit-points-card"
           ><v-card-item :title="t('characters.maximumHitPoints')"
@@ -746,6 +791,12 @@ header {
   gap: 24px;
   min-width: 0;
 }
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: end;
+  gap: 8px;
+}
 .eyebrow {
   color: rgb(var(--v-theme-secondary));
   font-size: 0.875rem;
@@ -873,6 +924,9 @@ small {
   .character-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+  .header-actions {
+    justify-content: start;
   }
   .stats {
     grid-template-columns: 1fr;

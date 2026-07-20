@@ -152,6 +152,8 @@ public sealed class CharacterDetailsDtoMapper
             Gender = draftCharacter.Gender,
             AvatarId = draftCharacter.AvatarId.Value,
             AvatarPath = _avatarCatalog?.ResolvePath( draftCharacter.AvatarId ) ?? AvatarCatalog.UnknownPath,
+            CreationStatus = draftCharacter.CreationStatus,
+            CompletedAtUtc = draftCharacter.CompletedAtUtc,
             AncestryType = draftCharacter.AncestryType,
             AncestryPackage = ancestry is null ? null : AncestryDtoMapper.MapPackage( draftCharacter, ancestry ),
             BackgroundPackage = background is null

@@ -17,6 +17,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public int? Age { get; private set; }
     public CharacterGender Gender { get; private set; }
     public AvatarId AvatarId { get; private set; }
+    public CharacterCreationStatus CreationStatus { get; private set; } = CharacterCreationStatus.Draft;
+    public DateTimeOffset? CompletedAtUtc { get; private set; }
     public AncestryType AncestryType { get; private set; }
     public AbilityScores AbilityScores { get; private set; }
     public IReadOnlyList<AbilityType> AppliedFreeBoosts { get; private set; } = [];
@@ -132,6 +134,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
 
     public void Rename( string newName )
     {
+        EnsureDraft();
         ArgumentNullException.ThrowIfNull( newName );
 
         if ( String.IsNullOrWhiteSpace( newName ) )
@@ -148,6 +151,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
 
     public void SetGender( CharacterGender gender )
     {
+        EnsureDraft();
         if ( Gender != CharacterGender.NotSpecified )
         {
             throw new CharacterManagementException( "Character gender has already been specified." );
@@ -197,6 +201,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
 
     public void SetAncestry( Ancestry ancestry )
     {
+        EnsureDraft();
         ArgumentNullException.ThrowIfNull( ancestry );
 
         if ( _ancestry is not null )
@@ -220,6 +225,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         string ancestryFeatId,
         IAncestryChoiceAvailabilityPolicy availabilityPolicy )
     {
+        EnsureDraft();
         ArgumentNullException.ThrowIfNull( nextAncestry );
         ArgumentNullException.ThrowIfNull( availabilityPolicy );
 
@@ -246,6 +252,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
 
     public void SetFreeBoosts( IReadOnlyList<AbilityType> freeBoosts )
     {
+        EnsureDraft();
         ArgumentNullException.ThrowIfNull( freeBoosts );
 
         if ( _ancestry is null )
@@ -304,6 +311,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         IReadOnlyList<BackgroundTrainingChoice>? trainingChoices = null,
         IReadOnlyCollection<SkillDefinition>? skillCatalog = null )
     {
+        EnsureDraft();
         ArgumentNullException.ThrowIfNull( background );
 
         if ( HasClassBoostPackage )
@@ -369,6 +377,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         IReadOnlyList<FeatChoice>? classFeatChoices = null,
         IReadOnlyCollection<FeatDefinition>? featCatalog = null )
     {
+        EnsureDraft();
         ArgumentNullException.ThrowIfNull( characterClass );
 
         if ( !HasBackgroundBoostPackage )
@@ -732,6 +741,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
 
     public void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts )
     {
+        EnsureDraft();
         ArgumentNullException.ThrowIfNull( finalFreeBoosts );
 
         if ( !HasClassBoostPackage )
@@ -780,6 +790,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
 
     public void SetAdditionalLanguages( LanguageSelectionResult selection )
     {
+        EnsureDraft();
         ArgumentNullException.ThrowIfNull( selection );
 
         if ( selection.AncestryType != AncestryType )
@@ -802,6 +813,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         DruidicOrder? druidicOrder = null,
         WitchPatron? witchPatron = null )
     {
+        EnsureDraft();
         ArgumentNullException.ThrowIfNull( characterClass );
         ArgumentNullException.ThrowIfNull( grantChoices );
         ArgumentNullException.ThrowIfNull( additionalChoices );
@@ -869,6 +881,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
 
     public void UpdateAbilityScore( AbilityType abilityType, int value )
     {
+        EnsureDraft();
         if ( AbilityScores == null )
         {
             throw new CharacterManagementException( "AbilityScores must be initialized before updating" );
@@ -876,6 +889,33 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
 
         AbilityScores.UpdateCharacteristic( abilityType, value );
         EnsureInvariants();
+    }
+
+    public void FinalizeCreation( DateTimeOffset completedAtUtc )
+    {
+        if ( CreationStatus == CharacterCreationStatus.Completed )
+        {
+            EnsureInvariants();
+            return;
+        }
+
+        if ( completedAtUtc.Offset != TimeSpan.Zero )
+        {
+            throw new CharacterManagementException( "Completion timestamp must use UTC." );
+        }
+
+        CreationStatus = CharacterCreationStatus.Completed;
+        CompletedAtUtc = completedAtUtc;
+        EnsureInvariants();
+    }
+
+    private void EnsureDraft()
+    {
+        if ( CreationStatus != CharacterCreationStatus.Draft )
+        {
+            throw new CharacterManagementException(
+                "Completed character cannot be changed without an explicit respec workflow." );
+        }
     }
 
     private void EnsureInvariants()
@@ -903,6 +943,12 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         if ( AvatarId is null )
         {
             throw new CharacterManagementException( "Character must have an avatar identifier." );
+        }
+
+        if ( ( CreationStatus == CharacterCreationStatus.Draft ) != ( CompletedAtUtc is null ) )
+        {
+            throw new CharacterManagementException(
+                "Character creation status and completion timestamp are inconsistent." );
         }
     }
 

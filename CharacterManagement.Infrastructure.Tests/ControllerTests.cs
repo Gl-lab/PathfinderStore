@@ -350,6 +350,25 @@ public sealed class ControllerTests
     }
 
     [Fact]
+    public async Task CharacterController_Finalize_ReturnsServerCreationState()
+    {
+        TestMediator mediator = new TestMediator();
+        CharacterCreationStateDto expected = new CharacterCreationStateDto
+        {
+            CreationStatus = CharacterCreationStatus.Completed,
+            CompletedAtUtc = DateTimeOffset.UtcNow,
+            Completion = new CharacterCompletionDto { IsComplete = true },
+        };
+        mediator.Register( new FinalizeCharacterCommand( 77, 15 ), expected );
+        CharacterController controller = CreateCharacterController( mediator, 77 );
+
+        ActionResult<CharacterCreationStateDto> actionResult = await controller.Finalize( 15 );
+
+        OkObjectResult okResult = Assert.IsType<OkObjectResult>( actionResult.Result );
+        Assert.Same( expected, okResult.Value );
+    }
+
+    [Fact]
     public async Task CharacterController_Get_WhenMediatorThrowsDbUpdateException_ReturnsServiceUnavailable()
     {
         TestMediator mediator = new TestMediator();

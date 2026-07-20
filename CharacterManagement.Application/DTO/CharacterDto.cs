@@ -11,6 +11,8 @@ public class CharacterDto : BaseDto
     public CharacterGender Gender { get; set; }
     public string AvatarId { get; set; }
     public string AvatarPath { get; set; }
+    public CharacterCreationStatus CreationStatus { get; set; }
+    public DateTimeOffset? CompletedAtUtc { get; set; }
     public AncestryType AncestryType { get; set; }
     public CharacterAncestryPackageDto? AncestryPackage { get; set; }
     public CharacterBackgroundPackageDto? BackgroundPackage { get; set; }

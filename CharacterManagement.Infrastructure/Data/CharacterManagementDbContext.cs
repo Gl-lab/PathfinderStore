@@ -33,6 +33,7 @@ public class CharacterManagementDbContext( DbContextOptions<CharacterManagementD
                     value => AvatarId.Create( value ) )
                 .HasMaxLength( AvatarId.MaxLength );
             b.Property( x => x.AncestryType ).HasConversion<int>();
+            b.Property( x => x.CreationStatus ).HasConversion<int>();
             b.Property( x => x.SelectedHeritageId ).HasMaxLength( 100 );
             b.Property( x => x.SelectedAncestryFeatId ).HasMaxLength( 100 );
             ConfigureStringList( b.Property( x => x.SelectedAdditionalLanguageIds ) );

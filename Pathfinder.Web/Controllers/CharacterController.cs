@@ -153,6 +153,55 @@ public sealed class CharacterController : AuthorizedController
         }
     }
 
+    [HttpPost( "{characterId:int}/finalize" )]
+    [ProducesResponseType( typeof( CharacterCreationStateDto ), StatusCodes.Status200OK )]
+    [ProducesResponseType( StatusCodes.Status401Unauthorized )]
+    [ProducesResponseType( typeof( IReadOnlyCollection<string> ), StatusCodes.Status400BadRequest )]
+    [ProducesResponseType( typeof( IReadOnlyCollection<string> ), StatusCodes.Status404NotFound )]
+    [ProducesResponseType( typeof( IReadOnlyCollection<string> ), StatusCodes.Status503ServiceUnavailable )]
+    public async Task<ActionResult<CharacterCreationStateDto>> Finalize( int characterId )
+    {
+        try
+        {
+            int userId = GetCurrentUserId();
+            CharacterCreationStateDto state = await _mediator.Send(
+                new FinalizeCharacterCommand( userId, characterId ) );
+            return Ok( state );
+        }
+        catch ( InvalidOperationException )
+        {
+            return Unauthorized();
+        }
+        catch ( CharacterManagementException exception )
+        {
+            return NotFound( MapErrorMessage( exception.Message ) );
+        }
+        catch ( Pathfinder.CharacterManagement.Domain.Exceptions.CharacterManagementException exception )
+        {
+            return BadRequest( MapErrorMessage( exception.Message ) );
+        }
+        catch ( DbUpdateException exception )
+        {
+            _logger.LogError(
+                exception,
+                "Failed to finalize character {CharacterId}.",
+                characterId );
+            return StatusCode(
+                StatusCodes.Status503ServiceUnavailable,
+                MapErrorMessage( "Character data is temporarily unavailable." ) );
+        }
+        catch ( PostgresException exception )
+        {
+            _logger.LogError(
+                exception,
+                "PostgreSQL failed while finalizing character {CharacterId}.",
+                characterId );
+            return StatusCode(
+                StatusCodes.Status503ServiceUnavailable,
+                MapErrorMessage( "Character data is temporarily unavailable." ) );
+        }
+    }
+
     [HttpPut( "{characterId:int}/gender" )]
     [ProducesResponseType( StatusCodes.Status200OK )]
     [ProducesResponseType( StatusCodes.Status401Unauthorized )]
