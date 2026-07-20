@@ -234,6 +234,116 @@ AC, attacks, damage, current/temporary HP и equipment bonuses не входят
 
 **Статус приоритета 3:** завершён 20 июля 2026 года; выполнен [итоговый cross-review](priority_3_final_review.md). Карточка возвращает и отображает server-derived Saves, Perception, modifiers всех general skills и сохранённых Lore entries первого уровня.
 
+## Следующие приоритеты
+
+Пункты ниже задают продуктовый порядок после завершения приоритетов 1–3. Они ещё не являются карточками Vikunja: перед декомпозицией нужно получить актуальный список задач проекта `Pathfinder`, исключить дубли и отдельно зафиксировать каждый vertical slice.
+
+### Приоритет 4 — spell flow остальных классов первого уровня
+
+**Цель.** Довести создание всех spellcasting-классов текущего Player Core baseline до того же уровня целостности, который уже достигнут для Cleric: персонаж имеет валидный стартовый spell loadout, а карточка объясняет источник каждого spell, slot и focus resource.
+
+**Проблема.** Bard, Druid, Witch и Wizard уже требуют обязательные class choices, но связанные с ними repertoire, preparation, spellbook, curriculum, order/familiar spells и focus resources остаются descriptors. Формально персонаж создаётся, но его основная классовая механика первого уровня не собрана.
+
+**Предлагаемые slices:**
+
+1. Обобщить `Cleric Spell Catalog v1` в tradition-aware Player Core spell catalog без копирования правил в состояние персонажа.
+2. Реализовать Bard repertoire и cantrips с Muse-granted spell.
+3. Реализовать Druid prepared loadout и Order focus spell/focus pool.
+4. Реализовать Witch familiar spell storage, prepared loadout и Patron-granted spells.
+5. Реализовать Wizard spellbook, prepared loadout, curriculum spells и school-specific slot.
+
+**Критерии готовности:**
+
+- каждый spellcasting-класс первого уровня невозможно сохранить без полного валидного loadout;
+- ограничения tradition, rank, duplicates, granted spells и slot counts вычисляются сервером;
+- смена Class, Muse, Order, Patron или School очищает только ставшие несовместимыми choices;
+- persistence, API, wizard, review/details и round-trip tests покрывают каждый class flow;
+- casting, расходование slots, rest lifecycle и исполнение spell effects остаются отдельной runtime-подсистемой.
+
+### Приоритет 5 — feat subsystem первого уровня
+
+**Цель.** Представить ancestry, background skill и class feats единым типизированным набором выбранных и granted feats, который можно валидировать, сохранять и показывать в карточке.
+
+**Проблема.** Ancestry feat уже выбирается, Background содержит декларативный skill feat, а часть классов и class choices требует class feat. Эти источники не образуют общего feat inventory; поэтому карточка не показывает полный набор feats, а prerequisites и повторяющиеся grants нельзя проверять единообразно.
+
+**Предлагаемые slices:**
+
+1. Нормализовать Player Core feat catalog v1 со stable ids, category, level, traits, prerequisites и typed effect dependencies.
+2. Подключить автоматически granted Background skill feats и существующие Ancestry feat choices к общей read-модели.
+3. Добавить обязательные class feat choices первого уровня там, где их требует class package или class choice.
+4. Реализовывать непосредственно применимые skill/proficiency grants отдельными resolvers; spell, action, combat и inventory effects оставлять typed dependencies до готовности соответствующей подсистемы.
+
+**Критерии готовности:**
+
+- сервер различает выбранные и granted feats и сохраняет provenance каждого источника;
+- недоступный по category, level или prerequisite feat нельзя выбрать;
+- смена ancestry/background/class очищает зависимые feat choices без потери независимых grants;
+- wizard и карточка показывают название, источник, category и явно отложенные effects;
+- задача не вводит частичный combat engine ради отдельных feat descriptions.
+
+### Приоритет 6 — языки и финализация создания персонажа
+
+**Цель.** Закрыть оставшиеся универсальные choices первого уровня и ввести явную границу между редактируемым draft и завершённым персонажем.
+
+**Проблема.** Ancestry languages и дополнительные языки от положительного Intelligence modifier пока не выбираются. Одновременно сохранённый персонаж не имеет явного состояния завершённости, поэтому невозможно отличить неполный draft от валидного результата character creation и сформулировать правила последующего редактирования.
+
+**Предлагаемые slices:**
+
+1. Нормализовать language catalog и ancestry language rules.
+2. Добавить выбор дополнительных языков с серверным вычислением количества и допустимого pool.
+3. Ввести server-side completion validation для всех обязательных пакетов, class choices, spells, feats и languages.
+4. Добавить явную команду финализации и read-модель статуса; правила respec завершённого персонажа вынести в отдельное решение.
+
+**Критерии готовности:**
+
+- число дополнительных языков выводится из итогового Intelligence modifier и правил ancestry;
+- duplicate и недоступные language choices отклоняются сервером;
+- финализировать можно только полностью валидного персонажа;
+- список и карточка явно различают draft и завершённого персонажа;
+- frontend не определяет полноту персонажа собственной независимой формулой.
+
+### Приоритет 7 — starting equipment и inventory boundary
+
+**Цель.** Дать завершённому персонажу валидный стартовый набор снаряжения и подготовить данные, от которых зависят AC, attacks, damage и bulk.
+
+**Проблема.** В character creation нет equipment catalog, starting wealth, покупок или class kits. Без выбранных и экипированных armor, weapons и gear нельзя корректно вычислить боевые показатели. При этом существующий Store не должен неявно становиться владельцем правил персонажа.
+
+**Предлагаемые slices:**
+
+1. Зафиксировать ownership boundary между CharacterManagement catalog/loadout и будущим Store/Inventory.
+2. Нормализовать минимальный Player Core equipment catalog v1 и starting wealth/class kit rules.
+3. Реализовать выбор стартового набора, валидацию стоимости и сохранение immutable item references с character-owned state.
+4. Добавить equipped state, weapon/armor proficiency matching и bulk foundation.
+
+**Критерии готовности:**
+
+- персонаж получает только допустимое и оплаченное стартовое снаряжение;
+- итоговая стоимость, proficiency applicability и bulk вычисляются сервером;
+- catalog definitions не копируются целиком в character state;
+- смена class package до финализации корректно инвалидирует несовместимый kit;
+- Store остаётся отключённым, пока отдельное решение не передаст ему ownership runtime inventory.
+
+### Приоритет 8 — combat-ready character card v1
+
+**Цель.** Превратить завершённого персонажа первого уровня в пригодную для базовой игры карточку с серверно вычисляемыми защитой, атаками, уроном, DC и состоянием HP.
+
+**Проблема.** Карточка уже показывает maximum HP, Saves, Perception и skills, но не содержит AC, strike modifiers/damage, class/spell DC, current/temporary HP и equipment contributions. Пользователь всё ещё вынужден собирать основные боевые значения вручную.
+
+**Предлагаемые slices:**
+
+1. AC breakdown с armor, Dexterity cap и proficiency.
+2. Strike attack/damage breakdown для equipped weapons и unarmed attacks.
+3. Class DC, spell attack и spell DC там, где они определены class/spellcasting package.
+4. Current/temporary HP state с инвариантами относительно derived maximum HP.
+
+**Критерии готовности:**
+
+- итоговые значения и breakdown вычисляются сервером из ability, proficiency, feat и equipment state;
+- item/status/circumstance bonuses представлены отдельными типизированными слоями;
+- current HP не может выходить за допустимые границы при изменении maximum HP;
+- frontend только отображает значения и источники, не дублируя формулы;
+- encounter actions, conditions и spell/feat effect execution не включаются в card v1.
+
 ## Сквозной quality gate
 
 `Character Creation E2E Golden Path` не конкурирует с продуктовыми приоритетами и добавляется как проверка выполняемых vertical slices.
@@ -241,19 +351,17 @@ AC, attacks, damage, current/temporary HP и equipment bonuses не входят
 - тест поднимает browser, API и PostgreSQL в изолированной конфигурации;
 - проходит вход, wizard, сохранение, список и details;
 - проверяет persisted choices и вычисляемые значения, а не только навигацию;
-- по мере завершения приоритетов получает по одному репрезентативному сценарию для class choices, Cleric spells и derived card;
+- по мере завершения приоритетов получает репрезентативные сценарии для class choices, spell loadouts, feats, languages/finalization, equipment и combat-ready card;
 - unit и integration tests остаются обязательными.
 
-## После ближайшего горизонта
+## После нового горизонта
 
-Следующими крупными направлениями остаются:
+После приоритетов 4–8 крупными направлениями остаются:
 
-- skill feat и class feat catalogs;
-- languages и дополнительные языки от Intelligence;
-- исполняемые ancestry/heritage/ancestry feat effects;
-- equipment, starting wealth и inventory integration;
-- AC, attacks, damage, current/temporary HP и остальные combat statistics;
-- явная финализация draft и правила изменения завершённого персонажа;
+- runtime spellcasting, расходование ресурсов, rest lifecycle и исполнение spell effects;
+- дальнейшее исполнение ancestry/heritage/feat effects, зависящих от actions, conditions и resistances;
+- правила respec и изменения завершённого персонажа;
+- encounters и остальные runtime combat mechanics;
 - progression/level-up как отдельный доменный модуль.
 
 Store не включается в character creation roadmap до отдельного решения об equipment/inventory boundary.
