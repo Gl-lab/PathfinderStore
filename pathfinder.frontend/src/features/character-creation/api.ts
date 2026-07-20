@@ -117,6 +117,11 @@ export interface FeatDefinition {
   source: { book: string; page: number }
 }
 
+export interface FeatChoice {
+  sourceId: string
+  featId: string
+}
+
 export type SpellTradition = 'Arcane' | 'Divine' | 'Occult' | 'Primal'
 
 export interface CharacterClassRule {
@@ -401,6 +406,7 @@ export interface CreateCharacterRequest {
   backgroundTrainingChoices: BackgroundTrainingChoice[]
   classId: string
   classKeyAbility: AbilityCode
+  classFeatChoices: FeatChoice[]
   rogueRacketId: string | null
   rogueTrainingChoices: RogueTrainingChoice[]
   huntersEdgeId: string | null

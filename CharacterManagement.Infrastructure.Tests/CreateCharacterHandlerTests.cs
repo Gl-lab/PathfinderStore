@@ -5,6 +5,7 @@ using Pathfinder.CharacterManagement.Application.UseCases.Characters;
 using Pathfinder.CharacterManagement.Application.Avatars;
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.CharacterManagement.Domain.Rules.Training;
+using Pathfinder.CharacterManagement.Domain.Rules.Feats;
 using Pathfinder.CharacterManagement.Infrastructure.Data;
 using Pathfinder.CharacterManagement.Infrastructure.Repositories;
 using CharacterManagement.Infrastructure.Tests.TestSupport;
@@ -34,6 +35,7 @@ public sealed class CreateCharacterHandlerTests
             BackgroundFreeBoost = AbilityType.Charisma,
             ClassId = "class.fighter",
             ClassKeyAbility = AbilityType.Strength,
+            ClassFeatChoices = [ new FeatChoice( "class_choice.fighter.feat", "feat.double_slice" ) ],
             FinalFreeBoosts =
             [
                 AbilityType.Strength,
@@ -80,6 +82,9 @@ public sealed class CreateCharacterHandlerTests
         Assert.Equal( "skill_feat.steady_balance", savedCharacter.SelectedBackgroundSkillFeatId );
         Assert.Equal( character.ClassId, savedCharacter.SelectedClassId );
         Assert.Equal( character.ClassKeyAbility, savedCharacter.SelectedClassKeyAbility );
+        FeatChoice selectedClassFeat = Assert.Single( savedCharacter.SelectedClassFeatChoices );
+        Assert.Equal( "class_choice.fighter.feat", selectedClassFeat.SourceId );
+        Assert.Equal( "feat.double_slice", selectedClassFeat.FeatId );
         Assert.Equal( character.FinalFreeBoosts, savedCharacter.AppliedFinalFreeBoosts );
         Assert.Contains( savedCharacter.TrainedSkills, training => training.SkillId == "skill.acrobatics" );
         Assert.Contains( savedCharacter.TrainedSkills, training => training.SkillId == "skill.athletics" );
@@ -204,6 +209,7 @@ public sealed class CreateCharacterHandlerTests
             BackgroundFreeBoost = AbilityType.Charisma,
             ClassId = "class.rogue",
             ClassKeyAbility = AbilityType.Dexterity,
+            ClassFeatChoices = [ new FeatChoice( "class_choice.rogue.feat", "feat.nimble_dodge" ) ],
             RogueRacketId = "rogue_racket.thief",
             FinalFreeBoosts =
             [
@@ -393,6 +399,7 @@ public sealed class CreateCharacterHandlerTests
             BackgroundFreeBoost = AbilityType.Charisma,
             ClassId = "class.ranger",
             ClassKeyAbility = AbilityType.Dexterity,
+            ClassFeatChoices = [ new FeatChoice( "class_choice.ranger.feat", "feat.hunted_shot" ) ],
             HuntersEdgeId = "hunters_edge.precision",
             FinalFreeBoosts =
             [
@@ -605,7 +612,8 @@ public sealed class CreateCharacterHandlerTests
             arcaneSchoolRepository: new ArcaneSchoolRepository(),
             arcaneThesisRepository: new ArcaneThesisRepository(),
             clericDomainRepository: new ClericDomainRepository(),
-            spellRepository: new SpellRepository() );
+            spellRepository: new SpellRepository(),
+            featRepository: new FeatRepository( ancestryRepository, backgroundRepository ) );
 
         TestUnitOfWork unitOfWork = new TestUnitOfWork( dbContext );
 

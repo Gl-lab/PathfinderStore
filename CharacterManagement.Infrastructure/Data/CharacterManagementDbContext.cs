@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.CharacterManagement.Domain.Rules.Training;
+using Pathfinder.CharacterManagement.Domain.Rules.Feats;
 
 namespace Pathfinder.CharacterManagement.Infrastructure.Data;
 
@@ -40,6 +41,18 @@ public class CharacterManagementDbContext( DbContextOptions<CharacterManagementD
             b.Property( x => x.SelectedBackgroundSkillFeatId ).HasMaxLength( 100 );
             b.Property( x => x.SelectedClassId ).HasMaxLength( 100 );
             b.Property( x => x.SelectedClassKeyAbility ).HasConversion<int>();
+            b.Property( x => x.SelectedClassFeatChoices )
+                .HasConversion(
+                    value => JsonSerializer.Serialize( value.ToList(), (JsonSerializerOptions?)null ),
+                    value => String.IsNullOrEmpty( value )
+                        ? (IReadOnlyList<FeatChoice>)Array.Empty<FeatChoice>()
+                        : (IReadOnlyList<FeatChoice>)( JsonSerializer.Deserialize<List<FeatChoice>>( value, (JsonSerializerOptions?)null ) ?? new List<FeatChoice>() ) )
+                .HasColumnType( "jsonb" )
+                .HasDefaultValueSql( "'[]'::jsonb" )
+                .Metadata.SetValueComparer( new ValueComparer<IReadOnlyList<FeatChoice>>(
+                    ( first, second ) => first != null && second != null && first.SequenceEqual( second ),
+                    collection => collection.Aggregate( 0, ( hash, item ) => HashCode.Combine( hash, item ) ),
+                    collection => collection.ToList() ) );
             b.Property( x => x.SelectedRogueRacketId ).HasMaxLength( 100 );
             b.Property( x => x.SelectedHuntersEdgeId ).HasMaxLength( 100 );
             b.Property( x => x.SelectedDruidicOrderId ).HasMaxLength( 100 );

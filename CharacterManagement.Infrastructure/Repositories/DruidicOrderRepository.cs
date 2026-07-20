@@ -61,7 +61,7 @@ public sealed class DruidicOrderRepository : IDruidicOrderRepository
                     $"feat.{featId}",
                     DruidicOrderBenefitKind.ClassFeat,
                     featName,
-                    [ CharacterClassDependencyType.ClassFeatCatalog ] ),
+                    [] ),
                 new DruidicOrderBenefitDescriptor(
                     $"spell.{spellId}",
                     DruidicOrderBenefitKind.FocusSpell,

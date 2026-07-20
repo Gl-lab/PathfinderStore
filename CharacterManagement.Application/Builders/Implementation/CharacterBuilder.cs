@@ -3,6 +3,7 @@ using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.CharacterManagement.Domain.Exceptions;
 using Pathfinder.CharacterManagement.Domain.Rules.Training;
 using Pathfinder.CharacterManagement.Domain.Rules.Spells;
+using Pathfinder.CharacterManagement.Domain.Rules.Feats;
 
 namespace Pathfinder.CharacterManagement.Application.Builders.Implementation;
 
@@ -25,6 +26,7 @@ public class CharacterBuilder : ICharacterBuilder
     private readonly IWitchPatronRepository? _witchPatronRepository;
     private readonly IArcaneSchoolRepository? _arcaneSchoolRepository;
     private readonly IArcaneThesisRepository? _arcaneThesisRepository;
+    private readonly IFeatRepository? _featRepository;
 
     public CharacterBuilder(
         IAncestryRepository ancestryRepository,
@@ -42,7 +44,8 @@ public class CharacterBuilder : ICharacterBuilder
         IArcaneSchoolRepository? arcaneSchoolRepository = null,
         IArcaneThesisRepository? arcaneThesisRepository = null,
         IClericDomainRepository? clericDomainRepository = null,
-        ISpellRepository? spellRepository = null )
+        ISpellRepository? spellRepository = null,
+        IFeatRepository? featRepository = null )
     {
         _ancestryRepository = ancestryRepository;
         _ancestryChoiceAvailabilityPolicy = ancestryChoiceAvailabilityPolicy ?? new CommonAncestryChoiceAvailabilityPolicy();
@@ -60,6 +63,7 @@ public class CharacterBuilder : ICharacterBuilder
         _witchPatronRepository = witchPatronRepository;
         _arcaneSchoolRepository = arcaneSchoolRepository;
         _arcaneThesisRepository = arcaneThesisRepository;
+        _featRepository = featRepository;
     }
 
     public void CreateCharacter(
@@ -174,7 +178,8 @@ public class CharacterBuilder : ICharacterBuilder
         IReadOnlyList<string>? wizardPreparedCantripIds = null,
         IReadOnlyList<string>? wizardPreparedSpellIds = null,
         string? wizardPreparedCurriculumCantripId = null,
-        string? wizardPreparedCurriculumSpellId = null )
+        string? wizardPreparedCurriculumSpellId = null,
+        IReadOnlyList<FeatChoice>? classFeatChoices = null )
     {
         if ( _draftCharacter is null )
         {
@@ -538,7 +543,9 @@ public class CharacterBuilder : ICharacterBuilder
             bardSpellLoadout,
             druidSpellLoadout,
             witchSpellLoadout,
-            wizardSpellLoadout );
+            wizardSpellLoadout,
+            classFeatChoices,
+            _featRepository?.GetAll() );
     }
 
     public void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts )

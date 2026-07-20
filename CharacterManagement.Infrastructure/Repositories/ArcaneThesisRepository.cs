@@ -42,7 +42,7 @@ public sealed class ArcaneThesisRepository : IArcaneThesisRepository
                         "First-Level Spellshape Feat",
                         "Grants one 1st-level wizard spellshape feat of your choice.",
                         [ 1 ],
-                        [ CharacterClassDependencyType.ClassFeatCatalog ] ),
+                        [] ),
                     Effect(
                         "experimental_spellshaping",
                         "daily_spellshape_feat_choice",
@@ -66,7 +66,7 @@ public sealed class ArcaneThesisRepository : IArcaneThesisRepository
                         "Familiar Feat",
                         "Grants the Familiar wizard feat.",
                         [ 1 ],
-                        [ CharacterClassDependencyType.ClassFeatCatalog ] ),
+                        [] ),
                     Effect(
                         "improved_familiar_attunement",
                         "familiar_ability_progression",

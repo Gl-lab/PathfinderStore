@@ -1,5 +1,6 @@
 ﻿using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.CharacterManagement.Domain.Rules.Training;
+using Pathfinder.CharacterManagement.Domain.Rules.Feats;
 
 namespace Pathfinder.CharacterManagement.Application.Builders;
 
@@ -57,7 +58,8 @@ public interface ICharacterBuilder
         IReadOnlyList<string>? wizardPreparedCantripIds = null,
         IReadOnlyList<string>? wizardPreparedSpellIds = null,
         string? wizardPreparedCurriculumCantripId = null,
-        string? wizardPreparedCurriculumSpellId = null );
+        string? wizardPreparedCurriculumSpellId = null,
+        IReadOnlyList<FeatChoice>? classFeatChoices = null );
     void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts );
     void SetClassTraining(
         string characterClassId,

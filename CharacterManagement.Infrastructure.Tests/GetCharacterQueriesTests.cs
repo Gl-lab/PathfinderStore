@@ -149,6 +149,12 @@ public sealed class GetCharacterQueriesTests
                 Assert.Equal( "skill_feat.student_of_the_canon", feat.Id );
                 Assert.Equal( FeatCategory.Skill, feat.Category );
                 Assert.Equal( "background.acolyte", feat.SourceId );
+            },
+            feat =>
+            {
+                Assert.Equal( "feat.domain_initiate", feat.Id );
+                Assert.Equal( FeatCategory.Class, feat.Category );
+                Assert.Equal( "cleric_doctrine.cloistered", feat.SourceId );
             } );
         Assert.NotNull( result.ClassPackage );
         Assert.Equal( "class.cleric", result.ClassPackage.ClassId );

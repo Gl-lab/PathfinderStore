@@ -69,6 +69,7 @@ import {
   type RogueTrainingChoice,
   type Skill,
   type FeatDefinition,
+  type FeatChoice,
 } from '@/features/character-creation/api'
 import {
   getBackgroundFreeBoostOptions,
@@ -81,6 +82,11 @@ import {
   getAutomaticallySelectedKeyAbility,
   isCharacterClassChoiceComplete,
 } from '@/features/character-creation/characterClass'
+import {
+  getAvailableClassFeatOptions,
+  getRequiredClassFeatChoiceSlots,
+  isClassFeatChoiceComplete as isRequiredClassFeatChoiceComplete,
+} from '@/features/character-creation/classFeatChoices'
 import {
   createRogueTrainingChoices,
   getResolvedRogueTarget,
@@ -178,6 +184,7 @@ const wizardSpellOptions = ref<WizardSpellOptions>({ cantrips: [], rankOneSpells
 const skills = ref<Skill[]>([])
 const ancestryFeatOptions = ref<FeatDefinition[]>([])
 const skillFeatOptions = ref<FeatDefinition[]>([])
+const classFeatOptions = ref<FeatDefinition[]>([])
 const isLoadingCatalogs = ref(true)
 const isSubmitting = ref(false)
 const errorMessages = ref<string[]>([])
@@ -196,6 +203,7 @@ const form = ref({
   backgroundTrainingChoices: [] as BackgroundTrainingChoice[],
   classId: null as string | null,
   classKeyAbility: null as AbilityCode | null,
+  classFeatChoices: [] as FeatChoice[],
   rogueRacketId: null as string | null,
   rogueTrainingChoices: [] as RogueTrainingChoice[],
   huntersEdgeId: null as string | null,
@@ -372,6 +380,11 @@ const selectedWizardSpellbookSpells = computed(() =>
 const selectedArcaneThesis = computed(
   () => arcaneTheses.value.find((item) => item.id === form.value.arcaneThesisId) ?? null,
 )
+const classFeatChoiceSlots = computed(() => getRequiredClassFeatChoiceSlots(
+  selectedCharacterClass.value,
+  selectedArcaneSchool.value,
+  selectedArcaneThesis.value,
+))
 const effectiveCharacterClass = computed(() =>
   withWitchPatron(
     withDruidicOrderSkillGrant(selectedCharacterClass.value, selectedDruidicOrder.value),
@@ -491,6 +504,32 @@ function isSelectedClassChoiceComplete(): boolean {
     )
     : isCharacterClassChoiceComplete(selectedCharacterClass.value, form.value.classKeyAbility)
 }
+function getClassFeatChoice(sourceId: string): string | null {
+  return form.value.classFeatChoices.find((choice) => choice.sourceId === sourceId)?.featId ?? null
+}
+function setClassFeatChoice(sourceId: string, featId: string | null): void {
+  form.value.classFeatChoices = form.value.classFeatChoices.filter(
+    (choice) => choice.sourceId !== sourceId,
+  )
+  if (featId) form.value.classFeatChoices.push({ sourceId, featId })
+}
+function getClassFeatDefinition(featId: string): FeatDefinition | null {
+  return classFeatOptions.value.find((feat) => feat.id === featId) ?? null
+}
+function getClassFeatOptions(sourceId: string, requiresSpellshape: boolean): FeatDefinition[] {
+  return getAvailableClassFeatOptions(
+    selectedCharacterClass.value,
+    classFeatOptions.value,
+    { sourceId, name: sourceId, requiresSpellshape },
+    form.value.classFeatChoices,
+  )
+}
+function isClassFeatChoiceComplete(): boolean {
+  return isRequiredClassFeatChoiceComplete(
+    classFeatChoiceSlots.value,
+    form.value.classFeatChoices,
+  )
+}
 const canContinue = computed(() => {
   if (step.value === 1)
     return (
@@ -538,7 +577,8 @@ const canContinue = computed(() => {
         selectedDeity.value,
         selectedClericDomain.value,
       ) &&
-      isSelectedClassChoiceComplete()
+      isSelectedClassChoiceComplete() &&
+      isClassFeatChoiceComplete()
     )
   if (step.value === 7)
     return (
@@ -651,6 +691,7 @@ function selectCharacterClass(classId: string | null): void {
     characterClass?.keyAbilityOptions ?? [],
   )
   form.value.rogueRacketId = null
+  form.value.classFeatChoices = []
   form.value.rogueTrainingChoices = []
   form.value.huntersEdgeId = null
   form.value.druidicOrderId = null
@@ -1035,6 +1076,7 @@ async function submit(): Promise<void> {
       })),
       classId: selectedCharacterClass.value.id,
       classKeyAbility: form.value.classKeyAbility,
+      classFeatChoices: form.value.classFeatChoices,
       rogueRacketId: form.value.rogueRacketId,
       rogueTrainingChoices: form.value.rogueTrainingChoices,
       huntersEdgeId: form.value.huntersEdgeId,
@@ -1103,7 +1145,7 @@ async function loadCatalogs(): Promise<void> {
   isLoadingCatalogs.value = true
   errorMessages.value = []
   try {
-    const [ancestryCatalog, backgroundCatalog, classCatalog, racketCatalog, huntersEdgeCatalog, druidicOrderCatalog, bardMuseCatalog, witchPatronCatalog, arcaneSchoolCatalog, arcaneThesisCatalog, doctrineCatalog, deityCatalog, clericDomainCatalog, skillCatalog, ancestryFeatCatalog, skillFeatCatalog, arcaneCantripCatalog, arcaneRankOneSpellCatalog, divineCantripCatalog, divineRankOneSpellCatalog, occultCantripCatalog, occultRankOneSpellCatalog, primalCantripCatalog, primalRankOneSpellCatalog] = await Promise.all([
+    const [ancestryCatalog, backgroundCatalog, classCatalog, racketCatalog, huntersEdgeCatalog, druidicOrderCatalog, bardMuseCatalog, witchPatronCatalog, arcaneSchoolCatalog, arcaneThesisCatalog, doctrineCatalog, deityCatalog, clericDomainCatalog, skillCatalog, ancestryFeatCatalog, skillFeatCatalog, classFeatCatalog, arcaneCantripCatalog, arcaneRankOneSpellCatalog, divineCantripCatalog, divineRankOneSpellCatalog, occultCantripCatalog, occultRankOneSpellCatalog, primalCantripCatalog, primalRankOneSpellCatalog] = await Promise.all([
       getAncestries(),
       getBackgrounds(),
       getCharacterClasses(),
@@ -1120,6 +1162,7 @@ async function loadCatalogs(): Promise<void> {
       getSkills(),
       getFeatOptions('Ancestry', 1),
       getFeatOptions('Skill', 1),
+      getFeatOptions('Class', 1),
       getSpellOptions('Arcane', 1, 'Cantrip'),
       getSpellOptions('Arcane', 1, 'Spell'),
       getSpellOptions('Divine', 1, 'Cantrip'),
@@ -1145,6 +1188,7 @@ async function loadCatalogs(): Promise<void> {
     skills.value = skillCatalog
     ancestryFeatOptions.value = ancestryFeatCatalog
     skillFeatOptions.value = skillFeatCatalog
+    classFeatOptions.value = classFeatCatalog
     bardSpellOptions.value = {
       cantrips: occultCantripCatalog,
       rankOneSpells: occultRankOneSpellCatalog,
@@ -1178,6 +1222,15 @@ watch(additionalClassTrainingCount, (count) => {
 watch(
   () => existingClassTrainingSkillIds.value.join('|'),
   () => resetClassTrainingTargets(),
+)
+watch(
+  () => classFeatChoiceSlots.value.map((slot) => slot.sourceId).join('|'),
+  () => {
+    const sourceIds = new Set(classFeatChoiceSlots.value.map((slot) => slot.sourceId))
+    form.value.classFeatChoices = form.value.classFeatChoices.filter(
+      (choice) => sourceIds.has(choice.sourceId),
+    )
+  },
 )
 </script>
 
@@ -1458,6 +1511,16 @@ watch(
                 })
               }}
             </v-alert>
+            <v-select
+              v-for="slot in classFeatChoiceSlots"
+              :key="slot.sourceId"
+              :model-value="getClassFeatChoice(slot.sourceId)"
+              :items="getClassFeatOptions(slot.sourceId, slot.requiresSpellshape)"
+              item-title="name"
+              item-value="id"
+              :label="slot.name"
+              @update:model-value="setClassFeatChoice(slot.sourceId, $event)"
+            />
             <v-select
               v-if="selectedCharacterClass.id === 'class.druid'"
               :model-value="form.druidicOrderId"
@@ -1965,7 +2028,15 @@ watch(
               :subtitle="formatFeatReview(selectedBackgroundFeatDefinition, 'Granted', getBackgroundLabel(selectedBackground.id, selectedBackground.name))" /><v-list-item
               v-if="selectedCharacterClass"
               :title="t('classUi.characterClass')"
-              :subtitle="getCharacterClassLabel(selectedCharacterClass.id, selectedCharacterClass.name)" /><v-list-item
+              :subtitle="getCharacterClassLabel(selectedCharacterClass.id, selectedCharacterClass.name)" />
+            <template v-for="choice in form.classFeatChoices" :key="choice.sourceId">
+              <v-list-item
+                v-if="getClassFeatDefinition(choice.featId)"
+                :title="t('feats.classFeat')"
+                :subtitle="formatFeatReview(getClassFeatDefinition(choice.featId)!, 'Selected', choice.sourceId)"
+              />
+            </template>
+            <v-list-item
               v-if="form.classKeyAbility"
               :title="t('classUi.keyAbility')"
               :subtitle="getAbilityLabel(form.classKeyAbility)" /><v-list-item

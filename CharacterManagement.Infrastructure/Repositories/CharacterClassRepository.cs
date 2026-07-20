@@ -43,7 +43,7 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
                         [] ),
                     Choice( "bard.muse", "Muse", "Choose a muse that grants a bard feat and a spell." )
                 ],
-                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.ClassFeatCatalog ] ),
+                [ CharacterClassDependencyType.ProficiencyRules ] ),
             Create(
                 "cleric", "Cleric", 108, 8, [ AbilityType.Wisdom ], 2, SpellTradition.Divine,
                 [
@@ -78,7 +78,7 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
                     Feature( "fighter.features", "Fighter Features", "Reactive Strike and Shield Block." ),
                     ClassFeat( "fighter.feat", "Fighter Feat" )
                 ],
-                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.ClassFeatureRules, CharacterClassDependencyType.ClassFeatCatalog ] ),
+                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.ClassFeatureRules ] ),
             Create(
                 "ranger", "Ranger", 152, 10, [ AbilityType.Strength, AbilityType.Dexterity ], 4, null,
                 [
@@ -86,7 +86,7 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
                     Choice( "ranger.hunters_edge", "Hunter's Edge", "Choose a Hunter's Edge." ),
                     ClassFeat( "ranger.feat", "Ranger Feat" )
                 ],
-                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.ClassFeatureRules, CharacterClassDependencyType.ClassFeatCatalog ] ),
+                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.ClassFeatureRules ] ),
             Create(
                 "rogue", "Rogue", 164, 8, [ AbilityType.Dexterity ], 7, null,
                 [
@@ -95,7 +95,7 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
                     ClassFeat( "rogue.feat", "Rogue Feat" ),
                     SkillFeat( "rogue.skill_feat", "Skill Feat" )
                 ],
-                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.ClassFeatureRules, CharacterClassDependencyType.RogueRacketCatalog, CharacterClassDependencyType.ClassFeatCatalog, CharacterClassDependencyType.SkillFeatCatalog ] ),
+                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.ClassFeatureRules, CharacterClassDependencyType.RogueRacketCatalog, CharacterClassDependencyType.SkillFeatCatalog ] ),
             Create(
                 "witch", "Witch", 178, 6, [ AbilityType.Intelligence ], 3, null,
                 [
@@ -122,7 +122,6 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
                     CharacterClassDependencyType.ProficiencyRules,
                     CharacterClassDependencyType.SpellCatalog,
                     CharacterClassDependencyType.ClassFeatureRules,
-                    CharacterClassDependencyType.ClassFeatCatalog,
                     CharacterClassDependencyType.FamiliarRules,
                     CharacterClassDependencyType.SpellPreparationRules,
                     CharacterClassDependencyType.SpellSlotRules,
@@ -358,8 +357,7 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
             CharacterClassRuleKind.ClassFeatChoice,
             name,
             $"Choose a 1st-level {name.ToLowerInvariant()}.",
-            true,
-            CharacterClassDependencyType.ClassFeatCatalog );
+            true );
     }
 
     private static CharacterClassRuleDescriptor SkillFeat( string id, string name )

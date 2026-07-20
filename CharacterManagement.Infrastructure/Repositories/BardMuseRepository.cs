@@ -55,7 +55,7 @@ public sealed class BardMuseRepository : IBardMuseRepository
                     $"feat.{featId}",
                     BardMuseBenefitKind.ClassFeat,
                     featName,
-                    [ CharacterClassDependencyType.ClassFeatCatalog ] ),
+                    [] ),
                 new BardMuseBenefitDescriptor(
                     $"spell.{spellId}",
                     BardMuseBenefitKind.RepertoireSpell,

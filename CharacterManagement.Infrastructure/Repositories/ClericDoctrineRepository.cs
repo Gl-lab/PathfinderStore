@@ -74,13 +74,11 @@ public sealed class ClericDoctrineRepository : IClericDoctrineRepository
                         "deadly_simplicity",
                         "Deadly Simplicity",
                         "Conditionally grants Deadly Simplicity for an eligible deity favored weapon.",
-                        CharacterClassDependencyType.ClassFeatCatalog,
                         CharacterClassDependencyType.DeityCatalog,
                         CharacterClassDependencyType.WeaponCatalog ),
                 ],
                 [
                     CharacterClassDependencyType.GeneralFeatCatalog,
-                    CharacterClassDependencyType.ClassFeatCatalog,
                     CharacterClassDependencyType.DeityCatalog,
                     CharacterClassDependencyType.WeaponCatalog,
                 ] ),

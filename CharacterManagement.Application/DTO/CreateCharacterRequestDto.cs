@@ -1,5 +1,6 @@
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.CharacterManagement.Domain.Rules.Training;
+using Pathfinder.CharacterManagement.Domain.Rules.Feats;
 
 namespace Pathfinder.CharacterManagement.Application.DTO;
 
@@ -19,6 +20,7 @@ public class CreateCharacterRequestDto
     public IReadOnlyList<BackgroundTrainingChoice> BackgroundTrainingChoices { get; set; } = [];
     public string ClassId { get; set; } = String.Empty;
     public AbilityType? ClassKeyAbility { get; set; }
+    public IReadOnlyList<FeatChoice> ClassFeatChoices { get; set; } = [];
     public string? RogueRacketId { get; set; }
     public IReadOnlyList<RogueTrainingChoice> RogueTrainingChoices { get; set; } = [];
     public string? HuntersEdgeId { get; set; }

@@ -66,11 +66,13 @@ public sealed class ArcaneThesisEffectDescriptor
                 nameof( milestoneLevels ) );
         }
 
-        if ( ( deferredDependencies.Count == 0 ) ||
+        bool isResolvedFeatEffect = kind == ArcaneThesisEffectKind.FirstLevelSpellshapeFeatChoice ||
+                                    kind == ArcaneThesisEffectKind.FamiliarFeatGrant;
+        if ( ( !isResolvedFeatEffect && deferredDependencies.Count == 0 ) ||
              deferredDependencies.Any( dependency => !Enum.IsDefined( dependency ) ) )
         {
             throw new ArgumentException(
-                "Arcane Thesis effect must define known deferred dependencies.",
+                "Unresolved Arcane Thesis effects must define known deferred dependencies.",
                 nameof( deferredDependencies ) );
         }
 

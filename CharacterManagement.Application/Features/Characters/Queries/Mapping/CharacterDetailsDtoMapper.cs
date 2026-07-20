@@ -176,9 +176,15 @@ public sealed class CharacterDetailsDtoMapper
             Feats = _featRepository is null
                 ? []
                 : CharacterFeatResolver
-                    .ResolveAncestryAndBackground(
+                    .Resolve(
                         draftCharacter,
                         background,
+                        characterClass,
+                        bardMuse,
+                        druidicOrder,
+                        clericDoctrine,
+                        arcaneSchool,
+                        arcaneThesis,
                         _featRepository.GetAll() )
                     .Select( CharacterFeatDtoMapper.Map )
                     .ToArray(),

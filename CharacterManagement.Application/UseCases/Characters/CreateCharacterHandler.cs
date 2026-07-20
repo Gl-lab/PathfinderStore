@@ -104,7 +104,8 @@ public sealed class CreateCharacterHandler : IRequestHandler<CreateCharacterComm
             request.Character.WizardPreparedCantripIds,
             request.Character.WizardPreparedSpellIds,
             request.Character.WizardPreparedCurriculumCantripId,
-            request.Character.WizardPreparedCurriculumSpellId );
+            request.Character.WizardPreparedCurriculumSpellId,
+            request.Character.ClassFeatChoices );
         _characterBuilder.SetFinalFreeBoosts( finalFreeBoosts );
         _characterBuilder.SetClassTraining(
             request.Character.ClassId,

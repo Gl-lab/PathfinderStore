@@ -1,5 +1,6 @@
 using Pathfinder.CharacterManagement.Domain.Exceptions;
 using Pathfinder.CharacterManagement.Domain.Rules.Training;
+using Pathfinder.CharacterManagement.Domain.Rules.Feats;
 using Pathfinder.CharacterManagement.Domain.Rules.Spells;
 using Pathfinder.Utils.Entities.Base;
 
@@ -25,6 +26,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public AbilityType? SelectedBackgroundFreeBoost { get; private set; }
     public string? SelectedBackgroundSkillFeatId { get; private set; }
     public string? SelectedClassId { get; private set; }
+    public IReadOnlyList<FeatChoice> SelectedClassFeatChoices { get; private set; } = [];
     public AbilityType? SelectedClassKeyAbility { get; private set; }
     public string? SelectedRogueRacketId { get; private set; }
     public string? SelectedHuntersEdgeId { get; private set; }
@@ -360,7 +362,9 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         BardSpellLoadout? bardSpellLoadout = null,
         DruidSpellLoadout? druidSpellLoadout = null,
         WitchSpellLoadout? witchSpellLoadout = null,
-        WizardSpellLoadout? wizardSpellLoadout = null )
+        WizardSpellLoadout? wizardSpellLoadout = null,
+        IReadOnlyList<FeatChoice>? classFeatChoices = null,
+        IReadOnlyCollection<FeatDefinition>? featCatalog = null )
     {
         ArgumentNullException.ThrowIfNull( characterClass );
 
@@ -629,10 +633,25 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
                 "Wizard spell loadout can only be selected for the Wizard class." );
         }
 
+        IReadOnlyList<FeatChoice> resolvedClassFeatChoices = featCatalog is null
+            ? []
+            : CharacterFeatResolver.ResolveClassChoices(
+                characterClass,
+                arcaneSchool,
+                arcaneThesis,
+                classFeatChoices ?? [],
+                featCatalog,
+                GetGrantedClassFeatIds(
+                    bardMuse,
+                    druidicOrder,
+                    clericDoctrine,
+                    arcaneThesis ) );
+
         RemoveClassEffects();
 
         AbilityScores.ApplyAbilityBoost( keyAbility );
         SelectedClassId = characterClass.Id;
+        SelectedClassFeatChoices = resolvedClassFeatChoices;
         SelectedClassKeyAbility = keyAbility;
         SelectedRogueRacketId = rogueRacket?.Id;
         SelectedHuntersEdgeId = huntersEdge?.Id;
@@ -676,6 +695,36 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         }
 
         EnsureInvariants();
+    }
+
+    private static IReadOnlyCollection<string> GetGrantedClassFeatIds(
+        BardMuse? bardMuse,
+        DruidicOrder? druidicOrder,
+        ClericDoctrine? clericDoctrine,
+        ArcaneThesis? arcaneThesis )
+    {
+        List<string> featIds = [];
+        BardMuseBenefitDescriptor? museFeat = bardMuse?.Benefits
+            .SingleOrDefault( benefit => benefit.Kind == BardMuseBenefitKind.ClassFeat );
+        DruidicOrderBenefitDescriptor? orderFeat = druidicOrder?.Benefits
+            .SingleOrDefault( benefit => benefit.Kind == DruidicOrderBenefitKind.ClassFeat );
+        if ( museFeat is not null )
+        {
+            featIds.Add( museFeat.Id );
+        }
+        if ( orderFeat is not null )
+        {
+            featIds.Add( orderFeat.Id );
+        }
+        if ( clericDoctrine?.Id == "cleric_doctrine.cloistered" )
+        {
+            featIds.Add( "feat.domain_initiate" );
+        }
+        if ( arcaneThesis?.Id == "arcane_thesis.improved_familiar_attunement" )
+        {
+            featIds.Add( "feat.familiar" );
+        }
+        return featIds;
     }
 
     public void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts )
@@ -983,6 +1032,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         }
 
         SelectedClassId = null;
+        SelectedClassFeatChoices = [];
         SelectedClassKeyAbility = null;
         SelectedRogueRacketId = null;
         SelectedHuntersEdgeId = null;
