@@ -27,6 +27,9 @@
 - maximum HP первого уровня, вычисляемые из ancestry, class и Constitution modifier;
 - Perception, Fortitude, Reflex и Will первого уровня с ability/proficiency breakdown;
 - modifiers полного каталога general skills и сохранённых Lore entries, включая Untrained состояние.
+- Player Core language catalog, starting и дополнительные языки с server-side count/pool validation;
+- единый completion report для обязательных packages, choices, spells, feats, training и languages;
+- однонаправленная финализация `Draft` → `Completed` с UTC timestamp и блокировкой build/edit operations после завершения.
 
 `AbilityScores` хранит шесть характеристик с базовым значением `10`; boost и flaw изменяют значение на `2`, а modifier вычисляется, а не хранится. Полные правила и границы незавершённых подсистем описаны в [`../20_domain/character_creation/README.md`](../20_domain/character_creation/README.md).
 
@@ -34,7 +37,7 @@
 
 Слои `Domain`, `Application` и `Infrastructure` содержат aggregate, use cases/DTO/validators и EF Core persistence соответственно. `CharacterManagementDbContext` использует схему `character_management`; миграции расположены в `CharacterManagement.Infrastructure/Migrations`.
 
-Каталоги ancestry, backgrounds, classes, skills, racket, doctrines, deities, Cleric domains и spells доступны через application use cases и read-модели. Обновления aggregate, persistence, API и frontend выполняются одним vertical slice.
+Каталоги ancestry, backgrounds, classes, skills, languages, feats, class choices, domains и tradition-aware spells доступны через application use cases и read-модели. Обновления aggregate, persistence, API и frontend выполняются одним vertical slice.
 
 ## Web API
 
@@ -51,9 +54,12 @@
 - `GET /api/classes/cleric/spells/available?deityId=...`
 - `GET /api/skills`
 - `GET /api/languages`
+- `GET /api/languages/options?ancestryType=...&intelligenceScore=...`
 - `GET /api/character`
 - `GET /api/character/{characterId}`
 - `POST /api/character`
+- `POST /api/character/{characterId}/finalize`
+- `PUT /api/character/{characterId}/gender`
 - `DELETE /api/character/{characterId}`
 
 Legacy item endpoints в `CharacterController` не относятся к текущему character creation flow.
@@ -68,8 +74,10 @@ Legacy item endpoints в `CharacterController` не относятся к тек
 
 - skill feats и progression proficiency;
 - spellcasting lifecycle, current spell slots/Focus Points и progression выше первого уровня;
-- class features, equipment, languages и исполняемые ancestry effects;
+- class features, equipment и исполняемые ancestry effects;
 - AC, attacks, damage, состояние current/temporary HP и остальные combat statistics;
-- remastered-поля ancestry: languages, granted items и granted rules.
+- server-side access sources для uncommon languages;
+- respec завершённого персонажа;
+- оставшиеся remastered-поля ancestry: granted items и granted rules.
 
 Подробный список — в [`../20_domain/character_creation/known_gaps.md`](../20_domain/character_creation/known_gaps.md), а порядок последующих задач — в [`../30_task_notes/character_creation_near_term_roadmap.md`](../30_task_notes/character_creation_near_term_roadmap.md).

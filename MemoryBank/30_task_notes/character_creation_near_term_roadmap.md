@@ -19,10 +19,12 @@ Vikunja остаётся источником истины по карточка
 - divine skill replacement, favored weapon proficiency, Divine Font и sanctification;
 - полный Cleric spell loadout первого уровня: primary Domain, 5 cantrips, 2 prepared spells, 4 derived Font slots и Domain focus spell с Focus Pool `1`;
 - единый Player Core feat catalog и inventory выбранных/granted ancestry, background skill и class feats;
+- Player Core language catalog, starting/additional languages и server-side validation count/pool;
+- completion report и явный persisted status `Draft`/`Completed` с owner-scoped финализацией;
 - сохранение через EF, API/read-модели, список, карточку и удаление во frontend;
 - вычисляемые ability modifiers и maximum HP первого уровня.
 
-Стартовый pipeline характеристик, class skills, обязательных классовых выборов, spell loadout и feat inventory первого уровня завершён. Поддерживаемые постоянные training effects feats влияют на Skills/Lore и modifiers; остальные spell/action/combat/inventory effects остаются typed dependencies. Equipment, spellcasting lifecycle и большинство combat statistics ещё не реализованы.
+Стартовый pipeline характеристик, class skills, обязательных классовых выборов, spell loadout, feat inventory, languages и финализации первого уровня завершён. Поддерживаемые постоянные training effects feats влияют на Skills/Lore и modifiers; остальные spell/action/combat/inventory effects остаются typed dependencies. Equipment, spellcasting lifecycle и большинство combat statistics ещё не реализованы.
 
 ## Завершённый фундамент
 
@@ -290,16 +292,18 @@ AC, attacks, damage, current/temporary HP и equipment bonuses не входят
 
 ### Приоритет 6 — языки и финализация создания персонажа
 
+**Статус:** завершён 20 июля 2026 года; выполнен [итоговый cross-review](priority_6_final_review.md). Все четыре slice реализованы отдельными коммитами и прошли общий backend/frontend/EF quality gate.
+
 **Цель.** Закрыть оставшиеся универсальные choices первого уровня и ввести явную границу между редактируемым draft и завершённым персонажем.
 
-**Проблема.** Ancestry languages и дополнительные языки от положительного Intelligence modifier пока не выбираются. Одновременно сохранённый персонаж не имеет явного состояния завершённости, поэтому невозможно отличить неполный draft от валидного результата character creation и сформулировать правила последующего редактирования.
+**Исходная проблема.** Ancestry languages и дополнительные языки от положительного Intelligence modifier не выбирались. Сохранённый персонаж не имел явного состояния завершённости, поэтому неполный draft нельзя было отличить от валидного результата character creation.
 
-**Предлагаемые slices:**
+**Выполненные slices:**
 
-1. Нормализовать language catalog и ancestry language rules.
-2. Добавить выбор дополнительных языков с серверным вычислением количества и допустимого pool.
-3. Ввести server-side completion validation для всех обязательных пакетов, class choices, spells, feats и languages.
-4. Добавить явную команду финализации и read-модель статуса; правила respec завершённого персонажа вынести в отдельное решение.
+1. Language catalog и ancestry language rules — завершено; см. [нормативный каталог](../20_domain/character_creation/language_catalog.md).
+2. Выбор дополнительных языков с server-computed count/pool — завершено; см. [implementation note](additional_languages_implementation.md).
+3. Server-side completion validation обязательных пакетов, class choices, spells, feats, training и languages — завершено; см. [implementation note](character_completion_validation_implementation.md).
+4. Явная команда финализации и read-модель статуса — завершено; см. [implementation note](character_finalization_implementation.md). Respec зафиксирован как отдельная будущая граница.
 
 **Критерии готовности:**
 
@@ -308,6 +312,8 @@ AC, attacks, damage, current/temporary HP и equipment bonuses не входят
 - финализировать можно только полностью валидного персонажа;
 - список и карточка явно различают draft и завершённого персонажа;
 - frontend не определяет полноту персонажа собственной независимой формулой.
+
+Все критерии выполнены. Источники server-side access к uncommon языкам и respec завершённого персонажа не маскируются частичной реализацией и остаются отдельными задачами.
 
 ### Приоритет 7 — starting equipment и inventory boundary
 
