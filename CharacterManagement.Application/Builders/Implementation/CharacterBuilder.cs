@@ -595,6 +595,13 @@ public class CharacterBuilder : ICharacterBuilder
             _skillRepository.GetAll(),
             ResolveSelectedDruidicOrder(),
             ResolveSelectedWitchPatron() );
+        if ( _featRepository is not null )
+        {
+            CharacterFeatResolver.ValidateSelectedChoicePrerequisites(
+                _draftCharacter,
+                _featRepository.GetAll(),
+                _skillRepository.GetAll() );
+        }
     }
 
     private DruidicOrder? ResolveSelectedDruidicOrder()

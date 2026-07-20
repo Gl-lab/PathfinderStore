@@ -22,7 +22,7 @@ public sealed class CharacterFeatResolverTests
         character.SetBackgroundPackage(
             background,
             AbilityType.Dexterity,
-            AbilityType.Intelligence,
+            AbilityType.Charisma,
             skillCatalog: CreateSkills() );
 
         IReadOnlyCollection<CharacterFeat> result = CharacterFeatResolver.Resolve(
@@ -137,6 +137,57 @@ public sealed class CharacterFeatResolverTests
             [ familiar.Id ] ) );
     }
 
+    [Fact]
+    public void ValidateSelectedChoicePrerequisites_RejectsMissingSkillTraining()
+    {
+        DraftCharacter character = DraftCharacter.Create( 1, "Tester", AncestryType.Human );
+        Background background = CreateBackground();
+        IReadOnlyCollection<SkillDefinition> skills = CreateSkills();
+        character.SetBackgroundPackage(
+            background,
+            AbilityType.Dexterity,
+            AbilityType.Charisma,
+            skillCatalog: skills );
+        CharacterClass rogue = CreateClass(
+            "test",
+            "Test",
+            [ new CharacterClassRuleDescriptor(
+                "class_choice.test.skill_feat",
+                CharacterClassRuleKind.SkillFeatChoice,
+                "Skill Feat",
+                "Choose a skill feat.",
+                true,
+                [] ) ] );
+        FeatDefinition battleMedicine = new FeatDefinition(
+            "skill_feat.battle_medicine",
+            "Battle Medicine",
+            FeatCategory.Skill,
+            1,
+            [ "General", "Skill" ],
+            FeatRarity.Common,
+            [ "Trained in Medicine." ],
+            "Test feat.",
+            [ FeatDependencyType.RuleEngine ],
+            SourceReference.Unknown );
+        character.SetClassPackage(
+            rogue,
+            AbilityType.Strength,
+            classFeatChoices:
+            [
+                new FeatChoice( "class_choice.test.skill_feat", battleMedicine.Id ),
+            ],
+            featCatalog: [ battleMedicine ] );
+        character.SetFinalFreeBoosts(
+            [ AbilityType.Strength, AbilityType.Constitution, AbilityType.Wisdom, AbilityType.Charisma ] );
+        character.SetClassTraining( rogue, [], [], skills );
+
+        Assert.Throws<CharacterManagementException>( () =>
+            CharacterFeatResolver.ValidateSelectedChoicePrerequisites(
+                character,
+                [ battleMedicine ],
+                skills ) );
+    }
+
     private static CharacterClass CreateClass(
         string id,
         string name,
@@ -150,7 +201,7 @@ public sealed class CharacterFeatResolverTests
             [ AbilityType.Strength ],
             [ new ProficiencyGrant( ProficiencyTargets.Perception, ProficiencyRank.Trained, "test.perception" ) ],
             [],
-            1,
+            0,
             null,
             rules,
             [] );
@@ -236,6 +287,11 @@ public sealed class CharacterFeatResolverTests
                 "skill.acrobatics",
                 "Acrobatics",
                 AbilityType.Dexterity,
+                SourceReference.Unknown ),
+            new SkillDefinition(
+                "skill.medicine",
+                "Medicine",
+                AbilityType.Wisdom,
                 SourceReference.Unknown ),
         ];
     }

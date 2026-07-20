@@ -517,10 +517,12 @@ function getClassFeatDefinition(featId: string): FeatDefinition | null {
   return classFeatOptions.value.find((feat) => feat.id === featId) ?? null
 }
 function getClassFeatOptions(sourceId: string, requiresSpellshape: boolean): FeatDefinition[] {
+  const slot = classFeatChoiceSlots.value.find((item) => item.sourceId === sourceId)
+  if (!slot) return []
   return getAvailableClassFeatOptions(
     selectedCharacterClass.value,
-    classFeatOptions.value,
-    { sourceId, name: sourceId, requiresSpellshape },
+    [...classFeatOptions.value, ...skillFeatOptions.value],
+    { ...slot, requiresSpellshape },
     form.value.classFeatChoices,
   )
 }

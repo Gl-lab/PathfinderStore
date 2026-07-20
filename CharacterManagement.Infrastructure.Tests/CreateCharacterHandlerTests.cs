@@ -209,7 +209,11 @@ public sealed class CreateCharacterHandlerTests
             BackgroundFreeBoost = AbilityType.Charisma,
             ClassId = "class.rogue",
             ClassKeyAbility = AbilityType.Dexterity,
-            ClassFeatChoices = [ new FeatChoice( "class_choice.rogue.feat", "feat.nimble_dodge" ) ],
+            ClassFeatChoices =
+            [
+                new FeatChoice( "class_choice.rogue.feat", "feat.nimble_dodge" ),
+                new FeatChoice( "class_choice.rogue.skill_feat", "skill_feat.pickpocket" ),
+            ],
             RogueRacketId = "rogue_racket.thief",
             FinalFreeBoosts =
             [

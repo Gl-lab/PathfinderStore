@@ -14,8 +14,30 @@ const thesis = {
   effects: [{ id: 'thesis.spellshape', kind: 'FirstLevelSpellshapeFeatChoice', name: 'Spellshape' }],
 } as unknown as ArcaneThesis
 const feats = [
-  { id: 'feat.reach_spell', name: 'Reach Spell', level: 1, traits: ['Wizard'] },
-  { id: 'feat.familiar', name: 'Familiar', level: 1, traits: ['Wizard'] },
+  {
+    id: 'feat.reach_spell',
+    name: 'Reach Spell',
+    category: 'Class',
+    level: 1,
+    rarity: 'Common',
+    traits: ['Wizard'],
+    prerequisites: [],
+    summary: 'Extend the range of the next spell.',
+    source: { book: 'Player Core', page: 0 },
+    deferredDependencies: [],
+  },
+  {
+    id: 'feat.familiar',
+    name: 'Familiar',
+    category: 'Class',
+    level: 1,
+    rarity: 'Common',
+    traits: ['Wizard'],
+    prerequisites: [],
+    summary: 'Gain a familiar.',
+    source: { book: 'Player Core', page: 0 },
+    deferredDependencies: [],
+  },
 ] as FeatDefinition[]
 
 describe('class feat choices', () => {
@@ -37,5 +59,22 @@ describe('class feat choices', () => {
       { sourceId: 'thesis.spellshape', featId: 'feat.reach_spell' },
       { sourceId: 'school.extra', featId: 'feat.reach_spell' },
     ])).toBe(false)
+  })
+
+  it('includes a mandatory skill feat slot declared by the class package', () => {
+    const rogue = {
+      id: 'class.rogue',
+      name: 'Rogue',
+      rules: [{ id: 'class_choice.rogue.skill_feat', kind: 'SkillFeatChoice', name: 'Skill Feat' }],
+    } as unknown as CharacterClass
+
+    expect(getRequiredClassFeatChoiceSlots(rogue, null, null)).toEqual([
+      {
+        sourceId: 'class_choice.rogue.skill_feat',
+        name: 'Skill Feat',
+        category: 'Skill',
+        requiresSpellshape: false,
+      },
+    ])
   })
 })

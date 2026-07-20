@@ -36,7 +36,8 @@ public enum FeatDependencyType
     AnimalCompanionRules,
     FamiliarRules,
     FocusSpellRules,
-    ArchetypeCatalog
+    ArchetypeCatalog,
+    FeatParameterChoice
 }
 
 public sealed class FeatDefinition

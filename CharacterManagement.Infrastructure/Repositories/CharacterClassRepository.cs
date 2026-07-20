@@ -95,7 +95,7 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
                     ClassFeat( "rogue.feat", "Rogue Feat" ),
                     SkillFeat( "rogue.skill_feat", "Skill Feat" )
                 ],
-                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.ClassFeatureRules, CharacterClassDependencyType.RogueRacketCatalog, CharacterClassDependencyType.SkillFeatCatalog ] ),
+                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.ClassFeatureRules, CharacterClassDependencyType.RogueRacketCatalog ] ),
             Create(
                 "witch", "Witch", 178, 6, [ AbilityType.Intelligence ], 3, null,
                 [
@@ -367,8 +367,7 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
             CharacterClassRuleKind.SkillFeatChoice,
             name,
             "Choose a 1st-level skill feat.",
-            true,
-            CharacterClassDependencyType.SkillFeatCatalog );
+            true );
     }
 
     private static CharacterClassRuleDescriptor Rule(

@@ -96,9 +96,11 @@ public sealed class FeatRepository : IFeatRepository
                 1,
                 [ "General", "Skill" ],
                 FeatRarity.Common,
-                [],
+                target.Prerequisites,
                 target.Summary,
-                [ FeatDependencyType.RuleEngine, FeatDependencyType.SkillCatalog ],
+                RequiresFeatParameterChoice( target.Id )
+                    ? [ FeatDependencyType.RuleEngine, FeatDependencyType.FeatParameterChoice ]
+                    : [ FeatDependencyType.RuleEngine ],
                 target.Source ) )
             .ToArray();
     }
@@ -110,11 +112,12 @@ public sealed class FeatRepository : IFeatRepository
         if ( grant.RequiresChoice )
         {
             return grant.Options
-                .Select( option => new BackgroundSkillFeatTarget(
+                .Select( ( option, index ) => new BackgroundSkillFeatTarget(
                     option.Id,
                     option.Name,
                     grant.Summary,
-                    background.Source ) )
+                    background.Source,
+                    GetSkillFeatPrerequisites( background, index ) ) )
                 .ToArray();
         }
 
@@ -124,8 +127,37 @@ public sealed class FeatRepository : IFeatRepository
                 grant.TargetId ?? throw new InvalidOperationException( $"Background grant '{grant.Id}' has no target." ),
                 grant.Name,
                 grant.Summary,
-                background.Source ),
+                background.Source,
+                GetSkillFeatPrerequisites( background, null ) ),
         ];
+    }
+
+    private static IReadOnlyList<string> GetSkillFeatPrerequisites(
+        Background background,
+        int? optionIndex )
+    {
+        BackgroundGrantDescriptor? skillGrant = background.Grants
+            .SingleOrDefault( grant => grant.Kind == BackgroundGrantKind.SkillTraining );
+        if ( skillGrant is null )
+        {
+            return [];
+        }
+
+        string? skillName = skillGrant.RequiresChoice && optionIndex.HasValue && optionIndex.Value < skillGrant.Options.Count
+            ? skillGrant.Options[ optionIndex.Value ].Name
+            : skillGrant.RequiresChoice
+                ? String.Join( " or ", skillGrant.Options.Select( option => option.Name ) )
+                : skillGrant.Name;
+        return String.IsNullOrWhiteSpace( skillName )
+            ? []
+            : [ $"Trained in {skillName}." ];
+    }
+
+    private static bool RequiresFeatParameterChoice( string featId )
+    {
+        return featId == "skill_feat.assurance" ||
+               featId == "skill_feat.specialty_crafting" ||
+               featId == "skill_feat.terrain_expertise";
     }
 
     private static IReadOnlyCollection<FeatDefinition> CreateClassFeats()
@@ -239,5 +271,6 @@ public sealed class FeatRepository : IFeatRepository
         string Id,
         string Name,
         string Summary,
-        SourceReference Source );
+        SourceReference Source,
+        IReadOnlyList<string> Prerequisites );
 }

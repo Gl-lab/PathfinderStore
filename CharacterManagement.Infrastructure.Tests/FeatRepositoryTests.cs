@@ -90,6 +90,25 @@ public sealed class FeatRepositoryTests
         Assert.Equal( "Player Core", spellbookProdigy.Source.Book );
     }
 
+    [Fact]
+    public void GetFeat_DerivesSkillFeatTrainingPrerequisitesFromBackgroundGrants()
+    {
+        FeatRepository repository = CreateRepository();
+
+        Assert.Equal(
+            [ "Trained in Acrobatics." ],
+            repository.GetFeat( "skill_feat.cat_fall" ).Prerequisites );
+        Assert.Equal(
+            [ "Trained in Athletics." ],
+            repository.GetFeat( "skill_feat.quick_jump" ).Prerequisites );
+        Assert.Equal(
+            [ "Trained in Thievery." ],
+            repository.GetFeat( "skill_feat.pickpocket" ).Prerequisites );
+        Assert.Contains(
+            FeatDependencyType.FeatParameterChoice,
+            repository.GetFeat( "skill_feat.assurance" ).DeferredDependencies );
+    }
+
     private static FeatRepository CreateRepository() => new FeatRepository(
         new AncestryRepository(),
         new BackgroundRepository() );

@@ -89,8 +89,8 @@ public static class CharacterFeatResolver
 
             foreach ( FeatChoice choice in character.SelectedClassFeatChoices )
             {
-                FeatDefinition feat = GetFeat( feats, choice.FeatId, FeatCategory.Class );
                 FeatChoiceSlot slot = slots.Single( item => item.SourceId == choice.SourceId );
+                FeatDefinition feat = GetFeat( feats, choice.FeatId, slot.Category );
                 result.Add( new CharacterFeat(
                     feat,
                     CharacterFeatAcquisitionType.Selected,
@@ -154,6 +154,62 @@ public static class CharacterFeatResolver
         return choices.ToArray();
     }
 
+    public static void ValidateSelectedChoicePrerequisites(
+        DraftCharacter character,
+        IReadOnlyCollection<FeatDefinition> featCatalog,
+        IReadOnlyCollection<SkillDefinition> skillCatalog )
+    {
+        ArgumentNullException.ThrowIfNull( character );
+        ArgumentNullException.ThrowIfNull( featCatalog );
+        ArgumentNullException.ThrowIfNull( skillCatalog );
+
+        IReadOnlySet<string> ownedFeatIds = character.SelectedClassFeatChoices
+            .Select( choice => choice.FeatId )
+            .Concat( String.IsNullOrWhiteSpace( character.SelectedAncestryFeatId )
+                ? []
+                : [ character.SelectedAncestryFeatId ] )
+            .Concat( String.IsNullOrWhiteSpace( character.SelectedBackgroundSkillFeatId )
+                ? []
+                : [ character.SelectedBackgroundSkillFeatId ] )
+            .ToHashSet( StringComparer.Ordinal );
+        IReadOnlyDictionary<string, FeatDefinition> feats = featCatalog
+            .ToDictionary( feat => feat.Id, StringComparer.Ordinal );
+
+        foreach ( FeatChoice choice in character.SelectedClassFeatChoices )
+        {
+            FeatDefinition feat = feats[ choice.FeatId ];
+            foreach ( string prerequisite in feat.Prerequisites )
+            {
+                if ( prerequisite.StartsWith( "Trained in ", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    string skillRequirement = prerequisite[ "Trained in ".Length.. ].TrimEnd( '.' );
+                    string[] skillNames = skillRequirement.Split(
+                        " or ",
+                        StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries );
+                    SkillDefinition[] skills = skillCatalog
+                        .Where( item => skillNames.Contains( item.Name, StringComparer.OrdinalIgnoreCase ) )
+                        .ToArray();
+                    if ( skills.Length > 0 && !skills.Any( skill =>
+                            character.TrainedSkills.Any( training => training.SkillId == skill.Id ) ) )
+                    {
+                        throw new CharacterManagementException(
+                            $"Feat '{feat.Id}' requires training in '{skillRequirement}'." );
+                    }
+                    continue;
+                }
+
+                string prerequisiteName = prerequisite.TrimEnd( '.' );
+                FeatDefinition? prerequisiteFeat = featCatalog.SingleOrDefault(
+                    item => item.Name.Equals( prerequisiteName, StringComparison.OrdinalIgnoreCase ) );
+                if ( prerequisiteFeat is not null && !ownedFeatIds.Contains( prerequisiteFeat.Id ) )
+                {
+                    throw new CharacterManagementException(
+                        $"Feat '{feat.Id}' requires feat '{prerequisiteFeat.Id}'." );
+                }
+            }
+        }
+    }
+
     private static IReadOnlyList<FeatChoiceSlot> GetRequiredClassChoiceSlots(
         CharacterClass characterClass,
         ArcaneSchool? arcaneSchool,
@@ -161,8 +217,19 @@ public static class CharacterFeatResolver
     {
         List<FeatChoiceSlot> slots = characterClass.Rules
             .Where( rule => rule.Kind == CharacterClassRuleKind.ClassFeatChoice )
-            .Select( rule => new FeatChoiceSlot( rule.Id, CharacterFeatSourceType.Class, false ) )
+            .Select( rule => new FeatChoiceSlot(
+                rule.Id,
+                FeatCategory.Class,
+                CharacterFeatSourceType.Class,
+                false ) )
             .ToList();
+        slots.AddRange( characterClass.Rules
+            .Where( rule => rule.Kind == CharacterClassRuleKind.SkillFeatChoice )
+            .Select( rule => new FeatChoiceSlot(
+                rule.Id,
+                FeatCategory.Skill,
+                CharacterFeatSourceType.Class,
+                false ) ) );
 
         ArcaneThesisEffectDescriptor? spellshapeChoice = arcaneThesis?.Effects
             .SingleOrDefault( effect => effect.Kind == ArcaneThesisEffectKind.FirstLevelSpellshapeFeatChoice );
@@ -170,6 +237,7 @@ public static class CharacterFeatResolver
         {
             slots.Add( new FeatChoiceSlot(
                 spellshapeChoice.Id,
+                FeatCategory.Class,
                 CharacterFeatSourceType.ClassChoice,
                 true ) );
         }
@@ -180,6 +248,7 @@ public static class CharacterFeatResolver
         {
             slots.Add( new FeatChoiceSlot(
                 extraClassFeat.Id,
+                FeatCategory.Class,
                 CharacterFeatSourceType.ClassChoice,
                 false ) );
         }
@@ -215,14 +284,23 @@ public static class CharacterFeatResolver
             FeatChoice? choice = choices.SingleOrDefault( item => item.SourceId == slot.SourceId );
             if ( choice is null )
             {
-                throw new CharacterManagementException( $"Class feat choice '{slot.SourceId}' is required." );
+                throw new CharacterManagementException( $"Feat choice '{slot.SourceId}' is required." );
             }
 
-            FeatDefinition feat = GetFeat( feats, choice.FeatId, FeatCategory.Class );
-            if ( feat.Level != 1 || !feat.Traits.Contains( classTrait, StringComparer.OrdinalIgnoreCase ) )
+            FeatDefinition feat = GetFeat( feats, choice.FeatId, slot.Category );
+            bool hasRequiredClassTrait = slot.Category != FeatCategory.Class ||
+                                         feat.Traits.Contains( classTrait, StringComparer.OrdinalIgnoreCase );
+            if ( feat.Level != 1 || !hasRequiredClassTrait )
             {
                 throw new CharacterManagementException(
-                    $"Feat '{feat.Id}' is not an available 1st-level {classTrait} feat." );
+                    $"Feat '{feat.Id}' is not available for choice '{slot.SourceId}'." );
+            }
+
+            if ( slot.Category == FeatCategory.Skill &&
+                 feat.DeferredDependencies.Contains( FeatDependencyType.FeatParameterChoice ) )
+            {
+                throw new CharacterManagementException(
+                    $"Feat '{feat.Id}' requires an unsupported parameter choice." );
             }
 
             if ( slot.RequiresSpellshape && !SpellshapeFeatIds.Contains( feat.Id ) )
@@ -289,6 +367,7 @@ public static class CharacterFeatResolver
 
     private sealed record FeatChoiceSlot(
         string SourceId,
+        FeatCategory Category,
         CharacterFeatSourceType SourceType,
         bool RequiresSpellshape );
 }
