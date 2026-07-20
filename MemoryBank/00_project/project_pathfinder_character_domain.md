@@ -24,7 +24,9 @@
 - Cleric Doctrine, Deity package и primary Domain choice для Cloistered Cleric;
 - divine skill, favored weapon proficiency, Divine Font и sanctification;
 - Cleric spell loadout первого уровня: 5 cantrips, 2 prepared slots, 4 derived Divine Font slots и domain focus spell с Focus Pool `1`;
-- maximum HP первого уровня, вычисляемые из ancestry, class и Constitution modifier.
+- maximum HP первого уровня, вычисляемые из ancestry, class и Constitution modifier;
+- Perception, Fortitude, Reflex и Will первого уровня с ability/proficiency breakdown;
+- modifiers полного каталога general skills и сохранённых Lore entries, включая Untrained состояние.
 
 `AbilityScores` хранит шесть характеристик с базовым значением `10`; boost и flaw изменяют значение на `2`, а modifier вычисляется, а не хранится. Полные правила и границы незавершённых подсистем описаны в [`../20_domain/character_creation/README.md`](../20_domain/character_creation/README.md).
 
@@ -66,7 +68,7 @@ Legacy item endpoints в `CharacterController` не относятся к тек
 - skill feats и progression proficiency;
 - spellcasting lifecycle, current spell slots/Focus Points и progression выше первого уровня;
 - class features, equipment, languages и исполняемые ancestry effects;
-- расширенные derived statistics и состояние current/temporary HP;
+- AC, attacks, damage, состояние current/temporary HP и остальные combat statistics;
 - remastered-поля ancestry: languages, granted items и granted rules.
 
 Подробный список — в [`../20_domain/character_creation/known_gaps.md`](../20_domain/character_creation/known_gaps.md), а порядок последующих задач — в [`../30_task_notes/character_creation_near_term_roadmap.md`](../30_task_notes/character_creation_near_term_roadmap.md).

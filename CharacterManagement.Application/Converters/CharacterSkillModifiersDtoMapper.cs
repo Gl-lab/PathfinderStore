@@ -8,11 +8,10 @@ namespace Pathfinder.CharacterManagement.Application.Converters;
 
 public static class CharacterSkillModifiersDtoMapper
 {
-    private const int CharacterLevel = 1;
-
     public static CharacterSkillModifiersDto Map(
         DraftCharacter character,
-        ISkillRepository? skillRepository )
+        ISkillRepository? skillRepository,
+        int characterLevel )
     {
         ArgumentNullException.ThrowIfNull( character );
 
@@ -29,11 +28,15 @@ public static class CharacterSkillModifiersDtoMapper
             General = skillRepository
                 .GetAll()
                 .OrderBy( skill => skill.Name, StringComparer.Ordinal )
-                .Select( skill => Map( character, skill, trainedSkills ) )
+                .Select( skill => Map(
+                    character,
+                    skill,
+                    trainedSkills,
+                    characterLevel ) )
                 .ToArray(),
             Lore = character.TrainedLore
                 .OrderBy( lore => lore.Name, StringComparer.Ordinal )
-                .Select( lore => Map( character, lore ) )
+                .Select( lore => Map( character, lore, characterLevel ) )
                 .ToArray(),
         };
     }
@@ -41,7 +44,8 @@ public static class CharacterSkillModifiersDtoMapper
     private static CharacterProficiencyStatisticDto Map(
         DraftCharacter character,
         SkillDefinition skill,
-        IReadOnlyDictionary<string, TrainedSkill> trainedSkills )
+        IReadOnlyDictionary<string, TrainedSkill> trainedSkills,
+        int characterLevel )
     {
         bool isTrained = trainedSkills.TryGetValue( skill.Id, out TrainedSkill? training );
         ProficiencyRank rank = isTrained ? ProficiencyRank.Trained : ProficiencyRank.Untrained;
@@ -53,12 +57,14 @@ public static class CharacterSkillModifiersDtoMapper
             skill.Name,
             skill.KeyAbility,
             rank,
-            sourceGrantIds );
+            sourceGrantIds,
+            characterLevel );
     }
 
     private static CharacterProficiencyStatisticDto Map(
         DraftCharacter character,
-        TrainedLore lore )
+        TrainedLore lore,
+        int characterLevel )
     {
         return Map(
             character,
@@ -66,7 +72,8 @@ public static class CharacterSkillModifiersDtoMapper
             lore.Name,
             AbilityType.Intelligence,
             ProficiencyRank.Trained,
-            [ lore.SourceGrantId ] );
+            [ lore.SourceGrantId ],
+            characterLevel );
     }
 
     private static CharacterProficiencyStatisticDto Map(
@@ -75,14 +82,15 @@ public static class CharacterSkillModifiersDtoMapper
         string name,
         AbilityType ability,
         ProficiencyRank rank,
-        IReadOnlyList<string> sourceGrantIds )
+        IReadOnlyList<string> sourceGrantIds,
+        int characterLevel )
     {
         ProficiencyBasedStatistic statistic = ProficiencyBasedStatistic.Calculate(
             ability,
             character.AbilityScores.GetCharacteristic( ability ),
             rank,
             sourceGrantIds,
-            CharacterLevel );
+            characterLevel );
 
         return new CharacterProficiencyStatisticDto
         {

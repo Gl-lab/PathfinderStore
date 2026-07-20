@@ -232,6 +232,8 @@ Vikunja остаётся источником истины по карточка
 
 AC, attacks, damage, current/temporary HP и equipment bonuses не входят в этот приоритет.
 
+**Статус приоритета 3:** завершён 20 июля 2026 года; выполнен [итоговый cross-review](priority_3_final_review.md). Карточка возвращает и отображает server-derived Saves, Perception, modifiers всех general skills и сохранённых Lore entries первого уровня.
+
 ## Сквозной quality gate
 
 `Character Creation E2E Golden Path` не конкурирует с продуктовыми приоритетами и добавляется как проверка выполняемых vertical slices.

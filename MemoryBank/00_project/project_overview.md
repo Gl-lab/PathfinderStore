@@ -161,7 +161,7 @@ Seed users:
 
 ### Текущий character creation focus
 
-Frontend MVP создания персонажа реализован на Vue 3. Текущий flow включает Ancestry package, ancestry boosts, Background package с двумя boosts и фактическим skill/Lore training, Class package с key ability boost и типизированными стартовыми proficiencies, Rogue's Racket, Cleric Doctrine и Deity package, а также отдельный пакет четырёх финальных свободных boosts. Стартовый pipeline характеристик завершён; maximum HP первого уровня вычисляется из effective ancestry HP, class HP и Constitution modifier. Background skill feat, domain choice, spell preparation и остальные Class rules пока возвращаются декларативно или ожидают отдельные подсистемы.
+Frontend MVP создания персонажа реализован на Vue 3. Текущий flow включает пол и постоянный аватар, полный Ancestry/Background/Class package, обязательные классовые выборы восьми классов Player Core baseline, четыре финальных свободных boosts и полный Cleric spell loadout первого уровня. Карточка серверно вычисляет maximum HP, Perception, Fortitude, Reflex, Will, modifiers всех general skills и сохранённых Lore entries с ability/proficiency breakdown. Background skill feat, class/ancestry feats, equipment, progression и остальные combat statistics пока возвращаются декларативно или ожидают отдельные подсистемы.
 
 Смотреть:
 

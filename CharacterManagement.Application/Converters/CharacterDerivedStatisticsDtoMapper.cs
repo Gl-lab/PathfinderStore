@@ -57,7 +57,8 @@ public static class CharacterDerivedStatisticsDtoMapper
             },
             SkillModifiers = CharacterSkillModifiersDtoMapper.Map(
                 character,
-                skillRepository ),
+                skillRepository,
+                CharacterLevel ),
         };
     }
 

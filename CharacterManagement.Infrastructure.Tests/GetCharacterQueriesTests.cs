@@ -861,6 +861,35 @@ public sealed class GetCharacterQueriesTests
     }
 
     [Fact]
+    public void Convert_WhenCompleteCharacterAndSkillRepositoryIsMissing_Throws()
+    {
+        AncestryRepository ancestryRepository = new AncestryRepository();
+        BackgroundRepository backgroundRepository = new BackgroundRepository();
+        CharacterClassRepository characterClassRepository = new CharacterClassRepository();
+        CharacterBuilder builder = CreateBuilder(
+            ancestryRepository,
+            backgroundRepository,
+            characterClassRepository );
+        builder.CreateCharacter( 1, "Valeros", AncestryType.Human );
+        builder.SetAncestryPackage( "human.skilled", "human.cooperative_nature" );
+        builder.ApplyFreeBoosts( [ AbilityType.Strength, AbilityType.Constitution ] );
+        builder.SetBackground(
+            "background.warrior",
+            AbilityType.Strength,
+            AbilityType.Constitution );
+        builder.SetClass( "class.fighter", AbilityType.Strength );
+        CharacterDetailsDtoMapper mapper = new CharacterDetailsDtoMapper(
+            ancestryRepository,
+            backgroundRepository,
+            characterClassRepository );
+
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>( () =>
+            mapper.Convert( builder.Build() ) );
+
+        Assert.Equal( "Skill repository is required to map skill modifiers.", exception.Message );
+    }
+
+    [Fact]
     public void Convert_IncludesStoredAvatarIdentifierAndResolvedPath()
     {
         DraftCharacter character = DraftCharacter.Create( 1, "Avatar Test", AncestryType.Human );
