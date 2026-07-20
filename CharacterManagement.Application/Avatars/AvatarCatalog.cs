@@ -197,7 +197,14 @@ public sealed class AvatarCatalog : IAvatarCatalog
             AncestryType.Dwarf,
             "class.witch",
             CharacterGender.Female,
-            Variant: 1 )
+            Variant: 1 ),
+        new AvatarDefinition(
+            AvatarId.Create( "avatar.pc.000028" ),
+            "/avatars/pc/000028.webp",
+            AncestryType.Dwarf,
+            "class.witch",
+            CharacterGender.Female,
+            Variant: 2 )
     ];
 
     private readonly IReadOnlyList<AvatarDefinition> _avatars;
