@@ -40,6 +40,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public DivineSanctification? SelectedDivineSanctification { get; private set; }
     public IReadOnlyList<string> PreparedClericCantripIds { get; private set; } = [];
     public IReadOnlyList<string> PreparedClericSpellIds { get; private set; } = [];
+    public IReadOnlyList<string> BardCantripIds { get; private set; } = [];
+    public IReadOnlyList<string> BardSpellIds { get; private set; } = [];
     public IReadOnlyList<AbilityType> AppliedFinalFreeBoosts { get; private set; } = [];
     public IReadOnlyList<TrainedSkill> TrainedSkills { get; private set; } = [];
     public IReadOnlyList<TrainedLore> TrainedLore { get; private set; } = [];
@@ -337,7 +339,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         ArcaneSchool? arcaneSchool = null,
         ArcaneThesis? arcaneThesis = null,
         ClericDomain? clericDomain = null,
-        ClericSpellLoadout? clericSpellLoadout = null )
+        ClericSpellLoadout? clericSpellLoadout = null,
+        BardSpellLoadout? bardSpellLoadout = null )
     {
         ArgumentNullException.ThrowIfNull( characterClass );
 
@@ -396,6 +399,17 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         {
             throw new CharacterManagementException(
                 "Bard Muse can only be selected for the Bard class." );
+        }
+
+        if ( ( isBard ) && ( bardSpellLoadout is null ) )
+        {
+            throw new CharacterManagementException( "Bard class requires a spell repertoire." );
+        }
+
+        if ( ( !isBard ) && ( bardSpellLoadout is not null ) )
+        {
+            throw new CharacterManagementException(
+                "Bard spell choices can only be selected for the Bard class." );
         }
 
         bool isWitch = characterClass.Id == "class.witch";
@@ -586,6 +600,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         SelectedDivineSanctification = divineSanctification;
         PreparedClericCantripIds = clericSpellLoadout?.CantripIds.ToArray() ?? [];
         PreparedClericSpellIds = clericSpellLoadout?.PreparedSpellIds.ToArray() ?? [];
+        BardCantripIds = bardSpellLoadout?.CantripIds.ToArray() ?? [];
+        BardSpellIds = bardSpellLoadout?.SelectedRankOneSpellIds.ToArray() ?? [];
         if ( rogueTraining is not null )
         {
             TrainedSkills = rogueTraining.Skills.ToArray();
@@ -918,6 +934,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         SelectedDivineSanctification = null;
         PreparedClericCantripIds = [];
         PreparedClericSpellIds = [];
+        BardCantripIds = [];
+        BardSpellIds = [];
         RemoveClassTrainingEffects();
         TrainedSkills = TrainedSkills
             .Where( training =>

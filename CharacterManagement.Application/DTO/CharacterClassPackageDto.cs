@@ -14,6 +14,8 @@ public sealed class CharacterClassPackageDto
     public HuntersEdgePackageDto? HuntersEdge { get; set; }
     public DruidicOrderPackageDto? DruidicOrder { get; set; }
     public BardMusePackageDto? BardMuse { get; set; }
+    public BardSpellLoadoutDto? BardSpellLoadout { get; set; }
+    public BardCompositionPackageDto? BardComposition { get; set; }
     public WitchPatronPackageDto? WitchPatron { get; set; }
     public ArcaneSchoolPackageDto? ArcaneSchool { get; set; }
     public ArcaneThesisPackageDto? ArcaneThesis { get; set; }

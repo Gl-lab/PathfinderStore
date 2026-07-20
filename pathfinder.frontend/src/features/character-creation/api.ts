@@ -321,6 +321,11 @@ export interface ClericSpellOptions {
   rankOneSpells: ClericAvailableSpell[]
 }
 
+export interface BardSpellOptions {
+  cantrips: SpellDefinition[]
+  rankOneSpells: SpellDefinition[]
+}
+
 export interface ClericDomain {
   id: string
   name: string
@@ -384,6 +389,8 @@ export interface CreateCharacterRequest {
   deitySkillReplacementId: string | null
   clericCantripIds: string[]
   clericPreparedSpellIds: string[]
+  bardCantripIds: string[]
+  bardSpellIds: string[]
   finalFreeBoosts: AbilityCode[]
   classSkillGrantChoices: ClassSkillGrantChoice[]
   additionalClassTrainingChoices: ClassTrainingTargetChoice[]
@@ -449,6 +456,18 @@ export async function getClericSpellOptions(deityId: string): Promise<ClericSpel
   return (
     await http.get<ClericSpellOptions>('/api/classes/cleric/spells/available', {
       params: { deityId },
+    })
+  ).data
+}
+
+export async function getSpellOptions(
+  tradition: SpellTradition,
+  rank: number,
+  kind: Exclude<SpellKind, 'Focus'>,
+): Promise<SpellDefinition[]> {
+  return (
+    await http.get<SpellDefinition[]>('/api/spells', {
+      params: { tradition, rank, kind },
     })
   ).data
 }

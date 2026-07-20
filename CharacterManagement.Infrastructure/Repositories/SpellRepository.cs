@@ -57,6 +57,7 @@ public sealed class SpellRepository : ISpellRepository
             Create( "Telekinetic Projectile", SpellKind.Cantrip, "AO", "Attack|Cantrip|Concentrate|Manipulate", SpellRarity.Common, "Player Core", 363 ),
             Create( "Vitality Lash", SpellKind.Cantrip, "DP", "Cantrip|Concentrate|Manipulate|Vitality", SpellRarity.Common, "Player Core", 366 ),
             Create( "Void Warp", SpellKind.Cantrip, "ADO", "Cantrip|Concentrate|Manipulate|Void", SpellRarity.Common, "Player Core", 366 ),
+            Create( "Courageous Anthem", SpellKind.Cantrip, "O", "Bard|Cantrip|Composition|Concentrate|Emotion|Mental|Uncommon", SpellRarity.Uncommon, "Player Core", 370 ),
 
             Create( "Air Bubble", SpellKind.Spell, "ADP", "Air|Concentrate", SpellRarity.Common, "Player Core", 314 ),
             Create( "Alarm", SpellKind.Spell, "ADOP", "Concentrate|Manipulate", SpellRarity.Common, "Player Core", 314 ),
@@ -157,11 +158,20 @@ public sealed class SpellRepository : ISpellRepository
             Focus( "Appearance of Wealth", "Cleric|Concentrate|Focus|Illusion|Manipulate|Uncommon", "Player Core", 381 ),
             Focus( "Arms of Nature", "Cleric|Concentrate|Focus|Manipulate|Uncommon|Wood", "Divine Mysteries", 271 ),
             Focus( "Weapon Surge", "Cleric|Focus|Manipulate|Sanctified|Uncommon", "Player Core", 381 ),
+            FocusWithTradition( "Counter Performance", "O", "Bard|Composition|Concentrate|Focus|Fortune|Mental|Uncommon", "Player Core", 370 ),
         ];
     }
 
     private static SpellDefinition Focus( string name, string traits, string book, int page ) =>
         Create( name, SpellKind.Focus, "D", traits, SpellRarity.Uncommon, book, page );
+
+    private static SpellDefinition FocusWithTradition(
+        string name,
+        string traditionCodes,
+        string traits,
+        string book,
+        int page ) =>
+        Create( name, SpellKind.Focus, traditionCodes, traits, SpellRarity.Uncommon, book, page );
 
     private static SpellDefinition Create(
         string name,

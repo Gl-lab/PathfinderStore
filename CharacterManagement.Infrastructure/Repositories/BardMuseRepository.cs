@@ -60,7 +60,7 @@ public sealed class BardMuseRepository : IBardMuseRepository
                     $"spell.{spellId}",
                     BardMuseBenefitKind.RepertoireSpell,
                     spellName,
-                    [ CharacterClassDependencyType.SpellCatalog ] ),
+                    [] ),
             ] );
     }
 }

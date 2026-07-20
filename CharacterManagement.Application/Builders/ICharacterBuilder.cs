@@ -40,7 +40,9 @@ public interface ICharacterBuilder
         string? arcaneThesisId = null,
         string? clericDomainId = null,
         IReadOnlyList<string>? clericCantripIds = null,
-        IReadOnlyList<string>? clericPreparedSpellIds = null );
+        IReadOnlyList<string>? clericPreparedSpellIds = null,
+        IReadOnlyList<string>? bardCantripIds = null,
+        IReadOnlyList<string>? bardSpellIds = null );
     void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts );
     void SetClassTraining(
         string characterClassId,

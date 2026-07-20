@@ -98,6 +98,28 @@ public sealed class CreateCharacterCommandValidator : AbstractValidator<CreateCh
                     () => RuleFor( command => command.Character.BardMuseId ).Empty() );
 
                 When(
+                    command => command.Character.ClassId == "class.bard",
+                    () =>
+                    {
+                        RuleFor( command => command.Character.BardCantripIds )
+                            .NotNull()
+                            .Must( spellIds => spellIds.Count == 5 )
+                            .WithMessage( "Exactly 5 Bard cantrips must be selected." );
+                        RuleFor( command => command.Character.BardSpellIds )
+                            .NotNull()
+                            .Must( spellIds => spellIds.Count == 2 )
+                            .WithMessage( "Exactly 2 Bard rank-1 spells must be selected." );
+                    } );
+
+                When(
+                    command => command.Character.ClassId != "class.bard",
+                    () =>
+                    {
+                        RuleFor( command => command.Character.BardCantripIds ).Empty();
+                        RuleFor( command => command.Character.BardSpellIds ).Empty();
+                    } );
+
+                When(
                     command => command.Character.ClassId == "class.witch",
                     () => RuleFor( command => command.Character.WitchPatronId ).NotEmpty() );
 

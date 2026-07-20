@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Pathfinder.CharacterManagement.Infrastructure.Data;
@@ -11,9 +12,11 @@ using Pathfinder.CharacterManagement.Infrastructure.Data;
 namespace Pathfinder.CharacterManagement.Infrastructure.Migrations
 {
     [DbContext(typeof(CharacterManagementDbContext))]
-    partial class CharacterManagementDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260720130507_AddBardSpellLoadout")]
+    partial class AddBardSpellLoadout
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

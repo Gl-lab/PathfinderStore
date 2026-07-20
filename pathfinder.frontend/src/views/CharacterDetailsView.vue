@@ -391,7 +391,33 @@ onMounted(load)
                 :key="benefit.id"
               >
                 {{ t(`classUi.bardMuseBenefitKinds.${benefit.kind}`) }}:
-                {{ benefit.name }}. {{ t('classUi.deferredEffect') }}
+                {{ benefit.name }}.
+                <template v-if="benefit.kind === 'ClassFeat'">{{ t('classUi.deferredEffect') }}</template>
+              </p>
+            </template>
+            <template v-if="character.classPackage.bardSpellLoadout">
+              <p>
+                {{ t('classUi.bardCantrips') }}:
+                {{ character.classPackage.bardSpellLoadout.cantrips.map((spell) => spell.name).join(', ') }}
+              </p>
+              <p>
+                {{ t('classUi.bardRepertoireSpells') }}:
+                {{ character.classPackage.bardSpellLoadout.rankOneRepertoire.map((entry) => entry.spell.name).join(', ') }}
+              </p>
+              <p>
+                {{ t('classUi.bardSpellSlots') }}:
+                {{ character.classPackage.bardSpellLoadout.rankOneSpellSlotCount }}
+              </p>
+            </template>
+            <template v-if="character.classPackage.bardComposition">
+              <p>
+                {{ t('classUi.compositionSpells') }}:
+                {{ character.classPackage.bardComposition.compositionCantrip.name }},
+                {{ character.classPackage.bardComposition.focusSpell.name }}
+              </p>
+              <p>
+                {{ t('classUi.focusPoints') }}:
+                {{ character.classPackage.bardComposition.maximumFocusPoints }}
               </p>
             </template>
             <template v-if="character.classPackage.witchPatron">

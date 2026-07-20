@@ -259,6 +259,15 @@ public sealed class CreateCharacterHandlerTests
             ClassId = "class.bard",
             ClassKeyAbility = AbilityType.Charisma,
             BardMuseId = "bard_muse.maestro",
+            BardCantripIds =
+            [
+                "spell.daze",
+                "spell.detect_magic",
+                "spell.forbidding_ward",
+                "spell.guidance",
+                "spell.light",
+            ],
+            BardSpellIds = [ "spell.command", "spell.fear" ],
             FinalFreeBoosts =
             [
                 AbilityType.Strength,
@@ -291,6 +300,8 @@ public sealed class CreateCharacterHandlerTests
             .AsNoTracking()
             .SingleAsync( entity => entity.AccountId == account.Id );
         Assert.Equal( "bard_muse.maestro", savedCharacter.SelectedBardMuseId );
+        Assert.Equal( 5, savedCharacter.BardCantripIds.Count );
+        Assert.Equal( [ "spell.command", "spell.fear" ], savedCharacter.BardSpellIds );
         Assert.Contains( savedCharacter.TrainedSkills, training => training.SkillId == "skill.occultism" );
         Assert.Contains( savedCharacter.TrainedSkills, training => training.SkillId == "skill.performance" );
     }

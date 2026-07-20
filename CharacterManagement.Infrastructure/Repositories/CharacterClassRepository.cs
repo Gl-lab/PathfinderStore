@@ -34,10 +34,16 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
             Create(
                 "bard", "Bard", 94, 8, [ AbilityType.Charisma ], 4, SpellTradition.Occult,
                 [
-                    Spellcasting( "bard", "Occult spellcasting, spell repertoire, and composition spells." ),
+                    Rule(
+                        "class.bard.spellcasting",
+                        CharacterClassRuleKind.Spellcasting,
+                        "Spellcasting",
+                        "Occult spellcasting, spell repertoire, and composition spells.",
+                        true,
+                        [] ),
                     Choice( "bard.muse", "Muse", "Choose a muse that grants a bard feat and a spell." )
                 ],
-                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.SpellCatalog, CharacterClassDependencyType.ClassFeatCatalog ] ),
+                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.ClassFeatCatalog ] ),
             Create(
                 "cleric", "Cleric", 108, 8, [ AbilityType.Wisdom ], 2, SpellTradition.Divine,
                 [

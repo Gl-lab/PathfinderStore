@@ -95,7 +95,8 @@ public sealed class ClassPackageTests
         character.SetClassPackage(
             bard,
             AbilityType.Charisma,
-            bardMuse: CreateBardMuse() );
+            bardMuse: CreateBardMuse(),
+            bardSpellLoadout: CreateBardSpellLoadout() );
 
         Assert.Equal( bard.Id, character.SelectedClassId );
         Assert.Equal( 14, character.AbilityScores.Intelligence.Value );
@@ -538,7 +539,8 @@ public sealed class ClassPackageTests
         character.SetClassPackage(
             bard,
             AbilityType.Charisma,
-            bardMuse: bardMuse );
+            bardMuse: bardMuse,
+            bardSpellLoadout: CreateBardSpellLoadout() );
 
         Assert.Equal( bardMuse.Id, character.SelectedBardMuseId );
 
@@ -858,6 +860,61 @@ public sealed class ClassPackageTests
                     "Sure Strike",
                     [] ),
             ] );
+    }
+
+    private static BardSpellLoadout CreateBardSpellLoadout()
+    {
+        BardMuse muse = CreateBardMuse();
+        IReadOnlyCollection<SpellDefinition> catalog = CreateBardSpellCatalog();
+        return BardSpellLoadoutResolver.Resolve(
+            muse,
+            CreateCantripIds(),
+            [ "spell.fear", "spell.soothe" ],
+            catalog );
+    }
+
+    private static IReadOnlyCollection<SpellDefinition> CreateBardSpellCatalog()
+    {
+        SourceReference source = new SourceReference( "Player Core", 1 );
+        return
+        [
+            .. CreateCantripIds().Select( ( id, index ) => new SpellDefinition(
+                id,
+                $"Cantrip {index + 1}",
+                1,
+                SpellKind.Cantrip,
+                [ SpellTradition.Occult ],
+                [ "Cantrip" ],
+                SpellRarity.Common,
+                source ) ),
+            new SpellDefinition(
+                "spell.fear",
+                "Fear",
+                1,
+                SpellKind.Spell,
+                [ SpellTradition.Occult ],
+                [],
+                SpellRarity.Common,
+                source ),
+            new SpellDefinition(
+                "spell.soothe",
+                "Soothe",
+                1,
+                SpellKind.Spell,
+                [ SpellTradition.Occult ],
+                [],
+                SpellRarity.Common,
+                source ),
+            new SpellDefinition(
+                "spell.sure_strike",
+                "Sure Strike",
+                1,
+                SpellKind.Spell,
+                [ SpellTradition.Occult ],
+                [],
+                SpellRarity.Common,
+                source ),
+        ];
     }
 
     private static WitchPatron CreateWitchPatron( params string[] familiarSpellIds )

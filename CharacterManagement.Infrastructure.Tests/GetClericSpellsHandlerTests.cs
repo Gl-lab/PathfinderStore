@@ -16,7 +16,7 @@ public sealed class GetClericSpellsHandlerTests
             new GetClericSpellsCommand(),
             CancellationToken.None );
 
-        Assert.Equal( 122, result.Count );
+        Assert.Equal( 124, result.Count );
         SpellDefinitionDto sureStrike = Assert.Single(
             result,
             spell => spell.Id == "spell.sure_strike" );

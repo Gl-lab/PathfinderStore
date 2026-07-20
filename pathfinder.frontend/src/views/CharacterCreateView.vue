@@ -38,6 +38,7 @@ import {
   getClericDoctrines,
   getClericDomains,
   getClericSpellOptions,
+  getSpellOptions,
   getDeities,
   getRogueRackets,
   getSkills,
@@ -50,6 +51,7 @@ import {
   type ClericDoctrine,
   type ClericDomain,
   type ClericSpellOptions,
+  type BardSpellOptions,
   type Deity,
   type DivineFont,
   type DivineSanctification,
@@ -118,6 +120,10 @@ import {
 } from '@/features/character-creation/druidicOrder'
 import { isBardMuseChoiceComplete } from '@/features/character-creation/bardMuse'
 import {
+  getMuseGrantedSpellId,
+  isBardSpellLoadoutComplete,
+} from '@/features/character-creation/bardSpellLoadout'
+import {
   getWitchPatronFamiliarSpellOptions,
   isWitchPatronChoiceComplete,
   withWitchPatron,
@@ -148,6 +154,7 @@ const clericDoctrines = ref<ClericDoctrine[]>([])
 const deities = ref<Deity[]>([])
 const clericDomains = ref<ClericDomain[]>([])
 const clericSpellOptions = ref<ClericSpellOptions>({ cantrips: [], rankOneSpells: [] })
+const bardSpellOptions = ref<BardSpellOptions>({ cantrips: [], rankOneSpells: [] })
 const skills = ref<Skill[]>([])
 const isLoadingCatalogs = ref(true)
 const isSubmitting = ref(false)
@@ -184,6 +191,8 @@ const form = ref({
   deitySkillReplacementId: null as string | null,
   clericCantripIds: [] as string[],
   clericPreparedSpellIds: [] as (string | null)[],
+  bardCantripIds: [] as string[],
+  bardSpellIds: [] as string[],
   finalFreeBoosts: [] as AbilityCode[],
   classSkillGrantChoices: [] as ClassSkillGrantChoice[],
   additionalClassTrainingChoices: [] as ClassTrainingTargetChoice[],
@@ -225,6 +234,20 @@ const selectedDruidicOrder = computed(
 )
 const selectedBardMuse = computed(
   () => bardMuses.value.find((item) => item.id === form.value.bardMuseId) ?? null,
+)
+const bardRankOneSpellOptions = computed(() => {
+  const museGrantedSpellId = getMuseGrantedSpellId(selectedBardMuse.value)
+  return bardSpellOptions.value.rankOneSpells.filter((spell) => spell.id !== museGrantedSpellId)
+})
+const selectedBardCantrips = computed(() =>
+  form.value.bardCantripIds
+    .map((spellId) => bardSpellOptions.value.cantrips.find((spell) => spell.id === spellId))
+    .filter((spell) => spell !== undefined),
+)
+const selectedBardSpells = computed(() =>
+  form.value.bardSpellIds
+    .map((spellId) => bardSpellOptions.value.rankOneSpells.find((spell) => spell.id === spellId))
+    .filter((spell) => spell !== undefined),
 )
 const selectedWitchPatron = computed(
   () => witchPatrons.value.find((item) => item.id === form.value.witchPatronId) ?? null,
@@ -410,11 +433,20 @@ const canContinue = computed(() => {
       isSelectedClassChoiceComplete()
     )
   if (step.value === 7)
-    return isClericSpellLoadoutComplete(
-      selectedCharacterClass.value,
-      form.value.clericCantripIds,
-      form.value.clericPreparedSpellIds,
-      clericSpellOptions.value,
+    return (
+      isClericSpellLoadoutComplete(
+        selectedCharacterClass.value,
+        form.value.clericCantripIds,
+        form.value.clericPreparedSpellIds,
+        clericSpellOptions.value,
+      ) &&
+      isBardSpellLoadoutComplete(
+        selectedCharacterClass.value,
+        selectedBardMuse.value,
+        form.value.bardCantripIds,
+        form.value.bardSpellIds,
+        bardSpellOptions.value,
+      )
     )
   if (step.value === 8)
     return isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts)
@@ -497,6 +529,8 @@ function selectCharacterClass(classId: string | null): void {
   form.value.deitySkillReplacementId = null
   form.value.clericCantripIds = []
   form.value.clericPreparedSpellIds = []
+  form.value.bardCantripIds = []
+  form.value.bardSpellIds = []
   clericSpellOptions.value = { cantrips: [], rankOneSpells: [] }
   form.value.classSkillGrantChoices = createClassSkillGrantChoices(
     characterClasses.value.find((item) => item.id === classId) ?? null,
@@ -530,6 +564,14 @@ function selectClericDoctrine(clericDoctrineId: string | null): void {
 function selectDruidicOrder(druidicOrderId: string | null): void {
   form.value.druidicOrderId = druidicOrderId
   resetClassTraining()
+}
+function selectBardMuse(bardMuseId: string | null): void {
+  form.value.bardMuseId = bardMuseId
+  const muse = bardMuses.value.find((item) => item.id === bardMuseId) ?? null
+  const museGrantedSpellId = getMuseGrantedSpellId(muse)
+  form.value.bardSpellIds = form.value.bardSpellIds.filter(
+    (spellId) => spellId !== museGrantedSpellId,
+  )
 }
 function selectWitchPatron(witchPatronId: string | null): void {
   form.value.witchPatronId = witchPatronId
@@ -635,6 +677,12 @@ function formatAbilities(types: AbilityCode[]): string {
 function selectClericCantrips(spellIds: string[]): void {
   form.value.clericCantripIds = spellIds.slice(0, 5)
 }
+function selectBardCantrips(spellIds: string[]): void {
+  form.value.bardCantripIds = spellIds.slice(0, 5)
+}
+function selectBardSpells(spellIds: string[]): void {
+  form.value.bardSpellIds = spellIds.slice(0, 2)
+}
 function next(): void {
   if (canContinue.value && step.value < 10) step.value += 1
 }
@@ -682,6 +730,13 @@ async function submit(): Promise<void> {
       form.value.clericCantripIds,
       form.value.clericPreparedSpellIds,
       clericSpellOptions.value,
+    ) ||
+    !isBardSpellLoadoutComplete(
+      selectedCharacterClass.value,
+      selectedBardMuse.value,
+      form.value.bardCantripIds,
+      form.value.bardSpellIds,
+      bardSpellOptions.value,
     ) ||
     !isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts) ||
     !isClassTrainingComplete(
@@ -734,6 +789,8 @@ async function submit(): Promise<void> {
       clericPreparedSpellIds: form.value.clericPreparedSpellIds.filter(
         (spellId): spellId is string => spellId !== null,
       ),
+      bardCantripIds: form.value.bardCantripIds,
+      bardSpellIds: form.value.bardSpellIds,
       finalFreeBoosts: form.value.finalFreeBoosts,
       classSkillGrantChoices: form.value.classSkillGrantChoices.map((choice) => ({
         ...choice,
@@ -760,7 +817,7 @@ async function loadCatalogs(): Promise<void> {
   isLoadingCatalogs.value = true
   errorMessages.value = []
   try {
-    const [ancestryCatalog, backgroundCatalog, classCatalog, racketCatalog, huntersEdgeCatalog, druidicOrderCatalog, bardMuseCatalog, witchPatronCatalog, arcaneSchoolCatalog, arcaneThesisCatalog, doctrineCatalog, deityCatalog, clericDomainCatalog, skillCatalog] = await Promise.all([
+    const [ancestryCatalog, backgroundCatalog, classCatalog, racketCatalog, huntersEdgeCatalog, druidicOrderCatalog, bardMuseCatalog, witchPatronCatalog, arcaneSchoolCatalog, arcaneThesisCatalog, doctrineCatalog, deityCatalog, clericDomainCatalog, skillCatalog, bardCantripCatalog, bardRankOneSpellCatalog] = await Promise.all([
       getAncestries(),
       getBackgrounds(),
       getCharacterClasses(),
@@ -775,6 +832,8 @@ async function loadCatalogs(): Promise<void> {
       getDeities(),
       getClericDomains(),
       getSkills(),
+      getSpellOptions('Occult', 1, 'Cantrip'),
+      getSpellOptions('Occult', 1, 'Spell'),
     ])
     ancestries.value = ancestryCatalog
     backgrounds.value = backgroundCatalog
@@ -790,6 +849,10 @@ async function loadCatalogs(): Promise<void> {
     deities.value = deityCatalog
     clericDomains.value = clericDomainCatalog
     skills.value = skillCatalog
+    bardSpellOptions.value = {
+      cantrips: bardCantripCatalog,
+      rankOneSpells: bardRankOneSpellCatalog,
+    }
   } catch (error) {
     errorMessages.value = getApiErrorMessages(error)
   } finally {
@@ -821,7 +884,7 @@ watch(
     <v-progress-linear :model-value="(step / 10) * 100" color="accent" height="8" rounded />
     <ol class="steps">
       <li
-        v-for="(item, index) in [t('wizard.basic'), t('wizard.ancestry'), t('wizard.choices'), t('wizard.boosts'), t('wizard.background'), t('classUi.characterClass'), t('classUi.clericSpells'), t('wizard.finalFreeBoosts'), t('classUi.classTraining'), t('wizard.review')]"
+        v-for="(item, index) in [t('wizard.basic'), t('wizard.ancestry'), t('wizard.choices'), t('wizard.boosts'), t('wizard.background'), t('classUi.characterClass'), t('classUi.spells'), t('wizard.finalFreeBoosts'), t('classUi.classTraining'), t('wizard.review')]"
         :key="item"
         :class="{ active: step === index + 1, complete: step > index + 1 }"
       >
@@ -995,11 +1058,12 @@ watch(
             </p>
             <v-select
               v-if="selectedCharacterClass.id === 'class.bard'"
-              v-model="form.bardMuseId"
+              :model-value="form.bardMuseId"
               :items="bardMuses"
               item-title="name"
               item-value="id"
               :label="t('classUi.bardMuse')"
+              @update:model-value="selectBardMuse"
             />
             <v-alert
               v-for="benefit in selectedBardMuse?.benefits ?? []"
@@ -1273,7 +1337,7 @@ watch(
           </template>
         </section>
         <section v-else-if="step === 7">
-          <h2>{{ t('classUi.clericSpells') }}</h2>
+          <h2>{{ t('classUi.spells') }}</h2>
           <template v-if="selectedCharacterClass?.id === 'class.cleric'">
             <p class="hint">{{ t('classUi.clericSpellsHint') }}</p>
             <v-select
@@ -1300,6 +1364,40 @@ watch(
             />
             <v-alert v-if="form.divineFont" type="info" variant="tonal">
               {{ t('classUi.divineFontSpells') }}: 4 × {{ t(`classUi.divineFonts.${form.divineFont}`) }}
+            </v-alert>
+          </template>
+          <template v-else-if="selectedCharacterClass?.id === 'class.bard'">
+            <p class="hint">{{ t('classUi.bardSpellsHint') }}</p>
+            <v-select
+              :model-value="form.bardCantripIds"
+              :items="bardSpellOptions.cantrips"
+              item-title="name"
+              item-value="id"
+              :label="t('classUi.bardCantrips')"
+              multiple
+              chips
+              closable-chips
+              :counter="5"
+              @update:model-value="selectBardCantrips"
+            />
+            <v-select
+              :model-value="form.bardSpellIds"
+              :items="bardRankOneSpellOptions"
+              item-title="name"
+              item-value="id"
+              :label="t('classUi.bardRepertoireSpells')"
+              multiple
+              chips
+              closable-chips
+              :counter="2"
+              @update:model-value="selectBardSpells"
+            />
+            <v-alert v-if="selectedBardMuse" type="info" variant="tonal">
+              {{ t('classUi.museGrantedSpell') }}:
+              {{ selectedBardMuse.benefits.find((benefit) => benefit.kind === 'RepertoireSpell')?.name }}
+            </v-alert>
+            <v-alert type="info" variant="tonal">
+              {{ t('classUi.bardCompositionSummary') }}
             </v-alert>
           </template>
           <v-alert v-else type="info" variant="tonal">{{ t('wizard.none') }}</v-alert>
@@ -1452,7 +1550,16 @@ watch(
               v-for="benefit in selectedBardMuse?.benefits ?? []"
               :key="`review-${benefit.id}`"
               :title="t(`classUi.bardMuseBenefitKinds.${benefit.kind}`)"
-              :subtitle="`${benefit.name}. ${t('classUi.deferredEffect')}`" /><v-list-item
+              :subtitle="benefit.kind === 'RepertoireSpell' ? benefit.name : `${benefit.name}. ${t('classUi.deferredEffect')}`" /><v-list-item
+              v-if="selectedBardCantrips.length"
+              :title="t('classUi.bardCantrips')"
+              :subtitle="selectedBardCantrips.map((spell) => spell.name).join(', ')" /><v-list-item
+              v-if="selectedBardSpells.length"
+              :title="t('classUi.bardRepertoireSpells')"
+              :subtitle="selectedBardSpells.map((spell) => spell.name).join(', ')" /><v-list-item
+              v-if="selectedCharacterClass?.id === 'class.bard'"
+              :title="t('classUi.compositionSpells')"
+              :subtitle="t('classUi.bardCompositionSummary')" /><v-list-item
               v-if="selectedClericDoctrine"
               :title="t('classUi.clericDoctrine')"
               :subtitle="selectedClericDoctrine.name" /><v-list-item

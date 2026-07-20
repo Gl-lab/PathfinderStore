@@ -36,6 +36,8 @@ public class CreateCharacterRequestDto
     public string? DeitySkillReplacementId { get; set; }
     public IReadOnlyList<string> ClericCantripIds { get; set; } = [];
     public IReadOnlyList<string> ClericPreparedSpellIds { get; set; } = [];
+    public IReadOnlyList<string> BardCantripIds { get; set; } = [];
+    public IReadOnlyList<string> BardSpellIds { get; set; } = [];
     public IReadOnlyList<AbilityType>? FinalFreeBoosts { get; set; }
     public IReadOnlyList<ClassSkillGrantChoice> ClassSkillGrantChoices { get; set; } = [];
     public IReadOnlyList<ClassTrainingTargetChoice> AdditionalClassTrainingChoices { get; set; } = [];

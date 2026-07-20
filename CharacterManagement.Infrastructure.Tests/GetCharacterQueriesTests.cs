@@ -387,7 +387,8 @@ public sealed class GetCharacterQueriesTests
             backgroundRepository: backgroundRepository,
             characterClassRepository: characterClassRepository,
             skillRepository: new SkillRepository(),
-            bardMuseRepository: bardMuseRepository );
+            bardMuseRepository: bardMuseRepository,
+            spellRepository: new SpellRepository() );
         builder.CreateCharacter( account.Id, "Lem", AncestryType.Human );
         builder.SetAncestryPackage( "human.skilled", "human.cooperative_nature" );
         builder.ApplyFreeBoosts( [ AbilityType.Intelligence, AbilityType.Charisma ] );
@@ -398,7 +399,16 @@ public sealed class GetCharacterQueriesTests
         builder.SetClass(
             "class.bard",
             AbilityType.Charisma,
-            bardMuseId: "bard_muse.enigma" );
+            bardMuseId: "bard_muse.enigma",
+            bardCantripIds:
+            [
+                "spell.daze",
+                "spell.detect_magic",
+                "spell.forbidding_ward",
+                "spell.guidance",
+                "spell.light",
+            ],
+            bardSpellIds: [ "spell.command", "spell.fear" ] );
         DraftCharacter draftCharacter = builder.Build();
         dbContext.Character.Add( draftCharacter );
         await dbContext.SaveChangesAsync();
@@ -408,7 +418,8 @@ public sealed class GetCharacterQueriesTests
             backgroundRepository,
             characterClassRepository,
             new SkillRepository(),
-            bardMuseRepository: bardMuseRepository );
+            bardMuseRepository: bardMuseRepository,
+            spellRepository: new SpellRepository() );
         GetCharacterByIdHandler handler = new GetCharacterByIdHandler(
             new CharacterRepository( dbContext ),
             mapper );
@@ -422,6 +433,18 @@ public sealed class GetCharacterQueriesTests
         Assert.Contains(
             result.ClassPackage.BardMuse.Benefits,
             benefit => benefit.Id == "feat.bardic_lore" );
+        Assert.NotNull( result.ClassPackage.BardSpellLoadout );
+        Assert.Equal( 5, result.ClassPackage.BardSpellLoadout.Cantrips.Count );
+        Assert.Equal( 3, result.ClassPackage.BardSpellLoadout.RankOneRepertoire.Count );
+        Assert.Contains(
+            result.ClassPackage.BardSpellLoadout.RankOneRepertoire,
+            spell => spell.Source == BardRepertoireSpellSource.MuseGranted &&
+                     spell.Spell.Id == "spell.sure_strike" );
+        Assert.Equal( 2, result.ClassPackage.BardSpellLoadout.RankOneSpellSlotCount );
+        Assert.NotNull( result.ClassPackage.BardComposition );
+        Assert.Equal( "spell.courageous_anthem", result.ClassPackage.BardComposition.CompositionCantrip.Id );
+        Assert.Equal( "spell.counter_performance", result.ClassPackage.BardComposition.FocusSpell.Id );
+        Assert.Equal( 1, result.ClassPackage.BardComposition.MaximumFocusPoints );
     }
 
     [Fact]
@@ -453,6 +476,8 @@ public sealed class GetCharacterQueriesTests
         Assert.NotNull( result.ClassPackage );
         Assert.Equal( "class.bard", result.ClassPackage.ClassId );
         Assert.Null( result.ClassPackage.BardMuse );
+        Assert.Null( result.ClassPackage.BardSpellLoadout );
+        Assert.Null( result.ClassPackage.BardComposition );
     }
 
     [Fact]

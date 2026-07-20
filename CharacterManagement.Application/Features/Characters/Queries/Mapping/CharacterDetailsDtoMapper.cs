@@ -87,6 +87,12 @@ public sealed class CharacterDetailsDtoMapper
             draftCharacter,
             deity );
         ClericFocusPoolDto? clericFocusPool = ResolveClericFocusPool( clericDomain );
+        BardSpellLoadoutDto? bardSpellLoadout = ResolveBardSpellLoadout(
+            draftCharacter,
+            bardMuse );
+        BardCompositionPackageDto? bardComposition = ResolveBardComposition(
+            characterClass,
+            bardMuse );
         IReadOnlyList<EffectiveProficiency> effectiveProficiencies = characterClass is null
             ? []
             : ProficiencyResolver.Resolve(
@@ -125,7 +131,9 @@ public sealed class CharacterDetailsDtoMapper
                     arcaneThesis,
                     clericDomain,
                     clericSpellLoadout,
-                    clericFocusPool ),
+                    clericFocusPool,
+                    bardSpellLoadout,
+                    bardComposition ),
             FinalFreeBoosts = draftCharacter.AppliedFinalFreeBoosts.ToArray(),
             DerivedStatistics = ancestry is null || characterClass is null
                 ? null
@@ -380,6 +388,81 @@ public sealed class CharacterDetailsDtoMapper
             clericDomain,
             _spellRepository.GetAll() );
         return ClericDomainDtoMapper.Map( focusPool );
+    }
+
+    private BardSpellLoadoutDto? ResolveBardSpellLoadout(
+        DraftCharacter character,
+        BardMuse? bardMuse )
+    {
+        if ( ( character.SelectedClassId != "class.bard" ) ||
+             ( bardMuse is null ) ||
+             ( character.BardCantripIds.Count == 0 ) ||
+             ( character.BardSpellIds.Count == 0 ) )
+        {
+            return null;
+        }
+
+        if ( _spellRepository is null )
+        {
+            throw new InvalidOperationException(
+                "Spell repository is required to map a Bard spell loadout." );
+        }
+
+        IReadOnlyDictionary<string, SpellDefinition> definitions = _spellRepository
+            .GetAll()
+            .ToDictionary( spell => spell.Id, StringComparer.Ordinal );
+        string museGrantedSpellId = bardMuse.Benefits
+            .Single( benefit => benefit.Kind == BardMuseBenefitKind.RepertoireSpell )
+            .Id;
+        BardRepertoireSpellDto[] repertoire = character.BardSpellIds
+            .Select( spellId => new BardRepertoireSpellDto
+            {
+                Spell = SpellDefinitionDtoMapper.Map( definitions[ spellId ] ),
+                Source = BardRepertoireSpellSource.Selected,
+                SourceGrantId = "class_feature.bard.spell_repertoire",
+            } )
+            .Append( new BardRepertoireSpellDto
+            {
+                Spell = SpellDefinitionDtoMapper.Map( definitions[ museGrantedSpellId ] ),
+                Source = BardRepertoireSpellSource.MuseGranted,
+                SourceGrantId = bardMuse.Id,
+            } )
+            .ToArray();
+
+        return new BardSpellLoadoutDto
+        {
+            Cantrips = character.BardCantripIds
+                .Select( spellId => SpellDefinitionDtoMapper.Map( definitions[ spellId ] ) )
+                .ToArray(),
+            RankOneRepertoire = repertoire,
+            RankOneSpellSlotCount = 2,
+        };
+    }
+
+    private BardCompositionPackageDto? ResolveBardComposition(
+        CharacterClass? characterClass,
+        BardMuse? bardMuse )
+    {
+        if ( ( characterClass?.Id != "class.bard" ) || ( bardMuse is null ) )
+        {
+            return null;
+        }
+
+        if ( _spellRepository is null )
+        {
+            throw new InvalidOperationException(
+                "Spell repository is required to map Bard composition spells." );
+        }
+
+        BardCompositionPackage package = BardCompositionResolver.Resolve(
+            _spellRepository.GetAll() );
+        return new BardCompositionPackageDto
+        {
+            MaximumFocusPoints = package.MaximumFocusPoints,
+            CompositionCantrip = SpellDefinitionDtoMapper.Map( package.CompositionCantrip ),
+            FocusSpell = SpellDefinitionDtoMapper.Map( package.FocusSpell ),
+            SourceGrantId = package.SourceGrantId,
+        };
     }
 
     private CharacterClass? ResolveCharacterClass( DraftCharacter character )

@@ -102,6 +102,21 @@ export interface CharacterClassPackage {
       deferredDependencies: string[]
     }[]
   } | null
+  bardSpellLoadout: {
+    cantrips: { id: string; name: string; rank: number; kind: 'Cantrip' }[]
+    rankOneRepertoire: {
+      spell: { id: string; name: string; rank: number; kind: 'Spell' }
+      source: 'Selected' | 'MuseGranted'
+      sourceGrantId: string
+    }[]
+    rankOneSpellSlotCount: number
+  } | null
+  bardComposition: {
+    maximumFocusPoints: number
+    compositionCantrip: { id: string; name: string; rank: number; kind: 'Cantrip' }
+    focusSpell: { id: string; name: string; rank: number; kind: 'Focus' }
+    sourceGrantId: string
+  } | null
   witchPatron: {
     id: string
     name: string

@@ -344,6 +344,11 @@ public sealed class CreateCharacterCommandValidatorTests
             ? AbilityType.Charisma
             : AbilityType.Strength;
         character.BardMuseId = bardMuseId;
+        if ( classId == "class.bard" )
+        {
+            character.BardCantripIds = BardCantripIds();
+            character.BardSpellIds = [ "spell.command", "spell.fear" ];
+        }
 
         Assert.Throws<ValidationException>( () => validator.ValidateAndThrow(
             new CreateCharacterCommand( 42, character ) ) );
@@ -357,6 +362,8 @@ public sealed class CreateCharacterCommandValidatorTests
         character.ClassId = "class.bard";
         character.ClassKeyAbility = AbilityType.Charisma;
         character.BardMuseId = "bard_muse.enigma";
+        character.BardCantripIds = BardCantripIds();
+        character.BardSpellIds = [ "spell.command", "spell.fear" ];
 
         validator.ValidateAndThrow( new CreateCharacterCommand( 42, character ) );
     }
@@ -487,6 +494,9 @@ public sealed class CreateCharacterCommandValidatorTests
             ],
         };
     }
+
+    private static string[] BardCantripIds() =>
+        [ "spell.daze", "spell.detect_magic", "spell.forbidding_ward", "spell.guidance", "spell.light" ];
 
     public static IEnumerable<object?[]> InvalidFinalFreeBoosts()
     {

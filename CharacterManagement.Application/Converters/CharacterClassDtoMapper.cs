@@ -87,7 +87,9 @@ public static class CharacterClassDtoMapper
         ArcaneThesis? arcaneThesis = null,
         ClericDomain? clericDomain = null,
         ClericSpellLoadoutDto? clericSpellLoadout = null,
-        ClericFocusPoolDto? clericFocusPool = null )
+        ClericFocusPoolDto? clericFocusPool = null,
+        BardSpellLoadoutDto? bardSpellLoadout = null,
+        BardCompositionPackageDto? bardComposition = null )
     {
         ArgumentNullException.ThrowIfNull( character );
         ArgumentNullException.ThrowIfNull( characterClass );
@@ -110,6 +112,8 @@ public static class CharacterClassDtoMapper
             HuntersEdge = huntersEdge is null ? null : HuntersEdgeDtoMapper.MapPackage( huntersEdge ),
             DruidicOrder = druidicOrder is null ? null : DruidicOrderDtoMapper.MapPackage( druidicOrder ),
             BardMuse = bardMuse is null ? null : BardMuseDtoMapper.MapPackage( bardMuse ),
+            BardSpellLoadout = bardSpellLoadout,
+            BardComposition = bardComposition,
             WitchPatron = witchPatron is null
                 ? null
                 : WitchPatronDtoMapper.MapPackage(

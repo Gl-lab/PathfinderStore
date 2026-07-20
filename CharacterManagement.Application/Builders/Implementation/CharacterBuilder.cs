@@ -157,7 +157,9 @@ public class CharacterBuilder : ICharacterBuilder
         string? arcaneThesisId = null,
         string? clericDomainId = null,
         IReadOnlyList<string>? clericCantripIds = null,
-        IReadOnlyList<string>? clericPreparedSpellIds = null )
+        IReadOnlyList<string>? clericPreparedSpellIds = null,
+        IReadOnlyList<string>? bardCantripIds = null,
+        IReadOnlyList<string>? bardSpellIds = null )
     {
         if ( _draftCharacter is null )
         {
@@ -388,6 +390,29 @@ public class CharacterBuilder : ICharacterBuilder
                 _spellRepository.GetAll() );
         }
 
+        BardSpellLoadout? bardSpellLoadout = null;
+        bool isBard = characterClass.Id == "class.bard";
+        if ( ( !isBard ) &&
+             ( ( bardCantripIds?.Count > 0 ) || ( bardSpellIds?.Count > 0 ) ) )
+        {
+            throw new CharacterManagementException(
+                "Bard spell choices can only be selected for the Bard class." );
+        }
+
+        if ( ( isBard ) && ( bardMuse is not null ) )
+        {
+            if ( _spellRepository is null )
+            {
+                throw new InvalidOperationException( "Spell repository is not configured." );
+            }
+
+            bardSpellLoadout = BardSpellLoadoutResolver.Resolve(
+                bardMuse,
+                bardCantripIds ?? [],
+                bardSpellIds ?? [],
+                _spellRepository.GetAll() );
+        }
+
         _draftCharacter.SetClassPackage(
             characterClass,
             keyAbility,
@@ -407,7 +432,8 @@ public class CharacterBuilder : ICharacterBuilder
             arcaneSchool,
             arcaneThesis,
             clericDomain,
-            clericSpellLoadout );
+            clericSpellLoadout,
+            bardSpellLoadout );
     }
 
     public void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts )
