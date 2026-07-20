@@ -492,7 +492,8 @@ public sealed class ClassPackageTests
         character.SetClassPackage(
             druid,
             AbilityType.Wisdom,
-            druidicOrder: druidicOrder );
+            druidicOrder: druidicOrder,
+            druidSpellLoadout: DruidSpellTestData.CreateLoadout() );
 
         Assert.Equal( druidicOrder.Id, character.SelectedDruidicOrderId );
 

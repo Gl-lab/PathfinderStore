@@ -13,6 +13,8 @@ public sealed class CharacterClassPackageDto
     public RogueRacketPackageDto? RogueRacket { get; set; }
     public HuntersEdgePackageDto? HuntersEdge { get; set; }
     public DruidicOrderPackageDto? DruidicOrder { get; set; }
+    public DruidSpellLoadoutDto? DruidSpellLoadout { get; set; }
+    public DruidFocusPoolDto? DruidFocusPool { get; set; }
     public BardMusePackageDto? BardMuse { get; set; }
     public BardSpellLoadoutDto? BardSpellLoadout { get; set; }
     public BardCompositionPackageDto? BardComposition { get; set; }

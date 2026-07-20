@@ -326,6 +326,8 @@ public sealed class CreateCharacterCommandValidatorTests
         character.ClassId = "class.druid";
         character.ClassKeyAbility = AbilityType.Wisdom;
         character.DruidicOrderId = "druidic_order.animal";
+        character.DruidCantripIds = DruidCantripIds();
+        character.DruidPreparedSpellIds = [ "spell.heal", "spell.heal" ];
 
         validator.ValidateAndThrow( new CreateCharacterCommand( 42, character ) );
     }
@@ -497,6 +499,9 @@ public sealed class CreateCharacterCommandValidatorTests
 
     private static string[] BardCantripIds() =>
         [ "spell.daze", "spell.detect_magic", "spell.forbidding_ward", "spell.guidance", "spell.light" ];
+
+    private static string[] DruidCantripIds() =>
+        [ "spell.caustic_blast", "spell.detect_magic", "spell.electric_arc", "spell.guidance", "spell.light" ];
 
     public static IEnumerable<object?[]> InvalidFinalFreeBoosts()
     {

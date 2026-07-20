@@ -159,7 +159,9 @@ public class CharacterBuilder : ICharacterBuilder
         IReadOnlyList<string>? clericCantripIds = null,
         IReadOnlyList<string>? clericPreparedSpellIds = null,
         IReadOnlyList<string>? bardCantripIds = null,
-        IReadOnlyList<string>? bardSpellIds = null )
+        IReadOnlyList<string>? bardSpellIds = null,
+        IReadOnlyList<string>? druidCantripIds = null,
+        IReadOnlyList<string>? druidPreparedSpellIds = null )
     {
         if ( _draftCharacter is null )
         {
@@ -413,6 +415,28 @@ public class CharacterBuilder : ICharacterBuilder
                 _spellRepository.GetAll() );
         }
 
+        DruidSpellLoadout? druidSpellLoadout = null;
+        bool isDruid = characterClass.Id == "class.druid";
+        if ( ( !isDruid ) &&
+             ( ( druidCantripIds?.Count > 0 ) || ( druidPreparedSpellIds?.Count > 0 ) ) )
+        {
+            throw new CharacterManagementException(
+                "Druid spell choices can only be selected for the Druid class." );
+        }
+
+        if ( isDruid )
+        {
+            if ( _spellRepository is null )
+            {
+                throw new InvalidOperationException( "Spell repository is not configured." );
+            }
+
+            druidSpellLoadout = DruidSpellLoadoutResolver.Resolve(
+                druidCantripIds ?? [],
+                druidPreparedSpellIds ?? [],
+                _spellRepository.GetAll() );
+        }
+
         _draftCharacter.SetClassPackage(
             characterClass,
             keyAbility,
@@ -433,7 +457,8 @@ public class CharacterBuilder : ICharacterBuilder
             arcaneThesis,
             clericDomain,
             clericSpellLoadout,
-            bardSpellLoadout );
+            bardSpellLoadout,
+            druidSpellLoadout );
     }
 
     public void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts )

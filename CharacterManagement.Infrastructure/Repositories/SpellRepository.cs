@@ -159,6 +159,10 @@ public sealed class SpellRepository : ISpellRepository
             Focus( "Arms of Nature", "Cleric|Concentrate|Focus|Manipulate|Uncommon|Wood", "Divine Mysteries", 271 ),
             Focus( "Weapon Surge", "Cleric|Focus|Manipulate|Sanctified|Uncommon", "Player Core", 381 ),
             FocusWithTradition( "Counter Performance", "O", "Bard|Composition|Concentrate|Focus|Fortune|Mental|Uncommon", "Player Core", 370 ),
+            FocusWithTradition( "Heal Animal", "P", "Druid|Focus|Healing|Manipulate|Uncommon|Vitality", "Player Core", 374 ),
+            FocusWithTradition( "Cornucopia", "P", "Concentrate|Druid|Focus|Healing|Manipulate|Plant|Uncommon|Vitality", "Player Core", 371 ),
+            FocusWithTradition( "Tempest Surge", "P", "Air|Concentrate|Druid|Electricity|Focus|Manipulate|Uncommon", "Player Core", 379 ),
+            FocusWithTradition( "Untamed Shift", "P", "Concentrate|Druid|Focus|Manipulate|Morph|Uncommon", "Player Core", 380 ),
         ];
     }
 

@@ -33,6 +33,10 @@ public sealed class DruidicOrderRepositoryTests
         Assert.Equal( "skill.intimidation", Assert.Single( order.SkillGrant.SkillOptions ) );
         Assert.Contains( order.Benefits, benefit => benefit.Id == "feat.untamed_form" );
         Assert.Contains( order.Benefits, benefit => benefit.Id == "spell.untamed_shift" );
+        DruidicOrderBenefitDescriptor focusSpell = Assert.Single(
+            order.Benefits,
+            benefit => benefit.Kind == DruidicOrderBenefitKind.FocusSpell );
+        Assert.Empty( focusSpell.DeferredDependencies );
         Assert.Equal( 126, order.Source.Page );
     }
 }

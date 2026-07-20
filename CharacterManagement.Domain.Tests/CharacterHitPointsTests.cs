@@ -151,7 +151,10 @@ public sealed class CharacterHitPointsTests
         character.SetClassPackage(
             characterClass,
             characterClass.KeyAbilityOptions.Single(),
-            druidicOrder: characterClass.Id == "class.druid" ? CreateDruidicOrder() : null );
+            druidicOrder: characterClass.Id == "class.druid" ? CreateDruidicOrder() : null,
+            druidSpellLoadout: characterClass.Id == "class.druid"
+                ? DruidSpellTestData.CreateLoadout()
+                : null );
         return character;
     }
 

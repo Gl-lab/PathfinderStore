@@ -145,6 +145,8 @@ public sealed class CreateCharacterHandlerTests
             ClassId = "class.druid",
             ClassKeyAbility = AbilityType.Wisdom,
             DruidicOrderId = "druidic_order.leaf",
+            DruidCantripIds = DruidCantripIds(),
+            DruidPreparedSpellIds = [ "spell.heal", "spell.heal" ],
             FinalFreeBoosts =
             [
                 AbilityType.Strength,
@@ -176,6 +178,8 @@ public sealed class CreateCharacterHandlerTests
         Assert.Contains( savedCharacter.TrainedSkills, training => training.SkillId == "skill.nature" );
         Assert.Contains( savedCharacter.TrainedSkills, training => training.SkillId == "skill.diplomacy" );
         Assert.Equal( "druidic_order.leaf", savedCharacter.SelectedDruidicOrderId );
+        Assert.Equal( DruidCantripIds(), savedCharacter.PreparedDruidCantripIds );
+        Assert.Equal( [ "spell.heal", "spell.heal" ], savedCharacter.PreparedDruidSpellIds );
         TrainedLore lore = Assert.Single( savedCharacter.TrainedLore );
         Assert.Equal( "lore.custom.ancient_forest", lore.LoreId );
         Assert.Equal( "Ancient Forest Lore", lore.Name );
@@ -602,6 +606,11 @@ public sealed class CreateCharacterHandlerTests
     private static string[] ClericCantripIds()
     {
         return [ "spell.daze", "spell.detect_magic", "spell.divine_lance", "spell.guidance", "spell.light" ];
+    }
+
+    private static string[] DruidCantripIds()
+    {
+        return [ "spell.caustic_blast", "spell.detect_magic", "spell.electric_arc", "spell.guidance", "spell.light" ];
     }
 
     private static async Task<Account> CreateAccountAsync(

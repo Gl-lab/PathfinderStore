@@ -326,6 +326,11 @@ export interface BardSpellOptions {
   rankOneSpells: SpellDefinition[]
 }
 
+export interface DruidSpellOptions {
+  cantrips: SpellDefinition[]
+  rankOneSpells: SpellDefinition[]
+}
+
 export interface ClericDomain {
   id: string
   name: string
@@ -391,6 +396,8 @@ export interface CreateCharacterRequest {
   clericPreparedSpellIds: string[]
   bardCantripIds: string[]
   bardSpellIds: string[]
+  druidCantripIds: string[]
+  druidPreparedSpellIds: string[]
   finalFreeBoosts: AbilityCode[]
   classSkillGrantChoices: ClassSkillGrantChoice[]
   additionalClassTrainingChoices: ClassTrainingTargetChoice[]

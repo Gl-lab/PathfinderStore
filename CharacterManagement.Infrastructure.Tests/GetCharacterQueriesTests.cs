@@ -306,7 +306,8 @@ public sealed class GetCharacterQueriesTests
             backgroundRepository: backgroundRepository,
             characterClassRepository: characterClassRepository,
             skillRepository: new SkillRepository(),
-            druidicOrderRepository: druidicOrderRepository );
+            druidicOrderRepository: druidicOrderRepository,
+            spellRepository: new SpellRepository() );
         builder.CreateCharacter( account.Id, "Lini", AncestryType.Human );
         builder.SetAncestryPackage( "human.skilled", "human.cooperative_nature" );
         builder.ApplyFreeBoosts( [ AbilityType.Intelligence, AbilityType.Wisdom ] );
@@ -317,7 +318,9 @@ public sealed class GetCharacterQueriesTests
         builder.SetClass(
             "class.druid",
             AbilityType.Wisdom,
-            druidicOrderId: "druidic_order.leaf" );
+            druidicOrderId: "druidic_order.leaf",
+            druidCantripIds: DruidCantripIds(),
+            druidPreparedSpellIds: [ "spell.heal", "spell.heal" ] );
         DraftCharacter draftCharacter = builder.Build();
         dbContext.Character.Add( draftCharacter );
         await dbContext.SaveChangesAsync();
@@ -327,7 +330,8 @@ public sealed class GetCharacterQueriesTests
             backgroundRepository,
             characterClassRepository,
             new SkillRepository(),
-            druidicOrderRepository: druidicOrderRepository );
+            druidicOrderRepository: druidicOrderRepository,
+            spellRepository: new SpellRepository() );
         GetCharacterByIdHandler handler = new GetCharacterByIdHandler(
             new CharacterRepository( dbContext ),
             mapper );
@@ -340,6 +344,12 @@ public sealed class GetCharacterQueriesTests
         Assert.Equal( "druidic_order.leaf", result.ClassPackage.DruidicOrder.Id );
         Assert.Equal( "skill.diplomacy", Assert.Single(
             result.ClassPackage.DruidicOrder.SkillGrant.SkillOptions ) );
+        Assert.Equal( DruidCantripIds(), result.ClassPackage.DruidSpellLoadout?.Cantrips.Select( spell => spell.Id ) );
+        Assert.Equal(
+            [ "spell.heal", "spell.heal" ],
+            result.ClassPackage.DruidSpellLoadout?.PreparedSpells.Select( spell => spell.Id ) );
+        Assert.Equal( "spell.cornucopia", result.ClassPackage.DruidFocusPool?.FocusSpell.Id );
+        Assert.Equal( 1, result.ClassPackage.DruidFocusPool?.MaximumFocusPoints );
     }
 
     [Fact]
@@ -1017,6 +1027,11 @@ public sealed class GetCharacterQueriesTests
     private static string[] ClericCantripIds()
     {
         return [ "spell.daze", "spell.detect_magic", "spell.divine_lance", "spell.guidance", "spell.light" ];
+    }
+
+    private static string[] DruidCantripIds()
+    {
+        return [ "spell.caustic_blast", "spell.detect_magic", "spell.electric_arc", "spell.guidance", "spell.light" ];
     }
 
     private static async Task<Account> CreateAccountAsync( CharacterManagementDbContext dbContext, int userId )

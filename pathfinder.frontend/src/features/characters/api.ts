@@ -117,6 +117,16 @@ export interface CharacterClassPackage {
     focusSpell: { id: string; name: string; rank: number; kind: 'Focus' }
     sourceGrantId: string
   } | null
+  druidSpellLoadout: {
+    cantrips: { id: string; name: string; rank: number; kind: 'Cantrip' }[]
+    preparedSpells: { id: string; name: string; rank: number; kind: 'Spell' }[]
+    rankOneSpellSlotCount: number
+  } | null
+  druidFocusPool: {
+    maximumFocusPoints: number
+    focusSpell: { id: string; name: string; rank: number; kind: 'Focus' }
+    sourceGrantId: string
+  } | null
   witchPatron: {
     id: string
     name: string

@@ -42,7 +42,9 @@ public interface ICharacterBuilder
         IReadOnlyList<string>? clericCantripIds = null,
         IReadOnlyList<string>? clericPreparedSpellIds = null,
         IReadOnlyList<string>? bardCantripIds = null,
-        IReadOnlyList<string>? bardSpellIds = null );
+        IReadOnlyList<string>? bardSpellIds = null,
+        IReadOnlyList<string>? druidCantripIds = null,
+        IReadOnlyList<string>? druidPreparedSpellIds = null );
     void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts );
     void SetClassTraining(
         string characterClassId,

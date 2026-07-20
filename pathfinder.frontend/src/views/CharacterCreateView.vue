@@ -52,6 +52,7 @@ import {
   type ClericDomain,
   type ClericSpellOptions,
   type BardSpellOptions,
+  type DruidSpellOptions,
   type Deity,
   type DivineFont,
   type DivineSanctification,
@@ -123,6 +124,7 @@ import {
   getMuseGrantedSpellId,
   isBardSpellLoadoutComplete,
 } from '@/features/character-creation/bardSpellLoadout'
+import { isDruidSpellLoadoutComplete } from '@/features/character-creation/druidSpellLoadout'
 import {
   getWitchPatronFamiliarSpellOptions,
   isWitchPatronChoiceComplete,
@@ -155,6 +157,7 @@ const deities = ref<Deity[]>([])
 const clericDomains = ref<ClericDomain[]>([])
 const clericSpellOptions = ref<ClericSpellOptions>({ cantrips: [], rankOneSpells: [] })
 const bardSpellOptions = ref<BardSpellOptions>({ cantrips: [], rankOneSpells: [] })
+const druidSpellOptions = ref<DruidSpellOptions>({ cantrips: [], rankOneSpells: [] })
 const skills = ref<Skill[]>([])
 const isLoadingCatalogs = ref(true)
 const isSubmitting = ref(false)
@@ -193,6 +196,8 @@ const form = ref({
   clericPreparedSpellIds: [] as (string | null)[],
   bardCantripIds: [] as string[],
   bardSpellIds: [] as string[],
+  druidCantripIds: [] as string[],
+  druidPreparedSpellIds: [] as (string | null)[],
   finalFreeBoosts: [] as AbilityCode[],
   classSkillGrantChoices: [] as ClassSkillGrantChoice[],
   additionalClassTrainingChoices: [] as ClassTrainingTargetChoice[],
@@ -248,6 +253,19 @@ const selectedBardSpells = computed(() =>
   form.value.bardSpellIds
     .map((spellId) => bardSpellOptions.value.rankOneSpells.find((spell) => spell.id === spellId))
     .filter((spell) => spell !== undefined),
+)
+const selectedDruidCantrips = computed(() =>
+  form.value.druidCantripIds
+    .map((spellId) => druidSpellOptions.value.cantrips.find((spell) => spell.id === spellId))
+    .filter((spell) => spell !== undefined),
+)
+const selectedDruidSpells = computed(() =>
+  form.value.druidPreparedSpellIds
+    .map((spellId) => druidSpellOptions.value.rankOneSpells.find((spell) => spell.id === spellId))
+    .filter((spell) => spell !== undefined),
+)
+const selectedDruidFocusSpell = computed(() =>
+  selectedDruidicOrder.value?.benefits.find((benefit) => benefit.kind === 'FocusSpell') ?? null,
 )
 const selectedWitchPatron = computed(
   () => witchPatrons.value.find((item) => item.id === form.value.witchPatronId) ?? null,
@@ -446,6 +464,12 @@ const canContinue = computed(() => {
         form.value.bardCantripIds,
         form.value.bardSpellIds,
         bardSpellOptions.value,
+      ) &&
+      isDruidSpellLoadoutComplete(
+        selectedCharacterClass.value,
+        form.value.druidCantripIds,
+        form.value.druidPreparedSpellIds,
+        druidSpellOptions.value,
       )
     )
   if (step.value === 8)
@@ -531,6 +555,8 @@ function selectCharacterClass(classId: string | null): void {
   form.value.clericPreparedSpellIds = []
   form.value.bardCantripIds = []
   form.value.bardSpellIds = []
+  form.value.druidCantripIds = []
+  form.value.druidPreparedSpellIds = characterClass?.id === 'class.druid' ? [null, null] : []
   clericSpellOptions.value = { cantrips: [], rankOneSpells: [] }
   form.value.classSkillGrantChoices = createClassSkillGrantChoices(
     characterClasses.value.find((item) => item.id === classId) ?? null,
@@ -683,6 +709,9 @@ function selectBardCantrips(spellIds: string[]): void {
 function selectBardSpells(spellIds: string[]): void {
   form.value.bardSpellIds = spellIds.slice(0, 2)
 }
+function selectDruidCantrips(spellIds: string[]): void {
+  form.value.druidCantripIds = spellIds.slice(0, 5)
+}
 function next(): void {
   if (canContinue.value && step.value < 10) step.value += 1
 }
@@ -738,6 +767,12 @@ async function submit(): Promise<void> {
       form.value.bardSpellIds,
       bardSpellOptions.value,
     ) ||
+    !isDruidSpellLoadoutComplete(
+      selectedCharacterClass.value,
+      form.value.druidCantripIds,
+      form.value.druidPreparedSpellIds,
+      druidSpellOptions.value,
+    ) ||
     !isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts) ||
     !isClassTrainingComplete(
       effectiveCharacterClass.value,
@@ -791,6 +826,10 @@ async function submit(): Promise<void> {
       ),
       bardCantripIds: form.value.bardCantripIds,
       bardSpellIds: form.value.bardSpellIds,
+      druidCantripIds: form.value.druidCantripIds,
+      druidPreparedSpellIds: form.value.druidPreparedSpellIds.filter(
+        (spellId): spellId is string => spellId !== null,
+      ),
       finalFreeBoosts: form.value.finalFreeBoosts,
       classSkillGrantChoices: form.value.classSkillGrantChoices.map((choice) => ({
         ...choice,
@@ -817,7 +856,7 @@ async function loadCatalogs(): Promise<void> {
   isLoadingCatalogs.value = true
   errorMessages.value = []
   try {
-    const [ancestryCatalog, backgroundCatalog, classCatalog, racketCatalog, huntersEdgeCatalog, druidicOrderCatalog, bardMuseCatalog, witchPatronCatalog, arcaneSchoolCatalog, arcaneThesisCatalog, doctrineCatalog, deityCatalog, clericDomainCatalog, skillCatalog, bardCantripCatalog, bardRankOneSpellCatalog] = await Promise.all([
+    const [ancestryCatalog, backgroundCatalog, classCatalog, racketCatalog, huntersEdgeCatalog, druidicOrderCatalog, bardMuseCatalog, witchPatronCatalog, arcaneSchoolCatalog, arcaneThesisCatalog, doctrineCatalog, deityCatalog, clericDomainCatalog, skillCatalog, bardCantripCatalog, bardRankOneSpellCatalog, druidCantripCatalog, druidRankOneSpellCatalog] = await Promise.all([
       getAncestries(),
       getBackgrounds(),
       getCharacterClasses(),
@@ -834,6 +873,8 @@ async function loadCatalogs(): Promise<void> {
       getSkills(),
       getSpellOptions('Occult', 1, 'Cantrip'),
       getSpellOptions('Occult', 1, 'Spell'),
+      getSpellOptions('Primal', 1, 'Cantrip'),
+      getSpellOptions('Primal', 1, 'Spell'),
     ])
     ancestries.value = ancestryCatalog
     backgrounds.value = backgroundCatalog
@@ -852,6 +893,10 @@ async function loadCatalogs(): Promise<void> {
     bardSpellOptions.value = {
       cantrips: bardCantripCatalog,
       rankOneSpells: bardRankOneSpellCatalog,
+    }
+    druidSpellOptions.value = {
+      cantrips: druidCantripCatalog,
+      rankOneSpells: druidRankOneSpellCatalog,
     }
   } catch (error) {
     errorMessages.value = getApiErrorMessages(error)
@@ -1400,6 +1445,35 @@ watch(
               {{ t('classUi.bardCompositionSummary') }}
             </v-alert>
           </template>
+          <template v-else-if="selectedCharacterClass?.id === 'class.druid'">
+            <p class="hint">{{ t('classUi.druidSpellsHint') }}</p>
+            <v-select
+              :model-value="form.druidCantripIds"
+              :items="druidSpellOptions.cantrips"
+              item-title="name"
+              item-value="id"
+              :label="t('classUi.druidCantrips')"
+              multiple
+              chips
+              closable-chips
+              :counter="5"
+              @update:model-value="selectDruidCantrips"
+            />
+            <h3>{{ t('classUi.druidPreparedSpells') }}</h3>
+            <v-select
+              v-for="(_, index) in form.druidPreparedSpellIds"
+              :key="index"
+              v-model="form.druidPreparedSpellIds[index]"
+              :items="druidSpellOptions.rankOneSpells"
+              item-title="name"
+              item-value="id"
+              :label="t('classUi.druidSpellSlot', { number: index + 1 })"
+            />
+            <v-alert v-if="selectedDruidFocusSpell" type="info" variant="tonal">
+              {{ t('classUi.druidOrderFocusSpell') }}: {{ selectedDruidFocusSpell.name }}.
+              {{ t('classUi.focusPoints') }}: 1
+            </v-alert>
+          </template>
           <v-alert v-else type="info" variant="tonal">{{ t('wizard.none') }}</v-alert>
         </section>
         <section v-else-if="step === 8">
@@ -1520,6 +1594,15 @@ watch(
               v-if="selectedDruidicOrder"
               :title="t('classUi.druidicOrder')"
               :subtitle="selectedDruidicOrder.name" /><v-list-item
+              v-if="selectedDruidCantrips.length"
+              :title="t('classUi.druidCantrips')"
+              :subtitle="selectedDruidCantrips.map((spell) => spell.name).join(', ')" /><v-list-item
+              v-if="selectedDruidSpells.length"
+              :title="t('classUi.druidPreparedSpells')"
+              :subtitle="selectedDruidSpells.map((spell) => spell.name).join(', ')" /><v-list-item
+              v-if="selectedDruidFocusSpell"
+              :title="t('classUi.druidOrderFocusSpell')"
+              :subtitle="`${selectedDruidFocusSpell.name} (${t('classUi.focusPoints')}: 1)`" /><v-list-item
               v-if="selectedBardMuse"
               :title="t('classUi.bardMuse')"
               :subtitle="selectedBardMuse.name" /><v-list-item

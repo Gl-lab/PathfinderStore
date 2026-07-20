@@ -93,6 +93,10 @@ public sealed class CharacterDetailsDtoMapper
         BardCompositionPackageDto? bardComposition = ResolveBardComposition(
             characterClass,
             bardMuse );
+        DruidSpellLoadoutDto? druidSpellLoadout = ResolveDruidSpellLoadout(
+            draftCharacter,
+            druidicOrder );
+        DruidFocusPoolDto? druidFocusPool = ResolveDruidFocusPool( druidicOrder );
         IReadOnlyList<EffectiveProficiency> effectiveProficiencies = characterClass is null
             ? []
             : ProficiencyResolver.Resolve(
@@ -133,7 +137,9 @@ public sealed class CharacterDetailsDtoMapper
                     clericSpellLoadout,
                     clericFocusPool,
                     bardSpellLoadout,
-                    bardComposition ),
+                    bardComposition,
+                    druidSpellLoadout,
+                    druidFocusPool ),
             FinalFreeBoosts = draftCharacter.AppliedFinalFreeBoosts.ToArray(),
             DerivedStatistics = ancestry is null || characterClass is null
                 ? null
@@ -462,6 +468,62 @@ public sealed class CharacterDetailsDtoMapper
             CompositionCantrip = SpellDefinitionDtoMapper.Map( package.CompositionCantrip ),
             FocusSpell = SpellDefinitionDtoMapper.Map( package.FocusSpell ),
             SourceGrantId = package.SourceGrantId,
+        };
+    }
+
+    private DruidSpellLoadoutDto? ResolveDruidSpellLoadout(
+        DraftCharacter character,
+        DruidicOrder? druidicOrder )
+    {
+        if ( ( character.SelectedClassId != "class.druid" ) ||
+             ( druidicOrder is null ) ||
+             ( character.PreparedDruidCantripIds.Count == 0 ) ||
+             ( character.PreparedDruidSpellIds.Count == 0 ) )
+        {
+            return null;
+        }
+
+        if ( _spellRepository is null )
+        {
+            throw new InvalidOperationException(
+                "Spell repository is required to map a Druid spell loadout." );
+        }
+
+        IReadOnlyDictionary<string, SpellDefinition> definitions = _spellRepository
+            .GetAll()
+            .ToDictionary( spell => spell.Id, StringComparer.Ordinal );
+        return new DruidSpellLoadoutDto
+        {
+            Cantrips = character.PreparedDruidCantripIds
+                .Select( spellId => SpellDefinitionDtoMapper.Map( definitions[ spellId ] ) )
+                .ToArray(),
+            PreparedSpells = character.PreparedDruidSpellIds
+                .Select( spellId => SpellDefinitionDtoMapper.Map( definitions[ spellId ] ) )
+                .ToArray(),
+        };
+    }
+
+    private DruidFocusPoolDto? ResolveDruidFocusPool( DruidicOrder? druidicOrder )
+    {
+        if ( druidicOrder is null )
+        {
+            return null;
+        }
+
+        if ( _spellRepository is null )
+        {
+            throw new InvalidOperationException(
+                "Spell repository is required to map a Druid focus pool." );
+        }
+
+        DruidFocusPool focusPool = DruidFocusPoolResolver.Resolve(
+            druidicOrder,
+            _spellRepository.GetAll() );
+        return new DruidFocusPoolDto
+        {
+            MaximumFocusPoints = focusPool.MaximumFocusPoints,
+            FocusSpell = SpellDefinitionDtoMapper.Map( focusPool.FocusSpell ),
+            SourceGrantId = focusPool.SourceGrantId,
         };
     }
 

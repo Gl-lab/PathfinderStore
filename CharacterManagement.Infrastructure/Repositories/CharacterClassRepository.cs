@@ -61,11 +61,17 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
             Create(
                 "druid", "Druid", 122, 8, [ AbilityType.Wisdom ], 2, SpellTradition.Primal,
                 [
-                    Spellcasting( "druid", "Primal spellcasting." ),
+                    Rule(
+                        "class.druid.spellcasting",
+                        CharacterClassRuleKind.Spellcasting,
+                        "Spellcasting",
+                        "Primal prepared spellcasting and Druidic Order focus spell.",
+                        true,
+                        [] ),
                     Feature( "druid.features", "Druid Features", "Anathema, Shield Block, Voice of Nature, and Wildsong." ),
                     Choice( "druid.order", "Druidic Order", "Choose an order that grants a feat, order spell, and trained skill." )
                 ],
-                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.SpellCatalog, CharacterClassDependencyType.ClassFeatureRules ] ),
+                [ CharacterClassDependencyType.ProficiencyRules, CharacterClassDependencyType.ClassFeatureRules ] ),
             Create(
                 "fighter", "Fighter", 136, 10, [ AbilityType.Strength, AbilityType.Dexterity ], 3, null,
                 [

@@ -66,7 +66,7 @@ public sealed class DruidicOrderRepository : IDruidicOrderRepository
                     $"spell.{spellId}",
                     DruidicOrderBenefitKind.FocusSpell,
                     spellName,
-                    [ CharacterClassDependencyType.SpellCatalog ] ),
+                    [] ),
             ] );
     }
 }

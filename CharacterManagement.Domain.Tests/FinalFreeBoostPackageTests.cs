@@ -222,7 +222,8 @@ public sealed class FinalFreeBoostPackageTests
         character.SetClassPackage(
             druid,
             AbilityType.Wisdom,
-            druidicOrder: druidicOrder );
+            druidicOrder: druidicOrder,
+            druidSpellLoadout: DruidSpellTestData.CreateLoadout() );
         character.SetFinalFreeBoosts(
             [
                 AbilityType.Strength,

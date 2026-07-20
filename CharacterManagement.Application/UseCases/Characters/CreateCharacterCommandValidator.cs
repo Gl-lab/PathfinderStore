@@ -90,6 +90,26 @@ public sealed class CreateCharacterCommandValidator : AbstractValidator<CreateCh
                     () => RuleFor( command => command.Character.DruidicOrderId ).Empty() );
 
                 When(
+                    command => command.Character.ClassId == "class.druid",
+                    () =>
+                    {
+                        RuleFor( command => command.Character.DruidCantripIds )
+                            .NotNull()
+                            .Must( spellIds => spellIds.Count == 5 );
+                        RuleFor( command => command.Character.DruidPreparedSpellIds )
+                            .NotNull()
+                            .Must( spellIds => spellIds.Count == 2 );
+                    } );
+
+                When(
+                    command => command.Character.ClassId != "class.druid",
+                    () =>
+                    {
+                        RuleFor( command => command.Character.DruidCantripIds ).Empty();
+                        RuleFor( command => command.Character.DruidPreparedSpellIds ).Empty();
+                    } );
+
+                When(
                     command => command.Character.ClassId == "class.bard",
                     () => RuleFor( command => command.Character.BardMuseId ).NotEmpty() );
 

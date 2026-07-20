@@ -38,6 +38,8 @@ public class CreateCharacterRequestDto
     public IReadOnlyList<string> ClericPreparedSpellIds { get; set; } = [];
     public IReadOnlyList<string> BardCantripIds { get; set; } = [];
     public IReadOnlyList<string> BardSpellIds { get; set; } = [];
+    public IReadOnlyList<string> DruidCantripIds { get; set; } = [];
+    public IReadOnlyList<string> DruidPreparedSpellIds { get; set; } = [];
     public IReadOnlyList<AbilityType>? FinalFreeBoosts { get; set; }
     public IReadOnlyList<ClassSkillGrantChoice> ClassSkillGrantChoices { get; set; } = [];
     public IReadOnlyList<ClassTrainingTargetChoice> AdditionalClassTrainingChoices { get; set; } = [];

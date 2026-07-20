@@ -379,7 +379,28 @@ onMounted(load)
                 :key="benefit.id"
               >
                 {{ t(`classUi.druidicOrderBenefitKinds.${benefit.kind}`) }}:
-                {{ benefit.name }}. {{ t('classUi.deferredEffect') }}
+                {{ benefit.name }}.
+                <template v-if="benefit.kind === 'ClassFeat'">{{ t('classUi.deferredEffect') }}</template>
+              </p>
+            </template>
+            <template v-if="character.classPackage.druidSpellLoadout">
+              <p>
+                {{ t('classUi.druidCantrips') }}:
+                {{ character.classPackage.druidSpellLoadout.cantrips.map((spell) => spell.name).join(', ') }}
+              </p>
+              <p>
+                {{ t('classUi.druidPreparedSpells') }}:
+                {{ character.classPackage.druidSpellLoadout.preparedSpells.map((spell) => spell.name).join(', ') }}
+              </p>
+            </template>
+            <template v-if="character.classPackage.druidFocusPool">
+              <p>
+                {{ t('classUi.druidOrderFocusSpell') }}:
+                {{ character.classPackage.druidFocusPool.focusSpell.name }}
+              </p>
+              <p>
+                {{ t('classUi.focusPoints') }}:
+                {{ character.classPackage.druidFocusPool.maximumFocusPoints }}
               </p>
             </template>
             <template v-if="character.classPackage.bardMuse">
