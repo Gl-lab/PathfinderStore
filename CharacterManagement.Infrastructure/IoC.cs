@@ -11,6 +11,7 @@ public static class DependencyInjection
         services.AddScoped<IAccountRepository, AccountRepository>();
         services.AddScoped<ICharacterRepository, CharacterRepository>();
         services.AddScoped<IAncestryRepository, AncestryRepository>();
+        services.AddScoped<ILanguageRepository, LanguageRepository>();
         services.AddScoped<IBackgroundRepository, BackgroundRepository>();
         services.AddScoped<ISkillRepository, SkillRepository>();
         services.AddScoped<ICharacterClassRepository, CharacterClassRepository>();

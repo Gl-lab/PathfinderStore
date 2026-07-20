@@ -50,6 +50,7 @@
 - `GET /api/classes/cleric/spells`
 - `GET /api/classes/cleric/spells/available?deityId=...`
 - `GET /api/skills`
+- `GET /api/languages`
 - `GET /api/character`
 - `GET /api/character/{characterId}`
 - `POST /api/character`

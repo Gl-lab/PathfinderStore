@@ -34,7 +34,8 @@ public sealed class AdditionalLanguageRuleDto
 {
     public AdditionalLanguageRuleType Type { get; set; }
     public IReadOnlyList<string> AllowedLanguageIds { get; set; }
-    public bool UsesCommonAndUncommonLanguages { get; set; }
+    public bool AllowsCommonLanguages { get; set; }
+    public bool AllowsAccessLanguages { get; set; }
 }
 
 public sealed class GrantedItemDto

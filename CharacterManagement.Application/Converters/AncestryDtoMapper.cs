@@ -135,7 +135,8 @@ public static class AncestryDtoMapper
         AllowedLanguageIds = rule.AllowedLanguageIds
             .Select( languageId => languageId.Value )
             .ToList(),
-        UsesCommonAndUncommonLanguages = rule.UsesCommonAndUncommonLanguages,
+        AllowsCommonLanguages = rule.AllowsCommonLanguages,
+        AllowsAccessLanguages = rule.AllowsAccessLanguages,
     };
 
     private static GrantedItemDto Map( GrantedItem item ) => new GrantedItemDto

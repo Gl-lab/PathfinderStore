@@ -61,7 +61,8 @@ public sealed record SourceReference( string Book, int Page )
 public sealed record AdditionalLanguageRule(
     AdditionalLanguageRuleType Type,
     IReadOnlyList<LanguageId> AllowedLanguageIds,
-    bool UsesCommonAndUncommonLanguages );
+    bool AllowsCommonLanguages,
+    bool AllowsAccessLanguages );
 
 public sealed record GrantedItem( string ItemId, int Quantity, SourceReference Source );
 

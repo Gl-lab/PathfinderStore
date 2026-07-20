@@ -28,6 +28,7 @@
 | `Classes`, `Backgrounds`, `Archetypes` | Есть источник-ориентированный сводный документ | [aon_player_core_character_creation_sources.md](aon_player_core_character_creation_sources.md) |
 | `Heritage` и ancestry feats 1 уровня | Есть нормативный нормализованный каталог для 6 ancestry Player Core | [ancestry_choices_player_core.md](ancestry_choices_player_core.md) |
 | `Ancestry`, background skill и class feats 1 уровня | Есть нормализованный Player Core catalog и общий character inventory | [../../30_task_notes/feat_catalog_player_core_implementation.md](../../30_task_notes/feat_catalog_player_core_implementation.md) |
+| `Languages` | Есть нормализованный Player Core catalog и ancestry language rules | [language_catalog.md](language_catalog.md) |
 
 ## Частично готовые области
 
@@ -65,11 +66,7 @@ Player Core каталог оформлен в [deities_player_core.md](deities_
 
 ### Languages
 
-В ancestry-доках есть стартовые языки и правила дополнительных языков, но общего language catalog нет.
-
-Следующий ожидаемый документ:
-
-- `language_catalog.md`
+Общий Player Core catalog и ancestry language rules реализованы. Вычисляемое количество дополнительных языков, пользовательский выбор, server-side access context и persistence остаются следующим slice приоритета 6.
 
 ### Ancestry Choice Effects
 

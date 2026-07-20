@@ -42,10 +42,10 @@ public sealed class AncestryRepository : IAncestryRepository
             20,
             source: Source( 43 ),
             vision: VisionType.Darkvision,
-            startingLanguages: Languages( "common", "dwarven" ),
+            startingLanguages: [ LanguageIds.Common, LanguageIds.Dwarven ],
             additionalLanguageRule: AdditionalLanguages(
                 AdditionalLanguageRuleType.IntelligenceModifier,
-                [ "gnomish", "goblin", "jotun", "orcish", "petran", "sakvroth" ] ),
+                [ LanguageIds.Gnomish, LanguageIds.Goblin, LanguageIds.Jotun, LanguageIds.Orcish, LanguageIds.Petran, LanguageIds.Sakvroth ] ),
             grantedItems: [ new GrantedItem( "clan_dagger", 1, Source( 277 ) ) ],
             grantedRules: [ new GrantedRule( "dwarf.clan_dagger_taboo", AncestryEffectKind.RuleEffect, "Clan dagger sale is a cultural taboo." ) ],
             heritages:
@@ -83,10 +83,10 @@ public sealed class AncestryRepository : IAncestryRepository
             30,
             source: Source( 47 ),
             vision: VisionType.LowLight,
-            startingLanguages: Languages( "common", "elven" ),
+            startingLanguages: [ LanguageIds.Common, LanguageIds.Elven ],
             additionalLanguageRule: AdditionalLanguages(
                 AdditionalLanguageRuleType.IntelligenceModifier,
-                [ "draconic", "empyrean", "fey", "gnomish", "goblin", "kholo", "orcish" ] ),
+                [ LanguageIds.Draconic, LanguageIds.Empyrean, LanguageIds.Fey, LanguageIds.Gnomish, LanguageIds.Goblin, LanguageIds.Kholo, LanguageIds.Orcish ] ),
             heritages:
             [
                 Heritage( "elf.ancient", "Ancient Elf", 47, AncestryEffectKind.DeferredChoice, "Choose a multiclass dedication.", [ AncestryDependencyType.ClassCatalog, AncestryDependencyType.ClassFeatCatalog, AncestryDependencyType.ArchetypeCatalog ] ),
@@ -123,10 +123,10 @@ public sealed class AncestryRepository : IAncestryRepository
             25,
             source: Source( 51 ),
             vision: VisionType.LowLight,
-            startingLanguages: Languages( "common", "fey", "gnomish" ),
+            startingLanguages: [ LanguageIds.Common, LanguageIds.Fey, LanguageIds.Gnomish ],
             additionalLanguageRule: AdditionalLanguages(
                 AdditionalLanguageRuleType.IntelligenceModifier,
-                [ "draconic", "dwarven", "elven", "goblin", "jotun", "orcish" ] ),
+                [ LanguageIds.Draconic, LanguageIds.Dwarven, LanguageIds.Elven, LanguageIds.Goblin, LanguageIds.Jotun, LanguageIds.Orcish ] ),
             heritages:
             [
                 Heritage( "gnome.chameleon", "Chameleon Gnome", 51, AncestryEffectKind.RuleEffect, "Changes coloration and grants Stealth benefits.", [ AncestryDependencyType.SkillCatalog, AncestryDependencyType.ConditionRules ] ),
@@ -162,10 +162,10 @@ public sealed class AncestryRepository : IAncestryRepository
             25,
             source: Source( 55 ),
             vision: VisionType.Darkvision,
-            startingLanguages: Languages( "common", "goblin" ),
+            startingLanguages: [ LanguageIds.Common, LanguageIds.Goblin ],
             additionalLanguageRule: AdditionalLanguages(
                 AdditionalLanguageRuleType.IntelligenceModifier,
-                [ "draconic", "dwarven", "gnomish", "halfling", "kholo", "orcish" ] ),
+                [ LanguageIds.Draconic, LanguageIds.Dwarven, LanguageIds.Gnomish, LanguageIds.Halfling, LanguageIds.Kholo, LanguageIds.Orcish ] ),
             heritages:
             [
                 Heritage( "goblin.charhide", "Charhide Goblin", 55, AncestryEffectKind.RuleEffect, "Fire resistance and persistent fire protection.", [ AncestryDependencyType.ResistanceRules, AncestryDependencyType.ConditionRules ] ),
@@ -201,10 +201,10 @@ public sealed class AncestryRepository : IAncestryRepository
             25,
             source: Source( 59 ),
             vision: VisionType.None,
-            startingLanguages: Languages( "common", "halfling" ),
+            startingLanguages: [ LanguageIds.Common, LanguageIds.Halfling ],
             additionalLanguageRule: AdditionalLanguages(
                 AdditionalLanguageRuleType.IntelligenceModifier,
-                [ "dwarven", "elven", "gnomish", "goblin" ] ),
+                [ LanguageIds.Dwarven, LanguageIds.Elven, LanguageIds.Gnomish, LanguageIds.Goblin ] ),
             grantedRules: [ new GrantedRule( "halfling.keen_eyes", AncestryEffectKind.RuleEffect, "Keen Eyes at 1st level." ) ],
             heritages:
             [
@@ -237,10 +237,11 @@ public sealed class AncestryRepository : IAncestryRepository
             25,
             source: Source( 63 ),
             vision: VisionType.None,
-            startingLanguages: Languages( "common" ),
+            startingLanguages: [ LanguageIds.Common ],
             additionalLanguageRule: new AdditionalLanguageRule(
                 AdditionalLanguageRuleType.OnePlusIntelligenceModifier,
                 [],
+                true,
                 true ),
             heritages:
             [
@@ -260,19 +261,13 @@ public sealed class AncestryRepository : IAncestryRepository
 
     private static SourceReference Source( int page ) => new( "Player Core", page );
 
-    private static IReadOnlyList<LanguageId> Languages( params string[] languageIds )
-    {
-        return languageIds
-            .Select( languageId => new LanguageId( languageId ) )
-            .ToList();
-    }
-
     private static AdditionalLanguageRule AdditionalLanguages(
         AdditionalLanguageRuleType type,
-        IReadOnlyList<string> languageIds )
-    {
-        return new AdditionalLanguageRule( type, Languages( languageIds.ToArray() ), false );
-    }
+        IReadOnlyList<LanguageId> languageIds ) => new AdditionalLanguageRule(
+            type,
+            languageIds,
+            false,
+            true );
 
     private static Heritage Heritage(
         string id,

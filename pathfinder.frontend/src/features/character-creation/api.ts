@@ -23,6 +23,7 @@ export interface Ancestry {
   darkvision: boolean
   lowLightVision: boolean
   startingLanguageIds: string[]
+  additionalLanguageRule: AdditionalLanguageRule | null
   grantedItems: GrantedItem[]
   grantedRules: GrantedRule[]
   heritages: Heritage[]
@@ -100,6 +101,27 @@ export interface Background {
   freeBoostCount: number
   grants: BackgroundGrant[]
   source?: { book: string; page: number }
+}
+
+export type AdditionalLanguageRuleType = 'IntelligenceModifier' | 'OnePlusIntelligenceModifier'
+
+export interface AdditionalLanguageRule {
+  type: AdditionalLanguageRuleType
+  allowedLanguageIds: string[]
+  allowsCommonLanguages: boolean
+  allowsAccessLanguages: boolean
+}
+
+export type LanguageRarity = 'Common' | 'Uncommon'
+export type LanguageCategory = 'Standard' | 'Regional'
+
+export interface Language {
+  id: string
+  name: string
+  speakers: string
+  rarity: LanguageRarity
+  category: LanguageCategory
+  source: { book: string; page: number }
 }
 
 export type FeatCategory = 'Ancestry' | 'Skill' | 'Class'
@@ -524,6 +546,10 @@ export async function getSpellOptions(
 
 export async function getSkills(): Promise<Skill[]> {
   return (await http.get<Skill[]>('/api/skills')).data
+}
+
+export async function getLanguages(): Promise<Language[]> {
+  return (await http.get<Language[]>('/api/languages')).data
 }
 
 export async function getFeatOptions(

@@ -55,11 +55,12 @@ VisionType
 
 - `AdditionalLanguageRuleType`: `IntelligenceModifier` или `OnePlusIntelligenceModifier`;
 - `AllowedLanguageIds` для fixed pool;
-- `UsesCommonAndUncommonLanguages` для Human.
+- `AllowsCommonLanguages` для Human;
+- `AllowsAccessLanguages` для языков, доступ к которым получен из региона или другого server-side источника.
 
-Правило Human — `OnePlusIntelligenceModifier`. Остальные базовые ancestry используют `IntelligenceModifier` и свой pool из базового каталога. Отрицательный modifier не даёт отрицательное число дополнительных языков: final count ограничивается снизу нулём.
+Правило Human — `OnePlusIntelligenceModifier`: оно даёт один базовый дополнительный язык плюс положительный Intelligence modifier; common languages доступны напрямую, uncommon и regional требуют отдельного access. Остальные базовые ancestry используют `IntelligenceModifier`, свой fixed pool и дополнительно допускают языки с server-side access. Неположительный modifier не уменьшает число дополнительных языков ниже ancestry baseline.
 
-Выбор дополнительных языков не реализуется в #43: API возвращает rule/dependency, а future language task добавит typed selection и проверку pool.
+Общий каталог описан в [language_catalog.md](language_catalog.md). Выбор дополнительных языков не реализуется в #43: API возвращает rule/dependency, а language selection slice добавляет typed selection и проверку pool.
 
 ### Granted items и rules
 
