@@ -4,6 +4,7 @@ using Pathfinder.CharacterManagement.Domain.Exceptions;
 using Pathfinder.CharacterManagement.Domain.Rules.Training;
 using Pathfinder.CharacterManagement.Domain.Rules.Spells;
 using Pathfinder.CharacterManagement.Domain.Rules.Feats;
+using Pathfinder.CharacterManagement.Domain.Rules.Languages;
 
 namespace Pathfinder.CharacterManagement.Application.Builders.Implementation;
 
@@ -27,6 +28,7 @@ public class CharacterBuilder : ICharacterBuilder
     private readonly IArcaneSchoolRepository? _arcaneSchoolRepository;
     private readonly IArcaneThesisRepository? _arcaneThesisRepository;
     private readonly IFeatRepository? _featRepository;
+    private readonly ILanguageRepository? _languageRepository;
 
     public CharacterBuilder(
         IAncestryRepository ancestryRepository,
@@ -45,7 +47,8 @@ public class CharacterBuilder : ICharacterBuilder
         IArcaneThesisRepository? arcaneThesisRepository = null,
         IClericDomainRepository? clericDomainRepository = null,
         ISpellRepository? spellRepository = null,
-        IFeatRepository? featRepository = null )
+        IFeatRepository? featRepository = null,
+        ILanguageRepository? languageRepository = null )
     {
         _ancestryRepository = ancestryRepository;
         _ancestryChoiceAvailabilityPolicy = ancestryChoiceAvailabilityPolicy ?? new CommonAncestryChoiceAvailabilityPolicy();
@@ -64,6 +67,7 @@ public class CharacterBuilder : ICharacterBuilder
         _arcaneSchoolRepository = arcaneSchoolRepository;
         _arcaneThesisRepository = arcaneThesisRepository;
         _featRepository = featRepository;
+        _languageRepository = languageRepository;
     }
 
     public void CreateCharacter(
@@ -556,6 +560,29 @@ public class CharacterBuilder : ICharacterBuilder
         }
 
         _draftCharacter.SetFinalFreeBoosts( finalFreeBoosts );
+    }
+
+    public void SetAdditionalLanguages( IReadOnlyList<string> additionalLanguageIds )
+    {
+        if ( _draftCharacter is null )
+        {
+            throw new InvalidOperationException(
+                "Character must be created before setting additional languages." );
+        }
+
+        if ( _languageRepository is null )
+        {
+            throw new InvalidOperationException(
+                "Language repository is required to set additional languages." );
+        }
+
+        Ancestry ancestry = _ancestryRepository.GetAncestry( _draftCharacter.AncestryType );
+        LanguageSelectionResult selection = LanguageSelectionResolver.ResolveSelection(
+            ancestry,
+            _draftCharacter.AbilityScores.Intelligence.Modifier,
+            _languageRepository.GetAll(),
+            additionalLanguageIds );
+        _draftCharacter.SetAdditionalLanguages( selection );
     }
 
     public void SetClassTraining(

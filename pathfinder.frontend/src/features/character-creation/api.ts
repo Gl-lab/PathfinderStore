@@ -124,6 +124,11 @@ export interface Language {
   source: { book: string; page: number }
 }
 
+export interface LanguageSelectionOptions {
+  requiredCount: number
+  availableLanguages: Language[]
+}
+
 export type FeatCategory = 'Ancestry' | 'Skill' | 'Class'
 
 export interface FeatDefinition {
@@ -464,6 +469,7 @@ export interface CreateCharacterRequest {
   wizardPreparedCurriculumCantripId: string | null
   wizardPreparedCurriculumSpellId: string | null
   finalFreeBoosts: AbilityCode[]
+  additionalLanguageIds: string[]
   classSkillGrantChoices: ClassSkillGrantChoice[]
   additionalClassTrainingChoices: ClassTrainingTargetChoice[]
 }
@@ -550,6 +556,17 @@ export async function getSkills(): Promise<Skill[]> {
 
 export async function getLanguages(): Promise<Language[]> {
   return (await http.get<Language[]>('/api/languages')).data
+}
+
+export async function getLanguageSelectionOptions(
+  ancestryType: AncestryCode,
+  intelligenceScore: number,
+): Promise<LanguageSelectionOptions> {
+  return (
+    await http.get<LanguageSelectionOptions>('/api/languages/options', {
+      params: { ancestryType, intelligenceScore },
+    })
+  ).data
 }
 
 export async function getFeatOptions(

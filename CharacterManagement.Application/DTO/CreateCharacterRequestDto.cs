@@ -56,6 +56,7 @@ public class CreateCharacterRequestDto
     public string? WizardPreparedCurriculumCantripId { get; set; }
     public string? WizardPreparedCurriculumSpellId { get; set; }
     public IReadOnlyList<AbilityType>? FinalFreeBoosts { get; set; }
+    public IReadOnlyList<string> AdditionalLanguageIds { get; set; } = [];
     public IReadOnlyList<ClassSkillGrantChoice> ClassSkillGrantChoices { get; set; } = [];
     public IReadOnlyList<ClassTrainingTargetChoice> AdditionalClassTrainingChoices { get; set; } = [];
 }

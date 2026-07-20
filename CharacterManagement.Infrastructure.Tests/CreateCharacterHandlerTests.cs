@@ -43,6 +43,7 @@ public sealed class CreateCharacterHandlerTests
                 AbilityType.Constitution,
                 AbilityType.Wisdom
             ],
+            AdditionalLanguageIds = [ "draconic", "elven" ],
             ClassSkillGrantChoices =
             [
                 new ClassSkillGrantChoice(
@@ -86,6 +87,7 @@ public sealed class CreateCharacterHandlerTests
         Assert.Equal( "class_choice.fighter.feat", selectedClassFeat.SourceId );
         Assert.Equal( "feat.double_slice", selectedClassFeat.FeatId );
         Assert.Equal( character.FinalFreeBoosts, savedCharacter.AppliedFinalFreeBoosts );
+        Assert.Equal( character.AdditionalLanguageIds, savedCharacter.SelectedAdditionalLanguageIds );
         Assert.Contains( savedCharacter.TrainedSkills, training => training.SkillId == "skill.acrobatics" );
         Assert.Contains( savedCharacter.TrainedSkills, training => training.SkillId == "skill.athletics" );
         Assert.Contains( savedCharacter.TrainedLore, training => training.LoreId == "lore.circus" );
@@ -160,6 +162,7 @@ public sealed class CreateCharacterHandlerTests
                 AbilityType.Constitution,
                 AbilityType.Wisdom,
             ],
+            AdditionalLanguageIds = [ "draconic", "elven", "fey" ],
             ClassSkillGrantChoices =
             [
                 new ClassSkillGrantChoice( "class.druid.skill.nature", null, null ),
@@ -222,6 +225,7 @@ public sealed class CreateCharacterHandlerTests
                 AbilityType.Intelligence,
                 AbilityType.Wisdom,
             ],
+            AdditionalLanguageIds = [ "draconic", "elven", "fey" ],
             ClassSkillGrantChoices =
             [
                 new ClassSkillGrantChoice( "class.rogue.skill.stealth", null, null ),
@@ -290,6 +294,7 @@ public sealed class CreateCharacterHandlerTests
                 AbilityType.Constitution,
                 AbilityType.Wisdom,
             ],
+            AdditionalLanguageIds = [ "draconic", "elven" ],
             ClassSkillGrantChoices =
             [
                 new ClassSkillGrantChoice( "class.bard.skill.occultism", null, null ),
@@ -352,6 +357,7 @@ public sealed class CreateCharacterHandlerTests
                 AbilityType.Constitution,
                 AbilityType.Intelligence,
             ],
+            AdditionalLanguageIds = [ "draconic", "elven", "fey", "gnomish" ],
             ClassSkillGrantChoices =
             [
                 new ClassSkillGrantChoice(
@@ -412,6 +418,7 @@ public sealed class CreateCharacterHandlerTests
                 AbilityType.Constitution,
                 AbilityType.Wisdom,
             ],
+            AdditionalLanguageIds = [ "draconic" ],
             ClassSkillGrantChoices =
             [
                 new ClassSkillGrantChoice( "class.ranger.skill.nature", null, null ),
@@ -470,6 +477,7 @@ public sealed class CreateCharacterHandlerTests
                 AbilityType.Constitution,
                 AbilityType.Intelligence,
             ],
+            AdditionalLanguageIds = [ "draconic", "elven", "fey", "gnomish" ],
             ClassSkillGrantChoices =
             [
                 new ClassSkillGrantChoice( "class.wizard.skill.arcana", null, null ),
@@ -531,6 +539,7 @@ public sealed class CreateCharacterHandlerTests
                 AbilityType.Constitution,
                 AbilityType.Wisdom,
             ],
+            AdditionalLanguageIds = [ "draconic" ],
             ClassSkillGrantChoices =
             [
                 new ClassSkillGrantChoice(
@@ -617,7 +626,8 @@ public sealed class CreateCharacterHandlerTests
             arcaneThesisRepository: new ArcaneThesisRepository(),
             clericDomainRepository: new ClericDomainRepository(),
             spellRepository: new SpellRepository(),
-            featRepository: new FeatRepository( ancestryRepository, backgroundRepository ) );
+            featRepository: new FeatRepository( ancestryRepository, backgroundRepository ),
+            languageRepository: new LanguageRepository() );
 
         TestUnitOfWork unitOfWork = new TestUnitOfWork( dbContext );
 

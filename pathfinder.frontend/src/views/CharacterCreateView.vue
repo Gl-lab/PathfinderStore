@@ -43,6 +43,7 @@ import {
   getRogueRackets,
   getSkills,
   getFeatOptions,
+  getLanguageSelectionOptions,
   type Ancestry,
   type Background,
   type BackgroundTrainingChoice,
@@ -70,6 +71,7 @@ import {
   type Skill,
   type FeatDefinition,
   type FeatChoice,
+  type LanguageSelectionOptions,
 } from '@/features/character-creation/api'
 import {
   getBackgroundFreeBoostOptions,
@@ -154,6 +156,10 @@ import {
   formatArcaneThesisMilestones,
   isArcaneThesisChoiceComplete,
 } from '@/features/character-creation/arcaneThesis'
+import {
+  isLanguageSelectionComplete,
+  reconcileLanguageSelection,
+} from '@/features/character-creation/languageSelection'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -185,7 +191,12 @@ const skills = ref<Skill[]>([])
 const ancestryFeatOptions = ref<FeatDefinition[]>([])
 const skillFeatOptions = ref<FeatDefinition[]>([])
 const classFeatOptions = ref<FeatDefinition[]>([])
+const languageSelectionOptions = ref<LanguageSelectionOptions>({
+  requiredCount: 0,
+  availableLanguages: [],
+})
 const isLoadingCatalogs = ref(true)
+const isLoadingLanguageOptions = ref(false)
 const isSubmitting = ref(false)
 const errorMessages = ref<string[]>([])
 const form = ref({
@@ -239,6 +250,7 @@ const form = ref({
   wizardPreparedCurriculumCantripId: null as string | null,
   wizardPreparedCurriculumSpellId: null as string | null,
   finalFreeBoosts: [] as AbilityCode[],
+  additionalLanguageIds: [] as string[],
   classSkillGrantChoices: [] as ClassSkillGrantChoice[],
   additionalClassTrainingChoices: [] as ClassTrainingTargetChoice[],
 })
@@ -467,6 +479,54 @@ const abilityScoresAfterFinal = computed(() =>
     selectedAncestry.value?.abilityFlaws ?? [],
   ),
 )
+const selectedAdditionalLanguages = computed(() =>
+  languageSelectionOptions.value.availableLanguages.filter((language) =>
+    form.value.additionalLanguageIds.includes(language.id),
+  ),
+)
+let languageOptionsRequestId = 0
+async function loadLanguageOptions(): Promise<void> {
+  const requestId = ++languageOptionsRequestId
+  if (
+    !form.value.ancestryType ||
+    !isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts)
+  ) {
+    languageSelectionOptions.value = { requiredCount: 0, availableLanguages: [] }
+    form.value.additionalLanguageIds = []
+    isLoadingLanguageOptions.value = false
+    return
+  }
+
+  isLoadingLanguageOptions.value = true
+  try {
+    const options = await getLanguageSelectionOptions(
+      form.value.ancestryType,
+      abilityScoresAfterFinal.value.Intelligence,
+    )
+    if (requestId !== languageOptionsRequestId) return
+
+    languageSelectionOptions.value = options
+    form.value.additionalLanguageIds = reconcileLanguageSelection(
+      form.value.additionalLanguageIds,
+      options,
+    )
+  } catch (error) {
+    if (requestId !== languageOptionsRequestId) return
+    languageSelectionOptions.value = { requiredCount: 0, availableLanguages: [] }
+    form.value.additionalLanguageIds = []
+    errorMessages.value = getApiErrorMessages(error)
+  } finally {
+    if (requestId === languageOptionsRequestId) isLoadingLanguageOptions.value = false
+  }
+}
+watch(
+  [
+    () => form.value.ancestryType,
+    () => abilityScoresAfterFinal.value.Intelligence,
+    () => form.value.finalFreeBoosts.length,
+  ],
+  () => void loadLanguageOptions(),
+)
 const existingClassTrainingSkillIds = computed(() => {
   const rogueSkillIds = getRogueGrants(selectedRogueRacket.value)
     .map((grant) => getResolvedRogueTarget(grant, form.value.rogueTrainingChoices))
@@ -629,7 +689,14 @@ const canContinue = computed(() => {
       )
     )
   if (step.value === 8)
-    return isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts)
+    return (
+      isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts) &&
+      !isLoadingLanguageOptions.value &&
+      isLanguageSelectionComplete(
+        form.value.additionalLanguageIds,
+        languageSelectionOptions.value,
+      )
+    )
   if (step.value === 9)
     return isClassTrainingComplete(
       effectiveCharacterClass.value,
@@ -647,6 +714,7 @@ function selectAncestry(type: AncestryCode | null): void {
   form.value.heritageId = null
   form.value.ancestryFeatId = null
   form.value.freeBoosts = []
+  form.value.additionalLanguageIds = []
 }
 function isBoostDisabled(type: AbilityCode): boolean {
   return (
@@ -897,6 +965,12 @@ function resetClassTraining(): void {
 function isFinalBoostDisabled(type: AbilityCode): boolean {
   return isFinalFreeBoostDisabled(type, form.value.finalFreeBoosts)
 }
+function selectAdditionalLanguages(languageIds: string[]): void {
+  form.value.additionalLanguageIds = languageIds.slice(
+    0,
+    languageSelectionOptions.value.requiredCount,
+  )
+}
 function formatFinalBoostScore(type: AbilityCode): string {
   return t('wizard.finalBoostScore', {
     before: abilityScoresBeforeFinal.value[type],
@@ -1047,6 +1121,10 @@ async function submit(): Promise<void> {
       wizardSpellOptions.value,
     ) ||
     !isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts) ||
+    !isLanguageSelectionComplete(
+      form.value.additionalLanguageIds,
+      languageSelectionOptions.value,
+    ) ||
     !isClassTrainingComplete(
       effectiveCharacterClass.value,
       form.value.classSkillGrantChoices,
@@ -1122,6 +1200,7 @@ async function submit(): Promise<void> {
       wizardPreparedCurriculumCantripId: form.value.wizardPreparedCurriculumCantripId,
       wizardPreparedCurriculumSpellId: form.value.wizardPreparedCurriculumSpellId,
       finalFreeBoosts: form.value.finalFreeBoosts,
+      additionalLanguageIds: form.value.additionalLanguageIds,
       classSkillGrantChoices: form.value.classSkillGrantChoices.map((choice) => ({
         ...choice,
         replacementTarget: choice.replacementTarget
@@ -1936,6 +2015,31 @@ watch(
             :disabled="isFinalBoostDisabled(code)"
             hide-details
           />
+          <v-divider class="my-4" />
+          <h3>{{ t('wizard.additionalLanguages') }}</h3>
+          <p class="hint">
+            {{ t('wizard.additionalLanguagesHint', {
+              selected: form.additionalLanguageIds.length,
+              count: languageSelectionOptions.requiredCount,
+            }) }}
+          </p>
+          <v-select
+            v-if="languageSelectionOptions.requiredCount > 0"
+            :model-value="form.additionalLanguageIds"
+            :items="languageSelectionOptions.availableLanguages"
+            item-title="name"
+            item-value="id"
+            multiple
+            chips
+            :loading="isLoadingLanguageOptions"
+            :disabled="isLoadingLanguageOptions"
+            :label="t('wizard.additionalLanguages')"
+            @update:model-value="selectAdditionalLanguages"
+          />
+          <v-alert v-else-if="!isLoadingLanguageOptions" type="info" variant="tonal">
+            {{ t('wizard.noAdditionalLanguages') }}
+          </v-alert>
+          <v-progress-linear v-else indeterminate color="primary" />
         </section>
         <section v-else-if="step === 9 && selectedCharacterClass">
           <h2>{{ t('classUi.classTraining') }}</h2>
@@ -2165,6 +2269,8 @@ watch(
               :subtitle="groupProficiencies(effectiveClassProficiencies).map((group) => getProficiencyCategoryLabel(group.category)).join(', ')" /><v-list-item
               :title="t('wizard.finalFreeBoosts')"
               :subtitle="formatAbilities(form.finalFreeBoosts)" /><v-list-item
+              :title="t('wizard.additionalLanguages')"
+              :subtitle="selectedAdditionalLanguages.map((language) => language.name).join(', ') || t('wizard.none')" /><v-list-item
               :title="t('classUi.classTraining')"
               :subtitle="classTrainingLabels.join(', ')" /><v-list-item
               v-if="form.concept"

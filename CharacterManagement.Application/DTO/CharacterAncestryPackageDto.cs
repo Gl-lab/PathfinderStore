@@ -9,6 +9,8 @@ public sealed class CharacterAncestryPackageDto
     public VisionType EffectiveVision { get; set; }
     public int EffectiveBaseHitPoints { get; set; }
     public IReadOnlyList<string> StartingLanguageIds { get; set; }
+    public IReadOnlyList<string> AdditionalLanguageIds { get; set; } = [];
+    public IReadOnlyList<string> KnownLanguageIds { get; set; } = [];
     public AdditionalLanguageRuleDto? AdditionalLanguageRule { get; set; }
     public IReadOnlyList<GrantedItemDto> GrantedItems { get; set; }
     public IReadOnlyList<GrantedRuleDto> GrantedRules { get; set; }

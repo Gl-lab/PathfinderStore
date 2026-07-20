@@ -61,6 +61,18 @@ Regional uncommon ids: `hallit`, `kelish`, `mwangi`, `osiriani`, `shoanti`, `ska
 - `AllowsAccessLanguages` разрешает добавить язык только при наличии отдельного server-side access, например от региона или другого character choice. Этот признак не означает автоматический доступ ко всем uncommon языкам.
 - Starting languages и fixed pools каждой ancestry обязаны ссылаться на существующие catalog ids.
 
-## Граница задачи
+## Выбор дополнительных языков
 
-Этот этап добавляет каталог, исправляет семантику ancestry rules и публикует `GET /api/languages`. Вычисление количества дополнительных языков, пользовательский выбор, server-side access context и persistence относятся к следующему slice приоритета 6.
+Второй slice приоритета 6 реализован 20 июля 2026 года:
+
+- `LanguageSelectionResolver` вычисляет точное число выборов по итоговому модификатору Intelligence и ancestry rule;
+- starting languages исключаются из допустимого pool;
+- duplicate, неизвестные и недоступные IDs отклоняются доменом;
+- access languages могут поступать только из доверенного server-side context; клиент не может открыть uncommon язык самостоятельно;
+- `GET /api/languages/options` возвращает вычисленные сервером `requiredCount` и доступный каталог для wizard;
+- create command передаёт только выбранные stable ids, повторно вычисляет ограничения из фактического состояния aggregate и сохраняет результат как `jsonb`;
+- read-модель различает starting, additional и объединённые known languages.
+
+Frontend использует server options как единственный источник количества и допустимого pool. Переданная в preview итоговая оценка Intelligence не является доверенной при сохранении: create pipeline заново получает modifier из применённых ancestry, background, class и final boosts.
+
+Контекст, который выдаёт доступ к uncommon языкам (регион, feat или иной источник), пока отсутствует и остаётся отдельным расширением. Финализация draft относится к следующим slices приоритета 6.

@@ -57,6 +57,8 @@ export interface CharacterAncestryPackage {
   effectiveVision: string
   effectiveBaseHitPoints: number
   startingLanguageIds: string[]
+  additionalLanguageIds: string[]
+  knownLanguageIds: string[]
   grantedItems: { itemId: string; quantity: number }[]
   grantedRules: { ruleId: string; effectKind: string; summary: string }[]
   selectedEffects: { effectId: string; effectKind: string; summary: string }[]

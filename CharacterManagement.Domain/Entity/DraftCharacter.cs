@@ -1,6 +1,7 @@
 using Pathfinder.CharacterManagement.Domain.Exceptions;
 using Pathfinder.CharacterManagement.Domain.Rules.Training;
 using Pathfinder.CharacterManagement.Domain.Rules.Feats;
+using Pathfinder.CharacterManagement.Domain.Rules.Languages;
 using Pathfinder.CharacterManagement.Domain.Rules.Spells;
 using Pathfinder.Utils.Entities.Base;
 
@@ -19,6 +20,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public AncestryType AncestryType { get; private set; }
     public AbilityScores AbilityScores { get; private set; }
     public IReadOnlyList<AbilityType> AppliedFreeBoosts { get; private set; } = [];
+    public IReadOnlyList<string> SelectedAdditionalLanguageIds { get; private set; } = [];
     public string? SelectedHeritageId { get; private set; }
     public string? SelectedAncestryFeatId { get; private set; }
     public string? SelectedBackgroundId { get; private set; }
@@ -291,6 +293,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         }
 
         AppliedFreeBoosts = freeBoosts;
+        SelectedAdditionalLanguageIds = [];
         EnsureInvariants();
     }
 
@@ -775,6 +778,22 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         EnsureInvariants();
     }
 
+    public void SetAdditionalLanguages( LanguageSelectionResult selection )
+    {
+        ArgumentNullException.ThrowIfNull( selection );
+
+        if ( selection.AncestryType != AncestryType )
+        {
+            throw new CharacterManagementException(
+                $"Language selection for '{selection.AncestryType}' cannot be applied to '{AncestryType}'." );
+        }
+
+        SelectedAdditionalLanguageIds = selection.SelectedLanguageIds
+            .Select( languageId => languageId.Value )
+            .ToArray();
+        EnsureInvariants();
+    }
+
     public void SetClassTraining(
         CharacterClass characterClass,
         IReadOnlyList<ClassSkillGrantChoice> grantChoices,
@@ -984,6 +1003,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         }
 
         AppliedFreeBoosts = [];
+        SelectedAdditionalLanguageIds = [];
         SelectedHeritageId = null;
         SelectedAncestryFeatId = null;
     }
@@ -1022,6 +1042,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         SelectedBackgroundSkillFeatId = null;
         TrainedSkills = [];
         TrainedLore = [];
+        SelectedAdditionalLanguageIds = [];
     }
 
     private void RemoveClassEffects()
@@ -1032,6 +1053,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         }
 
         SelectedClassId = null;
+        SelectedAdditionalLanguageIds = [];
         SelectedClassFeatChoices = [];
         SelectedClassKeyAbility = null;
         SelectedRogueRacketId = null;
@@ -1100,5 +1122,6 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         }
 
         AppliedFinalFreeBoosts = [];
+        SelectedAdditionalLanguageIds = [];
     }
 }

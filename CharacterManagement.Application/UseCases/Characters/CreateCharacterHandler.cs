@@ -107,6 +107,7 @@ public sealed class CreateCharacterHandler : IRequestHandler<CreateCharacterComm
             request.Character.WizardPreparedCurriculumSpellId,
             request.Character.ClassFeatChoices );
         _characterBuilder.SetFinalFreeBoosts( finalFreeBoosts );
+        _characterBuilder.SetAdditionalLanguages( request.Character.AdditionalLanguageIds );
         _characterBuilder.SetClassTraining(
             request.Character.ClassId,
             request.Character.ClassSkillGrantChoices,

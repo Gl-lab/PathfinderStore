@@ -310,8 +310,8 @@ onMounted(load)
             <p>{{ t('characters.ancestryFeat') }}: {{ formatChoiceId(character.ancestryPackage.selectedAncestryFeatId) }}</p>
             <p>{{ t('characters.vision') }}: {{ getVisionLabel(character.ancestryPackage.effectiveVision) }}</p>
             <p>{{ t('characters.baseHitPoints') }}: {{ character.ancestryPackage.effectiveBaseHitPoints }}</p>
-            <p v-if="character.ancestryPackage.startingLanguageIds.length">
-              {{ t('characters.languages') }}: {{ character.ancestryPackage.startingLanguageIds.map(getLanguageLabel).join(', ') }}
+            <p v-if="character.ancestryPackage.knownLanguageIds.length">
+              {{ t('characters.languages') }}: {{ character.ancestryPackage.knownLanguageIds.map(getLanguageLabel).join(', ') }}
             </p>
             <p v-for="rule in character.ancestryPackage.grantedRules" :key="rule.ruleId">{{ rule.summary }}</p>
           </v-card-text

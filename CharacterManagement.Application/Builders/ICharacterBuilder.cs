@@ -61,6 +61,7 @@ public interface ICharacterBuilder
         string? wizardPreparedCurriculumSpellId = null,
         IReadOnlyList<FeatChoice>? classFeatChoices = null );
     void SetFinalFreeBoosts( IReadOnlyList<AbilityType> finalFreeBoosts );
+    void SetAdditionalLanguages( IReadOnlyList<string> additionalLanguageIds );
     void SetClassTraining(
         string characterClassId,
         IReadOnlyList<ClassSkillGrantChoice> grantChoices,

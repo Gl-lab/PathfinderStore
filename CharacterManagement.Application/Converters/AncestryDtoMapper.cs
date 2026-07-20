@@ -86,6 +86,12 @@ public static class AncestryDtoMapper
             StartingLanguageIds = ancestry.StartingLanguages
                 .Select( languageId => languageId.Value )
                 .ToList(),
+            AdditionalLanguageIds = character.SelectedAdditionalLanguageIds.ToArray(),
+            KnownLanguageIds = ancestry.StartingLanguages
+                .Select( languageId => languageId.Value )
+                .Concat( character.SelectedAdditionalLanguageIds )
+                .Distinct( StringComparer.Ordinal )
+                .ToArray(),
             AdditionalLanguageRule = ancestry.AdditionalLanguageRule is null
                 ? null
                 : Map( ancestry.AdditionalLanguageRule ),
