@@ -35,6 +35,7 @@ Vikunja остаётся источником истины по фактичес
 - [`priority_1_final_review.md`](priority_1_final_review.md)
 - [`cleric_spell_flow_priority_2_implementation.md`](cleric_spell_flow_priority_2_implementation.md)
 - [`spell_catalog_player_core_implementation.md`](spell_catalog_player_core_implementation.md)
+- [`feat_catalog_player_core_implementation.md`](feat_catalog_player_core_implementation.md)
 - [`bard_spell_flow_priority_4_implementation.md`](bard_spell_flow_priority_4_implementation.md)
 - [`druid_spell_flow_priority_4_implementation.md`](druid_spell_flow_priority_4_implementation.md)
 - [`witch_spell_flow_priority_4_implementation.md`](witch_spell_flow_priority_4_implementation.md)
