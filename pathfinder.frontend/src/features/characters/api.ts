@@ -294,6 +294,7 @@ export interface CharacterHitPoints {
 export interface CharacterDerivedStatistics {
   hitPoints: CharacterHitPoints
   armorClass: CharacterArmorClass
+  strikes: CharacterStrike[]
   perception: CharacterProficiencyStatistic
   savingThrows: {
     fortitude: CharacterProficiencyStatistic
@@ -301,6 +302,37 @@ export interface CharacterDerivedStatistics {
     will: CharacterProficiencyStatistic
   }
   skillModifiers: CharacterSkillModifiers
+}
+
+export interface CharacterStrike {
+  id: string
+  name: string
+  kind: 'Weapon' | 'Unarmed'
+  mode: 'Melee' | 'Ranged'
+  traits: string[]
+  attack: {
+    ability: AbilityCode
+    abilityModifier: number
+    proficiencyTargetId: string
+    proficiencyRank: ProficiencyRank
+    proficiencyBonus: number
+    proficiencySourceGrantIds: string[]
+    itemBonuses: CharacterStatisticBonus[]
+    statusBonuses: CharacterStatisticBonus[]
+    circumstanceBonuses: CharacterStatisticBonus[]
+    total: number
+  }
+  damage: {
+    diceCount: number
+    die: number
+    damageType: string
+    ability: AbilityCode | null
+    abilityModifier: number
+    itemBonuses: CharacterStatisticBonus[]
+    statusBonuses: CharacterStatisticBonus[]
+    circumstanceBonuses: CharacterStatisticBonus[]
+    formula: string
+  }
 }
 
 export interface CharacterArmorClass {

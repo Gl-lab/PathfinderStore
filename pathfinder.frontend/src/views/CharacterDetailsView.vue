@@ -347,12 +347,12 @@ onMounted(load)
                   }) }}
                 </small>
                 <small
-                  v-for="bonus in [
+                  v-for="(bonus, bonusIndex) in [
                     ...character.derivedStatistics.armorClass.itemBonuses,
                     ...character.derivedStatistics.armorClass.statusBonuses,
                     ...character.derivedStatistics.armorClass.circumstanceBonuses,
                   ]"
-                  :key="`${bonus.type}-${bonus.sourceId}`"
+                  :key="`${bonus.type}-${bonus.sourceId}-${bonusIndex}`"
                 >
                   {{ formatChoiceId(bonus.sourceId) }}: {{ formatSignedModifier(bonus.value) }}
                 </small>
@@ -370,6 +370,52 @@ onMounted(load)
                 <strong>{{ formatSignedModifier(row.statistic.total) }}</strong>
                 <small>
                   {{ getStatisticBreakdown(row.statistic) }}
+                </small>
+              </div>
+            </div>
+          </v-card-text>
+        </v-card>
+        <v-card v-if="character.derivedStatistics?.strikes.length" elevation="0" class="derived-statistics-card">
+          <v-card-item :title="t('statistics.strikes')">
+            <template #prepend><v-icon color="primary" icon="mdi-sword-cross" /></template>
+          </v-card-item>
+          <v-card-text class="derived-statistics-card__grid">
+            <div
+              v-for="strike in character.derivedStatistics.strikes"
+              :key="strike.id"
+              class="derived-statistics-card__item"
+            >
+              <div>
+                <strong>{{ strike.name }} · {{ t(`statistics.strikeModes.${strike.mode}`) }}</strong>
+                <small>
+                  {{ getAbilityLabel(strike.attack.ability) }} ·
+                  {{ getProficiencyRankLabel(strike.attack.proficiencyRank) }}
+                </small>
+                <small v-if="strike.traits.length">{{ strike.traits.join(', ') }}</small>
+              </div>
+              <div class="derived-statistics-card__value">
+                <strong>{{ t('statistics.strikeValues', {
+                  attack: formatSignedModifier(strike.attack.total),
+                  damage: strike.damage.formula,
+                }) }}</strong>
+                <small>
+                  {{ t('statistics.strikeAttackBreakdown', {
+                    ability: formatSignedModifier(strike.attack.abilityModifier),
+                    proficiency: formatSignedModifier(strike.attack.proficiencyBonus),
+                  }) }}
+                </small>
+                <small
+                  v-for="(bonus, bonusIndex) in [
+                    ...strike.attack.itemBonuses,
+                    ...strike.attack.statusBonuses,
+                    ...strike.attack.circumstanceBonuses,
+                    ...strike.damage.itemBonuses,
+                    ...strike.damage.statusBonuses,
+                    ...strike.damage.circumstanceBonuses,
+                  ]"
+                  :key="`${strike.id}-${bonus.type}-${bonus.sourceId}-${bonusIndex}`"
+                >
+                  {{ formatChoiceId(bonus.sourceId) }}: {{ formatSignedModifier(bonus.value) }}
                 </small>
               </div>
             </div>

@@ -37,6 +37,7 @@ public static class CharacterDerivedStatisticsDtoMapper
                 ConstitutionModifier = hitPoints.ConstitutionModifier,
             },
             ArmorClass = MapArmorClass( character, proficiencies, equipment ),
+            Strikes = MapStrikes( character, proficiencies, equipment ),
             Perception = Map(
                 character,
                 proficiencies,
@@ -120,6 +121,132 @@ public static class CharacterDerivedStatisticsDtoMapper
             SourceId = bonus.SourceId,
             Type = bonus.Type,
             Value = bonus.Value,
+        };
+    }
+
+    private static IReadOnlyList<CharacterStrikeDto> MapStrikes(
+        DraftCharacter character,
+        IReadOnlyList<EffectiveProficiency> proficiencies,
+        AllowedEquipmentLoadout? equipment )
+    {
+        List<(StrikeProfile Profile, string ProficiencyTargetId)> profiles =
+        [
+            (
+                new StrikeProfile(
+                    "strike.unarmed.fist",
+                    "Fist",
+                    StrikeKind.Unarmed,
+                    StrikeMode.Melee,
+                    4,
+                    "Bludgeoning",
+                    [ "Agile", "Finesse", "Nonlethal", "Unarmed" ] ),
+                ProficiencyTargets.UnarmedAttacks.Id
+            ),
+        ];
+        IEnumerable<AllowedEquipmentItem> equippedWeapons = equipment?.Items
+            .Where( item => ( item.EquippedQuantity > 0 ) && ( item.Weapon is not null ) ) ?? [];
+        foreach ( AllowedEquipmentItem weaponItem in equippedWeapons )
+        {
+            profiles.AddRange( CreateWeaponProfiles( weaponItem ) );
+        }
+
+        return profiles
+            .Select( entry =>
+            {
+                EffectiveProficiency proficiency = proficiencies
+                    .Single( item => item.Target.Id == entry.ProficiencyTargetId );
+                StrikeStatistic strike = StrikeStatistic.Calculate(
+                    entry.Profile,
+                    character.AbilityScores,
+                    proficiency,
+                    [],
+                    [],
+                    CharacterLevel );
+                return MapStrike( strike );
+            } )
+            .ToArray();
+    }
+
+    private static IReadOnlyList<(StrikeProfile Profile, string ProficiencyTargetId)> CreateWeaponProfiles(
+        AllowedEquipmentItem item )
+    {
+        AllowedWeaponStatistics weapon = item.Weapon ?? throw new ArgumentException(
+            "Allowed equipment item must contain weapon statistics.",
+            nameof( item ) );
+        string proficiencyTargetId = item.ProficiencyTargetId ?? throw new InvalidOperationException(
+            $"Equipped weapon '{item.Id}' must have a proficiency target." );
+        StrikeMode primaryMode = weapon.Type == EquipmentWeaponType.Melee
+            ? StrikeMode.Melee
+            : StrikeMode.Ranged;
+        List<(StrikeProfile Profile, string ProficiencyTargetId)> profiles =
+        [
+            (
+                new StrikeProfile(
+                    $"strike.{item.Id}.{primaryMode.ToString().ToLowerInvariant()}",
+                    item.Name,
+                    StrikeKind.Weapon,
+                    primaryMode,
+                    weapon.DamageDie,
+                    weapon.DamageType,
+                    weapon.Traits.ToArray() ),
+                proficiencyTargetId
+            ),
+        ];
+        bool hasThrownMode = ( primaryMode == StrikeMode.Melee ) &&
+                             weapon.Traits.Any( trait => trait.StartsWith( "Thrown", StringComparison.OrdinalIgnoreCase ) );
+        if ( hasThrownMode )
+        {
+            profiles.Add(
+                (
+                    new StrikeProfile(
+                        $"strike.{item.Id}.ranged",
+                        item.Name,
+                        StrikeKind.Weapon,
+                        StrikeMode.Ranged,
+                        weapon.DamageDie,
+                        weapon.DamageType,
+                        weapon.Traits.ToArray() ),
+                    proficiencyTargetId
+                ) );
+        }
+
+        return profiles;
+    }
+
+    private static CharacterStrikeDto MapStrike( StrikeStatistic strike )
+    {
+        return new CharacterStrikeDto
+        {
+            Id = strike.Profile.Id,
+            Name = strike.Profile.Name,
+            Kind = strike.Profile.Kind,
+            Mode = strike.Profile.Mode,
+            Traits = strike.Profile.Traits,
+            Attack = new CharacterStrikeAttackDto
+            {
+                Ability = strike.Attack.Ability,
+                AbilityModifier = strike.Attack.AbilityModifier,
+                ProficiencyTargetId = strike.Attack.ProficiencyTargetId,
+                ProficiencyRank = strike.Attack.ProficiencyRank,
+                ProficiencyBonus = strike.Attack.ProficiencyBonus,
+                ProficiencySourceGrantIds = strike.Attack.ProficiencySourceGrantIds,
+                ItemBonuses = strike.Attack.ItemBonuses.Select( MapBonus ).ToArray(),
+                StatusBonuses = strike.Attack.StatusBonuses.Select( MapBonus ).ToArray(),
+                CircumstanceBonuses = strike.Attack.CircumstanceBonuses.Select( MapBonus ).ToArray(),
+                Total = strike.Attack.Total,
+            },
+            Damage = new CharacterStrikeDamageDto
+            {
+                DiceCount = strike.Damage.DiceCount,
+                Die = strike.Damage.Die,
+                DamageType = strike.Damage.DamageType,
+                Ability = strike.Damage.Ability,
+                AbilityModifier = strike.Damage.AbilityModifier,
+                ItemBonuses = strike.Damage.ItemBonuses.Select( MapBonus ).ToArray(),
+                StatusBonuses = strike.Damage.StatusBonuses.Select( MapBonus ).ToArray(),
+                CircumstanceBonuses = strike.Damage.CircumstanceBonuses.Select( MapBonus ).ToArray(),
+                Formula = strike.Damage.Formula,
+            },
         };
     }
 

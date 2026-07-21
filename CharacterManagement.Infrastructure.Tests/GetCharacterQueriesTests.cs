@@ -935,7 +935,7 @@ public sealed class GetCharacterQueriesTests
     }
 
     [Fact]
-    public void Convert_EquippedArmor_ReturnsServerCalculatedArmorClassBreakdown()
+    public void Convert_EquippedArmorAndWeapon_ReturnsServerCalculatedCombatBreakdowns()
     {
         AncestryRepository ancestryRepository = new AncestryRepository();
         BackgroundRepository backgroundRepository = new BackgroundRepository();
@@ -964,8 +964,11 @@ public sealed class GetCharacterQueriesTests
             "class_kit.fighter",
             "class.fighter",
             [],
-            [ new CharacterEquipmentItem( "equipment.studded_leather_armor", 1, 1 ) ],
-            300 ) );
+            [
+                new CharacterEquipmentItem( "equipment.studded_leather_armor", 1, 1 ),
+                new CharacterEquipmentItem( "equipment.dagger", 1, 1 ),
+            ],
+            320 ) );
         IAllowedEquipmentReader equipmentReader = new StartingEquipmentAllowedEquipmentReader(
             new EquipmentRepository() );
         CharacterDetailsDtoMapper mapper = new CharacterDetailsDtoMapper(
@@ -987,6 +990,21 @@ public sealed class GetCharacterQueriesTests
         Assert.Equal( 2, itemBonus.Value );
         Assert.Empty( result.DerivedStatistics?.ArmorClass.StatusBonuses ?? [] );
         Assert.Empty( result.DerivedStatistics?.ArmorClass.CircumstanceBonuses ?? [] );
+        Assert.Equal( 3, result.DerivedStatistics?.Strikes.Count );
+        CharacterStrikeDto fist = result.DerivedStatistics!.Strikes
+            .Single( strike => strike.Id == "strike.unarmed.fist" );
+        Assert.Equal( 9, fist.Attack.Total );
+        Assert.Equal( "1d4+4 Bludgeoning", fist.Damage.Formula );
+        CharacterStrikeDto daggerMelee = result.DerivedStatistics.Strikes
+            .Single( strike => strike.Id == "strike.equipment.dagger.melee" );
+        Assert.Equal( AbilityType.Strength, daggerMelee.Attack.Ability );
+        Assert.Equal( 9, daggerMelee.Attack.Total );
+        Assert.Equal( "1d4+4 Piercing", daggerMelee.Damage.Formula );
+        CharacterStrikeDto daggerRanged = result.DerivedStatistics.Strikes
+            .Single( strike => strike.Id == "strike.equipment.dagger.ranged" );
+        Assert.Equal( AbilityType.Dexterity, daggerRanged.Attack.Ability );
+        Assert.Equal( 6, daggerRanged.Attack.Total );
+        Assert.Equal( "1d4+4 Piercing", daggerRanged.Damage.Formula );
     }
 
     [Fact]

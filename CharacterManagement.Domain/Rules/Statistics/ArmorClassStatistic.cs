@@ -2,18 +2,6 @@ using Pathfinder.CharacterManagement.Domain.Entity;
 
 namespace Pathfinder.CharacterManagement.Domain.Rules.Statistics;
 
-public enum StatisticBonusType
-{
-    Item,
-    Status,
-    Circumstance
-}
-
-public sealed record StatisticBonus(
-    string SourceId,
-    StatisticBonusType Type,
-    int Value );
-
 public sealed record ArmorClassStatistic(
     int Base,
     AbilityType Ability,
