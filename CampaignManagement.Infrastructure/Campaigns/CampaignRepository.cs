@@ -23,6 +23,7 @@ public sealed class CampaignRepository : Repository<Campaign>, ICampaignReposito
         return await _dbContext.Campaigns
             .AsNoTracking()
             .Include( campaign => campaign.Memberships )
+            .Include( campaign => campaign.Invitations )
             .Where( campaign => campaign.Memberships.Any( membership =>
                 ( membership.UserId == userId ) &&
                 ( membership.Status == CampaignMembershipStatus.Active ) ) )
@@ -37,6 +38,7 @@ public sealed class CampaignRepository : Repository<Campaign>, ICampaignReposito
     {
         return await _dbContext.Campaigns
             .Include( campaign => campaign.Memberships )
+            .Include( campaign => campaign.Invitations )
             .SingleOrDefaultAsync(
                 campaign =>
                     ( campaign.Id == campaignId ) &&
@@ -44,5 +46,34 @@ public sealed class CampaignRepository : Repository<Campaign>, ICampaignReposito
                         ( membership.UserId == userId ) &&
                         ( membership.Status == CampaignMembershipStatus.Active ) ),
                 cancellationToken );
+    }
+
+    public async Task<Campaign?> GetByInvitationIdForUserAsync(
+        int invitationId,
+        int userId,
+        CancellationToken cancellationToken )
+    {
+        return await _dbContext.Campaigns
+            .Include( campaign => campaign.Memberships )
+            .Include( campaign => campaign.Invitations )
+            .SingleOrDefaultAsync(
+                campaign => campaign.Invitations.Any( invitation =>
+                    ( invitation.Id == invitationId ) &&
+                    ( invitation.InvitedUserId == userId ) &&
+                    ( invitation.Status == CampaignInvitationStatus.Pending ) ),
+                cancellationToken );
+    }
+
+    public async Task<IReadOnlyCollection<Campaign>> GetPendingInvitationsForUserAsync(
+        int userId,
+        CancellationToken cancellationToken )
+    {
+        return await _dbContext.Campaigns
+            .AsNoTracking()
+            .Include( campaign => campaign.Invitations )
+            .Where( campaign => campaign.Invitations.Any( invitation =>
+                ( invitation.InvitedUserId == userId ) &&
+                ( invitation.Status == CampaignInvitationStatus.Pending ) ) )
+            .ToArrayAsync( cancellationToken );
     }
 }

@@ -61,4 +61,72 @@ public sealed class CampaignTests
         Assert.Throws<CampaignManagementException>( () =>
             campaign.Archive( 7, _createdAtUtc.AddDays( 1 ) ) );
     }
+
+    [Fact]
+    public void AcceptInvitationAddsPlayerMembership()
+    {
+        Campaign campaign = Campaign.Create( "Abomination Vaults", 42, _createdAtUtc );
+        CampaignInvitation invitation = campaign.Invite( 42, 7, _createdAtUtc.AddHours( 1 ) );
+
+        campaign.AcceptInvitation( invitation.Id, 7, _createdAtUtc.AddHours( 2 ) );
+
+        Assert.Equal( CampaignInvitationStatus.Accepted, invitation.Status );
+        Assert.True( campaign.HasActiveRole( 7, CampaignMembershipRole.Player ) );
+        Assert.False( campaign.HasActiveRole( 7, CampaignMembershipRole.GameMaster ) );
+    }
+
+    [Fact]
+    public void InviteRejectsDuplicatePendingInvitation()
+    {
+        Campaign campaign = Campaign.Create( "Abomination Vaults", 42, _createdAtUtc );
+        campaign.Invite( 42, 7, _createdAtUtc.AddHours( 1 ) );
+
+        Assert.Throws<CampaignManagementException>( () =>
+            campaign.Invite( 42, 7, _createdAtUtc.AddHours( 2 ) ) );
+    }
+
+    [Fact]
+    public void InvitationCanOnlyBeAnsweredByInvitedUser()
+    {
+        Campaign campaign = Campaign.Create( "Abomination Vaults", 42, _createdAtUtc );
+        CampaignInvitation invitation = campaign.Invite( 42, 7, _createdAtUtc.AddHours( 1 ) );
+
+        Assert.Throws<CampaignManagementException>( () =>
+            campaign.AcceptInvitation( invitation.Id, 8, _createdAtUtc.AddHours( 2 ) ) );
+    }
+
+    [Fact]
+    public void LastGameMasterCannotLeaveOrLoseRole()
+    {
+        Campaign campaign = Campaign.Create( "Abomination Vaults", 42, _createdAtUtc );
+
+        Assert.Throws<CampaignManagementException>( () => campaign.Leave( 42 ) );
+        Assert.Throws<CampaignManagementException>( () =>
+            campaign.RevokeRole( 42, 42, CampaignMembershipRole.GameMaster ) );
+    }
+
+    [Fact]
+    public void GameMasterCanTransferResponsibilityAndLeave()
+    {
+        Campaign campaign = Campaign.Create( "Abomination Vaults", 42, _createdAtUtc );
+        CampaignInvitation invitation = campaign.Invite( 42, 7, _createdAtUtc.AddHours( 1 ) );
+        campaign.AcceptInvitation( invitation.Id, 7, _createdAtUtc.AddHours( 2 ) );
+        campaign.AssignRole( 42, 7, CampaignMembershipRole.GameMaster, _createdAtUtc.AddHours( 3 ) );
+
+        campaign.Leave( 42 );
+
+        Assert.False( campaign.HasActiveRole( 42, CampaignMembershipRole.GameMaster ) );
+        Assert.True( campaign.HasActiveRole( 7, CampaignMembershipRole.GameMaster ) );
+        Assert.True( campaign.HasActiveRole( 7, CampaignMembershipRole.Player ) );
+    }
+
+    [Fact]
+    public void ArchivedCampaignRejectsMembershipChanges()
+    {
+        Campaign campaign = Campaign.Create( "Abomination Vaults", 42, _createdAtUtc );
+        campaign.Archive( 42, _createdAtUtc.AddHours( 1 ) );
+
+        Assert.Throws<CampaignManagementException>( () =>
+            campaign.Invite( 42, 7, _createdAtUtc.AddHours( 2 ) ) );
+    }
 }

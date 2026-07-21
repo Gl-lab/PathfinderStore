@@ -12,6 +12,7 @@ public sealed class CampaignManagementDbContext : DbContext
 
     public DbSet<Campaign> Campaigns => Set<Campaign>();
     public DbSet<CampaignMembership> CampaignMemberships => Set<CampaignMembership>();
+    public DbSet<CampaignInvitation> CampaignInvitations => Set<CampaignInvitation>();
 
     protected override void OnModelCreating( ModelBuilder modelBuilder )
     {
@@ -28,6 +29,11 @@ public sealed class CampaignManagementDbContext : DbContext
             builder.HasMany( campaign => campaign.Memberships )
                 .WithOne()
                 .HasForeignKey( membership => membership.CampaignId )
+                .IsRequired()
+                .OnDelete( DeleteBehavior.Cascade );
+            builder.HasMany( campaign => campaign.Invitations )
+                .WithOne()
+                .HasForeignKey( invitation => invitation.CampaignId )
                 .IsRequired()
                 .OnDelete( DeleteBehavior.Cascade );
         } );
@@ -47,6 +53,20 @@ public sealed class CampaignManagementDbContext : DbContext
                 } )
                 .IsUnique();
             builder.HasIndex( membership => membership.UserId );
+        } );
+
+        modelBuilder.Entity<CampaignInvitation>( builder =>
+        {
+            builder.ToTable( "CampaignInvitation" );
+            builder.Property( invitation => invitation.Status )
+                .HasConversion<int>();
+            builder.HasIndex( invitation => invitation.InvitedUserId );
+            builder.HasIndex( invitation => new
+                {
+                    invitation.CampaignId,
+                    invitation.InvitedUserId,
+                    invitation.Status,
+                } );
         } );
     }
 }

@@ -4,34 +4,135 @@ import { useI18n } from 'vue-i18n'
 import { getApiErrorMessages } from '@/api/errors'
 import {
   archiveCampaign,
+  changeCampaignRole,
   createCampaign,
+  getCampaignInvitations,
   getCampaigns,
+  inviteCampaignMember,
+  leaveCampaign,
+  respondToCampaignInvitation,
   type Campaign,
+  type CampaignInvitation,
 } from '@/features/campaigns/api'
 import {
   campaignNameMaxLength,
   isCampaignNameValid,
+  isCampaignUserNameValid,
   normalizeCampaignName,
 } from '@/features/campaigns/validation'
 
 const { t } = useI18n()
 const campaigns = ref<Campaign[]>([])
+const invitations = ref<CampaignInvitation[]>([])
 const campaignName = ref('')
+const invitedUserNames = ref<Record<number, string>>({})
 const errorMessages = ref<string[]>([])
 const isLoading = ref(true)
 const isSaving = ref(false)
 const archivingCampaignId = ref<number | null>(null)
+const invitingCampaignId = ref<number | null>(null)
+const respondingInvitationId = ref<number | null>(null)
+const leavingCampaignId = ref<number | null>(null)
+const changingRoleKey = ref<string | null>(null)
 const canCreate = computed(() => isCampaignNameValid(campaignName.value) && !isSaving.value)
 
 async function loadCampaigns(): Promise<void> {
   isLoading.value = true
   errorMessages.value = []
   try {
-    campaigns.value = await getCampaigns()
+    const [campaignItems, invitationItems] = await Promise.all([
+      getCampaigns(),
+      getCampaignInvitations(),
+    ])
+    campaigns.value = campaignItems
+    invitations.value = invitationItems
   } catch (error) {
     errorMessages.value = getApiErrorMessages(error)
   } finally {
     isLoading.value = false
+  }
+}
+
+function isGameMaster(campaign: Campaign): boolean {
+  return campaign.roles.includes('GameMaster')
+}
+
+function canInvite(campaignId: number): boolean {
+  return isCampaignUserNameValid(invitedUserNames.value[campaignId] ?? '')
+}
+
+function replaceCampaign(updatedCampaign: Campaign): void {
+  const existingIndex = campaigns.value.findIndex((campaign) => campaign.id === updatedCampaign.id)
+  if (existingIndex < 0) {
+    campaigns.value = [updatedCampaign, ...campaigns.value]
+    return
+  }
+
+  campaigns.value = campaigns.value.map((campaign) =>
+    campaign.id === updatedCampaign.id ? updatedCampaign : campaign,
+  )
+}
+
+async function invite(campaign: Campaign): Promise<void> {
+  const userName = invitedUserNames.value[campaign.id] ?? ''
+  if (!isCampaignUserNameValid(userName)) {
+    return
+  }
+
+  invitingCampaignId.value = campaign.id
+  errorMessages.value = []
+  try {
+    await inviteCampaignMember(campaign.id, userName.trim())
+    invitedUserNames.value[campaign.id] = ''
+  } catch (error) {
+    errorMessages.value = getApiErrorMessages(error)
+  } finally {
+    invitingCampaignId.value = null
+  }
+}
+
+async function respond(invitation: CampaignInvitation, accept: boolean): Promise<void> {
+  respondingInvitationId.value = invitation.id
+  errorMessages.value = []
+  try {
+    const campaign = await respondToCampaignInvitation(invitation.id, accept)
+    invitations.value = invitations.value.filter((item) => item.id !== invitation.id)
+    if (campaign) {
+      replaceCampaign(campaign)
+    }
+  } catch (error) {
+    errorMessages.value = getApiErrorMessages(error)
+  } finally {
+    respondingInvitationId.value = null
+  }
+}
+
+async function leave(campaign: Campaign): Promise<void> {
+  leavingCampaignId.value = campaign.id
+  errorMessages.value = []
+  try {
+    await leaveCampaign(campaign.id)
+    campaigns.value = campaigns.value.filter((item) => item.id !== campaign.id)
+  } catch (error) {
+    errorMessages.value = getApiErrorMessages(error)
+  } finally {
+    leavingCampaignId.value = null
+  }
+}
+
+async function toggleGameMaster(
+  campaign: Campaign,
+  memberUserId: number,
+  assign: boolean,
+): Promise<void> {
+  changingRoleKey.value = `${campaign.id}:${memberUserId}`
+  errorMessages.value = []
+  try {
+    replaceCampaign(await changeCampaignRole(campaign.id, memberUserId, 'GameMaster', assign))
+  } catch (error) {
+    errorMessages.value = getApiErrorMessages(error)
+  } finally {
+    changingRoleKey.value = null
   }
 }
 
@@ -113,6 +214,36 @@ onMounted(loadCampaigns)
       </template>
     </v-alert>
 
+    <v-card v-if="invitations.length" class="invitations-card" elevation="0">
+      <v-card-title>{{ t('campaigns.invitationsTitle') }}</v-card-title>
+      <v-list>
+        <v-list-item v-for="invitation in invitations" :key="invitation.id">
+          <v-list-item-title>{{ invitation.campaignName }}</v-list-item-title>
+          <v-list-item-subtitle>
+            {{ t('campaigns.invitedBy', { userId: invitation.invitedByUserId }) }}
+          </v-list-item-subtitle>
+          <template #append>
+            <div class="invitation-actions">
+              <v-btn
+                color="primary"
+                :loading="respondingInvitationId === invitation.id"
+                size="small"
+                @click="respond(invitation, true)"
+                >{{ t('campaigns.accept') }}</v-btn
+              >
+              <v-btn
+                :disabled="respondingInvitationId === invitation.id"
+                size="small"
+                variant="text"
+                @click="respond(invitation, false)"
+                >{{ t('campaigns.decline') }}</v-btn
+              >
+            </div>
+          </template>
+        </v-list-item>
+      </v-list>
+    </v-card>
+
     <v-card
       v-if="!isLoading && !errorMessages.length && !campaigns.length"
       class="empty-state"
@@ -139,10 +270,60 @@ onMounted(loadCampaigns)
             variant="tonal"
             >{{ t(`campaigns.roles.${role}`) }}</v-chip
           >
+          <div class="member-list">
+            <p class="member-list__title">{{ t('campaigns.members') }}</p>
+            <div v-for="member in campaign.members" :key="member.userId" class="member-row">
+              <span>{{ t('campaigns.userId', { userId: member.userId }) }}</span>
+              <v-chip v-for="role in member.roles" :key="role" size="x-small" variant="outlined">{{
+                t(`campaigns.roles.${role}`)
+              }}</v-chip>
+              <v-btn
+                v-if="isGameMaster(campaign)"
+                :loading="changingRoleKey === `${campaign.id}:${member.userId}`"
+                size="x-small"
+                variant="text"
+                @click="
+                  toggleGameMaster(campaign, member.userId, !member.roles.includes('GameMaster'))
+                "
+                >{{
+                  member.roles.includes('GameMaster')
+                    ? t('campaigns.revokeGameMaster')
+                    : t('campaigns.assignGameMaster')
+                }}</v-btn
+              >
+            </div>
+          </div>
+          <v-form
+            v-if="campaign.status === 'Active' && isGameMaster(campaign)"
+            class="invite-form"
+            @submit.prevent="invite(campaign)"
+          >
+            <v-text-field
+              v-model="invitedUserNames[campaign.id]"
+              density="compact"
+              hide-details="auto"
+              :label="t('campaigns.invitedUserName')"
+            />
+            <v-btn
+              :disabled="!canInvite(campaign.id)"
+              :loading="invitingCampaignId === campaign.id"
+              size="small"
+              type="submit"
+              >{{ t('campaigns.invite') }}</v-btn
+            >
+          </v-form>
         </v-card-text>
         <v-card-actions v-if="campaign.status === 'Active'">
+          <v-btn
+            color="warning"
+            :loading="leavingCampaignId === campaign.id"
+            variant="text"
+            @click="leave(campaign)"
+            >{{ t('campaigns.leave') }}</v-btn
+          >
           <v-spacer />
           <v-btn
+            v-if="isGameMaster(campaign)"
             color="warning"
             :loading="archivingCampaignId === campaign.id"
             variant="text"
@@ -184,6 +365,7 @@ h1 {
 }
 
 .create-card,
+.invitations-card,
 .empty-state,
 .campaign-grid > * {
   border: 1px solid rgb(var(--v-theme-surface-variant));
@@ -208,8 +390,39 @@ h1 {
   gap: 8px;
 }
 
+.member-list {
+  display: grid;
+  flex-basis: 100%;
+  gap: 8px;
+}
+
+.member-list__title {
+  margin: 8px 0 0;
+  font-weight: 700;
+}
+
+.member-row,
+.invitation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.invite-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  flex-basis: 100%;
+  gap: 8px;
+  align-items: start;
+}
+
 @media (max-width: 600px) {
   .create-form {
+    grid-template-columns: 1fr;
+  }
+
+  .invite-form {
     grid-template-columns: 1fr;
   }
 }

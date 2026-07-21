@@ -9,4 +9,9 @@ public sealed record CampaignDto(
     int CreatedByUserId,
     DateTimeOffset CreatedAtUtc,
     DateTimeOffset? ArchivedAtUtc,
+    IReadOnlyCollection<CampaignMembershipRole> Roles,
+    IReadOnlyCollection<CampaignMemberDto> Members );
+
+public sealed record CampaignMemberDto(
+    int UserId,
     IReadOnlyCollection<CampaignMembershipRole> Roles );

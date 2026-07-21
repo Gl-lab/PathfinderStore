@@ -13,6 +13,16 @@ internal static class CampaignMappings
             .Select( membership => membership.Role )
             .Distinct()
             .ToArray();
+        IReadOnlyCollection<CampaignMemberDto> members = campaign.Memberships
+            .Where( membership => membership.Status == CampaignMembershipStatus.Active )
+            .GroupBy( membership => membership.UserId )
+            .Select( group => new CampaignMemberDto(
+                group.Key,
+                group.Select( membership => membership.Role )
+                    .Distinct()
+                    .ToArray() ) )
+            .OrderBy( member => member.UserId )
+            .ToArray();
 
         return new CampaignDto(
             campaign.Id,
@@ -21,6 +31,7 @@ internal static class CampaignMappings
             campaign.CreatedByUserId,
             campaign.CreatedAtUtc,
             campaign.ArchivedAtUtc,
-            roles );
+            roles,
+            members );
     }
 }

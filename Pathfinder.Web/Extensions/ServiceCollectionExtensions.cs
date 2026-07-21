@@ -18,10 +18,12 @@ using Pathfinder.Secure.Domain.Authentication.User;
 using Pathfinder.Secure.Infrastructure;
 using Pathfinder.CharacterManagement.Infrastructure.Data;
 using Pathfinder.CampaignManagement.Infrastructure.Data;
+using Pathfinder.CampaignManagement.Application.Campaigns;
 using Pathfinder.Secure.Infrastructure.Data;
 using Pathfinder.Utils.UnitOfWork;
 using Pathfinder.Web.Authentication;
 using Pathfinder.Web.Utils;
+using Pathfinder.Web.Integration;
 
 namespace Pathfinder.Web.Extensions;
 
@@ -121,7 +123,11 @@ public static class ServiceCollection
         } );
     }
 
-    public static void ConfigureDependencyInjection( this IServiceCollection services ) => services.AddTransient<IAuthorizationHandler, PermissionHandler>();
+    public static void ConfigureDependencyInjection( this IServiceCollection services )
+    {
+        services.AddTransient<IAuthorizationHandler, PermissionHandler>();
+        services.AddScoped<ICampaignUserDirectory, CampaignUserDirectory>();
+    }
 
     public static void ConfigureJwtTokenAuth( this IServiceCollection services, IConfiguration configuration )
     {
