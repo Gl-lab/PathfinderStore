@@ -103,6 +103,8 @@ public sealed class CharacterStatisticBonusDto
 public sealed class CharacterHitPointsDto
 {
     public int Maximum { get; set; }
+    public int Current { get; set; }
+    public int Temporary { get; set; }
     public int Ancestry { get; set; }
     public int Class { get; set; }
     public int ConstitutionModifier { get; set; }

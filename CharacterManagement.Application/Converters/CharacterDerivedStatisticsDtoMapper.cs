@@ -27,12 +27,15 @@ public static class CharacterDerivedStatisticsDtoMapper
             character,
             ancestry,
             characterClass );
+        CharacterHitPointState hitPointState = character.GetHitPointState( hitPoints.MaximumHitPoints );
 
         return new CharacterDerivedStatisticsDto
         {
             HitPoints = new CharacterHitPointsDto
             {
                 Maximum = hitPoints.MaximumHitPoints,
+                Current = hitPointState.Current,
+                Temporary = hitPointState.Temporary,
                 Ancestry = hitPoints.AncestryHitPoints,
                 Class = hitPoints.ClassHitPoints,
                 ConstitutionModifier = hitPoints.ConstitutionModifier,

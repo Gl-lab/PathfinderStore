@@ -13,6 +13,7 @@ import {
 } from '@/i18n/domain'
 import { useI18n } from 'vue-i18n'
 import {
+  changeHitPoints,
   deleteCharacter,
   finalizeCharacter,
   getCharacter,
@@ -20,6 +21,7 @@ import {
   type Character,
   type CharacterFeat,
   type CharacterProficiencyStatistic,
+  type HitPointOperation,
   type ProficiencyCategory,
   type ProficiencyRank,
 } from '@/features/characters/api'
@@ -44,6 +46,8 @@ const errors = ref<string[]>([])
 const isLoading = ref(true)
 const isDeleting = ref(false)
 const isFinalizing = ref(false)
+const isChangingHitPoints = ref(false)
+const hitPointAmount = ref(1)
 const confirmDelete = ref(false)
 const selectedGender = ref<SelectableCharacterGender | null>(null)
 const isSavingGender = ref(false)
@@ -165,6 +169,27 @@ async function finalize(): Promise<void> {
     isFinalizing.value = false
   }
 }
+async function applyHitPointOperation(operation: HitPointOperation): Promise<void> {
+  const hitPoints = character.value?.derivedStatistics?.hitPoints
+  if (!character.value || !hitPoints || character.value.creationStatus !== 'Completed') return
+
+  isChangingHitPoints.value = true
+  errors.value = []
+  try {
+    const state = await changeHitPoints(
+      character.value.id,
+      operation,
+      operation === 'ClearTemporary' ? 0 : hitPointAmount.value,
+    )
+    hitPoints.current = state.current
+    hitPoints.temporary = state.temporary
+    hitPoints.maximum = state.maximum
+  } catch (error) {
+    errors.value = getApiErrorMessages(error)
+  } finally {
+    isChangingHitPoints.value = false
+  }
+}
 async function saveGender(): Promise<void> {
   if (!character.value || !selectedGender.value) return
 
@@ -274,17 +299,39 @@ onMounted(load)
       </v-alert>
       <div class="stats">
         <v-card v-if="character.derivedStatistics" elevation="0" class="hit-points-card"
-          ><v-card-item :title="t('characters.maximumHitPoints')"
+          ><v-card-item :title="t('characters.hitPoints')"
             ><template #prepend><v-icon color="error" icon="mdi-heart-pulse" /></template
           ></v-card-item>
           <v-card-text>
             <strong class="hit-points-card__maximum">
               {{
                 t('characters.hitPointsValue', {
-                  value: character.derivedStatistics.hitPoints.maximum,
+                  value: `${character.derivedStatistics.hitPoints.current} / ${character.derivedStatistics.hitPoints.maximum}`,
                 })
               }}
             </strong>
+            <p v-if="character.derivedStatistics.hitPoints.temporary" class="hit-points-card__temporary">
+              {{ t('characters.temporaryHitPoints', { value: character.derivedStatistics.hitPoints.temporary }) }}
+            </p>
+            <div
+              v-if="character.creationStatus === 'Completed'"
+              class="hit-points-card__controls"
+            >
+              <v-number-input
+                v-model="hitPointAmount"
+                :label="t('characters.hitPointAmount')"
+                :min="1"
+                control-variant="stacked"
+                density="compact"
+                hide-details
+              />
+              <div>
+                <v-btn size="small" color="error" variant="tonal" :loading="isChangingHitPoints" @click="applyHitPointOperation('ApplyDamage')">{{ t('characters.applyDamage') }}</v-btn>
+                <v-btn size="small" color="success" variant="tonal" :loading="isChangingHitPoints" @click="applyHitPointOperation('Restore')">{{ t('characters.restoreHitPoints') }}</v-btn>
+                <v-btn size="small" variant="tonal" :loading="isChangingHitPoints" @click="applyHitPointOperation('GrantTemporary')">{{ t('characters.grantTemporaryHitPoints') }}</v-btn>
+                <v-btn size="small" variant="text" :loading="isChangingHitPoints" @click="applyHitPointOperation('ClearTemporary')">{{ t('characters.clearTemporaryHitPoints') }}</v-btn>
+              </div>
+            </div>
             <dl class="hit-points-card__breakdown">
               <div>
                 <dt>{{ t('characters.hitPointsAncestry') }}</dt>
@@ -983,6 +1030,21 @@ h1 {
   font-family: Georgia, 'Times New Roman', serif;
   font-size: 2.5rem;
   line-height: 1;
+}
+.hit-points-card__temporary {
+  color: rgb(var(--v-theme-primary));
+  font-weight: 700;
+  margin: 8px 0 0;
+}
+.hit-points-card__controls {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+}
+.hit-points-card__controls > div:last-child {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 .hit-points-card__breakdown {
   display: grid;

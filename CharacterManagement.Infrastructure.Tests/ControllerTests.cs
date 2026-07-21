@@ -20,6 +20,7 @@ using Pathfinder.CharacterManagement.Application.UseCases.WitchPatrons;
 using Pathfinder.CharacterManagement.Application.UseCases.ArcaneSchools;
 using Pathfinder.CharacterManagement.Application.UseCases.ArcaneTheses;
 using Pathfinder.CharacterManagement.Domain.Entity;
+using Pathfinder.CharacterManagement.Domain.Rules.Statistics;
 using Pathfinder.Web.Controllers;
 
 namespace CharacterManagement.Infrastructure.Tests;
@@ -363,6 +364,33 @@ public sealed class ControllerTests
         CharacterController controller = CreateCharacterController( mediator, 77 );
 
         ActionResult<CharacterCreationStateDto> actionResult = await controller.Finalize( 15 );
+
+        OkObjectResult okResult = Assert.IsType<OkObjectResult>( actionResult.Result );
+        Assert.Same( expected, okResult.Value );
+    }
+
+    [Fact]
+    public async Task CharacterController_ChangeHitPoints_ReturnsServerState()
+    {
+        TestMediator mediator = new TestMediator();
+        CharacterHitPointStateDto expected = new CharacterHitPointStateDto
+        {
+            Current = 12,
+            Temporary = 3,
+            Maximum = 18,
+        };
+        mediator.Register(
+            new ChangeHitPointsCommand( 77, 15, HitPointOperation.ApplyDamage, 6 ),
+            expected );
+        CharacterController controller = CreateCharacterController( mediator, 77 );
+
+        ActionResult<CharacterHitPointStateDto> actionResult = await controller.ChangeHitPoints(
+            15,
+            new ChangeHitPointsRequestDto
+            {
+                Operation = HitPointOperation.ApplyDamage,
+                Amount = 6,
+            } );
 
         OkObjectResult okResult = Assert.IsType<OkObjectResult>( actionResult.Result );
         Assert.Same( expected, okResult.Value );

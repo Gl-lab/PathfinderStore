@@ -4,6 +4,7 @@ using Pathfinder.CharacterManagement.Domain.Rules.Feats;
 using Pathfinder.CharacterManagement.Domain.Rules.Languages;
 using Pathfinder.CharacterManagement.Domain.Rules.Spells;
 using Pathfinder.CharacterManagement.Domain.Rules.Equipment;
+using Pathfinder.CharacterManagement.Domain.Rules.Statistics;
 using Pathfinder.Utils.Entities.Base;
 
 namespace Pathfinder.CharacterManagement.Domain.Entity;
@@ -71,6 +72,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public string? SelectedClassKitId { get; private set; }
     public IReadOnlyList<string> SelectedClassKitOptionIds { get; private set; } = [];
     public IReadOnlyList<CharacterEquipmentItem> StartingEquipmentItems { get; private set; } = [];
+    public int? CurrentHitPoints { get; private set; }
+    public int TemporaryHitPoints { get; private set; }
     public bool HasCompleteAncestryPackage => !String.IsNullOrWhiteSpace( SelectedHeritageId ) && !String.IsNullOrWhiteSpace( SelectedAncestryFeatId );
     public bool HasBackgroundBoostPackage =>
         !String.IsNullOrWhiteSpace( SelectedBackgroundId ) &&
@@ -749,6 +752,59 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         EnsureInvariants();
     }
 
+    public CharacterHitPointState GetHitPointState( int maximumHitPoints )
+    {
+        if ( maximumHitPoints <= 0 )
+        {
+            throw new ArgumentOutOfRangeException( nameof( maximumHitPoints ) );
+        }
+
+        int currentHitPoints = Math.Clamp(
+            CurrentHitPoints ?? maximumHitPoints,
+            0,
+            maximumHitPoints );
+        return new CharacterHitPointState(
+            currentHitPoints,
+            Math.Max( 0, TemporaryHitPoints ),
+            maximumHitPoints );
+    }
+
+    public void ApplyDamage( int amount, int maximumHitPoints )
+    {
+        EnsureCompleted();
+        EnsurePositiveHitPointAmount( amount );
+        CharacterHitPointState state = GetHitPointState( maximumHitPoints );
+        int absorbedDamage = Math.Min( state.Temporary, amount );
+        TemporaryHitPoints = state.Temporary - absorbedDamage;
+        CurrentHitPoints = Math.Max( 0, state.Current - ( amount - absorbedDamage ) );
+    }
+
+    public void RestoreHitPoints( int amount, int maximumHitPoints )
+    {
+        EnsureCompleted();
+        EnsurePositiveHitPointAmount( amount );
+        CharacterHitPointState state = GetHitPointState( maximumHitPoints );
+        CurrentHitPoints = Math.Min( maximumHitPoints, state.Current + amount );
+        TemporaryHitPoints = state.Temporary;
+    }
+
+    public void GrantTemporaryHitPoints( int amount, int maximumHitPoints )
+    {
+        EnsureCompleted();
+        EnsurePositiveHitPointAmount( amount );
+        CharacterHitPointState state = GetHitPointState( maximumHitPoints );
+        CurrentHitPoints = state.Current;
+        TemporaryHitPoints = Math.Max( state.Temporary, amount );
+    }
+
+    public void ClearTemporaryHitPoints( int maximumHitPoints )
+    {
+        EnsureCompleted();
+        CharacterHitPointState state = GetHitPointState( maximumHitPoints );
+        CurrentHitPoints = state.Current;
+        TemporaryHitPoints = 0;
+    }
+
     private void ClearStartingEquipment()
     {
         SelectedClassKitId = null;
@@ -965,6 +1021,22 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         }
     }
 
+    private void EnsureCompleted()
+    {
+        if ( CreationStatus != CharacterCreationStatus.Completed )
+        {
+            throw new CharacterManagementException( "Hit point state can only change for a completed character." );
+        }
+    }
+
+    private static void EnsurePositiveHitPointAmount( int amount )
+    {
+        if ( amount <= 0 )
+        {
+            throw new CharacterManagementException( "Hit point command amount must be greater than zero." );
+        }
+    }
+
     private void EnsureInvariants()
     {
         if ( String.IsNullOrWhiteSpace( Name ) )
@@ -990,6 +1062,16 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         if ( AvatarId is null )
         {
             throw new CharacterManagementException( "Character must have an avatar identifier." );
+        }
+
+        if ( CurrentHitPoints < 0 )
+        {
+            throw new CharacterManagementException( "Current hit points cannot be negative." );
+        }
+
+        if ( TemporaryHitPoints < 0 )
+        {
+            throw new CharacterManagementException( "Temporary hit points cannot be negative." );
         }
 
         if ( ( CreationStatus == CharacterCreationStatus.Draft ) != ( CompletedAtUtc is null ) )

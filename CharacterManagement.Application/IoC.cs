@@ -26,6 +26,7 @@ public static class DependencyInjection
         services.AddScoped<CharacterCompletionEvaluator>();
         services.AddTransient<IValidator<CreateCharacterCommand>, CreateCharacterCommandValidator>();
         services.AddTransient<IValidator<SetCharacterGenderCommand>, SetCharacterGenderCommandValidator>();
+        services.AddTransient<IValidator<ChangeHitPointsCommand>, ChangeHitPointsCommandValidator>();
         services.AddTransient( typeof( IPipelineBehavior<,> ), typeof( ValidationBehavior<,> ) );
         services.AddMediatR( cfg => cfg.RegisterServicesFromAssembly( typeof( DependencyInjection ).Assembly ) );
     }

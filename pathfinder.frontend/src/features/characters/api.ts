@@ -287,6 +287,8 @@ export interface CharacterClassPackage {
 }
 
 export interface CharacterHitPoints {
+  current: number
+  temporary: number
   maximum: number
   ancestry: number
   class: number
@@ -498,6 +500,27 @@ export interface CharacterCreationState {
 
 export async function finalizeCharacter(id: number): Promise<CharacterCreationState> {
   return (await http.post<CharacterCreationState>(`/api/character/${id}/finalize`)).data
+}
+
+export type HitPointOperation = 'ApplyDamage' | 'Restore' | 'GrantTemporary' | 'ClearTemporary'
+
+export interface CharacterHitPointState {
+  current: number
+  temporary: number
+  maximum: number
+}
+
+export async function changeHitPoints(
+  id: number,
+  operation: HitPointOperation,
+  amount: number,
+): Promise<CharacterHitPointState> {
+  return (
+    await http.post<CharacterHitPointState>(`/api/character/${id}/hit-points`, {
+      operation,
+      amount,
+    })
+  ).data
 }
 
 export async function setCharacterGender(
