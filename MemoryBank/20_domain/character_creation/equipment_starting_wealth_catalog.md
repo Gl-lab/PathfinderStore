@@ -9,7 +9,7 @@ Catalog v1 включает:
 - все base items и статические options этих class kits;
 - все покупаемые favored weapons core deities;
 - поля armor, weapon и shield, необходимые для будущих AC, strike и proficiency calculations;
-- цену и Bulk всех definitions.
+- цену и Массу (`Bulk`) всех definitions.
 
 Произвольный полный ассортимент `Player Core`, consumables, magic items, runes и runtime economy не входят в v1.
 
@@ -35,19 +35,19 @@ Catalog v1 включает:
 
 Common level-0 equipment из catalog доступен при character creation. Uncommon item требует typed access source. В v1 единственный uncommon purchasable definition — `equipment.spiked_chain`; доступ Cleric выводится из favored weapon выбранного deity, а не из клиентского флага.
 
-## Bulk Representation
+## Представление Массы (`Bulk`)
 
-Bulk хранится как `BulkTenths`:
+Масса предмета хранится как `BulkTenths`:
 
-- `0` — negligible Bulk;
-- `1` — light Bulk (`L`);
-- `10` — `1 Bulk`.
+- `0` — пренебрежимая Масса;
+- `1` — лёгкая Масса (`L`);
+- `10` — 1 единица Массы (`1 Bulk`).
 
-Catalog хранит Bulk одного purchase batch. Правила суммирования light Bulk, worn/container adjustments и carrying capacity реализуются отдельным slice 7.4.
+Catalog хранит Массу одного purchase batch. Правила вычисления общей Массы, поправки от ношения и контейнеров, нагрузка и пороги перегрузки реализуются отдельным slice 7.4.
 
 ## Armor Catalog
 
-| Stable id | Name | Price cp | Bulk tenths | Category | Group | AC | Dex cap | Check | Speed ft | Strength |
+| Stable id | Name | Price cp | Масса, десятые | Category | Group | AC | Dex cap | Check | Speed ft | Strength |
 |---|---|---:|---:|---|---|---:|---:|---:|---:|---:|
 | `equipment.explorers_clothing` | Explorer's Clothing | 10 | 1 | Unarmored | Cloth | 0 | 5 | 0 | 0 | 0 |
 | `equipment.leather_armor` | Leather Armor | 200 | 10 | Light | Leather | 1 | 4 | -1 | 0 | 0 |
@@ -60,7 +60,7 @@ Armor traits v1: Explorer's Clothing — `Comfort`; Chain Mail — `Flexible`, `
 
 ## Weapon Catalog
 
-| Stable id | Name | Price cp | Bulk | Category | Group | Type | Damage | Hands | Range |
+| Stable id | Name | Price cp | Масса, десятые | Category | Group | Type | Damage | Hands | Range |
 |---|---|---:|---:|---|---|---|---|---|---:|
 | `equipment.dagger` | Dagger | 20 | 1 | Simple | Knife | Melee | d4 P | 1 | — |
 | `equipment.rapier` | Rapier | 200 | 10 | Martial | Sword | Melee | d6 P | 1 | — |
@@ -92,7 +92,7 @@ Weapon traits сохраняются типизированным списком
 
 ## Ammunition, Gear And Shield
 
-| Stable id | Name | Price cp | Bulk | Units per purchase |
+| Stable id | Name | Price cp | Масса, десятые | Units per purchase |
 |---|---|---:|---:|---:|
 | `equipment.arrows` | Arrows | 10 | 1 | 10 |
 | `equipment.bolts` | Bolts | 10 | 1 | 10 |
@@ -109,7 +109,7 @@ Weapon traits сохраняются типизированным списком
 | `equipment.writing_set` | Writing Set | 100 | 1 | 1 |
 | `equipment.steel_shield` | Steel Shield | 200 | 10 | 1 |
 
-Steel Shield дополнительно определяет AC bonus `2`, Hardness `5` и HP `20`. Shield AC применяется только через будущую Raise a Shield/runtime boundary, а не автоматически из факта владения.
+Steel Shield дополнительно определяет AC bonus `2`, Hardness `5` и максимальные очки прочности `20`. Shield AC применяется только через будущую Raise a Shield/runtime boundary, а не автоматически из факта владения.
 
 ## Class Kits
 
@@ -126,13 +126,13 @@ Steel Shield дополнительно определяет AC bonus `2`, Hardn
 | Witch | 182 | explorer's clothing, sickle, sling, 20 bullets, staff, adventurer's pack | cookware; healer's toolkit |
 | Wizard | 260 | explorer's clothing, staff, adventurer's pack, writing set | crossbow + 20 bolts |
 
-AoN Rogue kit page omits `climbing kit` from rendered Gear while retaining base price `620 cp` and Bulk `4 Bulk, 1 light`. Player Core equipment table includes it; catalog v1 keeps the item because it reconciles both published totals.
+AoN Rogue kit page omits `climbing kit` from rendered Gear while retaining base price `620 cp` and общую Массу `4 Bulk, 1 light`. Player Core equipment table includes it; catalog v1 keeps the item because it reconciles both published totals.
 
 Cleric favored weapon is represented by typed dependency `DeityFavoredWeapon`. Конкретный item id выводится сервером из выбранного deity. Непокупаемые unarmed favored weapons не добавляют item line или cost.
 
-## Character-Owned Loadout State
+## Комплект экипировки персонажа
 
-Catalog definitions остаются code-owned reference data. В `DraftCharacter` сохраняются только:
+Catalog definitions остаются code-owned reference data. В комплекте экипировки (`loadout`) `DraftCharacter` сохраняются только:
 
 - selected class-kit id;
 - selected option ids;
@@ -140,17 +140,17 @@ Catalog definitions остаются code-owned reference data. В `DraftCharact
 - purchase quantity;
 - equipped quantity.
 
-Цена, unit quantity, proficiency и Bulk не персистируются как независимые истины и повторно вычисляются при чтении и completion validation.
+Цена, unit quantity, proficiency и Масса не персистируются как независимые истины и повторно вычисляются при чтении и completion validation.
 
 Экипировать можно weapon, armor и shield, принадлежащие стартовому inventory. Одновременно допускается одна armor entry. Hand usage, Raise a Shield и action economy остаются runtime/combat scope.
 
-Weapon proficiency сопоставляется с максимальным применимым rank между specific favored-weapon target и simple/martial category. Armor использует unarmored/light/medium defense target. Total Bulk равен сумме `BulkTenths × PurchaseQuantity`; пороги вычисляются как `5 + Strength modifier` и `10 + Strength modifier` Bulk.
+Weapon proficiency сопоставляется с максимальным применимым rank между specific favored-weapon target и simple/martial category. Armor использует unarmored/light/medium defense target. Общая Масса равна сумме `BulkTenths × PurchaseQuantity`. Порог нагрузки вычисляется как `5 + Strength modifier`, максимальная переносимая Масса — как `10 + Strength modifier`; оба значения выражены в единицах Массы.
 
 ## API Contract
 
 - `GET /api/equipment` — catalog definitions, sorted by name;
 - `GET /api/equipment/class-kits` — восемь class kits, starting wealth и typed option groups.
 
-`POST /api/character` принимает только `classKitOptionIds`, optional favored-weapon equipment id и `equippedEquipmentIds`. Character read model возвращает разрешённые definitions, totals, proficiency ranks и Bulk thresholds.
+`POST /api/character` принимает только `classKitOptionIds`, optional favored-weapon equipment id и `equippedEquipmentIds`. Character read model возвращает каталожные descriptions, totals, proficiency ranks, общую Массу и пороги нагрузки.
 
-Оба endpoint требуют authentication. Catalog API не принимает цену, Bulk или игровые характеристики от клиента.
+Оба endpoint требуют authentication. Catalog API не принимает цену, Массу или игровые характеристики от клиента.

@@ -317,7 +317,7 @@ AC, attacks, damage, current/temporary HP и equipment bonuses не входят
 
 ### Приоритет 7 — starting equipment и inventory boundary
 
-**Цель.** Дать завершённому персонажу валидный стартовый набор снаряжения и подготовить данные, от которых зависят AC, attacks, damage и bulk.
+**Цель.** Дать завершённому персонажу валидный стартовый набор снаряжения и подготовить данные, от которых зависят AC, attacks, damage, общая Масса и нагрузка.
 
 **Проблема.** В character creation нет equipment catalog, starting wealth, покупок или class kits. Без выбранных и экипированных armor, weapons и gear нельзя корректно вычислить боевые показатели. При этом существующий Store не должен неявно становиться владельцем правил персонажа.
 
@@ -326,12 +326,12 @@ AC, attacks, damage, current/temporary HP и equipment bonuses не входят
 1. Зафиксировать ownership boundary между CharacterManagement catalog/loadout и будущим Store/Inventory — завершено; см. [архитектурное решение](../20_domain/character_creation/equipment_inventory_boundary.md).
 2. Нормализовать минимальный Player Core equipment catalog v1 и starting wealth/class kit rules — завершено; см. [нормативный каталог](../20_domain/character_creation/equipment_starting_wealth_catalog.md).
 3. Реализовать выбор стартового набора, валидацию стоимости и сохранение immutable item references с character-owned state — завершено.
-4. Добавить equipped state, weapon/armor proficiency matching и bulk foundation — завершено.
+4. Добавить equipped state, weapon/armor proficiency matching, общую Массу и пороги нагрузки — завершено.
 
 **Критерии готовности:**
 
 - персонаж получает только допустимое и оплаченное стартовое снаряжение;
-- итоговая стоимость, proficiency applicability и bulk вычисляются сервером;
+- итоговая стоимость, proficiency applicability, общая Масса и нагрузка вычисляются сервером;
 - catalog definitions не копируются целиком в character state;
 - смена class package до финализации корректно инвалидирует несовместимый kit;
 - Store остаётся отключённым, пока отдельное решение не передаст ему ownership runtime inventory.
@@ -342,7 +342,7 @@ AC, attacks, damage, current/temporary HP и equipment bonuses не входят
 
 ### Единый русскоязычный доменный глоссарий
 
-**Статус:** ближайшая незавершённая задача; локальная постановка подготовлена в [domain_glossary_task.md](domain_glossary_task.md). Карточка Vikunja ожидает синхронизации после восстановления MCP.
+**Статус:** документационная часть завершена 21 июля 2026 года; нормативный [доменный глоссарий](../20_domain/glossary.md) утверждён, индексы и связанные документы нормализованы. Локальная постановка хранится в [domain_glossary_task.md](domain_glossary_task.md). Для полного закрытия остаётся синхронизация карточки Vikunja после восстановления MCP.
 
 **Цель.** До добавления новых архитектурных контрактов выбрать однозначные русские термины для персонажа, кампании, партии, предметов, инвентаря, торговли и игрового процесса.
 

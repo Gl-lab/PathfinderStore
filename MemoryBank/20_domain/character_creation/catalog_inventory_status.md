@@ -1,4 +1,4 @@
-# Pathfinder 2e Character Creation Catalog Inventory
+# Pathfinder 2e Character Creation Catalog Coverage
 
 Дата проверки: 2026-04-04.
 

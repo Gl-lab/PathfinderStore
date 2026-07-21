@@ -17,7 +17,7 @@
 - Background step разрешает fixed, finite-choice и open Lore grants; review/details показывают фактический training.
 - Class step и review показывают категории typed starting proficiencies; карточка группирует targets и локализованные ranks.
 - Wizard поддерживает обязательные Rogue's Racket, Cleric Doctrine и Deity; preview объединяет class/doctrine/deity proficiencies, обрабатывает replacement divine skill, а review/details показывают выбор и декларативные deity benefits.
-- Wizard содержит starting equipment step с class-kit options, favored weapon, budget и equipped choices; details показывает server-computed proficiency и Bulk.
+- Wizard содержит starting equipment step с class-kit options, favored weapon, budget и equipped choices; details показывает server-computed proficiency, общую Массу и нагрузку.
 
 ## Что не готово
 

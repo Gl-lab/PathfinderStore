@@ -22,7 +22,7 @@
 - Rogue's Racket, Cleric Doctrine и Deity реализованы как обязательные class choices: каталоги, validation, persistence, API/read-модель и поддержанные typed grants.
 - Player Core Deity catalog содержит 22 записи; 21 доступна Cleric. Divine skill, replacement training, favored weapon proficiency, Divine Font и sanctification применяются фактически, domains/granted spells возвращаются декларативно.
 - Есть unit и integration tests по ключевым backend-сценариям.
-- Реализованы Player Core starting equipment catalog, `15 gp`, class kits, server-side selection/cost validation, persistence stable item references, equipped state, proficiency matching и Bulk foundation.
+- Реализованы Player Core starting equipment catalog, `15 gp`, class kits, server-side selection/cost validation, persistence stable item references, equipped state, proficiency matching, общая Масса и пороги нагрузки.
 
 ## Что не готово
 

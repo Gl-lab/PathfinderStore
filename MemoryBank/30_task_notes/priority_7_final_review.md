@@ -7,7 +7,7 @@
 1. Ownership boundary между `CharacterManagement` и будущим Store/Inventory.
 2. Минимальный Player Core equipment catalog v1, starting wealth `15 gp` и kits восьми классов.
 3. Выбор, server-side cost/availability validation и persistence стартового набора.
-4. Equipped state, weapon/armor proficiency matching и Bulk foundation.
+4. Equipped state, weapon/armor proficiency matching, общая Масса и пороги нагрузки.
 
 Коммиты реализации: `dc93fe8`, `d759770`, `f77ead4`, `50f4ae7`.
 
@@ -16,21 +16,21 @@
 | Критерий | Результат |
 |---|---|
 | Только допустимое и оплаченное снаряжение | Выполнено: resolver принимает только catalog-backed kit references, проверяет option groups, rarity access и лимит `1500 cp`. |
-| Стоимость, proficiency applicability и Bulk вычисляются сервером | Выполнено: клиент передаёт только choices/equipped IDs; read model возвращает server-computed totals, ranks и thresholds. |
+| Стоимость, proficiency applicability, общая Масса и нагрузка вычисляются сервером | Выполнено: клиент передаёт только choices/equipped IDs; read model возвращает server-computed totals, ranks и thresholds. |
 | Catalog definitions не копируются в character state | Выполнено: aggregate хранит stable equipment IDs, purchase quantity и character-owned equipped quantity. |
 | Смена класса инвалидирует несовместимый kit | Выполнено атомарно в `DraftCharacter.SetClassPackage`; покрыто доменным тестом. |
 | Store не владеет character creation inventory | Выполнено: Store dependencies не добавлены, legacy пустые item endpoints удалены. |
 
 ## Cross-slice review
 
-- Class kits и цены разрешаются только через `IEquipmentRepository`; request не содержит цену, Bulk или игровые item definitions.
+- Class kits и цены разрешаются только через `IEquipmentRepository`; request не содержит цену, Массу или игровые item definitions.
 - Cleric favored weapon сверяется с выбранным Deity. Unarmed `Fist`/`Claw` не создаёт item line и стоимость.
 - Common equipment доступно из baseline catalog; uncommon item допускается только как подтверждённое favored weapon выбранного Deity.
 - Equipped IDs должны принадлежать inventory; gear/ammunition нельзя экипировать, одновременно допустима только одна armor entry.
 - Weapon proficiency выбирает максимальный применимый rank между конкретным favored weapon и общей simple/martial category. Armor сопоставляется с unarmored/light/medium defense target.
-- Total Bulk считается по catalog definition и purchase quantity. Пороги первого уровня вычисляются как `5 + Strength modifier` и `10 + Strength modifier` Bulk.
+- Общая Масса считается по catalog definition и purchase quantity. Порог нагрузки первого уровня вычисляется как `5 + Strength modifier`, максимальная переносимая Масса — как `10 + Strength modifier`; значения выражены в единицах Массы.
 - Completion повторно разрешает kit и equipped state и сравнивает их с persisted references; повреждённый или устаревший loadout не считается полным.
-- Frontend показывает отдельный equipment step, бюджет, equipped choices, а details — сохранённые items, proficiency и Bulk без владения серверными формулами.
+- Frontend показывает отдельный equipment step, бюджет, equipped choices, а details — сохранённые items, proficiency, общую Массу и нагрузку без владения серверными формулами.
 - Store, runtime shop/trade, hand/action economy, Raise a Shield, AC и Strike calculations остались за отдельными границами.
 
 ## Замечания, исправленные ревью

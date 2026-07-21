@@ -40,7 +40,7 @@
 - [class_catalog_player_core.md](class_catalog_player_core.md) — нормализованный baseline восьми классов `Player Core` для class package.
 - [background_catalog_core_rulebook.md](background_catalog_core_rulebook.md) — baseline-каталог backgrounds из Core Rulebook.
 - [skill_catalog_player_core.md](skill_catalog_player_core.md) — общий каталог skills Player Core.
-- [equipment_inventory_boundary.md](equipment_inventory_boundary.md) — ownership catalog/loadout в `CharacterManagement` и граница с будущим Store/Inventory.
+- [equipment_inventory_boundary.md](equipment_inventory_boundary.md) — ownership каталога и комплекта экипировки в `CharacterManagement`, а также граница с будущим Store/Inventory.
 - [equipment_starting_wealth_catalog.md](equipment_starting_wealth_catalog.md) — минимальный Player Core equipment catalog v1, starting wealth и восемь class kits.
 - [catalog_inventory_status.md](catalog_inventory_status.md) — карта готовности каталогов.
 
@@ -50,6 +50,8 @@
 - [implementation_notes.md](implementation_notes.md) — расхождения текущего кода с доменными документами и remastered-источниками.
 
 ## Базовый словарь проекта
+
+Общие термины персонажа, игрового процесса, предметов и архитектуры нормализуются в [едином доменном глоссарии](../glossary.md). До его окончательного согласования приведённый ниже список сохраняется как словарь действующей реализации `CharacterManagement`.
 
 - `Character` / `DraftCharacter` — создаваемый персонаж пользователя.
 - `AbilityScores` — шесть базовых значений характеристик: `Strength`, `Dexterity`, `Constitution`, `Intelligence`, `Wisdom`, `Charisma`.

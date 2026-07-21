@@ -8,7 +8,7 @@
 
 ## Проблема
 
-Для starting equipment нужны правила стоимости, bulk, proficiency и экипировки. В solution уже есть незавершённый bounded context `Store`, однако его модель описывает товары и магазины и не является источником правил персонажа. Если character creation начнёт зависеть от Store, завершение персонажа станет зависеть от отключённой подсистемы, а PF2e item definitions смешаются с коммерческими offer и ownership records.
+Для starting equipment нужны правила стоимости, Массы (`Bulk`), proficiency и экипировки. В solution уже есть незавершённый bounded context `Store`, однако его модель описывает товары и магазины и не является источником правил персонажа. Если character creation начнёт зависеть от Store, завершение персонажа станет зависеть от отключённой подсистемы, а PF2e item definitions смешаются с коммерческими offer и ownership records.
 
 ## Решение
 
@@ -17,11 +17,11 @@
 `CharacterManagement` является владельцем:
 
 - нормализованного equipment catalog, необходимого для создания и вычисления карточки персонажа;
-- stable item ids и правил предметов: category, price, bulk, weapon/armor group, traits и игровые характеристики;
+- stable item ids и правил предметов: category, price, Масса, weapon/armor group, traits и игровые характеристики;
 - starting wealth и class kit definitions;
 - выбора стартового снаряжения в draft;
 - character-owned state: item reference, quantity и equipped state;
-- серверной проверки стоимости, допустимости, proficiency applicability и bulk;
+- серверной проверки стоимости, допустимости, proficiency applicability, общей Массы и нагрузки;
 - invalidation несовместимого class kit при изменении class package до финализации.
 
 Character state хранит ссылку на catalog definition по stable id и только изменяемое состояние конкретного персонажа. Полная catalog definition в aggregate и persistence не копируется. Денежный лимит создания вычисляется из правил starting wealth и не является runtime-кошельком.
@@ -33,21 +33,21 @@ Character state хранит ссылку на catalog definition по stable id
 - выдачи catalog definitions character creation;
 - проверки starting wealth;
 - выбора class kit;
-- вычисления proficiency, bulk или derived combat statistics;
-- хранения draft loadout.
+- вычисления proficiency, Массы, нагрузки или derived combat statistics;
+- хранения комплекта экипировки черновика (`draft loadout`).
 
 `CharacterManagement` не получает ссылку на проекты `Store.*`, не вызывает Store API и не публикует обязательные для завершения персонажа запросы или события. Store остаётся отключённым в web composition root.
 
 ### Будущая runtime inventory boundary
 
-Будущий Store/Inventory может владеть торговыми предложениями, ценами конкретного продавца, покупками, продажами, передачей предметов и account-level ownership. Передача completed-character loadout в такую подсистему требует отдельного архитектурного решения.
+Будущий Store/Inventory может владеть торговыми предложениями, ценами конкретного продавца, покупками, продажами, передачей предметов и account-level ownership. Передача комплекта экипировки завершённого персонажа (`completed-character loadout`) в такую подсистему требует отдельного архитектурного решения.
 
 До этого решения:
 
 - completed character продолжает владеть сохранённым character item state;
 - catalog id является логической ссылкой, а не foreign key в Store database;
 - Store не может изменять или удалять character equipment;
-- интеграция не добавляется скрыто в рамках AC, attacks, damage или bulk.
+- интеграция не добавляется скрыто в рамках AC, attacks, damage, Массы или нагрузки.
 
 ## API boundary
 

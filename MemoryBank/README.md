@@ -38,6 +38,7 @@
 
 Сейчас основной доменный раздел:
 
+- [`20_domain/glossary.md`](20_domain/glossary.md) — единый русскоязычный словарь терминов проекта
 - [`20_domain/character_creation/`](20_domain/character_creation)
 - [`20_domain/store/`](20_domain/store) — целевая архитектура кампаний, партий, предметов, инвентаря и торговли
 
