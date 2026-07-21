@@ -48,6 +48,24 @@ public sealed class CampaignInvitation : Entity
         RespondedAtUtc = respondedAtUtc;
     }
 
+    internal void Cancel( DateTimeOffset cancelledAtUtc )
+    {
+        EnsureUtc( cancelledAtUtc, "Invitation cancellation timestamp" );
+        if ( Status != CampaignInvitationStatus.Pending )
+        {
+            return;
+        }
+
+        if ( cancelledAtUtc < CreatedAtUtc )
+        {
+            throw new CampaignManagementException(
+                "Invitation cancellation cannot precede its creation." );
+        }
+
+        Status = CampaignInvitationStatus.Cancelled;
+        RespondedAtUtc = cancelledAtUtc;
+    }
+
     private void EnsureCanRespond( int actingUserId, DateTimeOffset respondedAtUtc )
     {
         EnsureUtc( respondedAtUtc, "Invitation response timestamp" );

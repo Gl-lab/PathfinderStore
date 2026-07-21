@@ -61,6 +61,12 @@ public sealed class Campaign : Entity, IAggregateRoot
             throw new CampaignManagementException( "Archive timestamp cannot precede campaign creation." );
         }
 
+        foreach ( CampaignInvitation invitation in _invitations.Where(
+                     item => item.Status == CampaignInvitationStatus.Pending ) )
+        {
+            invitation.Cancel( archivedAtUtc );
+        }
+
         Status = CampaignStatus.Archived;
         ArchivedAtUtc = archivedAtUtc;
         EnsureInvariants();

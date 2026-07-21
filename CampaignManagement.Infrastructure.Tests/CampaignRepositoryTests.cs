@@ -166,6 +166,26 @@ public sealed class CampaignRepositoryTests
     }
 
     [Fact]
+    public async Task ArchivedCampaignDoesNotReturnCancelledInvitation()
+    {
+        await using CampaignManagementDbContext dbContext = CreateDbContext();
+        Campaign campaign = Campaign.Create( "First", 42, _createdAtUtc );
+        campaign.Invite( 42, 7, _createdAtUtc.AddMinutes( 1 ) );
+        campaign.Archive( 42, _createdAtUtc.AddMinutes( 2 ) );
+        dbContext.Campaigns.Add( campaign );
+        await dbContext.SaveChangesAsync();
+        CampaignRepository repository = new CampaignRepository( dbContext );
+
+        IReadOnlyCollection<Campaign> campaigns =
+            await repository.GetPendingInvitationsForUserAsync( 7, CancellationToken.None );
+
+        Assert.Empty( campaigns );
+        Assert.Equal(
+            CampaignInvitationStatus.Cancelled,
+            ( await dbContext.CampaignInvitations.SingleAsync() ).Status );
+    }
+
+    [Fact]
     public async Task PartyHandlersPersistControlledCharacter()
     {
         await using CampaignManagementDbContext dbContext = CreateDbContext();

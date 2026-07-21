@@ -54,6 +54,19 @@ public sealed class CampaignTests
     }
 
     [Fact]
+    public void ArchiveCancelsPendingInvitations()
+    {
+        Campaign campaign = Campaign.Create( "Abomination Vaults", 42, _createdAtUtc );
+        CampaignInvitation invitation = campaign.Invite( 42, 7, _createdAtUtc.AddHours( 1 ) );
+        DateTimeOffset archivedAtUtc = _createdAtUtc.AddHours( 2 );
+
+        campaign.Archive( 42, archivedAtUtc );
+
+        Assert.Equal( CampaignInvitationStatus.Cancelled, invitation.Status );
+        Assert.Equal( archivedAtUtc, invitation.RespondedAtUtc );
+    }
+
+    [Fact]
     public void ArchiveRejectsUserWithoutGameMasterMembership()
     {
         Campaign campaign = Campaign.Create( "Abomination Vaults", 42, _createdAtUtc );

@@ -73,8 +73,9 @@ public sealed class CampaignManagementDbContext : DbContext
                 {
                     invitation.CampaignId,
                     invitation.InvitedUserId,
-                    invitation.Status,
-                } );
+                } )
+                .IsUnique()
+                .HasFilter( "\"Status\" = 1" );
         } );
 
         modelBuilder.Entity<CampaignParty>( builder =>
@@ -85,7 +86,9 @@ public sealed class CampaignManagementDbContext : DbContext
                 .IsRequired();
             builder.Property( party => party.Status )
                 .HasConversion<int>();
-            builder.HasIndex( party => party.CampaignId );
+            builder.HasIndex( party => party.CampaignId )
+                .IsUnique()
+                .HasFilter( "\"Status\" = 1" );
             builder.HasMany( party => party.Characters )
                 .WithOne()
                 .HasForeignKey( character => character.CampaignPartyId )
