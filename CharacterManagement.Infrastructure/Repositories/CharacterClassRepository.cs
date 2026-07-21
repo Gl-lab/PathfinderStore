@@ -147,7 +147,7 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
             new SourceReference( "Player Core", page ),
             baseHitPoints,
             keyAbilityOptions,
-            InitialProficiencies( id, name ),
+            InitialProficiencies( id, name, spellTradition ),
             InitialSkillGrants( id ),
             additionalSkillCountBase,
             spellTradition,
@@ -196,7 +196,10 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
             skillOptions );
     }
 
-    private static IReadOnlyList<ProficiencyGrant> InitialProficiencies( string id, string name )
+    private static IReadOnlyList<ProficiencyGrant> InitialProficiencies(
+        string id,
+        string name,
+        SpellTradition? spellTradition )
     {
         IReadOnlyList<(ProficiencyTarget Target, ProficiencyRank Rank)> definitions = id switch
         {
@@ -299,6 +302,18 @@ public sealed class CharacterClassRepository : ICharacterClassRepository
             ProficiencyTargets.ClassDc( $"class.{id}", name ),
             ProficiencyRank.Trained,
             sourceGrantId ) );
+
+        if ( spellTradition.HasValue )
+        {
+            grants.Add( new ProficiencyGrant(
+                ProficiencyTargets.SpellAttack( spellTradition.Value ),
+                ProficiencyRank.Trained,
+                sourceGrantId ) );
+            grants.Add( new ProficiencyGrant(
+                ProficiencyTargets.SpellDc( spellTradition.Value ),
+                ProficiencyRank.Trained,
+                sourceGrantId ) );
+        }
 
         return grants;
     }

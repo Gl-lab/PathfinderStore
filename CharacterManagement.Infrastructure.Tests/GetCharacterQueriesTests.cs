@@ -197,7 +197,7 @@ public sealed class GetCharacterQueriesTests
         Assert.Equal( DivineFont.Heal, result.ClassPackage.Deity.DivineFont );
         Assert.Equal( DivineSanctification.Holy, result.ClassPackage.Deity.Sanctification );
         Assert.Equal( "skill.intimidation", result.ClassPackage.Deity.DivineSkillId );
-        Assert.Equal( 9, result.Proficiencies.Count );
+        Assert.Equal( 11, result.Proficiencies.Count );
         Assert.Contains(
             result.Proficiencies,
             proficiency => proficiency.TargetId == "proficiency.attack.weapon.longsword" );
@@ -225,6 +225,10 @@ public sealed class GetCharacterQueriesTests
         Assert.Equal( 8, result.DerivedStatistics.HitPoints.Ancestry );
         Assert.Equal( 8, result.DerivedStatistics.HitPoints.Class );
         Assert.Equal( 1, result.DerivedStatistics.HitPoints.ConstitutionModifier );
+        Assert.Equal( 17, result.DerivedStatistics.ClassDifficultyClass?.Total );
+        Assert.Equal( SpellTradition.Divine, result.DerivedStatistics.Spellcasting?.Tradition );
+        Assert.Equal( 7, result.DerivedStatistics.Spellcasting?.Attack.Total );
+        Assert.Equal( 17, result.DerivedStatistics.Spellcasting?.DifficultyClass.Total );
     }
 
     [Fact]
@@ -575,6 +579,9 @@ public sealed class GetCharacterQueriesTests
         Assert.Equal( "spell.wilding_word", result.ClassPackage.WitchHexPackage?.PatronHexCantrip?.Id );
         Assert.Equal( "spell.phase_familiar", result.ClassPackage.WitchHexPackage?.FocusHex?.Id );
         Assert.Equal( 1, result.ClassPackage.WitchHexPackage?.MaximumFocusPoints );
+        Assert.Equal( SpellTradition.Primal, result.DerivedStatistics?.Spellcasting?.Tradition );
+        Assert.Equal( 5, result.DerivedStatistics?.Spellcasting?.Attack.Total );
+        Assert.Equal( 15, result.DerivedStatistics?.Spellcasting?.DifficultyClass.Total );
     }
 
     [Fact]
@@ -607,6 +614,7 @@ public sealed class GetCharacterQueriesTests
         Assert.Equal( "class.witch", result.ClassPackage.ClassId );
         Assert.Null( result.ClassPackage.WitchPatron );
         Assert.Null( result.ClassPackage.SpellTradition );
+        Assert.Null( result.DerivedStatistics?.Spellcasting );
     }
 
     [Fact]
@@ -896,6 +904,8 @@ public sealed class GetCharacterQueriesTests
             ProficiencyTargets.UnarmoredDefense.Id,
             character.DerivedStatistics.ArmorClass.ProficiencyTargetId );
         Assert.Empty( character.DerivedStatistics.ArmorClass.ItemBonuses );
+        Assert.Equal( 17, character.DerivedStatistics.ClassDifficultyClass?.Total );
+        Assert.Null( character.DerivedStatistics.Spellcasting );
         Assert.Equal( 21, character.DerivedStatistics.HitPoints.Maximum );
         Assert.Equal( 6, character.DerivedStatistics.Perception.Total );
         Assert.Equal( AbilityType.Wisdom, character.DerivedStatistics.Perception.Ability );

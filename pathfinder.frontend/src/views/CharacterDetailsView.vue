@@ -421,6 +421,63 @@ onMounted(load)
             </div>
           </v-card-text>
         </v-card>
+        <v-card
+          v-if="character.derivedStatistics?.classDifficultyClass"
+          elevation="0"
+          class="derived-statistics-card"
+        >
+          <v-card-item :title="t('statistics.difficultyClasses')">
+            <template #prepend><v-icon color="primary" icon="mdi-auto-fix" /></template>
+          </v-card-item>
+          <v-card-text class="derived-statistics-card__grid">
+            <div class="derived-statistics-card__item">
+              <div>
+                <strong>{{ t('statistics.classDifficultyClass') }}</strong>
+                <small>
+                  {{ getAbilityLabel(character.derivedStatistics.classDifficultyClass.ability) }} ·
+                  {{ getProficiencyRankLabel(character.derivedStatistics.classDifficultyClass.proficiencyRank) }}
+                </small>
+              </div>
+              <div class="derived-statistics-card__value">
+                <strong>{{ character.derivedStatistics.classDifficultyClass.total }}</strong>
+                <small>{{ t('statistics.dcBreakdown', {
+                  base: character.derivedStatistics.classDifficultyClass.base,
+                  ability: formatSignedModifier(character.derivedStatistics.classDifficultyClass.abilityModifier),
+                  proficiency: formatSignedModifier(character.derivedStatistics.classDifficultyClass.proficiencyBonus),
+                }) }}</small>
+              </div>
+            </div>
+            <template v-if="character.derivedStatistics.spellcasting">
+              <div class="derived-statistics-card__item">
+                <div>
+                  <strong>{{ t('statistics.spellAttack') }} · {{ t(`classUi.spellTraditions.${character.derivedStatistics.spellcasting.tradition}`) }}</strong>
+                  <small>{{ getAbilityLabel(character.derivedStatistics.spellcasting.attack.ability) }} · {{ getProficiencyRankLabel(character.derivedStatistics.spellcasting.attack.proficiencyRank) }}</small>
+                </div>
+                <div class="derived-statistics-card__value">
+                  <strong>{{ formatSignedModifier(character.derivedStatistics.spellcasting.attack.total) }}</strong>
+                  <small>{{ t('statistics.attackBreakdown', {
+                    ability: formatSignedModifier(character.derivedStatistics.spellcasting.attack.abilityModifier),
+                    proficiency: formatSignedModifier(character.derivedStatistics.spellcasting.attack.proficiencyBonus),
+                  }) }}</small>
+                </div>
+              </div>
+              <div class="derived-statistics-card__item">
+                <div>
+                  <strong>{{ t('statistics.spellDifficultyClass') }}</strong>
+                  <small>{{ getAbilityLabel(character.derivedStatistics.spellcasting.difficultyClass.ability) }} · {{ getProficiencyRankLabel(character.derivedStatistics.spellcasting.difficultyClass.proficiencyRank) }}</small>
+                </div>
+                <div class="derived-statistics-card__value">
+                  <strong>{{ character.derivedStatistics.spellcasting.difficultyClass.total }}</strong>
+                  <small>{{ t('statistics.dcBreakdown', {
+                    base: character.derivedStatistics.spellcasting.difficultyClass.base,
+                    ability: formatSignedModifier(character.derivedStatistics.spellcasting.difficultyClass.abilityModifier),
+                    proficiency: formatSignedModifier(character.derivedStatistics.spellcasting.difficultyClass.proficiencyBonus),
+                  }) }}</small>
+                </div>
+              </div>
+            </template>
+          </v-card-text>
+        </v-card>
         <v-card elevation="0"
           ><v-card-item :title="t('common.details')" /><v-card-text
             ><p v-if="character.gender !== 'NotSpecified'">

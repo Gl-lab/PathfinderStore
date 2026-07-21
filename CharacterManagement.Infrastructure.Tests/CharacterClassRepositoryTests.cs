@@ -28,14 +28,14 @@ public sealed class CharacterClassRepositoryTests
     }
 
     [Theory]
-    [InlineData( "class.bard", 10 )]
-    [InlineData( "class.cleric", 8 )]
-    [InlineData( "class.druid", 10 )]
+    [InlineData( "class.bard", 12 )]
+    [InlineData( "class.cleric", 10 )]
+    [InlineData( "class.druid", 12 )]
     [InlineData( "class.fighter", 13 )]
     [InlineData( "class.ranger", 11 )]
     [InlineData( "class.rogue", 10 )]
     [InlineData( "class.witch", 8 )]
-    [InlineData( "class.wizard", 8 )]
+    [InlineData( "class.wizard", 10 )]
     public void GetCharacterClass_ReturnsCompleteInitialProficiencyMatrix(
         string characterClassId,
         int expectedGrantCount )
@@ -49,6 +49,19 @@ public sealed class CharacterClassRepositoryTests
             .Where( grant => grant.Target.Category == ProficiencyCategory.ClassDc ) );
         Assert.Equal( ProficiencyRank.Trained, classDc.Rank );
         Assert.Equal( $"{characterClass.Id}.initial_proficiencies", classDc.SourceGrantId );
+        if ( characterClass.SpellTradition.HasValue )
+        {
+            Assert.Equal(
+                ProficiencyRank.Trained,
+                GetRank(
+                    characterClass,
+                    ProficiencyTargets.SpellAttack( characterClass.SpellTradition.Value ).Id ) );
+            Assert.Equal(
+                ProficiencyRank.Trained,
+                GetRank(
+                    characterClass,
+                    ProficiencyTargets.SpellDc( characterClass.SpellTradition.Value ).Id ) );
+        }
     }
 
     [Fact]

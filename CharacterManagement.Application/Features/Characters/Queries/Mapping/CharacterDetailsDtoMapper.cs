@@ -127,7 +127,8 @@ public sealed class CharacterDetailsDtoMapper
                 characterClass.InitialProficiencies
                     .Concat( rogueRacket?.ProficiencyGrants ?? [] )
                     .Concat( clericDoctrine?.ProficiencyGrants ?? [] )
-                    .Concat( deity?.ProficiencyGrants ?? [] ) );
+                    .Concat( deity?.ProficiencyGrants ?? [] )
+                    .Concat( ResolveSpellcastingProficiencyGrants( characterClass, witchPatron ) ) );
         IReadOnlyCollection<CharacterFeat> characterFeats = _featRepository is null
             ? []
             : CharacterFeatResolver.Resolve(
@@ -201,7 +202,8 @@ public sealed class CharacterDetailsDtoMapper
                     effectiveProficiencies,
                     _skillRepository,
                     featTraining,
-                    allowedEquipment ),
+                    allowedEquipment,
+                    witchPatron?.SpellTradition ?? characterClass.SpellTradition ),
             Training = CharacterTrainingDtoMapper.Map( draftCharacter, _skillRepository, featTraining ),
             Proficiencies = characterClass is null
                 ? []
@@ -291,6 +293,29 @@ public sealed class CharacterDetailsDtoMapper
         }
 
         return _allowedEquipmentReader.Read( character, proficiencies );
+    }
+
+    private static IReadOnlyList<ProficiencyGrant> ResolveSpellcastingProficiencyGrants(
+        CharacterClass characterClass,
+        WitchPatron? witchPatron )
+    {
+        if ( ( characterClass.Id != "class.witch" ) || ( witchPatron is null ) )
+        {
+            return [];
+        }
+
+        string sourceGrantId = "class.witch.initial_proficiencies";
+        return
+        [
+            new ProficiencyGrant(
+                ProficiencyTargets.SpellAttack( witchPatron.SpellTradition ),
+                ProficiencyRank.Trained,
+                sourceGrantId ),
+            new ProficiencyGrant(
+                ProficiencyTargets.SpellDc( witchPatron.SpellTradition ),
+                ProficiencyRank.Trained,
+                sourceGrantId ),
+        ];
     }
 
     private RogueRacket? ResolveRogueRacket( DraftCharacter character )

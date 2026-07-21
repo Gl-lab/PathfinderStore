@@ -15,7 +15,9 @@ public enum ProficiencyCategory
     SavingThrow,
     Attack,
     Defense,
-    ClassDc
+    ClassDc,
+    SpellAttack,
+    SpellDc
 }
 
 public sealed record ProficiencyTarget
@@ -212,5 +214,31 @@ public static class ProficiencyTargets
             $"proficiency.class_dc.{classSuffix}",
             $"{characterClassName.Trim()} Class DC",
             ProficiencyCategory.ClassDc );
+    }
+
+    public static ProficiencyTarget SpellAttack( SpellTradition tradition )
+    {
+        if ( !Enum.IsDefined( tradition ) )
+        {
+            throw new ArgumentOutOfRangeException( nameof( tradition ) );
+        }
+
+        return new ProficiencyTarget(
+            $"proficiency.spell_attack.{tradition.ToString().ToLowerInvariant()}",
+            $"{tradition} Spell Attack",
+            ProficiencyCategory.SpellAttack );
+    }
+
+    public static ProficiencyTarget SpellDc( SpellTradition tradition )
+    {
+        if ( !Enum.IsDefined( tradition ) )
+        {
+            throw new ArgumentOutOfRangeException( nameof( tradition ) );
+        }
+
+        return new ProficiencyTarget(
+            $"proficiency.spell_dc.{tradition.ToString().ToLowerInvariant()}",
+            $"{tradition} Spell DC",
+            ProficiencyCategory.SpellDc );
     }
 }

@@ -18,7 +18,8 @@ public static class CharacterDerivedStatisticsDtoMapper
         IReadOnlyList<EffectiveProficiency> proficiencies,
         ISkillRepository? skillRepository,
         FeatTrainingResult? featTraining = null,
-        AllowedEquipmentLoadout? equipment = null )
+        AllowedEquipmentLoadout? equipment = null,
+        SpellTradition? spellTradition = null )
     {
         ArgumentNullException.ThrowIfNull( proficiencies );
 
@@ -38,6 +39,14 @@ public static class CharacterDerivedStatisticsDtoMapper
             },
             ArmorClass = MapArmorClass( character, proficiencies, equipment ),
             Strikes = MapStrikes( character, proficiencies, equipment ),
+            ClassDifficultyClass = MapClassDifficultyClass(
+                character,
+                characterClass,
+                proficiencies ),
+            Spellcasting = MapSpellcasting(
+                character,
+                proficiencies,
+                spellTradition ),
             Perception = Map(
                 character,
                 proficiencies,
@@ -247,6 +256,85 @@ public static class CharacterDerivedStatisticsDtoMapper
                 CircumstanceBonuses = strike.Damage.CircumstanceBonuses.Select( MapBonus ).ToArray(),
                 Formula = strike.Damage.Formula,
             },
+        };
+    }
+
+    private static CharacterCombatProficiencyStatisticDto? MapClassDifficultyClass(
+        DraftCharacter character,
+        CharacterClass characterClass,
+        IReadOnlyList<EffectiveProficiency> proficiencies )
+    {
+        if ( !character.SelectedClassKeyAbility.HasValue )
+        {
+            return null;
+        }
+
+        ProficiencyTarget target = ProficiencyTargets.ClassDc( characterClass.Id, characterClass.Name );
+        EffectiveProficiency proficiency = proficiencies.Single( item => item.Target.Id == target.Id );
+        return MapCombatProficiencyStatistic(
+            ProficiencyStatisticKind.DifficultyClass,
+            character.SelectedClassKeyAbility.Value,
+            character,
+            proficiency );
+    }
+
+    private static CharacterSpellcastingStatisticsDto? MapSpellcasting(
+        DraftCharacter character,
+        IReadOnlyList<EffectiveProficiency> proficiencies,
+        SpellTradition? tradition )
+    {
+        if ( !tradition.HasValue || !character.SelectedClassKeyAbility.HasValue )
+        {
+            return null;
+        }
+
+        EffectiveProficiency attackProficiency = proficiencies.Single(
+            item => item.Target.Id == ProficiencyTargets.SpellAttack( tradition.Value ).Id );
+        EffectiveProficiency dcProficiency = proficiencies.Single(
+            item => item.Target.Id == ProficiencyTargets.SpellDc( tradition.Value ).Id );
+        return new CharacterSpellcastingStatisticsDto
+        {
+            Tradition = tradition.Value,
+            Attack = MapCombatProficiencyStatistic(
+                ProficiencyStatisticKind.Modifier,
+                character.SelectedClassKeyAbility.Value,
+                character,
+                attackProficiency ),
+            DifficultyClass = MapCombatProficiencyStatistic(
+                ProficiencyStatisticKind.DifficultyClass,
+                character.SelectedClassKeyAbility.Value,
+                character,
+                dcProficiency ),
+        };
+    }
+
+    private static CharacterCombatProficiencyStatisticDto MapCombatProficiencyStatistic(
+        ProficiencyStatisticKind kind,
+        AbilityType ability,
+        DraftCharacter character,
+        EffectiveProficiency proficiency )
+    {
+        ProficiencyStatistic statistic = ProficiencyStatistic.Calculate(
+            kind,
+            ability,
+            character.AbilityScores.GetCharacteristic( ability ),
+            proficiency,
+            [],
+            CharacterLevel );
+        return new CharacterCombatProficiencyStatisticDto
+        {
+            Kind = statistic.Kind,
+            Base = statistic.Base,
+            Ability = statistic.Ability,
+            AbilityModifier = statistic.AbilityModifier,
+            ProficiencyTargetId = statistic.ProficiencyTargetId,
+            ProficiencyRank = statistic.ProficiencyRank,
+            ProficiencyBonus = statistic.ProficiencyBonus,
+            ProficiencySourceGrantIds = statistic.ProficiencySourceGrantIds,
+            ItemBonuses = statistic.ItemBonuses.Select( MapBonus ).ToArray(),
+            StatusBonuses = statistic.StatusBonuses.Select( MapBonus ).ToArray(),
+            CircumstanceBonuses = statistic.CircumstanceBonuses.Select( MapBonus ).ToArray(),
+            Total = statistic.Total,
         };
     }
 

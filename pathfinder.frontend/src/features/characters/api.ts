@@ -17,6 +17,8 @@ export type ProficiencyCategory =
   | 'Attack'
   | 'Defense'
   | 'ClassDc'
+  | 'SpellAttack'
+  | 'SpellDc'
 export type SpellTradition = 'Arcane' | 'Divine' | 'Occult' | 'Primal'
 export type FeatCategory = 'Ancestry' | 'Skill' | 'Class'
 export type CharacterFeatAcquisitionType = 'Selected' | 'Granted'
@@ -295,6 +297,8 @@ export interface CharacterDerivedStatistics {
   hitPoints: CharacterHitPoints
   armorClass: CharacterArmorClass
   strikes: CharacterStrike[]
+  classDifficultyClass: CharacterCombatProficiencyStatistic | null
+  spellcasting: CharacterSpellcastingStatistics | null
   perception: CharacterProficiencyStatistic
   savingThrows: {
     fortitude: CharacterProficiencyStatistic
@@ -302,6 +306,27 @@ export interface CharacterDerivedStatistics {
     will: CharacterProficiencyStatistic
   }
   skillModifiers: CharacterSkillModifiers
+}
+
+export interface CharacterSpellcastingStatistics {
+  tradition: SpellTradition
+  attack: CharacterCombatProficiencyStatistic
+  difficultyClass: CharacterCombatProficiencyStatistic
+}
+
+export interface CharacterCombatProficiencyStatistic {
+  kind: 'Modifier' | 'DifficultyClass'
+  base: number
+  ability: AbilityCode
+  abilityModifier: number
+  proficiencyTargetId: string
+  proficiencyRank: ProficiencyRank
+  proficiencyBonus: number
+  proficiencySourceGrantIds: string[]
+  itemBonuses: CharacterStatisticBonus[]
+  statusBonuses: CharacterStatisticBonus[]
+  circumstanceBonuses: CharacterStatisticBonus[]
+  total: number
 }
 
 export interface CharacterStrike {
