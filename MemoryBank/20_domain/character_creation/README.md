@@ -40,6 +40,7 @@
 - [class_catalog_player_core.md](class_catalog_player_core.md) — нормализованный baseline восьми классов `Player Core` для class package.
 - [background_catalog_core_rulebook.md](background_catalog_core_rulebook.md) — baseline-каталог backgrounds из Core Rulebook.
 - [skill_catalog_player_core.md](skill_catalog_player_core.md) — общий каталог skills Player Core.
+- [equipment_inventory_boundary.md](equipment_inventory_boundary.md) — ownership catalog/loadout в `CharacterManagement` и граница с будущим Store/Inventory.
 - [catalog_inventory_status.md](catalog_inventory_status.md) — карта готовности каталогов.
 
 ## Gaps And Implementation

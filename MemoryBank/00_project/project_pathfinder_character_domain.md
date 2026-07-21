@@ -62,7 +62,7 @@
 - `PUT /api/character/{characterId}/gender`
 - `DELETE /api/character/{characterId}`
 
-Legacy item endpoints в `CharacterController` не относятся к текущему character creation flow.
+Пустые legacy item endpoints удалены. Новый starting equipment API должен следовать ownership boundary из [`../20_domain/character_creation/equipment_inventory_boundary.md`](../20_domain/character_creation/equipment_inventory_boundary.md).
 
 ## Tests
 

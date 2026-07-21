@@ -303,14 +303,6 @@ public sealed class CharacterController : AuthorizedController
         }
     }
 
-    [HttpGet]
-    [Route( "items" )]
-    public ActionResult Items() => Ok();
-
-    [HttpDelete]
-    [Route( "items/drop" )]
-    public ActionResult ItemDrop() => Ok();
-
     private static IReadOnlyCollection<string> MapErrorMessage( string message ) => [ message ];
 
     private static IReadOnlyCollection<string> MapValidationErrors( ValidationException exception ) => exception.Errors
