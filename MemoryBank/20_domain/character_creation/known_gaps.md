@@ -58,11 +58,9 @@ Player Core каталог оформлен в [deities_player_core.md](deities_
 
 ### Equipment And Starting Wealth
 
-Ownership boundary зафиксирована в [equipment_inventory_boundary.md](equipment_inventory_boundary.md): catalog, starting rules и draft loadout принадлежат `CharacterManagement`, а Store остаётся отключённым. Есть отдельные упоминания стартовых предметов, например `Clan Dagger`, но полного каталога стартового снаряжения и starting wealth пока нет.
+Ownership boundary зафиксирована в [equipment_inventory_boundary.md](equipment_inventory_boundary.md): catalog, starting rules и draft loadout принадлежат `CharacterManagement`, а Store остаётся отключённым. Минимальный catalog v1, starting wealth и kits восьми поддерживаемых классов нормализованы в [equipment_starting_wealth_catalog.md](equipment_starting_wealth_catalog.md) и доступны через API.
 
-Следующий ожидаемый документ:
-
-- `equipment_starting_wealth_catalog.md`
+Пока отсутствуют выбор и persistence character loadout, equipped state, server-side total cost validation, bulk calculation и полный ассортимент Player Core вне starting kits.
 
 ### Languages
 

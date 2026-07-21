@@ -324,7 +324,7 @@ AC, attacks, damage, current/temporary HP и equipment bonuses не входят
 **Предлагаемые slices:**
 
 1. Зафиксировать ownership boundary между CharacterManagement catalog/loadout и будущим Store/Inventory — завершено; см. [архитектурное решение](../20_domain/character_creation/equipment_inventory_boundary.md).
-2. Нормализовать минимальный Player Core equipment catalog v1 и starting wealth/class kit rules.
+2. Нормализовать минимальный Player Core equipment catalog v1 и starting wealth/class kit rules — завершено; см. [нормативный каталог](../20_domain/character_creation/equipment_starting_wealth_catalog.md).
 3. Реализовать выбор стартового набора, валидацию стоимости и сохранение immutable item references с character-owned state.
 4. Добавить equipped state, weapon/armor proficiency matching и bulk foundation.
 

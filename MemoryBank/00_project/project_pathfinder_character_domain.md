@@ -55,6 +55,8 @@
 - `GET /api/skills`
 - `GET /api/languages`
 - `GET /api/languages/options?ancestryType=...&intelligenceScore=...`
+- `GET /api/equipment`
+- `GET /api/equipment/class-kits`
 - `GET /api/character`
 - `GET /api/character/{characterId}`
 - `POST /api/character`
