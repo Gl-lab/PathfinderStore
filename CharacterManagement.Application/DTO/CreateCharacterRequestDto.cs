@@ -59,4 +59,6 @@ public class CreateCharacterRequestDto
     public IReadOnlyList<string> AdditionalLanguageIds { get; set; } = [];
     public IReadOnlyList<ClassSkillGrantChoice> ClassSkillGrantChoices { get; set; } = [];
     public IReadOnlyList<ClassTrainingTargetChoice> AdditionalClassTrainingChoices { get; set; } = [];
+    public IReadOnlyList<string> ClassKitOptionIds { get; set; } = [];
+    public string? DeityFavoredWeaponEquipmentId { get; set; }
 }

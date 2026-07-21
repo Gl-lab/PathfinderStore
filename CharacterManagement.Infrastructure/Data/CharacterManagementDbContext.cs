@@ -6,6 +6,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.CharacterManagement.Domain.Rules.Training;
 using Pathfinder.CharacterManagement.Domain.Rules.Feats;
+using Pathfinder.CharacterManagement.Domain.Rules.Equipment;
 
 namespace Pathfinder.CharacterManagement.Infrastructure.Data;
 
@@ -42,6 +43,20 @@ public class CharacterManagementDbContext( DbContextOptions<CharacterManagementD
             b.Property( x => x.SelectedBackgroundFreeBoost ).HasConversion<int>();
             b.Property( x => x.SelectedBackgroundSkillFeatId ).HasMaxLength( 100 );
             b.Property( x => x.SelectedClassId ).HasMaxLength( 100 );
+            b.Property( x => x.SelectedClassKitId ).HasMaxLength( 100 );
+            ConfigureStringList( b.Property( x => x.SelectedClassKitOptionIds ) );
+            b.Property( x => x.StartingEquipmentItems )
+                .HasConversion(
+                    value => JsonSerializer.Serialize( value.ToList(), (JsonSerializerOptions?)null ),
+                    value => String.IsNullOrEmpty( value )
+                        ? (IReadOnlyList<CharacterEquipmentItem>)Array.Empty<CharacterEquipmentItem>()
+                        : (IReadOnlyList<CharacterEquipmentItem>)( JsonSerializer.Deserialize<List<CharacterEquipmentItem>>( value, (JsonSerializerOptions?)null ) ?? new List<CharacterEquipmentItem>() ) )
+                .HasColumnType( "jsonb" )
+                .HasDefaultValueSql( "'[]'::jsonb" )
+                .Metadata.SetValueComparer( new ValueComparer<IReadOnlyList<CharacterEquipmentItem>>(
+                    ( first, second ) => first != null && second != null && first.SequenceEqual( second ),
+                    collection => collection.Aggregate( 0, ( hash, item ) => HashCode.Combine( hash, item ) ),
+                    collection => collection.ToList() ) );
             b.Property( x => x.SelectedClassKeyAbility ).HasConversion<int>();
             b.Property( x => x.SelectedClassFeatChoices )
                 .HasConversion(

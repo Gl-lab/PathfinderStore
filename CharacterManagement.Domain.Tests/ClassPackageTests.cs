@@ -4,6 +4,7 @@ using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.CharacterManagement.Domain.Exceptions;
 using Pathfinder.CharacterManagement.Domain.Rules.Training;
 using Pathfinder.CharacterManagement.Domain.Rules.Spells;
+using Pathfinder.CharacterManagement.Domain.Rules.Equipment;
 
 namespace CharacterManagement.Domain.Tests;
 
@@ -102,6 +103,31 @@ public sealed class ClassPackageTests
         Assert.Equal( 14, character.AbilityScores.Intelligence.Value );
         Assert.Equal( 12, character.AbilityScores.Charisma.Value );
         Assert.Equal( 12, character.AbilityScores.Dexterity.Value );
+    }
+
+    [Fact]
+    public void SetClassPackage_ChangingClass_InvalidatesStartingEquipment()
+    {
+        DraftCharacter character = CreateCharacter();
+        CharacterClass fighter = CreateClass( "class.fighter", AbilityType.Strength );
+        CharacterClass bard = CreateClass( "class.bard", AbilityType.Charisma );
+        character.SetClassPackage( fighter, AbilityType.Strength );
+        character.SetStartingEquipment( new StartingEquipmentSelection(
+            "class_kit.fighter",
+            fighter.Id,
+            [],
+            [ new CharacterEquipmentItem( "equipment.adventurers_pack", 1 ) ],
+            70 ) );
+
+        character.SetClassPackage(
+            bard,
+            AbilityType.Charisma,
+            bardMuse: CreateBardMuse(),
+            bardSpellLoadout: CreateBardSpellLoadout() );
+
+        Assert.Null( character.SelectedClassKitId );
+        Assert.Empty( character.SelectedClassKitOptionIds );
+        Assert.Empty( character.StartingEquipmentItems );
     }
 
     [Fact]

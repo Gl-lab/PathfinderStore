@@ -23,8 +23,25 @@ public class CharacterDto : BaseDto
     public IReadOnlyList<ProficiencyDto> Proficiencies { get; set; } = [];
     public IReadOnlyList<CharacterFeatDto> Feats { get; set; } = [];
     public CharacterCompletionDto Completion { get; set; } = new CharacterCompletionDto();
+    public CharacterStartingEquipmentDto? StartingEquipment { get; set; }
     public virtual BackpackDto? Backpack { get; set; }
     public virtual GroupCharacteristicDto Characteristics { get; set; }
+}
+
+public sealed class CharacterStartingEquipmentDto
+{
+    public string ClassKitId { get; set; } = String.Empty;
+    public IReadOnlyList<string> SelectedOptionIds { get; set; } = [];
+    public IReadOnlyList<CharacterEquipmentLineDto> Items { get; set; } = [];
+    public int TotalPriceCopper { get; set; }
+    public int RemainingWealthCopper { get; set; }
+}
+
+public sealed class CharacterEquipmentLineDto
+{
+    public EquipmentDto Definition { get; set; } = new EquipmentDto();
+    public int PurchaseQuantity { get; set; }
+    public int UnitQuantity { get; set; }
 }
 
 public class BackpackDto : BaseDto

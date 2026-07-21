@@ -29,6 +29,7 @@ public sealed class CharacterDetailsDtoMapper
     private readonly IAvatarCatalog? _avatarCatalog;
     private readonly IFeatRepository? _featRepository;
     private readonly CharacterCompletionEvaluator? _completionEvaluator;
+    private readonly IEquipmentRepository? _equipmentRepository;
 
     public CharacterDetailsDtoMapper(
         IAncestryRepository? ancestryRepository = null,
@@ -48,7 +49,8 @@ public sealed class CharacterDetailsDtoMapper
         ISpellRepository? spellRepository = null,
         IAvatarCatalog? avatarCatalog = null,
         IFeatRepository? featRepository = null,
-        CharacterCompletionEvaluator? completionEvaluator = null )
+        CharacterCompletionEvaluator? completionEvaluator = null,
+        IEquipmentRepository? equipmentRepository = null )
     {
         _ancestryRepository = ancestryRepository;
         _backgroundRepository = backgroundRepository;
@@ -68,6 +70,7 @@ public sealed class CharacterDetailsDtoMapper
         _avatarCatalog = avatarCatalog;
         _featRepository = featRepository;
         _completionEvaluator = completionEvaluator;
+        _equipmentRepository = equipmentRepository;
     }
 
     public DraftCharacter Convert( CharacterDto character ) => throw new NotSupportedException();
@@ -202,6 +205,7 @@ public sealed class CharacterDetailsDtoMapper
                 .Select( CharacterFeatDtoMapper.Map )
                 .ToArray(),
             Completion = _completionEvaluator?.Evaluate( draftCharacter ) ?? new CharacterCompletionDto(),
+            StartingEquipment = MapStartingEquipment( draftCharacter ),
             Characteristics = new GroupCharacteristicDto
             {
                 Strength = Convert( draftCharacter.AbilityScores.Strength ),
@@ -213,6 +217,41 @@ public sealed class CharacterDetailsDtoMapper
                 MaxPortableWeight = draftCharacter.AbilityScores.MaxPortableWeight,
             },
             Backpack = null,
+        };
+    }
+
+    private CharacterStartingEquipmentDto? MapStartingEquipment( DraftCharacter character )
+    {
+        if ( character.SelectedClassKitId is null )
+        {
+            return null;
+        }
+
+        if ( _equipmentRepository is null )
+        {
+            throw new InvalidOperationException( "Equipment repository is required to map starting equipment." );
+        }
+
+        List<CharacterEquipmentLineDto> items = character.StartingEquipmentItems
+            .Select( item =>
+            {
+                EquipmentDefinition definition = _equipmentRepository.GetEquipment( item.EquipmentId );
+                return new CharacterEquipmentLineDto
+                {
+                    Definition = EquipmentDtoMapper.Map( definition ),
+                    PurchaseQuantity = item.PurchaseQuantity,
+                    UnitQuantity = item.PurchaseQuantity * definition.UnitsPerPurchase,
+                };
+            } )
+            .ToList();
+        int totalPriceCopper = items.Sum( item => item.Definition.PriceCopper * item.PurchaseQuantity );
+        return new CharacterStartingEquipmentDto
+        {
+            ClassKitId = character.SelectedClassKitId,
+            SelectedOptionIds = character.SelectedClassKitOptionIds.ToArray(),
+            Items = items,
+            TotalPriceCopper = totalPriceCopper,
+            RemainingWealthCopper = ClassKitDefinition.StartingWealthCopper - totalPriceCopper,
         };
     }
 

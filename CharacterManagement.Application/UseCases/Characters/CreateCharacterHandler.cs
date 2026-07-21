@@ -112,6 +112,9 @@ public sealed class CreateCharacterHandler : IRequestHandler<CreateCharacterComm
             request.Character.ClassId,
             request.Character.ClassSkillGrantChoices,
             request.Character.AdditionalClassTrainingChoices );
+        _characterBuilder.SetStartingEquipment(
+            request.Character.ClassKitOptionIds,
+            request.Character.DeityFavoredWeaponEquipmentId );
 
         DraftCharacter draftCharacter = _characterBuilder.Build();
         account.AddDraftCharacter( draftCharacter );

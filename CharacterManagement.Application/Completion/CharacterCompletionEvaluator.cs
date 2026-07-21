@@ -5,6 +5,7 @@ using Pathfinder.CharacterManagement.Domain.Rules.Feats;
 using Pathfinder.CharacterManagement.Domain.Rules.Languages;
 using Pathfinder.CharacterManagement.Domain.Rules.Spells;
 using Pathfinder.CharacterManagement.Domain.Rules.Training;
+using Pathfinder.CharacterManagement.Domain.Rules.Equipment;
 
 namespace Pathfinder.CharacterManagement.Application.Completion;
 
@@ -26,6 +27,7 @@ public sealed class CharacterCompletionEvaluator
     private readonly ISpellRepository _spellRepository;
     private readonly IFeatRepository _featRepository;
     private readonly ILanguageRepository _languageRepository;
+    private readonly IEquipmentRepository _equipmentRepository;
 
     public CharacterCompletionEvaluator(
         IAncestryRepository ancestryRepository,
@@ -43,7 +45,8 @@ public sealed class CharacterCompletionEvaluator
         IClericDomainRepository clericDomainRepository,
         ISpellRepository spellRepository,
         IFeatRepository featRepository,
-        ILanguageRepository languageRepository )
+        ILanguageRepository languageRepository,
+        IEquipmentRepository equipmentRepository )
     {
         _ancestryRepository = ancestryRepository;
         _backgroundRepository = backgroundRepository;
@@ -61,6 +64,7 @@ public sealed class CharacterCompletionEvaluator
         _spellRepository = spellRepository;
         _featRepository = featRepository;
         _languageRepository = languageRepository;
+        _equipmentRepository = equipmentRepository;
     }
 
     public CharacterCompletionDto Evaluate( DraftCharacter character )
@@ -175,6 +179,34 @@ public sealed class CharacterCompletionEvaluator
             issues,
             CharacterCompletionIssueCode.ClassTraining,
             () => ValidateClassTraining( character, characterClass ) );
+        Validate(
+            issues,
+            CharacterCompletionIssueCode.StartingEquipment,
+            () => ValidateStartingEquipment( character, characterClass, deity ) );
+    }
+
+    private void ValidateStartingEquipment(
+        DraftCharacter character,
+        CharacterClass characterClass,
+        Deity? deity )
+    {
+        ClassKitDefinition classKit = _equipmentRepository.GetClassKit( characterClass.Id );
+        string? deityFavoredWeaponEquipmentId = character.StartingEquipmentItems
+            .Select( item => item.EquipmentId )
+            .FirstOrDefault( equipmentId => deity?.FavoredWeapons.Any(
+                weapon => equipmentId == $"equipment.{weapon.Id[ "weapon.".Length.. ]}" ) == true );
+        StartingEquipmentSelection resolved = StartingEquipmentResolver.Resolve(
+            classKit,
+            _equipmentRepository.GetAll(),
+            character.SelectedClassKitOptionIds,
+            deity,
+            deityFavoredWeaponEquipmentId );
+
+        if ( character.SelectedClassKitId != resolved.ClassKitId ||
+             !character.StartingEquipmentItems.SequenceEqual( resolved.Items ) )
+        {
+            throw new InvalidOperationException( "Starting equipment does not match the selected class kit." );
+        }
     }
 
     private Ancestry ResolveAncestry( DraftCharacter character )

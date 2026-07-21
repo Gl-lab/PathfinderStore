@@ -3,6 +3,7 @@ using Pathfinder.CharacterManagement.Domain.Rules.Training;
 using Pathfinder.CharacterManagement.Domain.Rules.Feats;
 using Pathfinder.CharacterManagement.Domain.Rules.Languages;
 using Pathfinder.CharacterManagement.Domain.Rules.Spells;
+using Pathfinder.CharacterManagement.Domain.Rules.Equipment;
 using Pathfinder.Utils.Entities.Base;
 
 namespace Pathfinder.CharacterManagement.Domain.Entity;
@@ -67,6 +68,9 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public IReadOnlyList<AbilityType> AppliedFinalFreeBoosts { get; private set; } = [];
     public IReadOnlyList<TrainedSkill> TrainedSkills { get; private set; } = [];
     public IReadOnlyList<TrainedLore> TrainedLore { get; private set; } = [];
+    public string? SelectedClassKitId { get; private set; }
+    public IReadOnlyList<string> SelectedClassKitOptionIds { get; private set; } = [];
+    public IReadOnlyList<CharacterEquipmentItem> StartingEquipmentItems { get; private set; } = [];
     public bool HasCompleteAncestryPackage => !String.IsNullOrWhiteSpace( SelectedHeritageId ) && !String.IsNullOrWhiteSpace( SelectedAncestryFeatId );
     public bool HasBackgroundBoostPackage =>
         !String.IsNullOrWhiteSpace( SelectedBackgroundId ) &&
@@ -661,6 +665,11 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
 
         RemoveClassEffects();
 
+        if ( SelectedClassId != characterClass.Id )
+        {
+            ClearStartingEquipment();
+        }
+
         AbilityScores.ApplyAbilityBoost( keyAbility );
         SelectedClassId = characterClass.Id;
         SelectedClassFeatChoices = resolvedClassFeatChoices;
@@ -707,6 +716,30 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         }
 
         EnsureInvariants();
+    }
+
+    public void SetStartingEquipment( StartingEquipmentSelection selection )
+    {
+        EnsureDraft();
+        ArgumentNullException.ThrowIfNull( selection );
+
+        if ( SelectedClassId != selection.CharacterClassId )
+        {
+            throw new CharacterManagementException(
+                $"Starting equipment kit '{selection.ClassKitId}' does not match selected class '{SelectedClassId}'." );
+        }
+
+        SelectedClassKitId = selection.ClassKitId;
+        SelectedClassKitOptionIds = selection.SelectedOptionIds.ToArray();
+        StartingEquipmentItems = selection.Items.ToArray();
+        EnsureInvariants();
+    }
+
+    private void ClearStartingEquipment()
+    {
+        SelectedClassKitId = null;
+        SelectedClassKitOptionIds = [];
+        StartingEquipmentItems = [];
     }
 
     private static IReadOnlyCollection<string> GetGrantedClassFeatIds(

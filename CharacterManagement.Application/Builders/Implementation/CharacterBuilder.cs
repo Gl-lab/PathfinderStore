@@ -5,6 +5,7 @@ using Pathfinder.CharacterManagement.Domain.Rules.Training;
 using Pathfinder.CharacterManagement.Domain.Rules.Spells;
 using Pathfinder.CharacterManagement.Domain.Rules.Feats;
 using Pathfinder.CharacterManagement.Domain.Rules.Languages;
+using Pathfinder.CharacterManagement.Domain.Rules.Equipment;
 
 namespace Pathfinder.CharacterManagement.Application.Builders.Implementation;
 
@@ -29,6 +30,7 @@ public class CharacterBuilder : ICharacterBuilder
     private readonly IArcaneThesisRepository? _arcaneThesisRepository;
     private readonly IFeatRepository? _featRepository;
     private readonly ILanguageRepository? _languageRepository;
+    private readonly IEquipmentRepository? _equipmentRepository;
 
     public CharacterBuilder(
         IAncestryRepository ancestryRepository,
@@ -48,7 +50,8 @@ public class CharacterBuilder : ICharacterBuilder
         IClericDomainRepository? clericDomainRepository = null,
         ISpellRepository? spellRepository = null,
         IFeatRepository? featRepository = null,
-        ILanguageRepository? languageRepository = null )
+        ILanguageRepository? languageRepository = null,
+        IEquipmentRepository? equipmentRepository = null )
     {
         _ancestryRepository = ancestryRepository;
         _ancestryChoiceAvailabilityPolicy = ancestryChoiceAvailabilityPolicy ?? new CommonAncestryChoiceAvailabilityPolicy();
@@ -68,6 +71,7 @@ public class CharacterBuilder : ICharacterBuilder
         _arcaneThesisRepository = arcaneThesisRepository;
         _featRepository = featRepository;
         _languageRepository = languageRepository;
+        _equipmentRepository = equipmentRepository;
     }
 
     public void CreateCharacter(
@@ -688,7 +692,40 @@ public class CharacterBuilder : ICharacterBuilder
 
     public void SetAbilityScores() => throw new NotImplementedException();
 
-    public void SetInventory() => throw new NotImplementedException();
+    public void SetStartingEquipment(
+        IReadOnlyList<string> selectedOptionIds,
+        string? deityFavoredWeaponEquipmentId = null )
+    {
+        if ( _draftCharacter?.SelectedClassId is null )
+        {
+            throw new InvalidOperationException( "Character class must be set before starting equipment." );
+        }
+
+        if ( _equipmentRepository is null )
+        {
+            throw new InvalidOperationException( "Equipment repository is not configured." );
+        }
+
+        Deity? deity = null;
+        if ( _draftCharacter.SelectedDeityId is not null )
+        {
+            if ( _deityRepository is null )
+            {
+                throw new InvalidOperationException( "Deity repository is not configured." );
+            }
+
+            deity = _deityRepository.GetDeity( _draftCharacter.SelectedDeityId );
+        }
+
+        ClassKitDefinition classKit = _equipmentRepository.GetClassKit( _draftCharacter.SelectedClassId );
+        StartingEquipmentSelection selection = StartingEquipmentResolver.Resolve(
+            classKit,
+            _equipmentRepository.GetAll(),
+            selectedOptionIds,
+            deity,
+            deityFavoredWeaponEquipmentId );
+        _draftCharacter.SetStartingEquipment( selection );
+    }
 
     public void SetAlignment() => throw new NotImplementedException();
 

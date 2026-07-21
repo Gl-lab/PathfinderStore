@@ -14,6 +14,7 @@ public enum CharacterCompletionIssueCode
     ClassTraining,
     Languages,
     FinalBoosts,
+    StartingEquipment,
 }
 
 public sealed class CharacterCompletionIssueDto

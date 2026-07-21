@@ -44,6 +44,8 @@ import {
   getSkills,
   getFeatOptions,
   getLanguageSelectionOptions,
+  getEquipment,
+  getClassKits,
   type Ancestry,
   type Background,
   type BackgroundTrainingChoice,
@@ -72,6 +74,9 @@ import {
   type FeatDefinition,
   type FeatChoice,
   type LanguageSelectionOptions,
+  type EquipmentDefinition,
+  type ClassKit,
+  type ClassKitOptionGroup,
 } from '@/features/character-creation/api'
 import {
   getBackgroundFreeBoostOptions,
@@ -167,6 +172,8 @@ const step = ref(1)
 const ancestries = ref<Ancestry[]>([])
 const backgrounds = ref<Background[]>([])
 const characterClasses = ref<CharacterClass[]>([])
+const equipment = ref<EquipmentDefinition[]>([])
+const classKits = ref<ClassKit[]>([])
 const rogueRackets = ref<RogueRacket[]>([])
 const huntersEdges = ref<HuntersEdge[]>([])
 const druidicOrders = ref<DruidicOrder[]>([])
@@ -253,6 +260,8 @@ const form = ref({
   additionalLanguageIds: [] as string[],
   classSkillGrantChoices: [] as ClassSkillGrantChoice[],
   additionalClassTrainingChoices: [] as ClassTrainingTargetChoice[],
+  classKitOptionIds: [] as string[],
+  deityFavoredWeaponEquipmentId: null as string | null,
 })
 const abilityCodes: AbilityCode[] = ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma']
 const selectedAncestry = computed(
@@ -392,6 +401,55 @@ const selectedWizardSpellbookSpells = computed(() =>
 const selectedArcaneThesis = computed(
   () => arcaneTheses.value.find((item) => item.id === form.value.arcaneThesisId) ?? null,
 )
+const selectedClassKit = computed(
+  () => classKits.value.find((item) => item.characterClassId === form.value.classId) ?? null,
+)
+const availableFavoredWeapons = computed(() => {
+  if (!selectedDeity.value) return []
+  const equipmentIds = new Set(
+    selectedDeity.value.favoredWeapons.map((weapon) => `equipment.${weapon.id.replace('weapon.', '')}`),
+  )
+  return equipment.value.filter((item) => equipmentIds.has(item.id))
+})
+const selectedKitItems = computed(() => {
+  if (!selectedClassKit.value) return []
+  const quantities = new Map<string, number>()
+  const addItems = (items: { equipmentId: string; purchaseQuantity: number }[]) => {
+    items.forEach((item) => quantities.set(
+      item.equipmentId,
+      (quantities.get(item.equipmentId) ?? 0) + item.purchaseQuantity,
+    ))
+  }
+  addItems(selectedClassKit.value.items)
+  selectedClassKit.value.optionGroups
+    .flatMap((group) => group.options)
+    .filter((option) => form.value.classKitOptionIds.includes(option.id))
+    .forEach((option) => addItems(option.items))
+  if (form.value.deityFavoredWeaponEquipmentId) {
+    addItems([{ equipmentId: form.value.deityFavoredWeaponEquipmentId, purchaseQuantity: 1 }])
+  }
+  return [...quantities.entries()].map(([equipmentId, purchaseQuantity]) => ({
+    definition: equipment.value.find((item) => item.id === equipmentId) ?? null,
+    purchaseQuantity,
+  }))
+})
+const startingEquipmentCostCopper = computed(() => selectedKitItems.value.reduce(
+  (total, item) => total + ((item.definition?.priceCopper ?? 0) * item.purchaseQuantity),
+  0,
+))
+const isStartingEquipmentComplete = computed(() => {
+  if (!selectedClassKit.value || selectedKitItems.value.some((item) => !item.definition)) return false
+  const selectedOptions = selectedClassKit.value.optionGroups
+    .flatMap((group) => group.options)
+    .filter((option) => form.value.classKitOptionIds.includes(option.id))
+  const requiresFavoredWeapon = selectedOptions.some(
+    (option) => option.dependency === 'DeityFavoredWeapon',
+  )
+  return (
+    (!requiresFavoredWeapon || Boolean(form.value.deityFavoredWeaponEquipmentId)) &&
+    startingEquipmentCostCopper.value <= selectedClassKit.value.startingWealthCopper
+  )
+})
 const classFeatChoiceSlots = computed(() => getRequiredClassFeatChoiceSlots(
   selectedCharacterClass.value,
   selectedArcaneSchool.value,
@@ -706,8 +764,30 @@ const canContinue = computed(() => {
       existingClassTrainingSkillIds.value,
       skills.value,
     )
+  if (step.value === 10) return isStartingEquipmentComplete.value
   return true
 })
+
+function toggleClassKitOption(group: ClassKitOptionGroup, optionId: string): void {
+  if (form.value.classKitOptionIds.includes(optionId)) {
+    form.value.classKitOptionIds = form.value.classKitOptionIds.filter((id) => id !== optionId)
+  } else if (group.selection === 'AtMostOne') {
+    const groupOptionIds = new Set(group.options.map((option) => option.id))
+    form.value.classKitOptionIds = form.value.classKitOptionIds.filter(
+      (id) => !groupOptionIds.has(id),
+    )
+    form.value.classKitOptionIds.push(optionId)
+  } else {
+    form.value.classKitOptionIds.push(optionId)
+  }
+  const favoredOptionSelected = selectedClassKit.value?.optionGroups
+    .flatMap((item) => item.options)
+    .some((option) => (
+      option.dependency === 'DeityFavoredWeapon' &&
+      form.value.classKitOptionIds.includes(option.id)
+    )) ?? false
+  if (!favoredOptionSelected) form.value.deityFavoredWeaponEquipmentId = null
+}
 
 function selectAncestry(type: AncestryCode | null): void {
   form.value.ancestryType = type
@@ -756,6 +836,8 @@ function selectBackgroundRestrictedBoost(boost: AbilityCode | null): void {
 }
 function selectCharacterClass(classId: string | null): void {
   form.value.classId = classId
+  form.value.classKitOptionIds = []
+  form.value.deityFavoredWeaponEquipmentId = null
   const characterClass = characterClasses.value.find((item) => item.id === classId) ?? null
   form.value.classKeyAbility = getAutomaticallySelectedKeyAbility(
     characterClass?.keyAbilityOptions ?? [],
@@ -796,6 +878,7 @@ function selectCharacterClass(classId: string | null): void {
 }
 async function selectDeity(deityId: string | null): Promise<void> {
   form.value.deityId = deityId
+  form.value.deityFavoredWeaponEquipmentId = null
   const deity = deities.value.find((item) => item.id === deityId) ?? null
   form.value.divineFont = deity?.divineFontOptions.length === 1 ? deity.divineFontOptions[0] : null
   form.value.divineSanctification = deity?.requiredSanctification ?? null
@@ -1036,7 +1119,7 @@ function selectWitchPreparedCantrips(spellIds: string[]): void {
   form.value.witchPreparedCantripIds = spellIds.slice(0, 5)
 }
 function next(): void {
-  if (canContinue.value && step.value < 10) step.value += 1
+  if (canContinue.value && step.value < 11) step.value += 1
 }
 function previous(): void {
   if (step.value > 1) step.value -= 1
@@ -1214,6 +1297,8 @@ async function submit(): Promise<void> {
         ...choice,
         customLoreTopic: choice.customLoreTopic?.trim() || null,
       })),
+      classKitOptionIds: form.value.classKitOptionIds,
+      deityFavoredWeaponEquipmentId: form.value.deityFavoredWeaponEquipmentId,
     })
     await router.replace('/')
   } catch (error) {
@@ -1226,10 +1311,12 @@ async function loadCatalogs(): Promise<void> {
   isLoadingCatalogs.value = true
   errorMessages.value = []
   try {
-    const [ancestryCatalog, backgroundCatalog, classCatalog, racketCatalog, huntersEdgeCatalog, druidicOrderCatalog, bardMuseCatalog, witchPatronCatalog, arcaneSchoolCatalog, arcaneThesisCatalog, doctrineCatalog, deityCatalog, clericDomainCatalog, skillCatalog, ancestryFeatCatalog, skillFeatCatalog, classFeatCatalog, arcaneCantripCatalog, arcaneRankOneSpellCatalog, divineCantripCatalog, divineRankOneSpellCatalog, occultCantripCatalog, occultRankOneSpellCatalog, primalCantripCatalog, primalRankOneSpellCatalog] = await Promise.all([
+    const [ancestryCatalog, backgroundCatalog, classCatalog, equipmentCatalog, classKitCatalog, racketCatalog, huntersEdgeCatalog, druidicOrderCatalog, bardMuseCatalog, witchPatronCatalog, arcaneSchoolCatalog, arcaneThesisCatalog, doctrineCatalog, deityCatalog, clericDomainCatalog, skillCatalog, ancestryFeatCatalog, skillFeatCatalog, classFeatCatalog, arcaneCantripCatalog, arcaneRankOneSpellCatalog, divineCantripCatalog, divineRankOneSpellCatalog, occultCantripCatalog, occultRankOneSpellCatalog, primalCantripCatalog, primalRankOneSpellCatalog] = await Promise.all([
       getAncestries(),
       getBackgrounds(),
       getCharacterClasses(),
+      getEquipment(),
+      getClassKits(),
       getRogueRackets(),
       getHuntersEdges(),
       getDruidicOrders(),
@@ -1256,6 +1343,8 @@ async function loadCatalogs(): Promise<void> {
     ancestries.value = ancestryCatalog
     backgrounds.value = backgroundCatalog
     characterClasses.value = classCatalog
+    equipment.value = equipmentCatalog
+    classKits.value = classKitCatalog
     rogueRackets.value = racketCatalog
     huntersEdges.value = huntersEdgeCatalog
     druidicOrders.value = druidicOrderCatalog
@@ -1325,10 +1414,10 @@ watch(
       </div>
       <v-btn variant="text" to="/">{{ t('common.cancel') }}</v-btn>
     </header>
-    <v-progress-linear :model-value="(step / 10) * 100" color="accent" height="8" rounded />
+    <v-progress-linear :model-value="(step / 11) * 100" color="accent" height="8" rounded />
     <ol class="steps">
       <li
-        v-for="(item, index) in [t('wizard.basic'), t('wizard.ancestry'), t('wizard.choices'), t('wizard.boosts'), t('wizard.background'), t('classUi.characterClass'), t('classUi.spells'), t('wizard.finalFreeBoosts'), t('classUi.classTraining'), t('wizard.review')]"
+        v-for="(item, index) in [t('wizard.basic'), t('wizard.ancestry'), t('wizard.choices'), t('wizard.boosts'), t('wizard.background'), t('classUi.characterClass'), t('classUi.spells'), t('wizard.finalFreeBoosts'), t('classUi.classTraining'), t('equipment.title'), t('wizard.review')]"
         :key="item"
         :class="{ active: step === index + 1, complete: step > index + 1 }"
       >
@@ -2105,7 +2194,48 @@ watch(
             />
           </div>
         </section>
-        <section v-else-if="step === 10 && selectedAncestry">
+        <section v-else-if="step === 10 && selectedClassKit">
+          <h2>{{ t('equipment.title') }}</h2>
+          <p class="hint">{{ t('equipment.hint') }}</p>
+          <h3>{{ selectedClassKit.name }}</h3>
+          <v-list density="compact">
+            <v-list-item
+              v-for="item in selectedKitItems.filter((line) => line.definition)"
+              :key="item.definition!.id"
+              :title="`${item.definition!.name} × ${item.purchaseQuantity * item.definition!.unitsPerPurchase}`"
+              :subtitle="`${item.definition!.priceCopper * item.purchaseQuantity} cp`"
+            />
+          </v-list>
+          <div v-for="group in selectedClassKit.optionGroups" :key="group.id">
+            <h3>{{ t('equipment.options') }}</h3>
+            <v-checkbox
+              v-for="option in group.options"
+              :key="option.id"
+              :model-value="form.classKitOptionIds.includes(option.id)"
+              :label="option.name"
+              hide-details
+              @update:model-value="toggleClassKitOption(group, option.id)"
+            />
+          </div>
+          <v-select
+            v-if="selectedClassKit.optionGroups.flatMap((group) => group.options).some((option) => option.dependency === 'DeityFavoredWeapon' && form.classKitOptionIds.includes(option.id))"
+            v-model="form.deityFavoredWeaponEquipmentId"
+            :items="availableFavoredWeapons"
+            item-title="name"
+            item-value="id"
+            :label="t('equipment.favoredWeapon')"
+          />
+          <v-alert
+            :type="startingEquipmentCostCopper <= selectedClassKit.startingWealthCopper ? 'info' : 'error'"
+            variant="tonal"
+          >
+            {{ t('equipment.budget', {
+              spent: startingEquipmentCostCopper,
+              remaining: selectedClassKit.startingWealthCopper - startingEquipmentCostCopper,
+            }) }}
+          </v-alert>
+        </section>
+        <section v-else-if="step === 11 && selectedAncestry">
           <h2>{{ t('wizard.review') }}</h2>
           <v-list lines="two"
             ><v-list-item :title="t('common.name')" :subtitle="form.name" /><v-list-item
@@ -2273,6 +2403,9 @@ watch(
               :subtitle="selectedAdditionalLanguages.map((language) => language.name).join(', ') || t('wizard.none')" /><v-list-item
               :title="t('classUi.classTraining')"
               :subtitle="classTrainingLabels.join(', ')" /><v-list-item
+              v-if="selectedClassKit"
+              :title="t('equipment.title')"
+              :subtitle="`${selectedKitItems.map((item) => `${item.definition?.name} × ${item.purchaseQuantity * (item.definition?.unitsPerPurchase ?? 1)}`).join(', ')} · ${startingEquipmentCostCopper} cp`" /><v-list-item
               v-if="form.concept"
               :title="t('wizard.selectedConcept')"
               :subtitle="form.concept" /></v-list
@@ -2290,7 +2423,7 @@ watch(
     >
     <footer>
       <v-btn variant="text" :disabled="step === 1 || isSubmitting" @click="previous">{{ t('common.back') }}</v-btn
-      ><v-spacer /><v-btn v-if="step < 10" color="primary" :disabled="!canContinue" @click="next"
+      ><v-spacer /><v-btn v-if="step < 11" color="primary" :disabled="!canContinue" @click="next"
         >{{ t('common.next') }}</v-btn
       ><v-btn v-else color="accent" :loading="isSubmitting" @click="submit"
         >{{ t('wizard.create') }}</v-btn

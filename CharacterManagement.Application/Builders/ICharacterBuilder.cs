@@ -68,7 +68,9 @@ public interface ICharacterBuilder
         IReadOnlyList<ClassTrainingTargetChoice> additionalChoices );
     void IncreaseAbilityScores( IEnumerable<AbilityType> increasedAbilityScores );
     void ApplyFreeBoosts( IEnumerable<AbilityType> freeBoosts );
-    void SetInventory();
+    void SetStartingEquipment(
+        IReadOnlyList<string> selectedOptionIds,
+        string? deityFavoredWeaponEquipmentId = null );
     void SetAlignment();
     void SetDeity();
     void SetAge();

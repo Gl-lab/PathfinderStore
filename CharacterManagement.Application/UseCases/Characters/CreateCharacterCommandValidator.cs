@@ -270,6 +270,13 @@ public sealed class CreateCharacterCommandValidator : AbstractValidator<CreateCh
 
                 RuleFor( command => command.Character.AdditionalClassTrainingChoices )
                     .NotNull();
+
+                RuleFor( command => command.Character.ClassKitOptionIds )
+                    .NotNull();
+
+                When(
+                    command => command.Character.ClassId != "class.cleric",
+                    () => RuleFor( command => command.Character.DeityFavoredWeaponEquipmentId ).Empty() );
             } );
     }
 }

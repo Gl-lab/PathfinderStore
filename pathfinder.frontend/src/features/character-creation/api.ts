@@ -472,6 +472,45 @@ export interface CreateCharacterRequest {
   additionalLanguageIds: string[]
   classSkillGrantChoices: ClassSkillGrantChoice[]
   additionalClassTrainingChoices: ClassTrainingTargetChoice[]
+  classKitOptionIds: string[]
+  deityFavoredWeaponEquipmentId: string | null
+}
+
+export interface EquipmentDefinition {
+  id: string
+  name: string
+  category: 'Gear' | 'Armor' | 'Weapon' | 'Ammunition' | 'Shield'
+  rarity: 'Common' | 'Uncommon'
+  priceCopper: number
+  bulkTenths: number
+  unitsPerPurchase: number
+}
+
+export interface ClassKitItem {
+  equipmentId: string
+  purchaseQuantity: number
+}
+
+export interface ClassKitOption {
+  id: string
+  name: string
+  items: ClassKitItem[]
+  dependency: 'DeityFavoredWeapon' | null
+}
+
+export interface ClassKitOptionGroup {
+  id: string
+  selection: 'Any' | 'AtMostOne'
+  options: ClassKitOption[]
+}
+
+export interface ClassKit {
+  id: string
+  characterClassId: string
+  name: string
+  startingWealthCopper: number
+  items: ClassKitItem[]
+  optionGroups: ClassKitOptionGroup[]
 }
 
 export async function getAncestries(): Promise<Ancestry[]> {
@@ -552,6 +591,14 @@ export async function getSpellOptions(
 
 export async function getSkills(): Promise<Skill[]> {
   return (await http.get<Skill[]>('/api/skills')).data
+}
+
+export async function getEquipment(): Promise<EquipmentDefinition[]> {
+  return (await http.get<EquipmentDefinition[]>('/api/equipment')).data
+}
+
+export async function getClassKits(): Promise<ClassKit[]> {
+  return (await http.get<ClassKit[]>('/api/equipment/class-kits')).data
 }
 
 export async function getLanguages(): Promise<Language[]> {

@@ -703,7 +703,8 @@ public sealed class CreateCharacterHandlerTests
             clericDomainRepository: new ClericDomainRepository(),
             spellRepository: new SpellRepository(),
             featRepository: new FeatRepository( ancestryRepository, backgroundRepository ),
-            languageRepository: new LanguageRepository() );
+            languageRepository: new LanguageRepository(),
+            equipmentRepository: new EquipmentRepository() );
 
         TestUnitOfWork unitOfWork = new TestUnitOfWork( dbContext );
 
@@ -741,7 +742,8 @@ public sealed class CreateCharacterHandlerTests
             new ClericDomainRepository(),
             new SpellRepository(),
             new FeatRepository( new AncestryRepository(), new BackgroundRepository() ),
-            new LanguageRepository() );
+            new LanguageRepository(),
+            new EquipmentRepository() );
     }
 
     private static FinalizeCharacterHandler CreateFinalizationHandler(
