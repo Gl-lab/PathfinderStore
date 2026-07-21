@@ -202,64 +202,6 @@ public sealed class CharacterController : AuthorizedController
         }
     }
 
-    [HttpPost( "{characterId:int}/hit-points" )]
-    [ProducesResponseType( typeof( CharacterHitPointStateDto ), StatusCodes.Status200OK )]
-    [ProducesResponseType( StatusCodes.Status401Unauthorized )]
-    [ProducesResponseType( typeof( IReadOnlyCollection<string> ), StatusCodes.Status400BadRequest )]
-    [ProducesResponseType( typeof( IReadOnlyCollection<string> ), StatusCodes.Status404NotFound )]
-    [ProducesResponseType( typeof( IReadOnlyCollection<string> ), StatusCodes.Status503ServiceUnavailable )]
-    public async Task<ActionResult<CharacterHitPointStateDto>> ChangeHitPoints(
-        int characterId,
-        [FromBody] ChangeHitPointsRequestDto request )
-    {
-        try
-        {
-            int userId = GetCurrentUserId();
-            CharacterHitPointStateDto state = await _mediator.Send( new ChangeHitPointsCommand(
-                userId,
-                characterId,
-                request.Operation,
-                request.Amount ) );
-            return Ok( state );
-        }
-        catch ( InvalidOperationException )
-        {
-            return Unauthorized();
-        }
-        catch ( ValidationException exception )
-        {
-            return BadRequest( MapValidationErrors( exception ) );
-        }
-        catch ( CharacterManagementException exception )
-        {
-            return NotFound( MapErrorMessage( exception.Message ) );
-        }
-        catch ( Pathfinder.CharacterManagement.Domain.Exceptions.CharacterManagementException exception )
-        {
-            return BadRequest( MapErrorMessage( exception.Message ) );
-        }
-        catch ( DbUpdateException exception )
-        {
-            _logger.LogError(
-                exception,
-                "Failed to change hit points for character {CharacterId}.",
-                characterId );
-            return StatusCode(
-                StatusCodes.Status503ServiceUnavailable,
-                MapErrorMessage( "Character data is temporarily unavailable." ) );
-        }
-        catch ( PostgresException exception )
-        {
-            _logger.LogError(
-                exception,
-                "PostgreSQL failed while changing hit points for character {CharacterId}.",
-                characterId );
-            return StatusCode(
-                StatusCodes.Status503ServiceUnavailable,
-                MapErrorMessage( "Character data is temporarily unavailable." ) );
-        }
-    }
-
     [HttpPut( "{characterId:int}/gender" )]
     [ProducesResponseType( StatusCodes.Status200OK )]
     [ProducesResponseType( StatusCodes.Status401Unauthorized )]

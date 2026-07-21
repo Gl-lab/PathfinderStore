@@ -6,6 +6,7 @@ namespace Pathfinder.CharacterManagement.Application.UseCases.Characters;
 
 public sealed record ChangeHitPointsCommand(
     int UserId,
+    int CampaignId,
     int CharacterId,
     HitPointOperation Operation,
     int Amount ) : IRequest<CharacterHitPointStateDto>;

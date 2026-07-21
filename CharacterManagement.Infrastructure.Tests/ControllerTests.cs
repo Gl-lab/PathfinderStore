@@ -380,11 +380,12 @@ public sealed class ControllerTests
             Maximum = 18,
         };
         mediator.Register(
-            new ChangeHitPointsCommand( 77, 15, HitPointOperation.ApplyDamage, 6 ),
+            new ChangeHitPointsCommand( 77, 5, 15, HitPointOperation.ApplyDamage, 6 ),
             expected );
-        CharacterController controller = CreateCharacterController( mediator, 77 );
+        CampaignCharactersController controller = CreateCampaignCharactersController( mediator, 77 );
 
         ActionResult<CharacterHitPointStateDto> actionResult = await controller.ChangeHitPoints(
+            5,
             15,
             new ChangeHitPointsRequestDto
             {
@@ -481,6 +482,30 @@ public sealed class ControllerTests
             },
         };
 
+        return controller;
+    }
+
+    private static CampaignCharactersController CreateCampaignCharactersController(
+        IMediator mediator,
+        int? userId = null )
+    {
+        CampaignCharactersController controller = new CampaignCharactersController(
+            mediator,
+            NullLogger<CampaignCharactersController>.Instance );
+        ClaimsIdentity identity = userId.HasValue
+            ? new ClaimsIdentity(
+                [
+                    new Claim( ClaimTypes.NameIdentifier, userId.Value.ToString() ),
+                ],
+                "TestAuthenticationType" )
+            : new ClaimsIdentity();
+        controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext
+            {
+                User = new ClaimsPrincipal( identity ),
+            },
+        };
         return controller;
     }
 

@@ -1,4 +1,5 @@
 using MediatR;
+using Pathfinder.CharacterManagement.Application.Access;
 using Pathfinder.CharacterManagement.Application.DTO;
 using Pathfinder.CharacterManagement.Application.Exceptions;
 using Pathfinder.CharacterManagement.Application.Repositories;
@@ -15,30 +16,41 @@ public sealed class ChangeHitPointsHandler
     private readonly IAncestryRepository _ancestryRepository;
     private readonly ICharacterClassRepository _characterClassRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ICharacterCampaignAccessPolicy _accessPolicy;
 
     public ChangeHitPointsHandler(
         ICharacterRepository characterRepository,
         IAncestryRepository ancestryRepository,
         ICharacterClassRepository characterClassRepository,
-        IUnitOfWork unitOfWork )
+        IUnitOfWork unitOfWork,
+        ICharacterCampaignAccessPolicy accessPolicy )
     {
         _characterRepository = characterRepository;
         _ancestryRepository = ancestryRepository;
         _characterClassRepository = characterClassRepository;
         _unitOfWork = unitOfWork;
+        _accessPolicy = accessPolicy;
     }
 
     public async Task<CharacterHitPointStateDto> Handle(
         ChangeHitPointsCommand request,
         CancellationToken cancellationToken )
     {
-        DraftCharacter? character = await _characterRepository.GetByIdAsync(
+        CharacterCampaignAccess access = await _accessPolicy.GetAccessAsync(
+            request.CampaignId,
+            request.UserId,
             request.CharacterId,
-            request.UserId );
-        if ( character is null )
+            cancellationToken );
+        if ( !access.CanAct )
         {
             throw new CharacterManagementException(
-                $"Character {request.CharacterId} was not found for current user." );
+                "Campaign character was not found." );
+        }
+
+        DraftCharacter? character = await _characterRepository.GetByIdAsync( request.CharacterId );
+        if ( character is null )
+        {
+            throw new CharacterManagementException( "Campaign character was not found." );
         }
 
         if ( String.IsNullOrWhiteSpace( character.SelectedClassId ) )

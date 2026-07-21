@@ -16,6 +16,7 @@ import {
   changeHitPoints,
   deleteCharacter,
   finalizeCharacter,
+  getCampaignCharacter,
   getCharacter,
   setCharacterGender,
   type Character,
@@ -51,8 +52,18 @@ const hitPointAmount = ref(1)
 const confirmDelete = ref(false)
 const selectedGender = ref<SelectableCharacterGender | null>(null)
 const isSavingGender = ref(false)
+const canPerformCampaignActions = ref(false)
+const campaignId = computed<number | null>(() => {
+  const rawCampaignId = route.query.campaignId
+  const parsedCampaignId = Number(Array.isArray(rawCampaignId) ? rawCampaignId[0] : rawCampaignId)
+  return Number.isInteger(parsedCampaignId) && parsedCampaignId > 0 ? parsedCampaignId : null
+})
+const backTarget = computed(() => (campaignId.value ? '/campaigns' : '/'))
 const mustSelectGender = computed(
-  () => character.value !== null && isLegacyGenderSelectionRequired(character.value.gender),
+  () =>
+    campaignId.value === null &&
+    character.value !== null &&
+    isLegacyGenderSelectionRequired(character.value.gender),
 )
 const proficiencyGroups = computed(() => groupProficiencies(character.value?.proficiencies ?? []))
 const statisticRows = computed<
@@ -133,7 +144,14 @@ async function load(): Promise<void> {
   isLoading.value = true
   errors.value = []
   try {
-    character.value = await getCharacter(Number(route.params.id))
+    if (campaignId.value) {
+      const result = await getCampaignCharacter(campaignId.value, Number(route.params.id))
+      character.value = result.character
+      canPerformCampaignActions.value = result.canAct
+    } else {
+      character.value = await getCharacter(Number(route.params.id))
+      canPerformCampaignActions.value = false
+    }
   } catch (error) {
     errors.value = getApiErrorMessages(error)
   } finally {
@@ -171,12 +189,20 @@ async function finalize(): Promise<void> {
 }
 async function applyHitPointOperation(operation: HitPointOperation): Promise<void> {
   const hitPoints = character.value?.derivedStatistics?.hitPoints
-  if (!character.value || !hitPoints || character.value.creationStatus !== 'Completed') return
+  if (
+    !character.value ||
+    !hitPoints ||
+    !campaignId.value ||
+    !canPerformCampaignActions.value ||
+    character.value.creationStatus !== 'Completed'
+  )
+    return
 
   isChangingHitPoints.value = true
   errors.value = []
   try {
     const state = await changeHitPoints(
+      campaignId.value,
       character.value.id,
       operation,
       operation === 'ClearTemporary' ? 0 : hitPointAmount.value,
@@ -210,7 +236,9 @@ onMounted(load)
 
 <template>
   <section class="details">
-    <v-btn prepend-icon="mdi-arrow-left" variant="text" to="/">{{ t('app.navigation.characters') }}</v-btn
+    <v-btn prepend-icon="mdi-arrow-left" variant="text" :to="backTarget">{{
+      campaignId ? t('app.navigation.campaigns') : t('app.navigation.characters')
+    }}</v-btn
     ><v-progress-linear v-if="isLoading" color="accent" indeterminate rounded /><v-alert
       v-for="error in errors"
       :key="error"
@@ -269,7 +297,7 @@ onMounted(load)
             variant="tonal"
           >{{ t(`characters.creationStatuses.${character.creationStatus}`) }}</v-chip>
           <v-btn
-            v-if="character.creationStatus === 'Draft'"
+            v-if="campaignId === null && character.creationStatus === 'Draft'"
             color="success"
             prepend-icon="mdi-check-decagram-outline"
             :disabled="!character.completion.isComplete"
@@ -277,6 +305,7 @@ onMounted(load)
             @click="finalize"
           >{{ t('characters.finalize') }}</v-btn>
           <v-btn
+            v-if="campaignId === null"
             color="error"
             variant="tonal"
             prepend-icon="mdi-delete-outline"
@@ -314,7 +343,7 @@ onMounted(load)
               {{ t('characters.temporaryHitPoints', { value: character.derivedStatistics.hitPoints.temporary }) }}
             </p>
             <div
-              v-if="character.creationStatus === 'Completed'"
+              v-if="character.creationStatus === 'Completed' && canPerformCampaignActions"
               class="hit-points-card__controls"
             >
               <v-number-input

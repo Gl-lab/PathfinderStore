@@ -5,6 +5,7 @@ using Pathfinder.CampaignManagement.Domain.Campaigns;
 using Pathfinder.CampaignManagement.Infrastructure.Campaigns;
 using Pathfinder.CampaignManagement.Infrastructure.Data;
 using Pathfinder.CampaignManagement.Infrastructure.Tests.TestSupport;
+using Pathfinder.CharacterManagement.Application.Access;
 
 namespace Pathfinder.CampaignManagement.Infrastructure.Tests;
 
@@ -224,6 +225,53 @@ public sealed class CampaignRepositoryTests
             handler.Handle(
                 new AssignCampaignPartyCharacterCommand( 7, campaign.Id, 101, 7 ),
                 CancellationToken.None ) );
+    }
+
+    [Fact]
+    public async Task CharacterAccessPolicyScopesViewAndActionsToExactCampaignMembership()
+    {
+        await using CampaignManagementDbContext dbContext = CreateDbContext();
+        Campaign campaign = Campaign.Create( "First", 42, _createdAtUtc );
+        CampaignInvitation invitation = campaign.Invite( 42, 7, _createdAtUtc.AddMinutes( 1 ) );
+        campaign.AcceptInvitation( invitation.Id, 7, _createdAtUtc.AddMinutes( 2 ) );
+        campaign.CreateParty( 42, "Heroes", _createdAtUtc.AddMinutes( 3 ) );
+        campaign.AssignCharacterToActiveParty( 7, 101, 7, _createdAtUtc.AddMinutes( 4 ) );
+        Campaign otherCampaign = Campaign.Create( "Other", 99, _createdAtUtc );
+        dbContext.Campaigns.AddRange( campaign, otherCampaign );
+        await dbContext.SaveChangesAsync();
+        CampaignCharacterAccessPolicy policy = new CampaignCharacterAccessPolicy( dbContext );
+
+        CharacterCampaignAccess playerAccess = await policy.GetAccessAsync(
+            campaign.Id,
+            7,
+            101,
+            CancellationToken.None );
+        CharacterCampaignAccess gameMasterAccess = await policy.GetAccessAsync(
+            campaign.Id,
+            42,
+            101,
+            CancellationToken.None );
+        CharacterCampaignAccess otherGameMasterAccess = await policy.GetAccessAsync(
+            campaign.Id,
+            99,
+            101,
+            CancellationToken.None );
+        CharacterCampaignAccess wrongCampaignAccess = await policy.GetAccessAsync(
+            otherCampaign.Id,
+            7,
+            101,
+            CancellationToken.None );
+        CharacterCampaignAccess unassignedCharacterAccess = await policy.GetAccessAsync(
+            campaign.Id,
+            42,
+            999,
+            CancellationToken.None );
+
+        Assert.Equal( new CharacterCampaignAccess( true, true ), playerAccess );
+        Assert.Equal( new CharacterCampaignAccess( true, false ), gameMasterAccess );
+        Assert.Equal( CharacterCampaignAccess.Denied, otherGameMasterAccess );
+        Assert.Equal( CharacterCampaignAccess.Denied, wrongCampaignAccess );
+        Assert.Equal( CharacterCampaignAccess.Denied, unassignedCharacterAccess );
     }
 
     private static CampaignManagementDbContext CreateDbContext()

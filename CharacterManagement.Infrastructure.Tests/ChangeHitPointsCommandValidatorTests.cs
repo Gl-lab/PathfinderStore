@@ -14,7 +14,7 @@ public sealed class ChangeHitPointsCommandValidatorTests
     {
         ChangeHitPointsCommandValidator validator = new ChangeHitPointsCommandValidator();
 
-        validator.ValidateAndThrow( new ChangeHitPointsCommand( 1, 2, operation, 1 ) );
+        validator.ValidateAndThrow( new ChangeHitPointsCommand( 1, 2, 3, operation, 1 ) );
     }
 
     [Fact]
@@ -25,6 +25,7 @@ public sealed class ChangeHitPointsCommandValidatorTests
         validator.ValidateAndThrow( new ChangeHitPointsCommand(
             1,
             2,
+            3,
             HitPointOperation.ClearTemporary,
             0 ) );
     }
@@ -42,6 +43,6 @@ public sealed class ChangeHitPointsCommandValidatorTests
         ChangeHitPointsCommandValidator validator = new ChangeHitPointsCommandValidator();
 
         Assert.Throws<ValidationException>( () => validator.ValidateAndThrow(
-            new ChangeHitPointsCommand( 1, 2, operation, amount ) ) );
+            new ChangeHitPointsCommand( 1, 2, 3, operation, amount ) ) );
     }
 }

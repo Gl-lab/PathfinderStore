@@ -492,6 +492,22 @@ export async function getCharacter(id: number): Promise<Character> {
   return (await http.get<Character>(`/api/character/${id}`)).data
 }
 
+export interface CampaignCharacter {
+  character: Character
+  canAct: boolean
+}
+
+export async function getCampaignCharacter(
+  campaignId: number,
+  characterId: number,
+): Promise<CampaignCharacter> {
+  return (
+    await http.get<CampaignCharacter>(
+      `/api/campaigns/${campaignId}/characters/${characterId}`,
+    )
+  ).data
+}
+
 export interface CharacterCreationState {
   creationStatus: 'Draft' | 'Completed'
   completedAtUtc: string | null
@@ -511,15 +527,19 @@ export interface CharacterHitPointState {
 }
 
 export async function changeHitPoints(
+  campaignId: number,
   id: number,
   operation: HitPointOperation,
   amount: number,
 ): Promise<CharacterHitPointState> {
   return (
-    await http.post<CharacterHitPointState>(`/api/character/${id}/hit-points`, {
-      operation,
-      amount,
-    })
+    await http.post<CharacterHitPointState>(
+      `/api/campaigns/${campaignId}/characters/${id}/hit-points`,
+      {
+        operation,
+        amount,
+      },
+    )
   ).data
 }
 

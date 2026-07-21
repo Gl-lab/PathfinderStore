@@ -18,13 +18,13 @@ public sealed class ChangeHitPointsHandlerTests
         await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
         Account account = await CreateAccountAsync( dbContext, 410 );
         DraftCharacter character = await CreateCompletedFighterAsync( dbContext, account.Id );
-        ChangeHitPointsHandler handler = CreateHandler( dbContext );
+        ChangeHitPointsHandler handler = CreateHandler( dbContext, account.UserId );
 
         await handler.Handle(
-            new ChangeHitPointsCommand( account.UserId, character.Id, HitPointOperation.GrantTemporary, 5 ),
+            new ChangeHitPointsCommand( account.UserId, 900, character.Id, HitPointOperation.GrantTemporary, 5 ),
             CancellationToken.None );
         CharacterHitPointStateDto result = await handler.Handle(
-            new ChangeHitPointsCommand( account.UserId, character.Id, HitPointOperation.ApplyDamage, 8 ),
+            new ChangeHitPointsCommand( account.UserId, 900, character.Id, HitPointOperation.ApplyDamage, 8 ),
             CancellationToken.None );
 
         Assert.Equal( 15, result.Current );
@@ -43,10 +43,10 @@ public sealed class ChangeHitPointsHandlerTests
         await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
         Account account = await CreateAccountAsync( dbContext, 510 );
         DraftCharacter character = await CreateCompletedFighterAsync( dbContext, account.Id );
-        ChangeHitPointsHandler handler = CreateHandler( dbContext );
+        ChangeHitPointsHandler handler = CreateHandler( dbContext, account.UserId );
 
         await Assert.ThrowsAsync<CharacterManagementException>( async () => await handler.Handle(
-            new ChangeHitPointsCommand( 999, character.Id, HitPointOperation.ApplyDamage, 1 ),
+            new ChangeHitPointsCommand( 999, 900, character.Id, HitPointOperation.ApplyDamage, 1 ),
             CancellationToken.None ) );
 
         DraftCharacter persisted = await dbContext.Character
@@ -67,12 +67,13 @@ public sealed class ChangeHitPointsHandlerTests
             .Property( item => item.SelectedClassId )
             .CurrentValue = "class.fighter";
         await dbContext.SaveChangesAsync();
-        ChangeHitPointsHandler handler = CreateHandler( dbContext );
+        ChangeHitPointsHandler handler = CreateHandler( dbContext, account.UserId );
 
         await Assert.ThrowsAsync<Pathfinder.CharacterManagement.Domain.Exceptions.CharacterManagementException>(
             async () => await handler.Handle(
                 new ChangeHitPointsCommand(
                     account.UserId,
+                    900,
                     character.Id,
                     HitPointOperation.ApplyDamage,
                     1 ),
@@ -82,13 +83,16 @@ public sealed class ChangeHitPointsHandlerTests
         Assert.Equal( 0, character.TemporaryHitPoints );
     }
 
-    private static ChangeHitPointsHandler CreateHandler( CharacterManagementDbContext dbContext )
+    private static ChangeHitPointsHandler CreateHandler(
+        CharacterManagementDbContext dbContext,
+        int allowedUserId )
     {
         return new ChangeHitPointsHandler(
             new CharacterRepository( dbContext ),
             new AncestryRepository(),
             new CharacterClassRepository(),
-            new TestUnitOfWork( dbContext ) );
+            new TestUnitOfWork( dbContext ),
+            new FakeCharacterCampaignAccessPolicy( allowedUserId, 900 ) );
     }
 
     private static async Task<Account> CreateAccountAsync(

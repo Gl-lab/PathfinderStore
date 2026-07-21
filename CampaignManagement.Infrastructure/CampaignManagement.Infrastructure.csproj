@@ -19,6 +19,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CampaignManagement.Application\CampaignManagement.Application.csproj" />
+    <ProjectReference Include="..\CharacterManagement.Application\CharacterManagement.Application.csproj" />
     <ProjectReference Include="..\CampaignManagement.Domain\CampaignManagement.Domain.csproj" />
     <ProjectReference Include="..\Infrasturture.Shared\Infrasturture.Shared.csproj" />
   </ItemGroup>

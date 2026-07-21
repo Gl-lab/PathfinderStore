@@ -1094,6 +1094,48 @@ public sealed class GetCharacterQueriesTests
     }
 
     [Fact]
+    public async Task GetCampaignCharacterById_AllowsCampaignGameMasterWithoutOwnership()
+    {
+        await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
+        Account ownerAccount = await CreateAccountAsync( dbContext, 501 );
+        DraftCharacter draftCharacter = await CreateCharacterAsync(
+            dbContext,
+            ownerAccount.Id,
+            "Campaign Character" );
+        CharacterRepository repository = new CharacterRepository( dbContext );
+        GetCampaignCharacterByIdHandler handler = new GetCampaignCharacterByIdHandler(
+            repository,
+            new CharacterDetailsDtoMapper( skillRepository: new SkillRepository() ),
+            new FakeCharacterCampaignAccessPolicy( 777, 55, false ) );
+
+        CampaignCharacterDto result = await handler.Handle(
+            new GetCampaignCharacterByIdCommand( 777, 55, draftCharacter.Id ),
+            CancellationToken.None );
+
+        Assert.Equal( draftCharacter.Id, result.Character.Id );
+        Assert.False( result.CanAct );
+    }
+
+    [Fact]
+    public async Task GetCampaignCharacterById_DoesNotRevealCharacterFromAnotherCampaign()
+    {
+        await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();
+        Account ownerAccount = await CreateAccountAsync( dbContext, 501 );
+        DraftCharacter draftCharacter = await CreateCharacterAsync(
+            dbContext,
+            ownerAccount.Id,
+            "Hidden Campaign Character" );
+        GetCampaignCharacterByIdHandler handler = new GetCampaignCharacterByIdHandler(
+            new CharacterRepository( dbContext ),
+            new CharacterDetailsDtoMapper( skillRepository: new SkillRepository() ),
+            new FakeCharacterCampaignAccessPolicy( 777, 55 ) );
+
+        await Assert.ThrowsAsync<CharacterManagementException>( () => handler.Handle(
+            new GetCampaignCharacterByIdCommand( 777, 56, draftCharacter.Id ),
+            CancellationToken.None ) );
+    }
+
+    [Fact]
     public async Task GetCharacterById_WhenCharacterDoesNotExist_Throws()
     {
         await using CharacterManagementDbContext dbContext = TestCharacterManagementDbContextFactory.Create();

@@ -400,7 +400,11 @@ onMounted(loadCampaigns)
               :key="character.id"
               class="member-row"
             >
-              <span>{{ characterName(character.characterId) }}</span>
+              <v-btn
+                :to="`/characters/${character.characterId}?campaignId=${campaign.id}`"
+                size="small"
+                variant="text"
+              >{{ characterName(character.characterId) }}</v-btn>
               <v-chip size="x-small" variant="outlined">
                 {{ t('campaigns.controlledBy', { userId: character.controlledByUserId }) }}
               </v-chip>

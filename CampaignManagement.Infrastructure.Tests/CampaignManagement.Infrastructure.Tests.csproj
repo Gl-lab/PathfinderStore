@@ -19,6 +19,7 @@
     <ProjectReference Include="..\CampaignManagement.Application\CampaignManagement.Application.csproj" />
     <ProjectReference Include="..\CampaignManagement.Domain\CampaignManagement.Domain.csproj" />
     <ProjectReference Include="..\CampaignManagement.Infrastructure\CampaignManagement.Infrastructure.csproj" />
+    <ProjectReference Include="..\CharacterManagement.Application\CharacterManagement.Application.csproj" />
     <ProjectReference Include="..\Pathfinder.Utils\Pathfinder.Utils.csproj" />
   </ItemGroup>
 </Project>

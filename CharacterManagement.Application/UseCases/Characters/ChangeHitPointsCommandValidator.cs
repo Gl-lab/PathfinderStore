@@ -8,6 +8,7 @@ public sealed class ChangeHitPointsCommandValidator : AbstractValidator<ChangeHi
     public ChangeHitPointsCommandValidator()
     {
         RuleFor( command => command.UserId ).GreaterThan( 0 );
+        RuleFor( command => command.CampaignId ).GreaterThan( 0 );
         RuleFor( command => command.CharacterId ).GreaterThan( 0 );
         RuleFor( command => command.Operation ).IsInEnum();
         When(
