@@ -19,6 +19,7 @@ public sealed class CampaignParty : Entity
     public DateTimeOffset CreatedAtUtc { get; private set; }
     public DateTimeOffset? ArchivedAtUtc { get; private set; }
     public IReadOnlyList<CampaignPartyCharacter> Characters { get => _characters; }
+    public CampaignPartyStorage Storage { get; private set; } = null!;
 
     internal static CampaignParty Create( string name, DateTimeOffset createdAtUtc )
     {
@@ -39,6 +40,7 @@ public sealed class CampaignParty : Entity
             Name = normalizedName,
             Status = CampaignPartyStatus.Active,
             CreatedAtUtc = createdAtUtc,
+            Storage = CampaignPartyStorage.Create( createdAtUtc ),
         };
     }
 

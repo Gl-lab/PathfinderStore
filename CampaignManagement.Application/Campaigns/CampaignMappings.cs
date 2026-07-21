@@ -38,7 +38,11 @@ internal static class CampaignMappings
                         character.CharacterId,
                         character.ControlledByUserId,
                         character.AssignedAtUtc ) )
-                    .ToArray() ) )
+                    .ToArray(),
+                new CampaignPartyStorageDto(
+                    party.Storage.Id,
+                    party.Storage.AccessPolicy,
+                    party.Storage.CreatedAtUtc ) ) )
             .ToArray();
 
         return new CampaignDto(

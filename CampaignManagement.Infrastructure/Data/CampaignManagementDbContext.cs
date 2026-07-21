@@ -15,6 +15,7 @@ public sealed class CampaignManagementDbContext : DbContext
     public DbSet<CampaignInvitation> CampaignInvitations => Set<CampaignInvitation>();
     public DbSet<CampaignParty> CampaignParties => Set<CampaignParty>();
     public DbSet<CampaignPartyCharacter> CampaignPartyCharacters => Set<CampaignPartyCharacter>();
+    public DbSet<CampaignPartyStorage> CampaignPartyStorages => Set<CampaignPartyStorage>();
 
     protected override void OnModelCreating( ModelBuilder modelBuilder )
     {
@@ -90,6 +91,11 @@ public sealed class CampaignManagementDbContext : DbContext
                 .HasForeignKey( character => character.CampaignPartyId )
                 .IsRequired()
                 .OnDelete( DeleteBehavior.Cascade );
+            builder.HasOne( party => party.Storage )
+                .WithOne()
+                .HasForeignKey<CampaignPartyStorage>( storage => storage.CampaignPartyId )
+                .IsRequired()
+                .OnDelete( DeleteBehavior.Cascade );
         } );
 
         modelBuilder.Entity<CampaignPartyCharacter>( builder =>
@@ -101,6 +107,15 @@ public sealed class CampaignManagementDbContext : DbContext
                     character.CampaignPartyId,
                     character.CharacterId,
                 } )
+                .IsUnique();
+        } );
+
+        modelBuilder.Entity<CampaignPartyStorage>( builder =>
+        {
+            builder.ToTable( "CampaignPartyStorage" );
+            builder.Property( storage => storage.AccessPolicy )
+                .HasConversion<int>();
+            builder.HasIndex( storage => storage.CampaignPartyId )
                 .IsUnique();
         } );
     }

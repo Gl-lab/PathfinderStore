@@ -24,10 +24,16 @@ public sealed record CampaignPartyDto(
     CampaignPartyStatus Status,
     DateTimeOffset CreatedAtUtc,
     DateTimeOffset? ArchivedAtUtc,
-    IReadOnlyCollection<CampaignPartyCharacterDto> Characters );
+    IReadOnlyCollection<CampaignPartyCharacterDto> Characters,
+    CampaignPartyStorageDto Storage );
 
 public sealed record CampaignPartyCharacterDto(
     int Id,
     int CharacterId,
     int ControlledByUserId,
     DateTimeOffset AssignedAtUtc );
+
+public sealed record CampaignPartyStorageDto(
+    int Id,
+    CampaignPartyStorageAccessPolicy AccessPolicy,
+    DateTimeOffset CreatedAtUtc );

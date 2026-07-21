@@ -197,10 +197,13 @@ public sealed class CampaignRepositoryTests
             CancellationToken.None );
 
         CampaignPartyDto party = Assert.Single( result.Parties );
+        Assert.Equal( CampaignPartyStorageAccessPolicy.Unconfigured, party.Storage.AccessPolicy );
         CampaignPartyCharacterDto character = Assert.Single( party.Characters );
         Assert.Equal( 101, character.CharacterId );
         Assert.Equal( 7, character.ControlledByUserId );
         Assert.Single( await dbContext.CampaignPartyCharacters.ToArrayAsync() );
+        CampaignPartyStorage storage = await dbContext.CampaignPartyStorages.SingleAsync();
+        Assert.Equal( party.Id, storage.CampaignPartyId );
     }
 
     [Fact]

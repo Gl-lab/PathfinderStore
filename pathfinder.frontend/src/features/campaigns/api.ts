@@ -23,6 +23,13 @@ export interface CampaignParty {
   createdAtUtc: string
   archivedAtUtc: string | null
   characters: CampaignPartyCharacter[]
+  storage: CampaignPartyStorage
+}
+
+export interface CampaignPartyStorage {
+  id: number
+  accessPolicy: 'Unconfigured'
+  createdAtUtc: string
 }
 
 export interface CampaignPartyCharacter {

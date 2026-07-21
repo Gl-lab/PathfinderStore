@@ -26,6 +26,8 @@ public sealed class CampaignRepository : Repository<Campaign>, ICampaignReposito
             .Include( campaign => campaign.Invitations )
             .Include( campaign => campaign.Parties )
                 .ThenInclude( party => party.Characters )
+            .Include( campaign => campaign.Parties )
+                .ThenInclude( party => party.Storage )
             .Where( campaign => campaign.Memberships.Any( membership =>
                 ( membership.UserId == userId ) &&
                 ( membership.Status == CampaignMembershipStatus.Active ) ) )
@@ -43,6 +45,8 @@ public sealed class CampaignRepository : Repository<Campaign>, ICampaignReposito
             .Include( campaign => campaign.Invitations )
             .Include( campaign => campaign.Parties )
                 .ThenInclude( party => party.Characters )
+            .Include( campaign => campaign.Parties )
+                .ThenInclude( party => party.Storage )
             .SingleOrDefaultAsync(
                 campaign =>
                     ( campaign.Id == campaignId ) &&
@@ -62,6 +66,8 @@ public sealed class CampaignRepository : Repository<Campaign>, ICampaignReposito
             .Include( campaign => campaign.Invitations )
             .Include( campaign => campaign.Parties )
                 .ThenInclude( party => party.Characters )
+            .Include( campaign => campaign.Parties )
+                .ThenInclude( party => party.Storage )
             .SingleOrDefaultAsync(
                 campaign => campaign.Invitations.Any( invitation =>
                     ( invitation.Id == invitationId ) &&

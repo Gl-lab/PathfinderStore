@@ -139,6 +139,9 @@ public sealed class CampaignTests
 
         Assert.Equal( "Heroes", party.Name );
         Assert.Equal( CampaignPartyStatus.Active, party.Status );
+        Assert.Equal( CampaignPartyStorageAccessPolicy.Unconfigured, party.Storage.AccessPolicy );
+        Assert.Equal( _createdAtUtc.AddHours( 1 ), party.Storage.CreatedAtUtc );
+        Assert.Empty( party.Characters );
         Assert.Throws<CampaignManagementException>( () =>
             campaign.CreateParty( 42, "Second", _createdAtUtc.AddHours( 2 ) ) );
     }

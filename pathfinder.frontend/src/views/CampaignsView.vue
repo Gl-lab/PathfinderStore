@@ -395,6 +395,13 @@ onMounted(loadCampaigns)
             <p class="member-list__title">
               {{ t('campaigns.activeParty', { name: activeParty(campaign)?.name }) }}
             </p>
+            <v-alert density="compact" type="info" variant="tonal">
+              {{
+                t('campaigns.sharedStorageEmpty', {
+                  storageId: activeParty(campaign)?.storage.id,
+                })
+              }}
+            </v-alert>
             <div
               v-for="character in activeParty(campaign)?.characters"
               :key="character.id"
