@@ -11,6 +11,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Pathfinder.CharacterManagement.Application;
 using Pathfinder.CharacterManagement.Infrastructure;
+using Pathfinder.CampaignManagement.Application;
+using Pathfinder.CampaignManagement.Infrastructure;
 using Pathfinder.CharacterManagement.Infrastructure.Consumers;
 using Pathfinder.Web.Extensions;
 using Serilog;
@@ -31,6 +33,8 @@ public class Startup( IConfiguration configuration )
         services.ConfigureDependencyInjection();
         services.AddCharacterManagementApplicationServices();
         services.AddCharacterManagementInfrastructureServices();
+        services.AddCampaignManagementApplicationServices();
+        services.AddCampaignManagementInfrastructureServices();
 
         services.AddControllers()
             .AddJsonOptions(

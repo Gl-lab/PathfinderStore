@@ -17,6 +17,7 @@ using Pathfinder.Secure.Domain.Authentication.Role;
 using Pathfinder.Secure.Domain.Authentication.User;
 using Pathfinder.Secure.Infrastructure;
 using Pathfinder.CharacterManagement.Infrastructure.Data;
+using Pathfinder.CampaignManagement.Infrastructure.Data;
 using Pathfinder.Secure.Infrastructure.Data;
 using Pathfinder.Utils.UnitOfWork;
 using Pathfinder.Web.Authentication;
@@ -35,6 +36,12 @@ public static class ServiceCollection
         configuration[ "DB:CharacterManagement" ]
         ?? configuration[ "DB_CONNECTION" ]
         ?? throw new InvalidOperationException( "Connection string 'DB:CharacterManagement' was not found. Configure 'DB:CharacterManagement' or legacy 'DB_CONNECTION'." );
+
+    private static string GetCampaignManagementConnectionString( IConfiguration configuration ) =>
+        configuration[ "DB:CampaignManagement" ]
+        ?? configuration[ "DB:CharacterManagement" ]
+        ?? configuration[ "DB_CONNECTION" ]
+        ?? throw new InvalidOperationException( "Connection string 'DB:CampaignManagement' was not found. Configure 'DB:CampaignManagement'." );
 
     private static string GetSecurityKey( IConfiguration configuration ) =>
         configuration[ "Authentication:SecurityKey" ]
@@ -99,12 +106,17 @@ public static class ServiceCollection
             options
                .UseNpgsql( connectionString: GetCharacterManagementConnectionString( configuration ) ) );
 
+        services.AddDbContext<CampaignManagementDbContext>( options =>
+            options
+               .UseNpgsql( connectionString: GetCampaignManagementConnectionString( configuration ) ) );
+
         services.AddScoped<IUnitOfWork>( context =>
         {
             UnitOfWork unitOfWork = new();
             // unitOfWork.AddDbContext( context.GetService<StoreDbContext>() );
             unitOfWork.AddDbContext( context.GetRequiredService<SecureDbContext>() );
             unitOfWork.AddDbContext( context.GetRequiredService<CharacterManagementDbContext>() );
+            unitOfWork.AddDbContext( context.GetRequiredService<CampaignManagementDbContext>() );
             return unitOfWork;
         } );
     }

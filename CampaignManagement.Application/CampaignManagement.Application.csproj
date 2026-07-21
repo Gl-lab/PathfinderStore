@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>12</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Pathfinder.CampaignManagement.Application</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="11.11.0" />
+    <PackageReference Include="MediatR" Version="12.3.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CampaignManagement.Domain\CampaignManagement.Domain.csproj" />
+    <ProjectReference Include="..\Pathfinder.Utils\Pathfinder.Utils.csproj" />
+  </ItemGroup>
+</Project>

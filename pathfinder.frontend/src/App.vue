@@ -43,6 +43,12 @@ function changeLocale(value: SupportedLocale): void {
           prepend-icon="mdi-account-plus-outline"
           :title="t('app.navigation.createCharacter')"
         />
+        <v-list-item
+          v-if="auth.isAuthenticated"
+          to="/campaigns"
+          prepend-icon="mdi-map-marker-path"
+          :title="t('app.navigation.campaigns')"
+        />
       </v-list>
 
       <template #append>
