@@ -4,6 +4,8 @@
 
 Этот документ фиксирует ownership boundary для starting equipment в character creation. Решение действует для приоритета 7 и не включает Store в runtime приложения.
 
+Целевое будущее состояние каталога, экземпляров, инвентаря и торговли зафиксировано отдельно в [../store/target_architecture_togaf.md](../store/target_architecture_togaf.md). До выполнения описанного там переходного этапа настоящий документ остаётся действующей границей реализации.
+
 ## Проблема
 
 Для starting equipment нужны правила стоимости, bulk, proficiency и экипировки. В solution уже есть незавершённый bounded context `Store`, однако его модель описывает товары и магазины и не является источником правил персонажа. Если character creation начнёт зависеть от Store, завершение персонажа станет зависеть от отключённой подсистемы, а PF2e item definitions смешаются с коммерческими offer и ownership records.

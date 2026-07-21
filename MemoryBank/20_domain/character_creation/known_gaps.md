@@ -91,6 +91,9 @@ Heritage и ancestry feats 1 уровня каталогизированы и в
 
 Актуальная ближайшая очередь и критерии готовности зафиксированы в [Character Creation Near-Term Roadmap](../../30_task_notes/character_creation_near_term_roadmap.md).
 
-1. Поверх equipment расширить карточку до AC, attacks, damage, DC и combat HP state.
-2. Спроектировать отдельный respec workflow для завершённых персонажей.
-3. Отдельно определить runtime inventory/Store boundary и операции после character creation.
+1. Создать единый русскоязычный доменный глоссарий перед добавлением новых архитектурных контрактов.
+2. Поверх equipment расширить карточку до AC, attacks, damage, DC и combat HP state через абстрактную границу разрешённой экипировки.
+3. После боевой карточки выполнять Priority 9–16 из roadmap: кампании и партии, каталог v2, экземпляры и инвентарь, обмен, магазины, инструменты ведущего, генерацию и жизненный цикл предметов.
+4. Отдельно спроектировать respec workflow для завершённых персонажей и дальнейшие runtime combat/progression подсистемы.
+
+Целевая Store/Inventory boundary больше не является неопределённым gap верхнего уровня; она зафиксирована в [целевой архитектуре кампаний, предметов, инвентаря и торговли](../store/target_architecture_togaf.md).
