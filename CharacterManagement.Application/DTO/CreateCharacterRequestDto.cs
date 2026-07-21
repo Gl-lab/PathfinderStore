@@ -61,4 +61,5 @@ public class CreateCharacterRequestDto
     public IReadOnlyList<ClassTrainingTargetChoice> AdditionalClassTrainingChoices { get; set; } = [];
     public IReadOnlyList<string> ClassKitOptionIds { get; set; } = [];
     public string? DeityFavoredWeaponEquipmentId { get; set; }
+    public IReadOnlyList<string> EquippedEquipmentIds { get; set; } = [];
 }

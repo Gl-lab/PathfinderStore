@@ -262,6 +262,7 @@ const form = ref({
   additionalClassTrainingChoices: [] as ClassTrainingTargetChoice[],
   classKitOptionIds: [] as string[],
   deityFavoredWeaponEquipmentId: null as string | null,
+  equippedEquipmentIds: [] as string[],
 })
 const abilityCodes: AbilityCode[] = ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma']
 const selectedAncestry = computed(
@@ -787,6 +788,34 @@ function toggleClassKitOption(group: ClassKitOptionGroup, optionId: string): voi
       form.value.classKitOptionIds.includes(option.id)
     )) ?? false
   if (!favoredOptionSelected) form.value.deityFavoredWeaponEquipmentId = null
+  reconcileEquippedEquipment()
+}
+
+function reconcileEquippedEquipment(): void {
+  const availableIds = new Set(selectedKitItems.value.map((item) => item.definition?.id))
+  form.value.equippedEquipmentIds = form.value.equippedEquipmentIds.filter(
+    (id) => availableIds.has(id),
+  )
+}
+
+function toggleEquippedEquipment(equipmentId: string): void {
+  if (form.value.equippedEquipmentIds.includes(equipmentId)) {
+    form.value.equippedEquipmentIds = form.value.equippedEquipmentIds.filter(
+      (id) => id !== equipmentId,
+    )
+    return
+  }
+
+  const definition = equipment.value.find((item) => item.id === equipmentId)
+  if (definition?.category === 'Armor') {
+    const armorIds = new Set(equipment.value
+      .filter((item) => item.category === 'Armor')
+      .map((item) => item.id))
+    form.value.equippedEquipmentIds = form.value.equippedEquipmentIds.filter(
+      (id) => !armorIds.has(id),
+    )
+  }
+  form.value.equippedEquipmentIds.push(equipmentId)
 }
 
 function selectAncestry(type: AncestryCode | null): void {
@@ -838,6 +867,7 @@ function selectCharacterClass(classId: string | null): void {
   form.value.classId = classId
   form.value.classKitOptionIds = []
   form.value.deityFavoredWeaponEquipmentId = null
+  form.value.equippedEquipmentIds = []
   const characterClass = characterClasses.value.find((item) => item.id === classId) ?? null
   form.value.classKeyAbility = getAutomaticallySelectedKeyAbility(
     characterClass?.keyAbilityOptions ?? [],
@@ -879,6 +909,7 @@ function selectCharacterClass(classId: string | null): void {
 async function selectDeity(deityId: string | null): Promise<void> {
   form.value.deityId = deityId
   form.value.deityFavoredWeaponEquipmentId = null
+  reconcileEquippedEquipment()
   const deity = deities.value.find((item) => item.id === deityId) ?? null
   form.value.divineFont = deity?.divineFontOptions.length === 1 ? deity.divineFontOptions[0] : null
   form.value.divineSanctification = deity?.requiredSanctification ?? null
@@ -1299,6 +1330,7 @@ async function submit(): Promise<void> {
       })),
       classKitOptionIds: form.value.classKitOptionIds,
       deityFavoredWeaponEquipmentId: form.value.deityFavoredWeaponEquipmentId,
+      equippedEquipmentIds: form.value.equippedEquipmentIds,
     })
     await router.replace('/')
   } catch (error) {
@@ -2206,6 +2238,15 @@ watch(
               :subtitle="`${item.definition!.priceCopper * item.purchaseQuantity} cp`"
             />
           </v-list>
+          <h3>{{ t('equipment.equipped') }}</h3>
+          <v-checkbox
+            v-for="item in selectedKitItems.filter((line) => ['Weapon', 'Armor', 'Shield'].includes(line.definition?.category ?? ''))"
+            :key="`equipped-${item.definition!.id}`"
+            :model-value="form.equippedEquipmentIds.includes(item.definition!.id)"
+            :label="item.definition!.name"
+            hide-details
+            @update:model-value="toggleEquippedEquipment(item.definition!.id)"
+          />
           <div v-for="group in selectedClassKit.optionGroups" :key="group.id">
             <h3>{{ t('equipment.options') }}</h3>
             <v-checkbox

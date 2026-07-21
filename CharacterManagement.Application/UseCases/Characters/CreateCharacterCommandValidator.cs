@@ -273,6 +273,8 @@ public sealed class CreateCharacterCommandValidator : AbstractValidator<CreateCh
 
                 RuleFor( command => command.Character.ClassKitOptionIds )
                     .NotNull();
+                RuleFor( command => command.Character.EquippedEquipmentIds )
+                    .NotNull();
 
                 When(
                     command => command.Character.ClassId != "class.cleric",

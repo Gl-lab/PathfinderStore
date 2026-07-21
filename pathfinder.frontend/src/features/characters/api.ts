@@ -360,7 +360,7 @@ export interface Character {
   completion: {
     isComplete: boolean
     issues: {
-      code: 'Identity' | 'AncestryPackage' | 'BackgroundPackage' | 'ClassPackage' | 'ClassChoices' | 'SpellLoadout' | 'FeatChoices' | 'ClassTraining' | 'Languages' | 'FinalBoosts'
+      code: 'Identity' | 'AncestryPackage' | 'BackgroundPackage' | 'ClassPackage' | 'ClassChoices' | 'SpellLoadout' | 'FeatChoices' | 'ClassTraining' | 'Languages' | 'FinalBoosts' | 'StartingEquipment'
       message: string
     }[]
   }
@@ -372,6 +372,34 @@ export interface Character {
     wisdom: Characteristic
     charisma: Characteristic
   }
+  startingEquipment: CharacterStartingEquipment | null
+}
+
+export interface CharacterStartingEquipment {
+  classKitId: string
+  selectedOptionIds: string[]
+  items: {
+    definition: {
+      id: string
+      name: string
+      category: 'Gear' | 'Armor' | 'Weapon' | 'Ammunition' | 'Shield'
+      priceCopper: number
+      bulkTenths: number
+      unitsPerPurchase: number
+    }
+    purchaseQuantity: number
+    unitQuantity: number
+    equippedQuantity: number
+    proficiencyTargetId: string | null
+    proficiencyRank: ProficiencyRank
+  }[]
+  totalPriceCopper: number
+  remainingWealthCopper: number
+  totalBulkTenths: number
+  encumberedAtBulkTenths: number
+  maximumBulkTenths: number
+  isEncumbered: boolean
+  exceedsMaximumBulk: boolean
 }
 
 export async function getCharacters(): Promise<Character[]> {

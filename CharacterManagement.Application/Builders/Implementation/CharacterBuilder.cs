@@ -694,7 +694,8 @@ public class CharacterBuilder : ICharacterBuilder
 
     public void SetStartingEquipment(
         IReadOnlyList<string> selectedOptionIds,
-        string? deityFavoredWeaponEquipmentId = null )
+        string? deityFavoredWeaponEquipmentId = null,
+        IReadOnlyList<string>? equippedEquipmentIds = null )
     {
         if ( _draftCharacter?.SelectedClassId is null )
         {
@@ -725,6 +726,27 @@ public class CharacterBuilder : ICharacterBuilder
             deity,
             deityFavoredWeaponEquipmentId );
         _draftCharacter.SetStartingEquipment( selection );
+        CharacterClass characterClass = _characterClassRepository?.GetCharacterClass(
+            _draftCharacter.SelectedClassId )
+            ?? throw new InvalidOperationException( "Character class repository is not configured." );
+        RogueRacket? rogueRacket = _draftCharacter.SelectedRogueRacketId is null
+            ? null
+            : _rogueRacketRepository?.GetRogueRacket( _draftCharacter.SelectedRogueRacketId );
+        ClericDoctrine? clericDoctrine = _draftCharacter.SelectedClericDoctrineId is null
+            ? null
+            : _clericDoctrineRepository?.GetClericDoctrine( _draftCharacter.SelectedClericDoctrineId );
+        IReadOnlyList<EffectiveProficiency> proficiencies = ProficiencyResolver.Resolve(
+            characterClass.InitialProficiencies
+                .Concat( rogueRacket?.ProficiencyGrants ?? [] )
+                .Concat( clericDoctrine?.ProficiencyGrants ?? [] )
+                .Concat( deity?.ProficiencyGrants ?? [] ) );
+        EquipmentLoadoutResult loadout = EquipmentLoadoutResolver.Resolve(
+            selection.Items,
+            _equipmentRepository.GetAll(),
+            equippedEquipmentIds ?? [],
+            proficiencies,
+            _draftCharacter.AbilityScores.Strength.Modifier );
+        _draftCharacter.SetEquipmentLoadout( loadout );
     }
 
     public void SetAlignment() => throw new NotImplementedException();

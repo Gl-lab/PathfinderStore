@@ -3,7 +3,10 @@ using Pathfinder.CharacterManagement.Domain.Exceptions;
 
 namespace Pathfinder.CharacterManagement.Domain.Rules.Equipment;
 
-public sealed record CharacterEquipmentItem( string EquipmentId, int PurchaseQuantity );
+public sealed record CharacterEquipmentItem(
+    string EquipmentId,
+    int PurchaseQuantity,
+    int EquippedQuantity = 0 );
 
 public sealed record StartingEquipmentSelection(
     string ClassKitId,

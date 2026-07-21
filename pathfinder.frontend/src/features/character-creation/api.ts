@@ -474,6 +474,7 @@ export interface CreateCharacterRequest {
   additionalClassTrainingChoices: ClassTrainingTargetChoice[]
   classKitOptionIds: string[]
   deityFavoredWeaponEquipmentId: string | null
+  equippedEquipmentIds: string[]
 }
 
 export interface EquipmentDefinition {

@@ -35,6 +35,11 @@ public sealed class CharacterStartingEquipmentDto
     public IReadOnlyList<CharacterEquipmentLineDto> Items { get; set; } = [];
     public int TotalPriceCopper { get; set; }
     public int RemainingWealthCopper { get; set; }
+    public int TotalBulkTenths { get; set; }
+    public int EncumberedAtBulkTenths { get; set; }
+    public int MaximumBulkTenths { get; set; }
+    public bool IsEncumbered { get; set; }
+    public bool ExceedsMaximumBulk { get; set; }
 }
 
 public sealed class CharacterEquipmentLineDto
@@ -42,6 +47,9 @@ public sealed class CharacterEquipmentLineDto
     public EquipmentDto Definition { get; set; } = new EquipmentDto();
     public int PurchaseQuantity { get; set; }
     public int UnitQuantity { get; set; }
+    public int EquippedQuantity { get; set; }
+    public string? ProficiencyTargetId { get; set; }
+    public ProficiencyRank ProficiencyRank { get; set; }
 }
 
 public class BackpackDto : BaseDto

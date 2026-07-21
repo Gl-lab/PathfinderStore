@@ -182,12 +182,19 @@ public sealed class CharacterCompletionEvaluator
         Validate(
             issues,
             CharacterCompletionIssueCode.StartingEquipment,
-            () => ValidateStartingEquipment( character, characterClass, deity ) );
+            () => ValidateStartingEquipment(
+                character,
+                characterClass,
+                rogueRacket,
+                clericDoctrine,
+                deity ) );
     }
 
     private void ValidateStartingEquipment(
         DraftCharacter character,
         CharacterClass characterClass,
+        RogueRacket? rogueRacket,
+        ClericDoctrine? clericDoctrine,
         Deity? deity )
     {
         ClassKitDefinition classKit = _equipmentRepository.GetClassKit( characterClass.Id );
@@ -202,8 +209,23 @@ public sealed class CharacterCompletionEvaluator
             deity,
             deityFavoredWeaponEquipmentId );
 
+        IReadOnlyList<EffectiveProficiency> proficiencies = ProficiencyResolver.Resolve(
+            characterClass.InitialProficiencies
+                .Concat( rogueRacket?.ProficiencyGrants ?? [] )
+                .Concat( clericDoctrine?.ProficiencyGrants ?? [] )
+                .Concat( deity?.ProficiencyGrants ?? [] ) );
+        EquipmentLoadoutResult loadout = EquipmentLoadoutResolver.Resolve(
+            resolved.Items,
+            _equipmentRepository.GetAll(),
+            character.StartingEquipmentItems
+                .Where( item => item.EquippedQuantity > 0 )
+                .Select( item => item.EquipmentId )
+                .ToArray(),
+            proficiencies,
+            character.AbilityScores.Strength.Modifier );
+
         if ( character.SelectedClassKitId != resolved.ClassKitId ||
-             !character.StartingEquipmentItems.SequenceEqual( resolved.Items ) )
+             !character.StartingEquipmentItems.SequenceEqual( loadout.Items ) )
         {
             throw new InvalidOperationException( "Starting equipment does not match the selected class kit." );
         }

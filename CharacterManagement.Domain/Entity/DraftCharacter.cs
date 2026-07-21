@@ -735,6 +735,20 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         EnsureInvariants();
     }
 
+    public void SetEquipmentLoadout( EquipmentLoadoutResult loadout )
+    {
+        EnsureDraft();
+        ArgumentNullException.ThrowIfNull( loadout );
+
+        if ( SelectedClassKitId is null )
+        {
+            throw new CharacterManagementException( "Starting equipment must be selected before its loadout." );
+        }
+
+        StartingEquipmentItems = loadout.Items.ToArray();
+        EnsureInvariants();
+    }
+
     private void ClearStartingEquipment()
     {
         SelectedClassKitId = null;

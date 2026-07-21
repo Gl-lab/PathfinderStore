@@ -725,6 +725,25 @@ onMounted(load)
             </ul>
           </v-card-text
         ></v-card
+        ><v-card v-if="character.startingEquipment" elevation="0"
+          ><v-card-item :title="t('equipment.title')" /><v-card-text>
+            <p>
+              {{ t('equipment.bulk', {
+                total: character.startingEquipment.totalBulkTenths / 10,
+                encumbered: character.startingEquipment.encumberedAtBulkTenths / 10,
+                maximum: character.startingEquipment.maximumBulkTenths / 10,
+              }) }}
+            </p>
+            <ul>
+              <li v-for="item in character.startingEquipment.items" :key="item.definition.id">
+                {{ item.definition.name }} × {{ item.unitQuantity }}
+                <strong v-if="item.equippedQuantity">({{ t('equipment.equipped') }})</strong>
+                <span v-if="item.proficiencyTargetId">
+                  — {{ t('equipment.proficiency', { rank: getProficiencyRankLabel(item.proficiencyRank) }) }}
+                </span>
+              </li>
+            </ul>
+          </v-card-text></v-card
         ><v-card v-if="proficiencyGroups.length" elevation="0"
           ><v-card-item :title="t('classUi.initialProficiencies')" /><v-card-text
             ><section

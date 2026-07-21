@@ -6,6 +6,7 @@ using Pathfinder.CharacterManagement.Application.Repositories;
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.CharacterManagement.Domain.Rules.Feats;
 using Pathfinder.CharacterManagement.Domain.Rules.Spells;
+using Pathfinder.CharacterManagement.Domain.Rules.Equipment;
 
 namespace Pathfinder.CharacterManagement.Application.Features.Characters.Queries.Mapping;
 
@@ -205,7 +206,7 @@ public sealed class CharacterDetailsDtoMapper
                 .Select( CharacterFeatDtoMapper.Map )
                 .ToArray(),
             Completion = _completionEvaluator?.Evaluate( draftCharacter ) ?? new CharacterCompletionDto(),
-            StartingEquipment = MapStartingEquipment( draftCharacter ),
+            StartingEquipment = MapStartingEquipment( draftCharacter, effectiveProficiencies ),
             Characteristics = new GroupCharacteristicDto
             {
                 Strength = Convert( draftCharacter.AbilityScores.Strength ),
@@ -220,7 +221,9 @@ public sealed class CharacterDetailsDtoMapper
         };
     }
 
-    private CharacterStartingEquipmentDto? MapStartingEquipment( DraftCharacter character )
+    private CharacterStartingEquipmentDto? MapStartingEquipment(
+        DraftCharacter character,
+        IReadOnlyList<EffectiveProficiency> proficiencies )
     {
         if ( character.SelectedClassKitId is null )
         {
@@ -232,15 +235,30 @@ public sealed class CharacterDetailsDtoMapper
             throw new InvalidOperationException( "Equipment repository is required to map starting equipment." );
         }
 
-        List<CharacterEquipmentLineDto> items = character.StartingEquipmentItems
+        EquipmentLoadoutResult loadout = EquipmentLoadoutResolver.Resolve(
+            character.StartingEquipmentItems,
+            _equipmentRepository.GetAll(),
+            character.StartingEquipmentItems
+                .Where( item => item.EquippedQuantity > 0 )
+                .Select( item => item.EquipmentId )
+                .ToArray(),
+            proficiencies,
+            character.AbilityScores.Strength.Modifier );
+        Dictionary<string, EquipmentProficiencyMatch> proficiencyMatches = loadout.Proficiencies
+            .ToDictionary( match => match.EquipmentId, StringComparer.Ordinal );
+        List<CharacterEquipmentLineDto> items = loadout.Items
             .Select( item =>
             {
                 EquipmentDefinition definition = _equipmentRepository.GetEquipment( item.EquipmentId );
+                EquipmentProficiencyMatch match = proficiencyMatches[ item.EquipmentId ];
                 return new CharacterEquipmentLineDto
                 {
                     Definition = EquipmentDtoMapper.Map( definition ),
                     PurchaseQuantity = item.PurchaseQuantity,
                     UnitQuantity = item.PurchaseQuantity * definition.UnitsPerPurchase,
+                    EquippedQuantity = item.EquippedQuantity,
+                    ProficiencyTargetId = match.ProficiencyTargetId,
+                    ProficiencyRank = match.Rank,
                 };
             } )
             .ToList();
@@ -252,6 +270,11 @@ public sealed class CharacterDetailsDtoMapper
             Items = items,
             TotalPriceCopper = totalPriceCopper,
             RemainingWealthCopper = ClassKitDefinition.StartingWealthCopper - totalPriceCopper,
+            TotalBulkTenths = loadout.TotalBulkTenths,
+            EncumberedAtBulkTenths = loadout.EncumberedAtBulkTenths,
+            MaximumBulkTenths = loadout.MaximumBulkTenths,
+            IsEncumbered = loadout.IsEncumbered,
+            ExceedsMaximumBulk = loadout.ExceedsMaximumBulk,
         };
     }
 

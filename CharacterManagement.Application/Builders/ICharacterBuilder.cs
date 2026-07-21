@@ -70,7 +70,8 @@ public interface ICharacterBuilder
     void ApplyFreeBoosts( IEnumerable<AbilityType> freeBoosts );
     void SetStartingEquipment(
         IReadOnlyList<string> selectedOptionIds,
-        string? deityFavoredWeaponEquipmentId = null );
+        string? deityFavoredWeaponEquipmentId = null,
+        IReadOnlyList<string>? equippedEquipmentIds = null );
     void SetAlignment();
     void SetDeity();
     void SetAge();
