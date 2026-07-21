@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Pathfinder.CharacterManagement.Application.Equipment;
 using Pathfinder.CharacterManagement.Application.Repositories;
+using Pathfinder.CharacterManagement.Infrastructure.Equipment;
 using Pathfinder.CharacterManagement.Infrastructure.Repositories;
 
 namespace Pathfinder.CharacterManagement.Infrastructure;
@@ -22,6 +24,7 @@ public static class DependencyInjection
         services.AddScoped<ISpellRepository, SpellRepository>();
         services.AddScoped<IFeatRepository, FeatRepository>();
         services.AddScoped<IEquipmentRepository, EquipmentRepository>();
+        services.AddScoped<IAllowedEquipmentReader, StartingEquipmentAllowedEquipmentReader>();
         services.AddScoped<IHuntersEdgeRepository, HuntersEdgeRepository>();
         services.AddScoped<IDruidicOrderRepository, DruidicOrderRepository>();
         services.AddScoped<IBardMuseRepository, BardMuseRepository>();

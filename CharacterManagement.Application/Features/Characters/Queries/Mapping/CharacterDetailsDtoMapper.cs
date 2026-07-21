@@ -2,11 +2,11 @@ using Pathfinder.CharacterManagement.Application.Converters;
 using Pathfinder.CharacterManagement.Application.Avatars;
 using Pathfinder.CharacterManagement.Application.DTO;
 using Pathfinder.CharacterManagement.Application.Completion;
+using Pathfinder.CharacterManagement.Application.Equipment;
 using Pathfinder.CharacterManagement.Application.Repositories;
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.CharacterManagement.Domain.Rules.Feats;
 using Pathfinder.CharacterManagement.Domain.Rules.Spells;
-using Pathfinder.CharacterManagement.Domain.Rules.Equipment;
 
 namespace Pathfinder.CharacterManagement.Application.Features.Characters.Queries.Mapping;
 
@@ -30,7 +30,7 @@ public sealed class CharacterDetailsDtoMapper
     private readonly IAvatarCatalog? _avatarCatalog;
     private readonly IFeatRepository? _featRepository;
     private readonly CharacterCompletionEvaluator? _completionEvaluator;
-    private readonly IEquipmentRepository? _equipmentRepository;
+    private readonly IAllowedEquipmentReader? _allowedEquipmentReader;
 
     public CharacterDetailsDtoMapper(
         IAncestryRepository? ancestryRepository = null,
@@ -51,7 +51,7 @@ public sealed class CharacterDetailsDtoMapper
         IAvatarCatalog? avatarCatalog = null,
         IFeatRepository? featRepository = null,
         CharacterCompletionEvaluator? completionEvaluator = null,
-        IEquipmentRepository? equipmentRepository = null )
+        IAllowedEquipmentReader? allowedEquipmentReader = null )
     {
         _ancestryRepository = ancestryRepository;
         _backgroundRepository = backgroundRepository;
@@ -71,7 +71,7 @@ public sealed class CharacterDetailsDtoMapper
         _avatarCatalog = avatarCatalog;
         _featRepository = featRepository;
         _completionEvaluator = completionEvaluator;
-        _equipmentRepository = equipmentRepository;
+        _allowedEquipmentReader = allowedEquipmentReader;
     }
 
     public DraftCharacter Convert( CharacterDto character ) => throw new NotSupportedException();
@@ -230,46 +230,41 @@ public sealed class CharacterDetailsDtoMapper
             return null;
         }
 
-        if ( _equipmentRepository is null )
+        if ( _allowedEquipmentReader is null )
         {
-            throw new InvalidOperationException( "Equipment repository is required to map starting equipment." );
+            throw new InvalidOperationException( "Allowed equipment reader is required to map starting equipment." );
         }
 
-        EquipmentLoadoutResult loadout = EquipmentLoadoutResolver.Resolve(
-            character.StartingEquipmentItems,
-            _equipmentRepository.GetAll(),
-            character.StartingEquipmentItems
-                .Where( item => item.EquippedQuantity > 0 )
-                .Select( item => item.EquipmentId )
-                .ToArray(),
-            proficiencies,
-            character.AbilityScores.Strength.Modifier );
-        Dictionary<string, EquipmentProficiencyMatch> proficiencyMatches = loadout.Proficiencies
-            .ToDictionary( match => match.EquipmentId, StringComparer.Ordinal );
-        List<CharacterEquipmentLineDto> items = loadout.Items
+        AllowedEquipmentLoadout loadout = _allowedEquipmentReader.Read( character, proficiencies );
+        IReadOnlyList<CharacterEquipmentLineDto> items = loadout.Items
             .Select( item =>
             {
-                EquipmentDefinition definition = _equipmentRepository.GetEquipment( item.EquipmentId );
-                EquipmentProficiencyMatch match = proficiencyMatches[ item.EquipmentId ];
                 return new CharacterEquipmentLineDto
                 {
-                    Definition = EquipmentDtoMapper.Map( definition ),
+                    Definition = new CharacterEquipmentDefinitionDto
+                    {
+                        Id = item.Id,
+                        Name = item.Name,
+                        Category = item.Category,
+                        PriceCopper = item.PriceCopper,
+                        BulkTenths = item.BulkTenths,
+                        UnitsPerPurchase = item.UnitsPerPurchase,
+                    },
                     PurchaseQuantity = item.PurchaseQuantity,
-                    UnitQuantity = item.PurchaseQuantity * definition.UnitsPerPurchase,
+                    UnitQuantity = item.UnitQuantity,
                     EquippedQuantity = item.EquippedQuantity,
-                    ProficiencyTargetId = match.ProficiencyTargetId,
-                    ProficiencyRank = match.Rank,
+                    ProficiencyTargetId = item.ProficiencyTargetId,
+                    ProficiencyRank = item.ProficiencyRank,
                 };
             } )
-            .ToList();
-        int totalPriceCopper = items.Sum( item => item.Definition.PriceCopper * item.PurchaseQuantity );
+            .ToArray();
         return new CharacterStartingEquipmentDto
         {
             ClassKitId = character.SelectedClassKitId,
             SelectedOptionIds = character.SelectedClassKitOptionIds.ToArray(),
             Items = items,
-            TotalPriceCopper = totalPriceCopper,
-            RemainingWealthCopper = ClassKitDefinition.StartingWealthCopper - totalPriceCopper,
+            TotalPriceCopper = loadout.TotalPriceCopper,
+            RemainingWealthCopper = loadout.RemainingWealthCopper,
             TotalBulkTenths = loadout.TotalBulkTenths,
             EncumberedAtBulkTenths = loadout.EncumberedAtBulkTenths,
             MaximumBulkTenths = loadout.MaximumBulkTenths,

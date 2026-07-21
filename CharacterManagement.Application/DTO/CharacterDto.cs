@@ -44,12 +44,22 @@ public sealed class CharacterStartingEquipmentDto
 
 public sealed class CharacterEquipmentLineDto
 {
-    public EquipmentDto Definition { get; set; } = new EquipmentDto();
+    public CharacterEquipmentDefinitionDto Definition { get; set; } = new CharacterEquipmentDefinitionDto();
     public int PurchaseQuantity { get; set; }
     public int UnitQuantity { get; set; }
     public int EquippedQuantity { get; set; }
     public string? ProficiencyTargetId { get; set; }
     public ProficiencyRank ProficiencyRank { get; set; }
+}
+
+public sealed class CharacterEquipmentDefinitionDto
+{
+    public string Id { get; set; } = String.Empty;
+    public string Name { get; set; } = String.Empty;
+    public EquipmentCategory Category { get; set; }
+    public int PriceCopper { get; set; }
+    public int BulkTenths { get; set; }
+    public int UnitsPerPurchase { get; set; }
 }
 
 public class BackpackDto : BaseDto
