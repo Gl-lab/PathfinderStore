@@ -13,7 +13,7 @@
 Следующие gaps известны, но не блокируют текущий MVP:
 
 - Набор полученных способностей первого уровня участвует в MVP flow: ancestry/background/class feats выбираются или выдаются, валидируются и сохраняют provenance. Поддерживаемые постоянные Skill/Lore training effects применяются; parameterized, temporary, spell, action, combat, weapon и runtime inventory effects остаются deferred. Starting equipment и languages входят в flow; исполнение spell/combat effects остаётся за границей MVP.
-- Из derived statistics вычисляются maximum HP, Saves, Perception и modifiers всех general skills и сохранённых Lore entries первого уровня. Current/temporary HP, AC, attacks, damage, class/spell DC и equipment bonuses пока отсутствуют.
+- Из derived statistics вычисляются maximum/current/temporary HP, AC, Fist и equipped-weapon Strikes, class/spell attack/DC, Saves, Perception и modifiers всех general skills и сохранённых Lore entries первого уровня. Encounter actions/conditions, Raise a Shield, специализированные ancestry strikes и исполнение spell/feat effects пока отсутствуют.
 
 ## Каталоги, которые уже есть
 
@@ -92,7 +92,7 @@ Heritage и ancestry feats 1 уровня каталогизированы и в
 Актуальная ближайшая очередь и критерии готовности зафиксированы в [Character Creation Near-Term Roadmap](../../30_task_notes/character_creation_near_term_roadmap.md).
 
 1. Создать единый русскоязычный доменный глоссарий перед добавлением новых архитектурных контрактов.
-2. Поверх equipment расширить карточку до AC, attacks, damage, DC и combat HP state через абстрактную границу собранного описания экипировки.
+2. Расширять завершённую combat card v1 только через `IAllowedEquipmentReader`, не возвращая расчёты к прямой зависимости от starting-equipment repository.
 3. После боевой карточки выполнять Priority 9–16 из roadmap: кампании и партии, каталог v2, экземпляры и инвентарь, обмен, магазины, инструменты ведущего, генерацию и жизненный цикл предметов.
 4. Отдельно спроектировать respec workflow для завершённых персонажей и дальнейшие runtime combat/progression подсистемы.
 

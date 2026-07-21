@@ -4,7 +4,7 @@
 
 Документ фиксирует типизированный baseline стартовых class proficiencies для восьми классов `Player Core`. Данные сверены 2026-07-13 с class pages Archives of Nethys.
 
-Skills, spell attack/DC и proficiency grants, зависящие от class choices, в эту матрицу не входят.
+Skills и proficiency grants, зависящие от class choices, в основную матрицу не входят. Spell attack/DC вынесены в отдельную tradition-aware матрицу ниже; Witch получает tradition из выбранного Patron.
 
 ## Stable targets
 
@@ -23,6 +23,8 @@ Skills, spell attack/DC и proficiency grants, зависящие от class cho
 | Defense | `proficiency.defense.medium_armor` | Medium Armor |
 | Defense | `proficiency.defense.heavy_armor` | Heavy Armor |
 | ClassDc | `proficiency.class_dc.<class>` | `<Class> Class DC` |
+| SpellAttack | `proficiency.spell_attack.<tradition>` | `<Tradition> Spell Attack` |
+| SpellDc | `proficiency.spell_dc.<tradition>` | `<Tradition> Spell DC` |
 
 Не перечисленный target считается `Untrained`. Поэтому явные `Untrained in all armor` у Cleric, Witch и Wizard не создают grants.
 
@@ -41,12 +43,24 @@ Skills, spell attack/DC и proficiency grants, зависящие от class cho
 | Witch | T | T | T | E | T | — | — | T | T | — | — | — | T |
 | Wizard | T | T | T | E | T | — | — | T | T | — | — | — | T |
 
+## Spellcasting proficiency
+
+| Class | Tradition source | Spell Attack | Spell DC |
+|---|---|---|---|
+| Bard | Occult | T | T |
+| Cleric | Divine | T | T |
+| Druid | Primal | T | T |
+| Witch | Selected Patron | T | T |
+| Wizard | Arcane | T | T |
+
+Fighter, Ranger и Rogue не получают spell proficiency без отдельного источника. Для Bard, Cleric, Druid и Wizard grants входят в class baseline. Witch grants разрешаются из сохранённого Patron choice, чтобы stable target соответствовал фактической tradition.
+
 ## Исключённые grants
 
 - Cleric deity favored weapon зависит от Deity и не добавляется в baseline.
 - Cleric armor может изменяться Doctrine и не добавляется без выбора Doctrine.
 - Skills, включая fighter choice, deity/order/patron/racket skills, относятся к отдельным flows.
-- Spell attack modifier и spell DC относятся к будущему spellcasting proficiency scope.
+- Item/status/circumstance modifiers для spell attack/DC не входят в стартовый proficiency catalog и подключаются отдельными rule sources.
 - Все level-up increases находятся за границей стартового baseline.
 
 ## Source ids

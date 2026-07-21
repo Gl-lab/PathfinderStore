@@ -13,17 +13,18 @@
 - Реализованы карточка и удаление персонажа.
 - Есть единая обработка API errors, русская и английская локализация.
 - Добавлены frontend tests для доменной локализации, Background, Class и final free boost choices.
-- Dashboard показывает maximum HP, карточка персонажа — maximum HP и breakdown ancestry/class/Constitution.
+- Dashboard показывает maximum HP; карточка персонажа — current/maximum/temporary HP, breakdown maximum и серверные команды урона, лечения и временных HP.
 - Background step разрешает fixed, finite-choice и open Lore grants; review/details показывают фактический training.
 - Class step и review показывают категории typed starting proficiencies; карточка группирует targets и локализованные ranks.
 - Wizard поддерживает обязательные Rogue's Racket, Cleric Doctrine и Deity; preview объединяет class/doctrine/deity proficiencies, обрабатывает replacement divine skill, а review/details показывают выбор и декларативные deity benefits.
 - Wizard содержит starting equipment step с class-kit options, favored weapon, budget и equipped choices; details показывает server-computed proficiency, общую Массу и нагрузку.
+- Details показывает server-derived AC, Fist и equipped-weapon Strikes, class DC и spell attack/DC без клиентских формул.
 
 ## Что не готово
 
 - Skill feat от Background пока не применяется.
 - Общий выбор дополнительных Class skills и level-up proficiency progression пока не реализованы.
-- Spell proficiencies, большинство features/spells и ещё не реализованные mandatory choices отображаются декларативно.
+- Большинство runtime effects features/spells отображаются декларативно; encounter actions, conditions и Raise a Shield не моделируются.
 - Нет полноценного e2e test suite с реальным backend и PostgreSQL.
 
 ## Связанные файлы

@@ -63,6 +63,7 @@
 - `GET /api/character/{characterId}`
 - `POST /api/character`
 - `POST /api/character/{characterId}/finalize`
+- `POST /api/character/{characterId}/hit-points`
 - `PUT /api/character/{characterId}/gender`
 - `DELETE /api/character/{characterId}`
 
@@ -79,7 +80,7 @@
 - skill feats и progression proficiency;
 - spellcasting lifecycle, current spell slots/Focus Points и progression выше первого уровня;
 - class features, runtime inventory и исполняемые ancestry effects;
-- AC, attacks, damage, состояние current/temporary HP и остальные combat statistics;
+- encounter conditions, Raise a Shield, multiple attack penalty и специализированные ancestry strikes;
 - server-side access sources для uncommon languages;
 - respec завершённого персонажа;
 - оставшиеся remastered-поля ancestry: granted items и granted rules.

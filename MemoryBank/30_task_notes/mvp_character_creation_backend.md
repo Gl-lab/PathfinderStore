@@ -23,13 +23,16 @@
 - Player Core Deity catalog содержит 22 записи; 21 доступна Cleric. Divine skill, replacement training, favored weapon proficiency, Divine Font и sanctification применяются фактически, domains/granted spells возвращаются декларативно.
 - Есть unit и integration tests по ключевым backend-сценариям.
 - Реализованы Player Core starting equipment catalog, `15 gp`, class kits, server-side selection/cost validation, persistence stable item references, equipped state, proficiency matching, общая Масса и пороги нагрузки.
+- Application-owned allowed-equipment read boundary изолирует боевые расчёты от временного starting-equipment каталога и не раскрывает клиенту внутренние definitions.
+- Карточка серверно вычисляет AC, Fist/equipped-weapon Strikes, class DC и spell attack/DC с ability, proficiency и типизированными bonus layers.
+- Current и temporary HP сохраняются отдельно от вычисляемого maximum HP и изменяются owner-scoped командами damage/heal/grant/clear.
 
 ## Что не готово
 
 - Background skill feat пока представлен декларативно и не применяется к персонажу.
 - Общий выбор дополнительных Class skills и level-up proficiency progression пока не реализованы.
-- Spell proficiencies, большинство features/spells и ещё не реализованные mandatory choices представлены декларативно.
-- Текущий MVP не покрывает runtime inventory/Store, hand/action economy, AC/Strike calculations, current/temporary HP и spell execution lifecycle.
+- Большинство runtime effects features/spells представлены декларативно.
+- Текущий MVP не покрывает runtime inventory/Store, hand/action economy, Raise a Shield, encounter conditions, специализированные ancestry strikes и spell execution lifecycle.
 - Есть отдельный актуальный блок по расхождению `Secure.User` и `CharacterManagement.Account`: см. [`task_32_account_backfill.md`](task_32_account_backfill.md).
 
 ## Связанные файлы

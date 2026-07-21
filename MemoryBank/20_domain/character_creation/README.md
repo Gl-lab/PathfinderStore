@@ -61,7 +61,9 @@
 - `SkillDefinition` — catalog entry одного из 16 general skills со stable id и key ability; Lore моделируется отдельными subcategories.
 - `Class` — источник key ability boost, class HP и типизированного baseline для Perception, saves, attacks, defenses и class DC; остальные features остаются декларативными.
 - `Final free boosts` — отдельный завершающий пакет четырёх boosts, распределённых по разным характеристикам.
-- `CharacterHitPoints` — вычисляемый breakdown maximum HP первого уровня из ancestry HP, class HP и Constitution modifier; в БД не хранится.
+- `CharacterHitPoints` — вычисляемый breakdown maximum HP первого уровня из ancestry HP, class HP и Constitution modifier; maximum в БД не хранится.
+- `CharacterHitPointState` — runtime current/temporary HP завершённого персонажа; current ограничивается вычисляемым maximum, а изменения выполняются семантическими командами.
+- `AllowedEquipmentLoadout` — application-owned безопасное описание разрешённого character equipment для read-модели и боевых расчётов; внутренние catalog definitions границу не пересекают.
 - `Core Rulebook` / `Player Core` — в AoN-данных базовый `Player Core`-слой часто индексируется как `Core Rulebook`; в документации проекта эти два ярлыка считаются одним baseline-источником, если явно не указано иное.
 
 ## Нормализация терминов

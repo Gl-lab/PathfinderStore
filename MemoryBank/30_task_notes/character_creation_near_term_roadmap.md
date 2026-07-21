@@ -361,6 +361,8 @@ AC, attacks, damage, current/temporary HP и equipment bonuses не входят
 
 ### Приоритет 8 — боевая карточка персонажа v1
 
+**Статус:** завершён 21 июля 2026 года; выполнен [итоговый cross-review](priority_8_final_review.md). Все пять slices реализованы отдельными коммитами: application-owned equipment read boundary, AC, Strikes, class/spell statistics и командное current/temporary HP state.
+
 **Цель.** Превратить завершённого персонажа первого уровня в пригодную для базовой игры карточку с серверно вычисляемыми защитой, атаками, уроном, DC и состоянием HP, не связывая расчёты с временным способом хранения стартового снаряжения.
 
 **Проблема.** Карточка уже показывает maximum HP, Saves, Perception и skills, но не содержит AC, strike modifiers/damage, class/spell DC, current/temporary HP и equipment contributions. Прямое использование текущего `EquipmentRepository` в новых расчётах закрепит переходный каталог `CharacterManagement` как постоянную границу и усложнит последующий переход на экземпляры инвентаря.

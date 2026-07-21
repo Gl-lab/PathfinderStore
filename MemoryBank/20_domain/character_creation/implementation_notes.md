@@ -10,25 +10,19 @@
 
 Текущий backend MVP поддерживает:
 
-- создание персонажа с именем;
-- выбор `Ancestry`;
-- применение ancestry boosts/flaws;
-- обязательные ancestry free boosts;
-- чтение списка и карточки персонажа;
-- удаление персонажа.
+- полный creation flow первого уровня для шести ancestry и восьми классов `Player Core`;
+- ancestry/background/class/final boosts, обязательные class choices, feats, Skills/Lore, languages и spell loadouts;
+- стартовое снаряжение с server-side validation, equipped state, стоимостью, Массой и proficiency matching;
+- финализацию, чтение списка/карточки и удаление персонажа;
+- server-derived maximum/current/temporary HP, AC, Strikes, class DC, spell attack/DC, Saves, Perception и Skills/Lore modifiers.
 
 Вне текущего MVP:
 
-- `Background`;
-- `Class`;
-- class features;
-- skills;
-- spells;
-- deity;
-- equipment;
-- languages;
-- ancestry feats;
-- narrative fields.
+- progression выше первого уровня и respec завершённого персонажа;
+- encounter actions/conditions, Raise a Shield и dying/wounded lifecycle;
+- исполнение spell/feat/class-feature effects;
+- runtime Inventory/Store, торговля и hand/action economy;
+- специализированные ancestry strikes и остальные отложенные ancestry effects.
 
 ## Ancestry Model
 

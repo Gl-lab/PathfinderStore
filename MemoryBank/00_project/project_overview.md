@@ -159,18 +159,21 @@ Seed users:
   - `GET /api/character`;
   - `GET /api/character/{id}`;
   - `POST /api/character`;
+  - `POST /api/character/{id}/finalize`;
+  - `POST /api/character/{id}/hit-points`;
   - `DELETE /api/character/{id}`;
   - domain/application/infrastructure тесты для ключевых сценариев.
 
 ### Текущий character creation focus
 
-Frontend MVP создания персонажа реализован на Vue 3. Текущий flow включает пол и постоянный аватар, полный Ancestry/Background/Class package, обязательные классовые выборы восьми классов Player Core baseline, четыре финальных свободных boosts и полный стартовый spell loadout Cleric, Bard, Druid, Witch и Wizard. Общий Player Core spell catalog фильтруется сервером по tradition, rank и kind; class flows сохраняют repertoire/preparation/spellbook, granted spells, отдельные slots и focus resources. Единый Player Core feat catalog покрывает ancestry, background skill и class feats первого уровня; общий inventory различает selected/granted provenance, обязательные class/skill feat slots валидируются, а поддерживаемые постоянные feat training effects участвуют в Skills/Lore и modifiers. Карточка серверно вычисляет maximum HP, Perception, Fortitude, Reflex, Will, modifiers всех general skills и сохранённых Lore entries с ability/proficiency breakdown. Parameterized/temporary feat choices, runtime spell/action/combat/inventory effects, equipment, progression и остальные combat statistics ожидают отдельные подсистемы.
+Frontend MVP создания персонажа реализован на Vue 3. Текущий flow включает пол и постоянный аватар, полный Ancestry/Background/Class package, обязательные классовые выборы восьми классов Player Core baseline, четыре финальных свободных boosts, стартовое снаряжение и полный spell loadout Cleric, Bard, Druid, Witch и Wizard. Общий Player Core spell catalog фильтруется сервером по tradition, rank и kind; class flows сохраняют repertoire/preparation/spellbook, granted spells, отдельные slots и focus resources. Единый Player Core feat catalog покрывает ancestry, background skill и class feats первого уровня; общий inventory различает selected/granted provenance, обязательные class/skill feat slots валидируются, а поддерживаемые постоянные feat training effects участвуют в Skills/Lore и modifiers. Боевая карточка серверно вычисляет maximum/current/temporary HP, AC, Strikes, class DC, spell attack/DC, Perception, saves и modifiers Skills/Lore с объяснимыми breakdown. Клиент изменяет HP только семантическими командами. Encounter actions/conditions, Raise a Shield, runtime spell/feat effects, progression и runtime inventory остаются отдельными подсистемами.
 
 Смотреть:
 
 - [`../30_task_notes/mvp_character_creation_frontend.md`](../30_task_notes/mvp_character_creation_frontend.md)
 - [`../30_task_notes/background_package_implementation.md`](../30_task_notes/background_package_implementation.md)
 - [`../30_task_notes/priority_5_final_review.md`](../30_task_notes/priority_5_final_review.md)
+- [`../30_task_notes/priority_8_final_review.md`](../30_task_notes/priority_8_final_review.md)
 
 ## Как работать с этим обзором
 

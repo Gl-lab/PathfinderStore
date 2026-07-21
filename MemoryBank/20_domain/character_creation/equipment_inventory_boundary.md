@@ -55,6 +55,19 @@ Equipment endpoints для character creation должны находиться 
 
 Runtime-команды `drop`, `trade`, `buy` и `sell` не входят в starting equipment flow.
 
+## Allowed equipment read boundary
+
+Боевая карточка не зависит напрямую от `IEquipmentRepository`. Application определяет порт `IAllowedEquipmentReader` и собственные безопасные типы `AllowedEquipmentLoadout`/`AllowedEquipmentItem`, содержащие только необходимые read-модели и расчётам поля.
+
+Текущий infrastructure adapter `StartingEquipmentAllowedEquipmentReader`:
+
+- повторно разрешает сохранённые character-owned references через starting-equipment catalog;
+- вычисляет proficiency applicability, стоимость, Массу и нагрузку;
+- проецирует weapon/armor/shield statistics в application-owned контракт;
+- не сериализует внутренний `EquipmentDefinition` клиенту.
+
+Будущий runtime Inventory заменит адаптер, а не контракты и формулы боевой карточки.
+
 ## Инварианты для следующих slices
 
 - сервер принимает item ids и choices, но сам разрешает definitions и вычисляет стоимость;

@@ -1,5 +1,7 @@
 # Derived Statistics v1: Hit Points Implementation Plan
 
+> Исторический scope maximum HP завершён. Priority 8 добавил отдельное persistent current/temporary HP state и семантические runtime-команды; maximum HP по-прежнему вычисляется и не сохраняется. Актуальный итог: [priority_8_final_review.md](priority_8_final_review.md).
+
 ## Проблема
 
 Текущий character creation уже хранит все источники стартовых Hit Points:
