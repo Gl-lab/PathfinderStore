@@ -24,6 +24,8 @@ public sealed class CampaignRepository : Repository<Campaign>, ICampaignReposito
             .AsNoTracking()
             .Include( campaign => campaign.Memberships )
             .Include( campaign => campaign.Invitations )
+            .Include( campaign => campaign.Parties )
+                .ThenInclude( party => party.Characters )
             .Where( campaign => campaign.Memberships.Any( membership =>
                 ( membership.UserId == userId ) &&
                 ( membership.Status == CampaignMembershipStatus.Active ) ) )
@@ -39,6 +41,8 @@ public sealed class CampaignRepository : Repository<Campaign>, ICampaignReposito
         return await _dbContext.Campaigns
             .Include( campaign => campaign.Memberships )
             .Include( campaign => campaign.Invitations )
+            .Include( campaign => campaign.Parties )
+                .ThenInclude( party => party.Characters )
             .SingleOrDefaultAsync(
                 campaign =>
                     ( campaign.Id == campaignId ) &&
@@ -56,6 +60,8 @@ public sealed class CampaignRepository : Repository<Campaign>, ICampaignReposito
         return await _dbContext.Campaigns
             .Include( campaign => campaign.Memberships )
             .Include( campaign => campaign.Invitations )
+            .Include( campaign => campaign.Parties )
+                .ThenInclude( party => party.Characters )
             .SingleOrDefaultAsync(
                 campaign => campaign.Invitations.Any( invitation =>
                     ( invitation.Id == invitationId ) &&

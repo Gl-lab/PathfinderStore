@@ -12,6 +12,7 @@ public static class DependencyInjection
         services.AddSingleton( TimeProvider.System );
         services.AddTransient<IValidator<CreateCampaignCommand>, CreateCampaignCommandValidator>();
         services.AddTransient<IValidator<InviteCampaignMemberCommand>, InviteCampaignMemberCommandValidator>();
+        services.AddTransient<IValidator<CreateCampaignPartyCommand>, CreateCampaignPartyCommandValidator>();
         services.AddMediatR( configuration =>
             configuration.RegisterServicesFromAssembly( typeof( DependencyInjection ).Assembly ) );
     }

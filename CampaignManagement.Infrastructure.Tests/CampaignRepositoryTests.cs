@@ -164,6 +164,68 @@ public sealed class CampaignRepositoryTests
         Assert.Equal( "First", campaign.Name );
     }
 
+    [Fact]
+    public async Task PartyHandlersPersistControlledCharacter()
+    {
+        await using CampaignManagementDbContext dbContext = CreateDbContext();
+        Campaign campaign = Campaign.Create( "First", 42, _createdAtUtc );
+        CampaignInvitation invitation = campaign.Invite( 42, 7, _createdAtUtc.AddMinutes( 1 ) );
+        campaign.AcceptInvitation( invitation.Id, 7, _createdAtUtc.AddMinutes( 2 ) );
+        dbContext.Campaigns.Add( campaign );
+        await dbContext.SaveChangesAsync();
+        CampaignRepository repository = new CampaignRepository( dbContext );
+        TestUnitOfWork unitOfWork = new TestUnitOfWork( dbContext );
+        CreateCampaignPartyHandler createPartyHandler = new CreateCampaignPartyHandler(
+            repository,
+            unitOfWork,
+            new CreateCampaignPartyCommandValidator(),
+            new FixedTimeProvider( _createdAtUtc.AddHours( 1 ) ) );
+        await createPartyHandler.Handle(
+            new CreateCampaignPartyCommand( 42, campaign.Id, "Heroes" ),
+            CancellationToken.None );
+        AssignCampaignPartyCharacterHandler assignCharacterHandler =
+            new AssignCampaignPartyCharacterHandler(
+                repository,
+                new FakeCampaignCharacterDirectory(
+                    [ ( 7, new CampaignCharacterReference( 101, "Valeros" ) ) ] ),
+                unitOfWork,
+                new FixedTimeProvider( _createdAtUtc.AddHours( 2 ) ) );
+
+        CampaignDto result = await assignCharacterHandler.Handle(
+            new AssignCampaignPartyCharacterCommand( 7, campaign.Id, 101, 7 ),
+            CancellationToken.None );
+
+        CampaignPartyDto party = Assert.Single( result.Parties );
+        CampaignPartyCharacterDto character = Assert.Single( party.Characters );
+        Assert.Equal( 101, character.CharacterId );
+        Assert.Equal( 7, character.ControlledByUserId );
+        Assert.Single( await dbContext.CampaignPartyCharacters.ToArrayAsync() );
+    }
+
+    [Fact]
+    public async Task AssignCharacterHandlerRejectsCharacterOwnedByAnotherUser()
+    {
+        await using CampaignManagementDbContext dbContext = CreateDbContext();
+        Campaign campaign = Campaign.Create( "First", 42, _createdAtUtc );
+        CampaignInvitation invitation = campaign.Invite( 42, 7, _createdAtUtc.AddMinutes( 1 ) );
+        campaign.AcceptInvitation( invitation.Id, 7, _createdAtUtc.AddMinutes( 2 ) );
+        campaign.CreateParty( 42, "Heroes", _createdAtUtc.AddMinutes( 3 ) );
+        dbContext.Campaigns.Add( campaign );
+        await dbContext.SaveChangesAsync();
+        CampaignRepository repository = new CampaignRepository( dbContext );
+        AssignCampaignPartyCharacterHandler handler = new AssignCampaignPartyCharacterHandler(
+            repository,
+            new FakeCampaignCharacterDirectory(
+                [ ( 8, new CampaignCharacterReference( 101, "Valeros" ) ) ] ),
+            new TestUnitOfWork( dbContext ),
+            new FixedTimeProvider( _createdAtUtc.AddHours( 1 ) ) );
+
+        await Assert.ThrowsAsync<Pathfinder.CampaignManagement.Application.Exceptions.CampaignManagementApplicationException>( () =>
+            handler.Handle(
+                new AssignCampaignPartyCharacterCommand( 7, campaign.Id, 101, 7 ),
+                CancellationToken.None ) );
+    }
+
     private static CampaignManagementDbContext CreateDbContext()
     {
         DbContextOptions<CampaignManagementDbContext> options =

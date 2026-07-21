@@ -23,15 +23,34 @@ internal static class CampaignMappings
                     .ToArray() ) )
             .OrderBy( member => member.UserId )
             .ToArray();
+        IReadOnlyCollection<CampaignPartyDto> parties = campaign.Parties
+            .OrderBy( party => party.CreatedAtUtc )
+            .Select( party => new CampaignPartyDto(
+                party.Id,
+                party.Name,
+                party.Status,
+                party.CreatedAtUtc,
+                party.ArchivedAtUtc,
+                party.Characters
+                    .OrderBy( character => character.AssignedAtUtc )
+                    .Select( character => new CampaignPartyCharacterDto(
+                        character.Id,
+                        character.CharacterId,
+                        character.ControlledByUserId,
+                        character.AssignedAtUtc ) )
+                    .ToArray() ) )
+            .ToArray();
 
         return new CampaignDto(
             campaign.Id,
+            userId,
             campaign.Name,
             campaign.Status,
             campaign.CreatedByUserId,
             campaign.CreatedAtUtc,
             campaign.ArchivedAtUtc,
             roles,
-            members );
+            members,
+            parties );
     }
 }

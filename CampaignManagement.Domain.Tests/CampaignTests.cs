@@ -129,4 +129,68 @@ public sealed class CampaignTests
         Assert.Throws<CampaignManagementException>( () =>
             campaign.Invite( 42, 7, _createdAtUtc.AddHours( 2 ) ) );
     }
+
+    [Fact]
+    public void GameMasterCreatesOnlyOneActiveParty()
+    {
+        Campaign campaign = Campaign.Create( "Abomination Vaults", 42, _createdAtUtc );
+
+        CampaignParty party = campaign.CreateParty( 42, "Heroes", _createdAtUtc.AddHours( 1 ) );
+
+        Assert.Equal( "Heroes", party.Name );
+        Assert.Equal( CampaignPartyStatus.Active, party.Status );
+        Assert.Throws<CampaignManagementException>( () =>
+            campaign.CreateParty( 42, "Second", _createdAtUtc.AddHours( 2 ) ) );
+    }
+
+    [Fact]
+    public void PlayerAssignsOwnCharacterToActiveParty()
+    {
+        Campaign campaign = CreateCampaignWithPlayer();
+        campaign.CreateParty( 42, "Heroes", _createdAtUtc.AddHours( 3 ) );
+
+        CampaignPartyCharacter character = campaign.AssignCharacterToActiveParty(
+            7,
+            101,
+            7,
+            _createdAtUtc.AddHours( 4 ) );
+
+        Assert.Equal( 101, character.CharacterId );
+        Assert.Equal( 7, character.ControlledByUserId );
+    }
+
+    [Fact]
+    public void PlayerCannotAssignCharacterForAnotherPlayer()
+    {
+        Campaign campaign = CreateCampaignWithPlayer();
+        CampaignInvitation secondInvitation = campaign.Invite( 42, 8, _createdAtUtc.AddHours( 3 ) );
+        campaign.AcceptInvitation( secondInvitation.Id, 8, _createdAtUtc.AddHours( 4 ) );
+        campaign.CreateParty( 42, "Heroes", _createdAtUtc.AddHours( 5 ) );
+
+        Assert.Throws<CampaignManagementException>( () =>
+            campaign.AssignCharacterToActiveParty(
+                7,
+                101,
+                8,
+                _createdAtUtc.AddHours( 6 ) ) );
+    }
+
+    [Fact]
+    public void PartyRejectsDuplicateCharacter()
+    {
+        Campaign campaign = CreateCampaignWithPlayer();
+        campaign.CreateParty( 42, "Heroes", _createdAtUtc.AddHours( 3 ) );
+        campaign.AssignCharacterToActiveParty( 7, 101, 7, _createdAtUtc.AddHours( 4 ) );
+
+        Assert.Throws<CampaignManagementException>( () =>
+            campaign.AssignCharacterToActiveParty( 7, 101, 7, _createdAtUtc.AddHours( 5 ) ) );
+    }
+
+    private static Campaign CreateCampaignWithPlayer()
+    {
+        Campaign campaign = Campaign.Create( "Abomination Vaults", 42, _createdAtUtc );
+        CampaignInvitation invitation = campaign.Invite( 42, 7, _createdAtUtc.AddHours( 1 ) );
+        campaign.AcceptInvitation( invitation.Id, 7, _createdAtUtc.AddHours( 2 ) );
+        return campaign;
+    }
 }

@@ -9,6 +9,7 @@ public sealed class Campaign : Entity, IAggregateRoot
 
     private readonly List<CampaignMembership> _memberships = [];
     private readonly List<CampaignInvitation> _invitations = [];
+    private readonly List<CampaignParty> _parties = [];
 
     private Campaign()
     {
@@ -21,6 +22,7 @@ public sealed class Campaign : Entity, IAggregateRoot
     public DateTimeOffset? ArchivedAtUtc { get; private set; }
     public IReadOnlyList<CampaignMembership> Memberships { get => _memberships; }
     public IReadOnlyList<CampaignInvitation> Invitations { get => _invitations; }
+    public IReadOnlyList<CampaignParty> Parties { get => _parties; }
 
     public static Campaign Create( string name, int creatorUserId, DateTimeOffset createdAtUtc )
     {
@@ -195,13 +197,62 @@ public sealed class Campaign : Entity, IAggregateRoot
         EnsureInvariants();
     }
 
+    public CampaignParty CreateParty(
+        int actingUserId,
+        string name,
+        DateTimeOffset createdAtUtc )
+    {
+        EnsureActive();
+        EnsureGameMaster( actingUserId );
+        if ( _parties.Any( party => party.Status == CampaignPartyStatus.Active ) )
+        {
+            throw new CampaignManagementException( "Campaign already has an active party." );
+        }
+
+        CampaignParty party = CampaignParty.Create( name, createdAtUtc );
+        _parties.Add( party );
+        return party;
+    }
+
+    public CampaignPartyCharacter AssignCharacterToActiveParty(
+        int actingUserId,
+        int characterId,
+        int controlledByUserId,
+        DateTimeOffset assignedAtUtc )
+    {
+        EnsureActive();
+        bool actsForSelf = actingUserId == controlledByUserId;
+        bool isGameMaster = HasActiveRole( actingUserId, CampaignMembershipRole.GameMaster );
+        if ( !actsForSelf && !isGameMaster )
+        {
+            throw new CampaignManagementException(
+                "Only a campaign Game Master can assign another player's character." );
+        }
+
+        if ( !HasActiveRole( controlledByUserId, CampaignMembershipRole.Player ) )
+        {
+            throw new CampaignManagementException( "Character controller must be an active campaign Player." );
+        }
+
+        CampaignParty? party = _parties.SingleOrDefault(
+            item => item.Status == CampaignPartyStatus.Active );
+        if ( party is null )
+        {
+            throw new CampaignManagementException( "Campaign does not have an active party." );
+        }
+
+        return party.AssignCharacter( characterId, controlledByUserId, assignedAtUtc );
+    }
+
     private bool HasActiveMembership( int userId ) => _memberships.Any( membership =>
         ( membership.UserId == userId ) &&
         ( membership.Status == CampaignMembershipStatus.Active ) );
 
     private CampaignInvitation GetInvitation( int invitationId )
     {
-        CampaignInvitation? invitation = _invitations.SingleOrDefault( item => item.Id == invitationId );
+        CampaignInvitation? invitation = _invitations.SingleOrDefault( item =>
+            ( item.Id == invitationId ) &&
+            ( item.Status == CampaignInvitationStatus.Pending ) );
         return invitation ?? throw new CampaignManagementException( "Campaign invitation was not found." );
     }
 

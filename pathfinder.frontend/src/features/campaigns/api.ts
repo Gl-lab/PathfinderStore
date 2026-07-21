@@ -5,6 +5,7 @@ export type CampaignMembershipRole = 'GameMaster' | 'Player'
 
 export interface Campaign {
   id: number
+  currentUserId: number
   name: string
   status: CampaignStatus
   createdByUserId: number
@@ -12,6 +13,28 @@ export interface Campaign {
   archivedAtUtc: string | null
   roles: CampaignMembershipRole[]
   members: { userId: number; roles: CampaignMembershipRole[] }[]
+  parties: CampaignParty[]
+}
+
+export interface CampaignParty {
+  id: number
+  name: string
+  status: 'Active' | 'Archived'
+  createdAtUtc: string
+  archivedAtUtc: string | null
+  characters: CampaignPartyCharacter[]
+}
+
+export interface CampaignPartyCharacter {
+  id: number
+  characterId: number
+  controlledByUserId: number
+  assignedAtUtc: string
+}
+
+export interface CampaignCharacterReference {
+  id: number
+  name: string
 }
 
 export interface CampaignInvitation {
@@ -66,4 +89,25 @@ export async function changeCampaignRole(
 ): Promise<Campaign> {
   const url = `/api/campaign-membership/campaigns/${campaignId}/members/${memberUserId}/roles/${role}`
   return (assign ? await http.put<Campaign>(url) : await http.delete<Campaign>(url)).data
+}
+
+export async function getCampaignCharacters(): Promise<CampaignCharacterReference[]> {
+  return (await http.get<CampaignCharacterReference[]>('/api/campaign-parties/characters')).data
+}
+
+export async function createCampaignParty(campaignId: number, name: string): Promise<Campaign> {
+  return (await http.post<Campaign>(`/api/campaign-parties/campaigns/${campaignId}`, { name })).data
+}
+
+export async function assignCampaignPartyCharacter(
+  campaignId: number,
+  characterId: number,
+  controlledByUserId?: number,
+): Promise<Campaign> {
+  return (
+    await http.post<Campaign>(`/api/campaign-parties/campaigns/${campaignId}/characters`, {
+      characterId,
+      controlledByUserId,
+    })
+  ).data
 }

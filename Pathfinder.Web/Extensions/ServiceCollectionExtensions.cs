@@ -127,6 +127,7 @@ public static class ServiceCollection
     {
         services.AddTransient<IAuthorizationHandler, PermissionHandler>();
         services.AddScoped<ICampaignUserDirectory, CampaignUserDirectory>();
+        services.AddScoped<ICampaignCharacterDirectory, CampaignCharacterDirectory>();
     }
 
     public static void ConfigureJwtTokenAuth( this IServiceCollection services, IConfiguration configuration )

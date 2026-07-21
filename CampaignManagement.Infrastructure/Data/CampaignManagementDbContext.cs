@@ -13,6 +13,8 @@ public sealed class CampaignManagementDbContext : DbContext
     public DbSet<Campaign> Campaigns => Set<Campaign>();
     public DbSet<CampaignMembership> CampaignMemberships => Set<CampaignMembership>();
     public DbSet<CampaignInvitation> CampaignInvitations => Set<CampaignInvitation>();
+    public DbSet<CampaignParty> CampaignParties => Set<CampaignParty>();
+    public DbSet<CampaignPartyCharacter> CampaignPartyCharacters => Set<CampaignPartyCharacter>();
 
     protected override void OnModelCreating( ModelBuilder modelBuilder )
     {
@@ -34,6 +36,11 @@ public sealed class CampaignManagementDbContext : DbContext
             builder.HasMany( campaign => campaign.Invitations )
                 .WithOne()
                 .HasForeignKey( invitation => invitation.CampaignId )
+                .IsRequired()
+                .OnDelete( DeleteBehavior.Cascade );
+            builder.HasMany( campaign => campaign.Parties )
+                .WithOne()
+                .HasForeignKey( party => party.CampaignId )
                 .IsRequired()
                 .OnDelete( DeleteBehavior.Cascade );
         } );
@@ -67,6 +74,34 @@ public sealed class CampaignManagementDbContext : DbContext
                     invitation.InvitedUserId,
                     invitation.Status,
                 } );
+        } );
+
+        modelBuilder.Entity<CampaignParty>( builder =>
+        {
+            builder.ToTable( "CampaignParty" );
+            builder.Property( party => party.Name )
+                .HasMaxLength( CampaignParty.NameMaxLength )
+                .IsRequired();
+            builder.Property( party => party.Status )
+                .HasConversion<int>();
+            builder.HasIndex( party => party.CampaignId );
+            builder.HasMany( party => party.Characters )
+                .WithOne()
+                .HasForeignKey( character => character.CampaignPartyId )
+                .IsRequired()
+                .OnDelete( DeleteBehavior.Cascade );
+        } );
+
+        modelBuilder.Entity<CampaignPartyCharacter>( builder =>
+        {
+            builder.ToTable( "CampaignPartyCharacter" );
+            builder.HasIndex( character => character.CharacterId );
+            builder.HasIndex( character => new
+                {
+                    character.CampaignPartyId,
+                    character.CharacterId,
+                } )
+                .IsUnique();
         } );
     }
 }
