@@ -63,11 +63,12 @@
 - `GET /api/character/{characterId}`
 - `POST /api/character`
 - `POST /api/character/{characterId}/finalize`
-- `POST /api/character/{characterId}/hit-points`
 - `PUT /api/character/{characterId}/gender`
 - `DELETE /api/character/{characterId}`
+- `GET /api/campaigns/{campaignId}/characters/{characterId}`
+- `POST /api/campaigns/{campaignId}/characters/{characterId}/hit-points`
 
-Пустые legacy item endpoints удалены. Starting equipment catalog и loadout следуют ownership boundary из [`../20_domain/character_creation/equipment_inventory_boundary.md`](../20_domain/character_creation/equipment_inventory_boundary.md); runtime Store/Inventory остаётся отключённым.
+Личные endpoints создания, финализации и удаления остаются owner-scoped. Просмотр игровой карточки и команды HP используют `ICharacterCampaignAccessPolicy`: назначенный активный игрок может просматривать персонажа и действовать им, ведущий той же кампании получает только просмотр. Пустые legacy item endpoints удалены. Starting equipment catalog и loadout следуют ownership boundary из [`../20_domain/character_creation/equipment_inventory_boundary.md`](../20_domain/character_creation/equipment_inventory_boundary.md); runtime Store/Inventory остаётся отключённым.
 
 ## Tests
 
