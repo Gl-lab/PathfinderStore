@@ -1,4 +1,5 @@
 using Pathfinder.CharacterManagement.Application.DTO;
+using Pathfinder.CharacterManagement.Application.Equipment;
 using Pathfinder.CharacterManagement.Application.Repositories;
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.CharacterManagement.Domain.Rules.Statistics;
@@ -16,7 +17,8 @@ public static class CharacterDerivedStatisticsDtoMapper
         CharacterClass characterClass,
         IReadOnlyList<EffectiveProficiency> proficiencies,
         ISkillRepository? skillRepository,
-        FeatTrainingResult? featTraining = null )
+        FeatTrainingResult? featTraining = null,
+        AllowedEquipmentLoadout? equipment = null )
     {
         ArgumentNullException.ThrowIfNull( proficiencies );
 
@@ -34,6 +36,7 @@ public static class CharacterDerivedStatisticsDtoMapper
                 Class = hitPoints.ClassHitPoints,
                 ConstitutionModifier = hitPoints.ConstitutionModifier,
             },
+            ArmorClass = MapArmorClass( character, proficiencies, equipment ),
             Perception = Map(
                 character,
                 proficiencies,
@@ -63,6 +66,60 @@ public static class CharacterDerivedStatisticsDtoMapper
                 CharacterLevel,
                 featTraining?.Skills,
                 featTraining?.Lore ),
+        };
+    }
+
+    private static CharacterArmorClassDto MapArmorClass(
+        DraftCharacter character,
+        IReadOnlyList<EffectiveProficiency> proficiencies,
+        AllowedEquipmentLoadout? equipment )
+    {
+        AllowedEquipmentItem? equippedArmor = equipment?.Items
+            .SingleOrDefault( item => ( item.EquippedQuantity > 0 ) && ( item.Armor is not null ) );
+        string proficiencyTargetId = equippedArmor?.ProficiencyTargetId ?? ProficiencyTargets.UnarmoredDefense.Id;
+        EffectiveProficiency proficiency = proficiencies
+            .Single( item => item.Target.Id == proficiencyTargetId );
+        IReadOnlyList<StatisticBonus> bonuses = equippedArmor?.Armor is null
+            ? []
+            :
+            [
+                new StatisticBonus(
+                    equippedArmor.Id,
+                    StatisticBonusType.Item,
+                    equippedArmor.Armor.ArmorClassBonus ),
+            ];
+        ArmorClassStatistic armorClass = ArmorClassStatistic.Calculate(
+            character.AbilityScores.Dexterity,
+            proficiency,
+            equippedArmor?.Armor?.DexterityCap,
+            bonuses,
+            CharacterLevel );
+
+        return new CharacterArmorClassDto
+        {
+            Base = armorClass.Base,
+            Ability = armorClass.Ability,
+            AbilityModifier = armorClass.AbilityModifier,
+            AbilityCap = armorClass.AbilityCap,
+            AppliedAbilityModifier = armorClass.AppliedAbilityModifier,
+            ProficiencyTargetId = armorClass.ProficiencyTargetId,
+            ProficiencyRank = armorClass.ProficiencyRank,
+            ProficiencyBonus = armorClass.ProficiencyBonus,
+            ProficiencySourceGrantIds = armorClass.ProficiencySourceGrantIds,
+            ItemBonuses = armorClass.ItemBonuses.Select( MapBonus ).ToArray(),
+            StatusBonuses = armorClass.StatusBonuses.Select( MapBonus ).ToArray(),
+            CircumstanceBonuses = armorClass.CircumstanceBonuses.Select( MapBonus ).ToArray(),
+            Total = armorClass.Total,
+        };
+    }
+
+    private static CharacterStatisticBonusDto MapBonus( StatisticBonus bonus )
+    {
+        return new CharacterStatisticBonusDto
+        {
+            SourceId = bonus.SourceId,
+            Type = bonus.Type,
+            Value = bonus.Value,
         };
     }
 

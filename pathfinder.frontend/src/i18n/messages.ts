@@ -67,7 +67,7 @@ export const messages = {
       categories: { Perception: 'Восприятие', SavingThrow: 'Спасброски', Attack: 'Атаки', Defense: 'Защита', ClassDc: 'КС класса' },
       ranks: { Untrained: 'без подготовки', Trained: 'обучен', Expert: 'эксперт', Master: 'мастер', Legendary: 'легенда' },
     },
-    statistics: { savesAndPerception: 'Спасброски и Восприятие', perception: 'Восприятие', fortitude: 'Стойкость', reflex: 'Реакция', will: 'Воля', skillsAndLore: 'Навыки и знания', generalSkills: 'Общие навыки', lore: 'Знания', breakdown: 'Характеристика: {ability} · владение: {proficiency}' },
+    statistics: { savesAndPerception: 'Защита, спасброски и Восприятие', armorClass: 'Класс защиты', armorClassBreakdown: 'база: {base} · Ловкость: {ability} · владение: {proficiency}', dexterityCap: 'предел Ловкости {cap}', perception: 'Восприятие', fortitude: 'Стойкость', reflex: 'Реакция', will: 'Воля', skillsAndLore: 'Навыки и знания', generalSkills: 'Общие навыки', lore: 'Знания', breakdown: 'Характеристика: {ability} · владение: {proficiency}' },
     notFound: { title: 'Эта страница не найдена', subtitle: 'Вернитесь к списку персонажей.' },
     domain: { ancestry: { Gnome: 'Гном', Goblin: 'Гоблин', Dwarf: 'Дварф', Halfling: 'Полурослик', Human: 'Человек', Elf: 'Эльф' }, background: {
       acolyte: 'Послушник', acrobat: 'Акробат', animal_whisperer: 'Друг животных', artisan: 'Ремесленник', artist: 'Художник', barkeep: 'Трактирщик', barrister: 'Адвокат', bounty_hunter: 'Охотник за головами', charlatan: 'Шарлатан', criminal: 'Преступник', detective: 'Сыщик', emissary: 'Посланник', entertainer: 'Артист', farmhand: 'Батрак', field_medic: 'Полевой медик', fortune_teller: 'Предсказатель', gambler: 'Игрок', gladiator: 'Гладиатор', guard: 'Стражник', herbalist: 'Травник', hermit: 'Отшельник', hunter: 'Охотник', laborer: 'Рабочий', merchant: 'Торговец', martial_disciple: 'Ученик боевых искусств', miner: 'Шахтёр', nomad: 'Кочевник', noble: 'Дворянин', prisoner: 'Узник', sailor: 'Моряк', scholar: 'Учёный', scout: 'Разведчик', street_urchin: 'Беспризорник', tinker: 'Мастеровой', warrior: 'Воин',
@@ -148,7 +148,7 @@ export const messages = {
       categories: { Perception: 'Perception', SavingThrow: 'Saving throws', Attack: 'Attacks', Defense: 'Defenses', ClassDc: 'Class DC' },
       ranks: { Untrained: 'untrained', Trained: 'trained', Expert: 'expert', Master: 'master', Legendary: 'legendary' },
     },
-    statistics: { savesAndPerception: 'Saving Throws and Perception', perception: 'Perception', fortitude: 'Fortitude', reflex: 'Reflex', will: 'Will', skillsAndLore: 'Skills and Lore', generalSkills: 'General skills', lore: 'Lore', breakdown: 'Ability: {ability} · proficiency: {proficiency}' },
+    statistics: { savesAndPerception: 'Defense, Saving Throws and Perception', armorClass: 'Armor Class', armorClassBreakdown: 'base: {base} · Dexterity: {ability} · proficiency: {proficiency}', dexterityCap: 'Dexterity cap {cap}', perception: 'Perception', fortitude: 'Fortitude', reflex: 'Reflex', will: 'Will', skillsAndLore: 'Skills and Lore', generalSkills: 'General skills', lore: 'Lore', breakdown: 'Ability: {ability} · proficiency: {proficiency}' },
     notFound: { title: 'This page was not found', subtitle: 'Return to the character list.' },
     domain: { ancestry: { Gnome: 'Gnome', Goblin: 'Goblin', Dwarf: 'Dwarf', Halfling: 'Halfling', Human: 'Human', Elf: 'Elf' }, ability: { Strength: 'Strength', Dexterity: 'Dexterity', Constitution: 'Constitution', Intelligence: 'Intelligence', Wisdom: 'Wisdom', Charisma: 'Charisma' } },
   },

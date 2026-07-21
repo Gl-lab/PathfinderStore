@@ -293,6 +293,7 @@ export interface CharacterHitPoints {
 
 export interface CharacterDerivedStatistics {
   hitPoints: CharacterHitPoints
+  armorClass: CharacterArmorClass
   perception: CharacterProficiencyStatistic
   savingThrows: {
     fortitude: CharacterProficiencyStatistic
@@ -300,6 +301,28 @@ export interface CharacterDerivedStatistics {
     will: CharacterProficiencyStatistic
   }
   skillModifiers: CharacterSkillModifiers
+}
+
+export interface CharacterArmorClass {
+  base: number
+  ability: AbilityCode
+  abilityModifier: number
+  abilityCap: number | null
+  appliedAbilityModifier: number
+  proficiencyTargetId: string
+  proficiencyRank: ProficiencyRank
+  proficiencyBonus: number
+  proficiencySourceGrantIds: string[]
+  itemBonuses: CharacterStatisticBonus[]
+  statusBonuses: CharacterStatisticBonus[]
+  circumstanceBonuses: CharacterStatisticBonus[]
+  total: number
+}
+
+export interface CharacterStatisticBonus {
+  sourceId: string
+  type: 'Item' | 'Status' | 'Circumstance'
+  value: number
 }
 
 export interface CharacterProficiencyStatistic {

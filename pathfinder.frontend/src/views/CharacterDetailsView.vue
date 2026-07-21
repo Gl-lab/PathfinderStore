@@ -324,6 +324,40 @@ onMounted(load)
             <template #prepend><v-icon color="primary" icon="mdi-shield-account" /></template>
           </v-card-item>
           <v-card-text class="derived-statistics-card__grid">
+            <div class="derived-statistics-card__item">
+              <div>
+                <strong>{{ t('statistics.armorClass') }}</strong>
+                <small>
+                  {{ getAbilityLabel(character.derivedStatistics.armorClass.ability) }} ·
+                  {{ getProficiencyRankLabel(character.derivedStatistics.armorClass.proficiencyRank) }}
+                  <template v-if="character.derivedStatistics.armorClass.abilityCap !== null">
+                    · {{ t('statistics.dexterityCap', {
+                      cap: formatSignedModifier(character.derivedStatistics.armorClass.abilityCap),
+                    }) }}
+                  </template>
+                </small>
+              </div>
+              <div class="derived-statistics-card__value">
+                <strong>{{ character.derivedStatistics.armorClass.total }}</strong>
+                <small>
+                  {{ t('statistics.armorClassBreakdown', {
+                    base: character.derivedStatistics.armorClass.base,
+                    ability: formatSignedModifier(character.derivedStatistics.armorClass.appliedAbilityModifier),
+                    proficiency: formatSignedModifier(character.derivedStatistics.armorClass.proficiencyBonus),
+                  }) }}
+                </small>
+                <small
+                  v-for="bonus in [
+                    ...character.derivedStatistics.armorClass.itemBonuses,
+                    ...character.derivedStatistics.armorClass.statusBonuses,
+                    ...character.derivedStatistics.armorClass.circumstanceBonuses,
+                  ]"
+                  :key="`${bonus.type}-${bonus.sourceId}`"
+                >
+                  {{ formatChoiceId(bonus.sourceId) }}: {{ formatSignedModifier(bonus.value) }}
+                </small>
+              </div>
+            </div>
             <div v-for="row in statisticRows" :key="row.key" class="derived-statistics-card__item">
               <div>
                 <strong>{{ row.label }}</strong>

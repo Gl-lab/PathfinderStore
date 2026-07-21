@@ -146,6 +146,9 @@ public sealed class CharacterDetailsDtoMapper
                 characterFeats,
                 draftCharacter.TrainedSkills,
                 draftCharacter.TrainedLore );
+        AllowedEquipmentLoadout? allowedEquipment = ReadAllowedEquipment(
+            draftCharacter,
+            effectiveProficiencies );
 
         return new CharacterDto
         {
@@ -197,7 +200,8 @@ public sealed class CharacterDetailsDtoMapper
                     characterClass,
                     effectiveProficiencies,
                     _skillRepository,
-                    featTraining ),
+                    featTraining,
+                    allowedEquipment ),
             Training = CharacterTrainingDtoMapper.Map( draftCharacter, _skillRepository, featTraining ),
             Proficiencies = characterClass is null
                 ? []
@@ -206,7 +210,7 @@ public sealed class CharacterDetailsDtoMapper
                 .Select( CharacterFeatDtoMapper.Map )
                 .ToArray(),
             Completion = _completionEvaluator?.Evaluate( draftCharacter ) ?? new CharacterCompletionDto(),
-            StartingEquipment = MapStartingEquipment( draftCharacter, effectiveProficiencies ),
+            StartingEquipment = MapStartingEquipment( draftCharacter, allowedEquipment ),
             Characteristics = new GroupCharacteristicDto
             {
                 Strength = Convert( draftCharacter.AbilityScores.Strength ),
@@ -223,19 +227,18 @@ public sealed class CharacterDetailsDtoMapper
 
     private CharacterStartingEquipmentDto? MapStartingEquipment(
         DraftCharacter character,
-        IReadOnlyList<EffectiveProficiency> proficiencies )
+        AllowedEquipmentLoadout? loadout )
     {
         if ( character.SelectedClassKitId is null )
         {
             return null;
         }
 
-        if ( _allowedEquipmentReader is null )
+        if ( loadout is null )
         {
-            throw new InvalidOperationException( "Allowed equipment reader is required to map starting equipment." );
+            throw new InvalidOperationException( "Allowed equipment loadout is required to map starting equipment." );
         }
 
-        AllowedEquipmentLoadout loadout = _allowedEquipmentReader.Read( character, proficiencies );
         IReadOnlyList<CharacterEquipmentLineDto> items = loadout.Items
             .Select( item =>
             {
@@ -271,6 +274,23 @@ public sealed class CharacterDetailsDtoMapper
             IsEncumbered = loadout.IsEncumbered,
             ExceedsMaximumBulk = loadout.ExceedsMaximumBulk,
         };
+    }
+
+    private AllowedEquipmentLoadout? ReadAllowedEquipment(
+        DraftCharacter character,
+        IReadOnlyList<EffectiveProficiency> proficiencies )
+    {
+        if ( character.SelectedClassKitId is null )
+        {
+            return null;
+        }
+
+        if ( _allowedEquipmentReader is null )
+        {
+            throw new InvalidOperationException( "Allowed equipment reader is required to map starting equipment." );
+        }
+
+        return _allowedEquipmentReader.Read( character, proficiencies );
     }
 
     private RogueRacket? ResolveRogueRacket( DraftCharacter character )

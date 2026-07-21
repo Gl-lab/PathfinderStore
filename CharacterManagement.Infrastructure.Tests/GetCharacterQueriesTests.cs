@@ -1,12 +1,15 @@
 using Pathfinder.CharacterManagement.Application.Builders.Implementation;
 using Pathfinder.CharacterManagement.Application.Avatars;
 using Pathfinder.CharacterManagement.Application.DTO;
+using Pathfinder.CharacterManagement.Application.Equipment;
 using Pathfinder.CharacterManagement.Application.Exceptions;
 using Pathfinder.CharacterManagement.Application.Features.Characters.Queries.Mapping;
 using Pathfinder.CharacterManagement.Application.UseCases.Characters;
 using Pathfinder.CharacterManagement.Domain.Entity;
 using Pathfinder.CharacterManagement.Domain.Rules.Training;
+using Pathfinder.CharacterManagement.Domain.Rules.Equipment;
 using Pathfinder.CharacterManagement.Infrastructure.Data;
+using Pathfinder.CharacterManagement.Infrastructure.Equipment;
 using Pathfinder.CharacterManagement.Infrastructure.Repositories;
 using CharacterManagement.Infrastructure.Tests.TestSupport;
 
@@ -888,6 +891,11 @@ public sealed class GetCharacterQueriesTests
 
         CharacterDto character = Assert.Single( result );
         Assert.NotNull( character.DerivedStatistics );
+        Assert.Equal( 14, character.DerivedStatistics.ArmorClass.Total );
+        Assert.Equal(
+            ProficiencyTargets.UnarmoredDefense.Id,
+            character.DerivedStatistics.ArmorClass.ProficiencyTargetId );
+        Assert.Empty( character.DerivedStatistics.ArmorClass.ItemBonuses );
         Assert.Equal( 21, character.DerivedStatistics.HitPoints.Maximum );
         Assert.Equal( 6, character.DerivedStatistics.Perception.Total );
         Assert.Equal( AbilityType.Wisdom, character.DerivedStatistics.Perception.Ability );
@@ -924,6 +932,61 @@ public sealed class GetCharacterQueriesTests
         Assert.Equal( 3, warfareLore.Total );
         Assert.Equal( "skill.intimidation", Assert.Single( character.Training.Skills ).Id );
         Assert.Equal( "lore.warfare", Assert.Single( character.Training.Lore ).Id );
+    }
+
+    [Fact]
+    public void Convert_EquippedArmor_ReturnsServerCalculatedArmorClassBreakdown()
+    {
+        AncestryRepository ancestryRepository = new AncestryRepository();
+        BackgroundRepository backgroundRepository = new BackgroundRepository();
+        CharacterClassRepository characterClassRepository = new CharacterClassRepository();
+        CharacterBuilder builder = CreateBuilder(
+            ancestryRepository,
+            backgroundRepository,
+            characterClassRepository );
+        builder.CreateCharacter( 1, "Valeros", AncestryType.Human );
+        builder.SetAncestryPackage( "human.skilled", "human.cooperative_nature" );
+        builder.ApplyFreeBoosts( [ AbilityType.Strength, AbilityType.Constitution ] );
+        builder.SetBackground(
+            "background.warrior",
+            AbilityType.Strength,
+            AbilityType.Constitution );
+        builder.SetClass( "class.fighter", AbilityType.Strength );
+        builder.SetFinalFreeBoosts(
+        [
+            AbilityType.Strength,
+            AbilityType.Dexterity,
+            AbilityType.Constitution,
+            AbilityType.Wisdom,
+        ] );
+        DraftCharacter character = builder.Build();
+        character.SetStartingEquipment( new StartingEquipmentSelection(
+            "class_kit.fighter",
+            "class.fighter",
+            [],
+            [ new CharacterEquipmentItem( "equipment.studded_leather_armor", 1, 1 ) ],
+            300 ) );
+        IAllowedEquipmentReader equipmentReader = new StartingEquipmentAllowedEquipmentReader(
+            new EquipmentRepository() );
+        CharacterDetailsDtoMapper mapper = new CharacterDetailsDtoMapper(
+            ancestryRepository: ancestryRepository,
+            backgroundRepository: backgroundRepository,
+            characterClassRepository: characterClassRepository,
+            skillRepository: new SkillRepository(),
+            allowedEquipmentReader: equipmentReader );
+
+        CharacterDto result = mapper.Convert( character );
+
+        Assert.Equal( 16, result.DerivedStatistics?.ArmorClass.Total );
+        Assert.Equal( 1, result.DerivedStatistics?.ArmorClass.AppliedAbilityModifier );
+        Assert.Equal( 3, result.DerivedStatistics?.ArmorClass.AbilityCap );
+        Assert.Equal( ProficiencyRank.Trained, result.DerivedStatistics?.ArmorClass.ProficiencyRank );
+        CharacterStatisticBonusDto itemBonus = Assert.Single(
+            result.DerivedStatistics?.ArmorClass.ItemBonuses ?? [] );
+        Assert.Equal( "equipment.studded_leather_armor", itemBonus.SourceId );
+        Assert.Equal( 2, itemBonus.Value );
+        Assert.Empty( result.DerivedStatistics?.ArmorClass.StatusBonuses ?? [] );
+        Assert.Empty( result.DerivedStatistics?.ArmorClass.CircumstanceBonuses ?? [] );
     }
 
     [Fact]
