@@ -130,9 +130,27 @@ AoN Rogue kit page omits `climbing kit` from rendered Gear while retaining base 
 
 Cleric favored weapon is represented by typed dependency `DeityFavoredWeapon`. Конкретный item id выводится сервером из выбранного deity. Непокупаемые unarmed favored weapons не добавляют item line или cost.
 
+## Character-Owned Loadout State
+
+Catalog definitions остаются code-owned reference data. В `DraftCharacter` сохраняются только:
+
+- selected class-kit id;
+- selected option ids;
+- stable equipment id;
+- purchase quantity;
+- equipped quantity.
+
+Цена, unit quantity, proficiency и Bulk не персистируются как независимые истины и повторно вычисляются при чтении и completion validation.
+
+Экипировать можно weapon, armor и shield, принадлежащие стартовому inventory. Одновременно допускается одна armor entry. Hand usage, Raise a Shield и action economy остаются runtime/combat scope.
+
+Weapon proficiency сопоставляется с максимальным применимым rank между specific favored-weapon target и simple/martial category. Armor использует unarmored/light/medium defense target. Total Bulk равен сумме `BulkTenths × PurchaseQuantity`; пороги вычисляются как `5 + Strength modifier` и `10 + Strength modifier` Bulk.
+
 ## API Contract
 
 - `GET /api/equipment` — catalog definitions, sorted by name;
 - `GET /api/equipment/class-kits` — восемь class kits, starting wealth и typed option groups.
+
+`POST /api/character` принимает только `classKitOptionIds`, optional favored-weapon equipment id и `equippedEquipmentIds`. Character read model возвращает разрешённые definitions, totals, proficiency ranks и Bulk thresholds.
 
 Оба endpoint требуют authentication. Catalog API не принимает цену, Bulk или игровые характеристики от клиента.

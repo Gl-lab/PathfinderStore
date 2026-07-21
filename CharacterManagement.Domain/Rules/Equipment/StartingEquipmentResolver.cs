@@ -138,6 +138,11 @@ public static class StartingEquipmentResolver
 
         if ( String.IsNullOrWhiteSpace( deityFavoredWeaponEquipmentId ) )
         {
+            if ( deity.FavoredWeapons.Any( weapon => weapon.Category == FavoredWeaponCategory.Unarmed ) )
+            {
+                return null;
+            }
+
             throw new CharacterManagementException( "A purchasable deity favored weapon must be selected." );
         }
 

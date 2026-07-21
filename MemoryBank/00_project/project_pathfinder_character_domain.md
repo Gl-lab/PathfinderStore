@@ -30,6 +30,8 @@
 - Player Core language catalog, starting и дополнительные языки с server-side count/pool validation;
 - единый completion report для обязательных packages, choices, spells, feats, training и languages;
 - однонаправленная финализация `Draft` → `Completed` с UTC timestamp и блокировкой build/edit operations после завершения.
+- Player Core starting equipment catalog, wealth/class kits, validated persisted loadout и equipped state;
+- server-computed equipment cost, weapon/armor proficiency applicability и Bulk thresholds.
 
 `AbilityScores` хранит шесть характеристик с базовым значением `10`; boost и flaw изменяют значение на `2`, а modifier вычисляется, а не хранится. Полные правила и границы незавершённых подсистем описаны в [`../20_domain/character_creation/README.md`](../20_domain/character_creation/README.md).
 
@@ -64,7 +66,7 @@
 - `PUT /api/character/{characterId}/gender`
 - `DELETE /api/character/{characterId}`
 
-Пустые legacy item endpoints удалены. Новый starting equipment API должен следовать ownership boundary из [`../20_domain/character_creation/equipment_inventory_boundary.md`](../20_domain/character_creation/equipment_inventory_boundary.md).
+Пустые legacy item endpoints удалены. Starting equipment catalog и loadout следуют ownership boundary из [`../20_domain/character_creation/equipment_inventory_boundary.md`](../20_domain/character_creation/equipment_inventory_boundary.md); runtime Store/Inventory остаётся отключённым.
 
 ## Tests
 
@@ -76,7 +78,7 @@
 
 - skill feats и progression proficiency;
 - spellcasting lifecycle, current spell slots/Focus Points и progression выше первого уровня;
-- class features, equipment и исполняемые ancestry effects;
+- class features, runtime inventory и исполняемые ancestry effects;
 - AC, attacks, damage, состояние current/temporary HP и остальные combat statistics;
 - server-side access sources для uncommon languages;
 - respec завершённого персонажа;

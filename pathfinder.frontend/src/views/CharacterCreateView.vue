@@ -445,7 +445,7 @@ const isStartingEquipmentComplete = computed(() => {
     .filter((option) => form.value.classKitOptionIds.includes(option.id))
   const requiresFavoredWeapon = selectedOptions.some(
     (option) => option.dependency === 'DeityFavoredWeapon',
-  )
+  ) && !(selectedDeity.value?.favoredWeapons.some((weapon) => weapon.category === 'Unarmed') ?? false)
   return (
     (!requiresFavoredWeapon || Boolean(form.value.deityFavoredWeaponEquipmentId)) &&
     startingEquipmentCostCopper.value <= selectedClassKit.value.startingWealthCopper

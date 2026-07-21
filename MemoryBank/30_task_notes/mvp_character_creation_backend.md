@@ -22,13 +22,14 @@
 - Rogue's Racket, Cleric Doctrine и Deity реализованы как обязательные class choices: каталоги, validation, persistence, API/read-модель и поддержанные typed grants.
 - Player Core Deity catalog содержит 22 записи; 21 доступна Cleric. Divine skill, replacement training, favored weapon proficiency, Divine Font и sanctification применяются фактически, domains/granted spells возвращаются декларативно.
 - Есть unit и integration tests по ключевым backend-сценариям.
+- Реализованы Player Core starting equipment catalog, `15 gp`, class kits, server-side selection/cost validation, persistence stable item references, equipped state, proficiency matching и Bulk foundation.
 
 ## Что не готово
 
 - Background skill feat пока представлен декларативно и не применяется к персонажу.
 - Общий выбор дополнительных Class skills и level-up proficiency progression пока не реализованы.
 - Spell proficiencies, большинство features/spells и ещё не реализованные mandatory choices представлены декларативно.
-- Текущий MVP не покрывает equipment, spell preparation, domain choice, current/temporary HP и derived statistics шире maximum HP.
+- Текущий MVP не покрывает runtime inventory/Store, hand/action economy, AC/Strike calculations, current/temporary HP и spell execution lifecycle.
 - Есть отдельный актуальный блок по расхождению `Secure.User` и `CharacterManagement.Account`: см. [`task_32_account_backfill.md`](task_32_account_backfill.md).
 
 ## Связанные файлы
@@ -49,6 +50,6 @@
 
 1. Следующий Cleric flow — domain choice либо spell preparation/Divine Font slots как отдельная задача.
 2. Продолжать остальные обязательные class choices отдельными flows.
-3. Не применять feats, class features, spells и equipment без соответствующих каталогов и доменных решений.
+3. Не расширять feats, class features, spells и runtime inventory без соответствующих каталогов и доменных решений.
 4. При изменении character creation сверяться с `../20_domain/character_creation/domain_rules_target_full.md` и актуальными catalog documents.
 

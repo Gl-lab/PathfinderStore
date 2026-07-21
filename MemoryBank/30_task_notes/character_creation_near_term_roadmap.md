@@ -24,7 +24,7 @@ Vikunja остаётся источником истины по карточка
 - сохранение через EF, API/read-модели, список, карточку и удаление во frontend;
 - вычисляемые ability modifiers и maximum HP первого уровня.
 
-Стартовый pipeline характеристик, class skills, обязательных классовых выборов, spell loadout, feat inventory, languages и финализации первого уровня завершён. Поддерживаемые постоянные training effects feats влияют на Skills/Lore и modifiers; остальные spell/action/combat/inventory effects остаются typed dependencies. Equipment, spellcasting lifecycle и большинство combat statistics ещё не реализованы.
+Стартовый pipeline характеристик, class skills, обязательных классовых выборов, spell loadout, feat inventory, languages, финализации и starting equipment первого уровня завершён. Поддерживаемые постоянные training effects feats влияют на Skills/Lore и modifiers; остальные spell/action/combat effects остаются typed dependencies. Runtime inventory, spellcasting lifecycle и большинство combat statistics ещё не реализованы.
 
 ## Завершённый фундамент
 
@@ -325,8 +325,8 @@ AC, attacks, damage, current/temporary HP и equipment bonuses не входят
 
 1. Зафиксировать ownership boundary между CharacterManagement catalog/loadout и будущим Store/Inventory — завершено; см. [архитектурное решение](../20_domain/character_creation/equipment_inventory_boundary.md).
 2. Нормализовать минимальный Player Core equipment catalog v1 и starting wealth/class kit rules — завершено; см. [нормативный каталог](../20_domain/character_creation/equipment_starting_wealth_catalog.md).
-3. Реализовать выбор стартового набора, валидацию стоимости и сохранение immutable item references с character-owned state.
-4. Добавить equipped state, weapon/armor proficiency matching и bulk foundation.
+3. Реализовать выбор стартового набора, валидацию стоимости и сохранение immutable item references с character-owned state — завершено.
+4. Добавить equipped state, weapon/armor proficiency matching и bulk foundation — завершено.
 
 **Критерии готовности:**
 
@@ -335,6 +335,8 @@ AC, attacks, damage, current/temporary HP и equipment bonuses не входят
 - catalog definitions не копируются целиком в character state;
 - смена class package до финализации корректно инвалидирует несовместимый kit;
 - Store остаётся отключённым, пока отдельное решение не передаст ему ownership runtime inventory.
+
+**Статус приоритета 7:** завершён 21 июля 2026 года; выполнен [итоговый cross-review](priority_7_final_review.md). Starting equipment участвует в create/completion/read flow, а combat calculations и runtime inventory остаются следующими независимыми границами.
 
 ### Приоритет 8 — combat-ready character card v1
 

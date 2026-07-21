@@ -87,6 +87,46 @@ public sealed class StartingEquipmentResolverTests
             [ "unknown" ] ) );
     }
 
+    [Fact]
+    public void Resolve_UnarmedDeityFavoredWeapon_AddsNoInventoryItemOrCost()
+    {
+        Deity deity = new Deity(
+            "deity.test",
+            "Test",
+            new SourceReference( "Player Core", 1 ),
+            true,
+            "skill.athletics",
+            [ new DeityFavoredWeapon( "weapon.fist", "Fist", FavoredWeaponCategory.Unarmed ) ],
+            [ DivineFont.Heal ],
+            [],
+            null,
+            [ "domain.might" ],
+            [] );
+        ClassKitDefinition kit = Kit(
+            [ new ClassKitItem( "equipment.pack", 1 ) ],
+            [
+                new ClassKitOptionGroup(
+                    "cleric",
+                    ClassKitOptionSelection.Any,
+                    [
+                        new ClassKitOption(
+                            "favored_weapon",
+                            "Favored weapon",
+                            [],
+                            ClassKitOptionDependency.DeityFavoredWeapon ),
+                    ] ),
+            ] );
+
+        StartingEquipmentSelection result = StartingEquipmentResolver.Resolve(
+            kit,
+            [ Gear( "equipment.pack", 100 ) ],
+            [ "favored_weapon" ],
+            deity );
+
+        Assert.Equal( 100, result.TotalPriceCopper );
+        Assert.Single( result.Items );
+    }
+
     private static EquipmentDefinition Gear( string id, int priceCopper )
     {
         return new EquipmentDefinition(

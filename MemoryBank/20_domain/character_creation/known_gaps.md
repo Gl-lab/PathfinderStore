@@ -12,7 +12,7 @@
 
 Следующие gaps известны, но не блокируют текущий MVP:
 
-- Feat inventory первого уровня участвует в MVP flow: ancestry/background/class feats выбираются или выдаются, валидируются и сохраняют provenance. Поддерживаемые постоянные Skill/Lore training effects применяются; parameterized, temporary, spell, action, combat, weapon и inventory effects остаются deferred. Equipment, languages и исполнение spell effects пока за границей MVP.
+- Feat inventory первого уровня участвует в MVP flow: ancestry/background/class feats выбираются или выдаются, валидируются и сохраняют provenance. Поддерживаемые постоянные Skill/Lore training effects применяются; parameterized, temporary, spell, action, combat, weapon и runtime inventory effects остаются deferred. Starting equipment и languages входят в flow; исполнение spell/combat effects остаётся за границей MVP.
 - Из derived statistics вычисляются maximum HP, Saves, Perception и modifiers всех general skills и сохранённых Lore entries первого уровня. Current/temporary HP, AC, attacks, damage, class/spell DC и equipment bonuses пока отсутствуют.
 
 ## Каталоги, которые уже есть
@@ -29,6 +29,7 @@
 | `Heritage` и ancestry feats 1 уровня | Есть нормативный нормализованный каталог для 6 ancestry Player Core | [ancestry_choices_player_core.md](ancestry_choices_player_core.md) |
 | `Ancestry`, background skill и class feats 1 уровня | Есть нормализованный Player Core catalog и общий character inventory | [../../30_task_notes/feat_catalog_player_core_implementation.md](../../30_task_notes/feat_catalog_player_core_implementation.md) |
 | `Languages` | Есть нормализованный Player Core catalog и ancestry language rules | [language_catalog.md](language_catalog.md) |
+| `Equipment` и class kits | Есть минимальный Player Core starting catalog, wealth и восемь kits | [equipment_starting_wealth_catalog.md](equipment_starting_wealth_catalog.md) |
 
 ## Частично готовые области
 
@@ -60,7 +61,9 @@ Player Core каталог оформлен в [deities_player_core.md](deities_
 
 Ownership boundary зафиксирована в [equipment_inventory_boundary.md](equipment_inventory_boundary.md): catalog, starting rules и draft loadout принадлежат `CharacterManagement`, а Store остаётся отключённым. Минимальный catalog v1, starting wealth и kits восьми поддерживаемых классов нормализованы в [equipment_starting_wealth_catalog.md](equipment_starting_wealth_catalog.md) и доступны через API.
 
-Пока отсутствуют выбор и persistence character loadout, equipped state, server-side total cost validation, bulk calculation и полный ассортимент Player Core вне starting kits.
+Выбор и persistence character loadout, equipped state, server-side total cost validation, proficiency matching и Bulk foundation реализованы. Aggregate хранит только stable references, purchase/equipped quantity; catalog definitions и производные totals разрешаются на сервере.
+
+Остаются полный ассортимент Player Core вне starting kits, hand/action economy, shield runtime, изменение inventory после создания и интеграция с будущим Store/Inventory.
 
 ### Languages
 
@@ -88,6 +91,6 @@ Heritage и ancestry feats 1 уровня каталогизированы и в
 
 Актуальная ближайшая очередь и критерии готовности зафиксированы в [Character Creation Near-Term Roadmap](../../30_task_notes/character_creation_near_term_roadmap.md).
 
-1. Добавить starting equipment после фиксации inventory ownership boundary.
-2. Поверх equipment расширить карточку до AC, attacks, damage, DC и combat HP state.
-3. Спроектировать отдельный respec workflow для завершённых персонажей.
+1. Поверх equipment расширить карточку до AC, attacks, damage, DC и combat HP state.
+2. Спроектировать отдельный respec workflow для завершённых персонажей.
+3. Отдельно определить runtime inventory/Store boundary и операции после character creation.
