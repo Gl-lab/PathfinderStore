@@ -53,7 +53,13 @@ public sealed class ItemCatalogDbContext : DbContext
 
         modelBuilder.Entity<ItemRevision>( builder =>
         {
-            builder.ToTable( "ItemRevision" );
+            builder.ToTable( "ItemRevision", tableBuilder =>
+                tableBuilder.HasCheckConstraint(
+                    "CK_ItemRevision_Lifecycle",
+                    "(\"Status\" = 1 AND \"PublishedAtUtc\" IS NULL AND \"RetiredAtUtc\" IS NULL) OR " +
+                    "(\"Status\" = 2 AND \"PublishedAtUtc\" IS NOT NULL AND \"RetiredAtUtc\" IS NULL) OR " +
+                    "(\"Status\" = 3 AND \"PublishedAtUtc\" IS NOT NULL AND " +
+                    "\"RetiredAtUtc\" IS NOT NULL AND \"RetiredAtUtc\" >= \"PublishedAtUtc\")" ) );
             builder.Property( revision => revision.Name )
                 .HasMaxLength( ItemRevision.NameMaxLength )
                 .IsRequired();
@@ -65,12 +71,18 @@ public sealed class ItemCatalogDbContext : DbContext
             builder.Property( revision => revision.PrimaryCategory )
                 .HasConversion<int>()
                 .HasDefaultValue( ItemCategory.OtherEquipment );
+            builder.Property( revision => revision.Status )
+                .HasConversion<int>()
+                .HasDefaultValue( ItemRevisionStatus.Draft );
             builder.HasIndex( revision => new
             {
                 revision.ItemDefinitionId,
                 revision.RevisionNumber,
             } )
                 .IsUnique();
+            builder.HasIndex( revision => revision.ItemDefinitionId )
+                .IsUnique()
+                .HasFilter( "\"Status\" = 2" );
             builder.HasMany( revision => revision.Attacks )
                 .WithOne()
                 .HasForeignKey( component => component.ItemRevisionId )

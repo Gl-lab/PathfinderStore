@@ -75,6 +75,32 @@ public sealed class ItemDefinition : Entity, IAggregateRoot
         return revision;
     }
 
+    public ItemRevision PublishRevision( int revisionNumber, DateTimeOffset publishedAtUtc )
+    {
+        ItemRevision revision = GetRevision( revisionNumber );
+        if ( revision.Status != ItemRevisionStatus.Draft )
+        {
+            throw new ItemCatalogException( "Only a draft item revision can be published." );
+        }
+
+        ItemRevision? currentPublishedRevision = _revisions.SingleOrDefault(
+            item => item.Status == ItemRevisionStatus.Published );
+        if ( currentPublishedRevision is not null )
+        {
+            currentPublishedRevision.Retire( publishedAtUtc );
+        }
+
+        revision.Publish( publishedAtUtc );
+        return revision;
+    }
+
+    public ItemRevision RetireRevision( int revisionNumber, DateTimeOffset retiredAtUtc )
+    {
+        ItemRevision revision = GetRevision( revisionNumber );
+        revision.Retire( retiredAtUtc );
+        return revision;
+    }
+
     private static string NormalizeKey( string key )
     {
         if ( String.IsNullOrWhiteSpace( key ) )
@@ -121,6 +147,13 @@ public sealed class ItemDefinition : Entity, IAggregateRoot
             CampaignId = campaignId,
             CreatedAtUtc = createdAtUtc,
         };
+    }
+
+    private ItemRevision GetRevision( int revisionNumber )
+    {
+        ItemRevision? revision = _revisions.SingleOrDefault(
+            item => item.RevisionNumber == revisionNumber );
+        return revision ?? throw new ItemCatalogException( "Item revision was not found." );
     }
 
     private static void EnsureUtc( DateTimeOffset value, string fieldName )

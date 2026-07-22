@@ -19,6 +19,8 @@ using Pathfinder.Secure.Infrastructure;
 using Pathfinder.CharacterManagement.Infrastructure.Data;
 using Pathfinder.CampaignManagement.Infrastructure.Data;
 using Pathfinder.CampaignManagement.Application.Campaigns;
+using Pathfinder.ItemCatalog.Application.Administration;
+using Pathfinder.ItemCatalog.Infrastructure.Data;
 using Pathfinder.Secure.Infrastructure.Data;
 using Pathfinder.Utils.UnitOfWork;
 using Pathfinder.Web.Authentication;
@@ -44,6 +46,12 @@ public static class ServiceCollection
         ?? configuration[ "DB:CharacterManagement" ]
         ?? configuration[ "DB_CONNECTION" ]
         ?? throw new InvalidOperationException( "Connection string 'DB:CampaignManagement' was not found. Configure 'DB:CampaignManagement'." );
+
+    private static string GetItemCatalogConnectionString( IConfiguration configuration ) =>
+        configuration[ "DB:ItemCatalog" ]
+        ?? configuration[ "DB:CharacterManagement" ]
+        ?? configuration[ "DB_CONNECTION" ]
+        ?? throw new InvalidOperationException( "Connection string 'DB:ItemCatalog' was not found. Configure 'DB:ItemCatalog'." );
 
     private static string GetSecurityKey( IConfiguration configuration ) =>
         configuration[ "Authentication:SecurityKey" ]
@@ -88,6 +96,7 @@ public static class ServiceCollection
                     policy => policy.Requirements.Add( new PermissionRequirement( permission ) ) );
             }
         } );
+
         
         services.AddSecureInfrastructureServices();
         services.AddSecureApplicationServices();
@@ -99,6 +108,7 @@ public static class ServiceCollection
         //     options
         //        .UseNpgsql( connectionString: configuration[ "DB:Main" ] ?? throw new InvalidOperationException("DB_CONNECTION for PathfinderDbContext not found") )
         //        .UseLazyLoadingProxies() );
+
         
         services.AddDbContext<SecureDbContext>( options =>
             options
@@ -112,6 +122,10 @@ public static class ServiceCollection
             options
                .UseNpgsql( connectionString: GetCampaignManagementConnectionString( configuration ) ) );
 
+        services.AddDbContext<ItemCatalogDbContext>( options =>
+            options
+               .UseNpgsql( connectionString: GetItemCatalogConnectionString( configuration ) ) );
+
         services.AddScoped<IUnitOfWork>( context =>
         {
             UnitOfWork unitOfWork = new();
@@ -119,6 +133,7 @@ public static class ServiceCollection
             unitOfWork.AddDbContext( context.GetRequiredService<SecureDbContext>() );
             unitOfWork.AddDbContext( context.GetRequiredService<CharacterManagementDbContext>() );
             unitOfWork.AddDbContext( context.GetRequiredService<CampaignManagementDbContext>() );
+            unitOfWork.AddDbContext( context.GetRequiredService<ItemCatalogDbContext>() );
             return unitOfWork;
         } );
     }
@@ -128,6 +143,7 @@ public static class ServiceCollection
         services.AddTransient<IAuthorizationHandler, PermissionHandler>();
         services.AddScoped<ICampaignUserDirectory, CampaignUserDirectory>();
         services.AddScoped<ICampaignCharacterDirectory, CampaignCharacterDirectory>();
+        services.AddScoped<IItemCatalogAdministrativeAccess, ItemCatalogAdministrativeAccess>();
     }
 
     public static void ConfigureJwtTokenAuth( this IServiceCollection services, IConfiguration configuration )

@@ -13,6 +13,8 @@ using Pathfinder.CharacterManagement.Application;
 using Pathfinder.CharacterManagement.Infrastructure;
 using Pathfinder.CampaignManagement.Application;
 using Pathfinder.CampaignManagement.Infrastructure;
+using Pathfinder.ItemCatalog.Application;
+using Pathfinder.ItemCatalog.Infrastructure;
 using Pathfinder.CharacterManagement.Infrastructure.Consumers;
 using Pathfinder.Web.Extensions;
 using Serilog;
@@ -35,6 +37,8 @@ public class Startup( IConfiguration configuration )
         services.AddCharacterManagementInfrastructureServices();
         services.AddCampaignManagementApplicationServices();
         services.AddCampaignManagementInfrastructureServices();
+        services.AddItemCatalogApplicationServices();
+        services.AddItemCatalogInfrastructureServices();
 
         services.AddControllers()
             .AddJsonOptions(

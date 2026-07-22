@@ -7,6 +7,9 @@
     <RootNamespace>Pathfinder.ItemCatalog.Application</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\ItemCatalog.Domain\ItemCatalog.Domain.csproj" />
     <ProjectReference Include="..\Pathfinder.Utils\Pathfinder.Utils.csproj" />
   </ItemGroup>

@@ -23,7 +23,10 @@ public sealed class ItemRevision : Entity
     public int PriceInCopperPieces { get; private set; }
     public decimal Bulk { get; private set; }
     public ItemCategory PrimaryCategory { get; private set; }
+    public ItemRevisionStatus Status { get; private set; }
     public DateTimeOffset CreatedAtUtc { get; private set; }
+    public DateTimeOffset? PublishedAtUtc { get; private set; }
+    public DateTimeOffset? RetiredAtUtc { get; private set; }
     public IReadOnlyList<AttackComponent> Attacks { get => _attacks.AsReadOnly(); }
     public ArmorComponent? Armor { get; private set; }
     public ShieldComponent? Shield { get; private set; }
@@ -79,6 +82,7 @@ public sealed class ItemRevision : Entity
             PriceInCopperPieces = priceInCopperPieces,
             Bulk = bulk,
             PrimaryCategory = rules.PrimaryCategory,
+            Status = ItemRevisionStatus.Draft,
             CreatedAtUtc = createdAtUtc,
             Armor = rules.Armor,
             Shield = rules.Shield,
@@ -89,6 +93,42 @@ public sealed class ItemRevision : Entity
         };
         revision._attacks.AddRange( rules.Attacks );
         return revision;
+    }
+
+    internal void Publish( DateTimeOffset publishedAtUtc )
+    {
+        EnsureUtc( publishedAtUtc, "Publication timestamp" );
+        if ( Status != ItemRevisionStatus.Draft )
+        {
+            throw new ItemCatalogException( "Only a draft item revision can be published." );
+        }
+
+        if ( publishedAtUtc < CreatedAtUtc )
+        {
+            throw new ItemCatalogException(
+                "Publication timestamp cannot precede revision creation." );
+        }
+
+        Status = ItemRevisionStatus.Published;
+        PublishedAtUtc = publishedAtUtc;
+    }
+
+    internal void Retire( DateTimeOffset retiredAtUtc )
+    {
+        EnsureUtc( retiredAtUtc, "Retirement timestamp" );
+        if ( Status != ItemRevisionStatus.Published )
+        {
+            throw new ItemCatalogException( "Only a published item revision can be retired." );
+        }
+
+        if ( retiredAtUtc < PublishedAtUtc )
+        {
+            throw new ItemCatalogException(
+                "Retirement timestamp cannot precede revision publication." );
+        }
+
+        Status = ItemRevisionStatus.Retired;
+        RetiredAtUtc = retiredAtUtc;
     }
 
     private static string NormalizeRequiredText(
@@ -116,5 +156,13 @@ public sealed class ItemRevision : Entity
         }
 
         return normalizedValue;
+    }
+
+    private static void EnsureUtc( DateTimeOffset value, string fieldName )
+    {
+        if ( value.Offset != TimeSpan.Zero )
+        {
+            throw new ItemCatalogException( $"{fieldName} must use UTC." );
+        }
     }
 }
