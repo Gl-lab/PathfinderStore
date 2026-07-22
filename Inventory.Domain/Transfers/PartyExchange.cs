@@ -19,6 +19,10 @@ public sealed class PartyExchange : Entity, IAggregateRoot
     public PartyExchangeStatus Status { get; private set; }
     public DateTimeOffset CreatedAtUtc { get; private set; }
     public DateTimeOffset ExpiresAtUtc { get; private set; }
+    public int Version { get; private set; }
+    public DateTimeOffset? CompletedAtUtc { get; private set; }
+    public DateTimeOffset? CancelledAtUtc { get; private set; }
+    public Guid? FinalOperationId { get; private set; }
     public IReadOnlyList<PartyExchangeLine> Lines { get => _lines.AsReadOnly(); }
 
     public static PartyExchange Create(
@@ -79,12 +83,62 @@ public sealed class PartyExchange : Entity, IAggregateRoot
             Status = PartyExchangeStatus.Pending,
             CreatedAtUtc = createdAtUtc,
             ExpiresAtUtc = expiresAtUtc,
+            Version = 0,
         };
         exchange._lines.AddRange( lines.Select( line => PartyExchangeLine.Create(
             line.FromCharacterId,
             line.ItemInstanceKey,
             line.ExpectedItemVersion ) ) );
         return exchange;
+    }
+
+    public bool Complete( Guid operationId, DateTimeOffset completedAtUtc )
+    {
+        EnsureOperationId( operationId );
+        EnsureUtc( completedAtUtc );
+        if ( Status == PartyExchangeStatus.Completed )
+        {
+            EnsureReplay( operationId );
+            return false;
+        }
+
+        if ( Status != PartyExchangeStatus.Pending )
+        {
+            throw new InventoryException( "Only a pending exchange can be completed." );
+        }
+
+        if ( completedAtUtc > ExpiresAtUtc )
+        {
+            throw new InventoryException( "Exchange has expired." );
+        }
+
+        Status = PartyExchangeStatus.Completed;
+        CompletedAtUtc = completedAtUtc;
+        FinalOperationId = operationId;
+        Version++;
+        return true;
+    }
+
+    public bool Cancel( Guid operationId, DateTimeOffset cancelledAtUtc )
+    {
+        EnsureOperationId( operationId );
+        EnsureUtc( cancelledAtUtc );
+        if ( Status == PartyExchangeStatus.Cancelled )
+        {
+            EnsureReplay( operationId );
+            return false;
+        }
+
+        if ( Status != PartyExchangeStatus.Pending )
+        {
+            throw new InventoryException( "Only a pending exchange can be cancelled." );
+        }
+
+        Status = PartyExchangeStatus.Cancelled;
+        CancelledAtUtc = cancelledAtUtc;
+        FinalOperationId = operationId;
+        Version++;
+        return true;
     }
 
     public void EnsureMatches(
@@ -112,6 +166,22 @@ public sealed class PartyExchange : Entity, IAggregateRoot
         if ( value.Offset != TimeSpan.Zero )
         {
             throw new InventoryException( "Exchange timestamps must use UTC." );
+        }
+    }
+
+    private static void EnsureOperationId( Guid operationId )
+    {
+        if ( operationId == Guid.Empty )
+        {
+            throw new InventoryException( "Exchange operation id cannot be empty." );
+        }
+    }
+
+    private void EnsureReplay( Guid operationId )
+    {
+        if ( FinalOperationId != operationId )
+        {
+            throw new InventoryException( "Exchange was already finalized by another operation." );
         }
     }
 }

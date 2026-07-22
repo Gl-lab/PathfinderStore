@@ -143,6 +143,8 @@ public sealed class InventoryDbContext : DbContext
                     "\"CampaignId\" > 0 AND \"PartyId\" > 0 AND \"InitiatorCharacterId\" > 0 AND \"CounterpartyCharacterId\" > 0" ) );
             builder.Property( exchange => exchange.Status )
                 .HasConversion<int>();
+            builder.Property( exchange => exchange.Version )
+                .IsConcurrencyToken();
             builder.HasIndex( exchange => exchange.ExchangeKey )
                 .IsUnique();
             builder.HasMany( exchange => exchange.Lines )

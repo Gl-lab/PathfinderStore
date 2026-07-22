@@ -11,6 +11,10 @@ public sealed record PartyExchangeDto(
     PartyExchangeStatus Status,
     DateTimeOffset CreatedAtUtc,
     DateTimeOffset ExpiresAtUtc,
+    int Version,
+    DateTimeOffset? CompletedAtUtc,
+    DateTimeOffset? CancelledAtUtc,
+    Guid? FinalOperationId,
     IReadOnlyCollection<PartyExchangeLineDto> Lines );
 
 public sealed record PartyExchangeLineDto(
@@ -29,6 +33,10 @@ internal static class PartyExchangeMappings
         exchange.Status,
         exchange.CreatedAtUtc,
         exchange.ExpiresAtUtc,
+        exchange.Version,
+        exchange.CompletedAtUtc,
+        exchange.CancelledAtUtc,
+        exchange.FinalOperationId,
         exchange.Lines
             .Select( line => new PartyExchangeLineDto(
                 line.FromCharacterId,

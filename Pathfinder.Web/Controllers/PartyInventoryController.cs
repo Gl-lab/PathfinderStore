@@ -142,6 +142,62 @@ public sealed class PartyInventoryController : AuthorizedController
         }
     }
 
+    [HttpPost( "exchanges/{exchangeKey:guid}/complete" )]
+    [ProducesResponseType( typeof( PartyExchangeDto ), StatusCodes.Status200OK )]
+    [ProducesResponseType( typeof( IReadOnlyCollection<string> ), StatusCodes.Status400BadRequest )]
+    public async Task<ActionResult<PartyExchangeDto>> CompleteExchange(
+        int campaignId,
+        Guid exchangeKey,
+        [FromBody] FinalizePartyExchangeRequest request )
+    {
+        return await FinalizeExchange( userId => new CompletePartyExchangeCommand(
+            userId,
+            campaignId,
+            exchangeKey,
+            request.OperationId ) );
+    }
+
+    [HttpPost( "exchanges/{exchangeKey:guid}/cancel" )]
+    [ProducesResponseType( typeof( PartyExchangeDto ), StatusCodes.Status200OK )]
+    [ProducesResponseType( typeof( IReadOnlyCollection<string> ), StatusCodes.Status400BadRequest )]
+    public async Task<ActionResult<PartyExchangeDto>> CancelExchange(
+        int campaignId,
+        Guid exchangeKey,
+        [FromBody] FinalizePartyExchangeRequest request )
+    {
+        return await FinalizeExchange( userId => new CancelPartyExchangeCommand(
+            userId,
+            campaignId,
+            exchangeKey,
+            request.OperationId ) );
+    }
+
+    private async Task<ActionResult<PartyExchangeDto>> FinalizeExchange(
+        Func<int, IRequest<PartyExchangeDto>> commandFactory )
+    {
+        try
+        {
+            PartyExchangeDto exchange = await _mediator.Send( commandFactory( CurrentUserId() ) );
+            return Ok( exchange );
+        }
+        catch ( InvalidOperationException )
+        {
+            return Unauthorized();
+        }
+        catch ( InventoryException exception )
+        {
+            return BadRequest( MapError( exception.Message ) );
+        }
+        catch ( DbUpdateException exception )
+        {
+            return DatabaseUnavailable( exception );
+        }
+        catch ( PostgresException exception )
+        {
+            return DatabaseUnavailable( exception );
+        }
+    }
+
     private ObjectResult DatabaseUnavailable( Exception exception )
     {
         _logger.LogError( exception, "Failed to update party inventory." );
@@ -171,3 +227,5 @@ public sealed record CreatePartyExchangeLineRequest(
     Guid ItemInstanceKey,
     int ExpectedItemVersion,
     Guid ReservationOperationId );
+
+public sealed record FinalizePartyExchangeRequest( Guid OperationId );
