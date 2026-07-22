@@ -43,7 +43,8 @@ public class Startup( IConfiguration configuration )
         services.AddItemCatalogInfrastructureServices();
         services.AddScoped<CompletedCharacterInventoryMigrationService>();
         services.AddHostedService<CompletedCharacterInventoryMigrationHostedService>();
-        services.AddScoped<IAllowedEquipmentReader, ItemCatalogAllowedEquipmentReader>();
+        services.AddScoped<ItemCatalogAllowedEquipmentReader>();
+        services.AddScoped<IAllowedEquipmentReader, RuntimeInventoryAllowedEquipmentReader>();
 
         services.AddControllers()
             .AddJsonOptions(

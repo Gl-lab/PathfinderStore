@@ -19,13 +19,27 @@ public sealed class StartingEquipmentAllowedEquipmentReader : IAllowedEquipmentR
         IReadOnlyList<EffectiveProficiency> proficiencies,
         int? campaignId = null )
     {
+        return Read(
+            character,
+            proficiencies,
+            character.StartingEquipmentItems,
+            campaignId );
+    }
+
+    public AllowedEquipmentLoadout Read(
+        DraftCharacter character,
+        IReadOnlyList<EffectiveProficiency> proficiencies,
+        IReadOnlyList<CharacterEquipmentItem> equipmentItems,
+        int? campaignId = null )
+    {
         ArgumentNullException.ThrowIfNull( character );
         ArgumentNullException.ThrowIfNull( proficiencies );
+        ArgumentNullException.ThrowIfNull( equipmentItems );
 
         EquipmentLoadoutResult loadout = EquipmentLoadoutResolver.Resolve(
-            character.StartingEquipmentItems,
+            equipmentItems,
             _equipmentRepository.GetAll(),
-            character.StartingEquipmentItems
+            equipmentItems
                 .Where( item => item.EquippedQuantity > 0 )
                 .Select( item => item.EquipmentId )
                 .ToArray(),

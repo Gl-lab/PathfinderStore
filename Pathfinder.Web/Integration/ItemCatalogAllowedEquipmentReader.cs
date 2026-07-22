@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Pathfinder.CharacterManagement.Application.Equipment;
 using Pathfinder.CharacterManagement.Application.Repositories;
 using Pathfinder.CharacterManagement.Domain.Entity;
+using Pathfinder.CharacterManagement.Domain.Rules.Equipment;
 using Pathfinder.CharacterManagement.Infrastructure.Equipment;
 using Pathfinder.ItemCatalog.Domain.Items;
 using Pathfinder.ItemCatalog.Domain.Rules;
@@ -51,6 +52,37 @@ public sealed class ItemCatalogAllowedEquipmentReader : IAllowedEquipmentReader
         StartingEquipmentAllowedEquipmentReader reader =
             new StartingEquipmentAllowedEquipmentReader( overlayRepository );
         return reader.Read( character, proficiencies, campaignId );
+    }
+
+    public AllowedEquipmentLoadout ReadExactRevisions(
+        DraftCharacter character,
+        IReadOnlyList<EffectiveProficiency> proficiencies,
+        IReadOnlyList<CharacterEquipmentItem> equipmentItems,
+        IReadOnlyDictionary<string, ItemRevision> exactRevisions,
+        int? campaignId )
+    {
+        ArgumentNullException.ThrowIfNull( character );
+        ArgumentNullException.ThrowIfNull( proficiencies );
+        ArgumentNullException.ThrowIfNull( equipmentItems );
+        ArgumentNullException.ThrowIfNull( exactRevisions );
+        IReadOnlyCollection<EquipmentDefinition> catalog = _startingEquipmentRepository
+            .GetAll()
+            .Select( definition => exactRevisions.TryGetValue(
+                definition.Id,
+                out ItemRevision? revision )
+                ? Overlay( definition, revision )
+                : definition )
+            .ToArray();
+        IEquipmentRepository overlayRepository = new OverlayEquipmentRepository(
+            _startingEquipmentRepository,
+            catalog );
+        StartingEquipmentAllowedEquipmentReader reader =
+            new StartingEquipmentAllowedEquipmentReader( overlayRepository );
+        return reader.Read(
+            character,
+            proficiencies,
+            equipmentItems,
+            campaignId );
     }
 
     private IReadOnlyCollection<EquipmentDefinition> BuildVisibleCatalog(
