@@ -3,6 +3,8 @@ using Pathfinder.Inventory.Domain.Containers;
 using Pathfinder.Inventory.Domain.Exceptions;
 using Pathfinder.Inventory.Domain.Items;
 using Pathfinder.Inventory.Domain.Transfers;
+using Pathfinder.Inventory.Domain.Audit;
+using Pathfinder.Inventory.Application.Audit;
 
 namespace Pathfinder.Inventory.Application.Transfers;
 
@@ -93,6 +95,15 @@ public sealed class CreatePartyGiftHandler
             createdAtUtc,
             createdAtUtc.Add( _giftLifetime ) );
         _repository.AddGift( gift );
+        _repository.AddAudit( InventoryAuditFactory.CreatePlayerAction(
+            request.CampaignId,
+            request.GiftKey,
+            InventoryAuditActionKind.GiftProposed,
+            request.ActingUserId,
+            "Party gift proposed.",
+            request.ItemInstanceKey,
+            request.GiftKey,
+            createdAtUtc ) );
         await _repository.SaveChangesAsync( cancellationToken );
         return gift.ToDto();
     }

@@ -79,6 +79,7 @@ public sealed class PartyStorageWorkflowTests
 
         Assert.Equal( characterContainer.ContainerKey, withdrawn.ContainerKey );
         Assert.Equal( 2, item.Version );
+        Assert.Equal( 2, await context.AuditEntries.CountAsync() );
     }
 
     [Fact]

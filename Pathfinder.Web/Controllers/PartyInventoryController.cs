@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Npgsql;
 using Pathfinder.Inventory.Application.Transfers;
 using Pathfinder.Inventory.Application.Storage;
+using Pathfinder.Inventory.Application.Administration;
 using Pathfinder.Inventory.Domain.Exceptions;
 using Pathfinder.Web.Controllers.Base;
 
@@ -255,6 +256,44 @@ public sealed class PartyInventoryController : AuthorizedController
         }
     }
 
+    [HttpPost( "force-move" )]
+    [ProducesResponseType( typeof( ForcedInventoryMoveDto ), StatusCodes.Status200OK )]
+    [ProducesResponseType( typeof( IReadOnlyCollection<string> ), StatusCodes.Status400BadRequest )]
+    public async Task<ActionResult<ForcedInventoryMoveDto>> ForceMove(
+        int campaignId,
+        [FromBody] ForceMoveInventoryItemRequest request )
+    {
+        try
+        {
+            ForcedInventoryMoveDto result = await _mediator.Send(
+                new ForceMoveInventoryItemCommand(
+                    CurrentUserId(),
+                    campaignId,
+                    request.ItemInstanceKey,
+                    request.DestinationContainerKey,
+                    request.ExpectedItemVersion,
+                    request.OperationId,
+                    request.Reason ) );
+            return Ok( result );
+        }
+        catch ( InvalidOperationException )
+        {
+            return Unauthorized();
+        }
+        catch ( InventoryException exception )
+        {
+            return BadRequest( MapError( exception.Message ) );
+        }
+        catch ( DbUpdateException exception )
+        {
+            return DatabaseUnavailable( exception );
+        }
+        catch ( PostgresException exception )
+        {
+            return DatabaseUnavailable( exception );
+        }
+    }
+
     private ObjectResult DatabaseUnavailable( Exception exception )
     {
         _logger.LogError( exception, "Failed to update party inventory." );
@@ -292,3 +331,10 @@ public sealed record PartyStorageTransferRequest(
     Guid ItemInstanceKey,
     int ExpectedItemVersion,
     Guid OperationId );
+
+public sealed record ForceMoveInventoryItemRequest(
+    Guid ItemInstanceKey,
+    Guid DestinationContainerKey,
+    int ExpectedItemVersion,
+    Guid OperationId,
+    string Reason );

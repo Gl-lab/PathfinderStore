@@ -4,6 +4,7 @@ using Pathfinder.Inventory.Domain.Items;
 using Pathfinder.Inventory.Domain.Movements;
 using Pathfinder.Inventory.Domain.Operations;
 using Pathfinder.Inventory.Domain.Transfers;
+using Pathfinder.Inventory.Domain.Audit;
 
 namespace Pathfinder.Inventory.Infrastructure.Data;
 
@@ -20,6 +21,7 @@ public sealed class InventoryDbContext : DbContext
     public DbSet<InventoryOperation> Operations => Set<InventoryOperation>();
     public DbSet<PartyGift> PartyGifts => Set<PartyGift>();
     public DbSet<PartyExchange> PartyExchanges => Set<PartyExchange>();
+    public DbSet<InventoryAuditEntry> AuditEntries => Set<InventoryAuditEntry>();
 
     protected override void OnModelCreating( ModelBuilder modelBuilder )
     {
@@ -164,6 +166,28 @@ public sealed class InventoryDbContext : DbContext
             {
                 line.PartyExchangeId,
                 line.ItemInstanceKey,
+            } )
+                .IsUnique();
+        } );
+
+        modelBuilder.Entity<InventoryAuditEntry>( builder =>
+        {
+            builder.ToTable( "InventoryAuditEntry", tableBuilder =>
+                tableBuilder.HasCheckConstraint(
+                    "CK_InventoryAuditEntry_Identity",
+                    "\"CampaignId\" > 0 AND \"ActorUserId\" > 0" ) );
+            builder.Property( audit => audit.ActionKind )
+                .HasConversion<int>();
+            builder.Property( audit => audit.Reason )
+                .HasMaxLength( InventoryAuditEntry.ReasonMaxLength )
+                .IsRequired();
+            builder.HasIndex( audit => audit.AuditKey )
+                .IsUnique();
+            builder.HasIndex( audit => new
+            {
+                audit.CampaignId,
+                audit.OperationId,
+                audit.ActionKind,
             } )
                 .IsUnique();
         } );

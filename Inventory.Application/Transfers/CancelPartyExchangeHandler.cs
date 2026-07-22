@@ -2,6 +2,8 @@ using MediatR;
 using Pathfinder.Inventory.Domain.Exceptions;
 using Pathfinder.Inventory.Domain.Items;
 using Pathfinder.Inventory.Domain.Transfers;
+using Pathfinder.Inventory.Domain.Audit;
+using Pathfinder.Inventory.Application.Audit;
 
 namespace Pathfinder.Inventory.Application.Transfers;
 
@@ -78,6 +80,16 @@ public sealed class CancelPartyExchangeHandler
                 request.OperationId,
                 cancelledAtUtc );
         }
+
+        _repository.AddAudit( InventoryAuditFactory.CreatePlayerAction(
+            request.CampaignId,
+            request.OperationId,
+            InventoryAuditActionKind.ExchangeCancelled,
+            request.ActingUserId,
+            "Party exchange cancelled and reservations released.",
+            null,
+            exchange.ExchangeKey,
+            cancelledAtUtc ) );
 
         await _repository.SaveChangesAsync( cancellationToken );
         return exchange.ToDto();

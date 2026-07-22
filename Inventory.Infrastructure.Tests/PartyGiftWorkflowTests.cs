@@ -62,6 +62,7 @@ public sealed class PartyGiftWorkflowTests
             Assert.Equal( PartyGiftStatus.Accepted, accepted.Status );
             Assert.Equal( destinationKey, item.CurrentContainerKey );
             Assert.Equal( 1, item.Version );
+            Assert.Equal( 2, await context.AuditEntries.CountAsync() );
 
             PartyGiftDto replay = await acceptHandler.Handle(
                 new AcceptPartyGiftCommand( 102, 17, giftKey, operationId ),

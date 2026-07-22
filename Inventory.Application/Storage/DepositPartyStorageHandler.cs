@@ -3,6 +3,8 @@ using Pathfinder.Inventory.Application.Transfers;
 using Pathfinder.Inventory.Domain.Containers;
 using Pathfinder.Inventory.Domain.Exceptions;
 using Pathfinder.Inventory.Domain.Items;
+using Pathfinder.Inventory.Domain.Audit;
+using Pathfinder.Inventory.Application.Audit;
 
 namespace Pathfinder.Inventory.Application.Storage;
 
@@ -69,6 +71,15 @@ public sealed class DepositPartyStorageHandler : PartyStorageHandlerBase,
             request.OperationId,
             $"user:{request.ActingUserId}",
             occurredAtUtc );
+        _repository.AddAudit( InventoryAuditFactory.CreatePlayerAction(
+            request.CampaignId,
+            request.OperationId,
+            InventoryAuditActionKind.PartyStorageDeposited,
+            request.ActingUserId,
+            "Item deposited into party storage.",
+            request.ItemInstanceKey,
+            null,
+            occurredAtUtc ) );
         await _repository.SaveChangesAsync( cancellationToken );
         return new PartyStorageItemDto(
             item.InstanceKey,

@@ -3,6 +3,7 @@ using Pathfinder.Inventory.Application.Transfers;
 using Pathfinder.Inventory.Domain.Containers;
 using Pathfinder.Inventory.Domain.Items;
 using Pathfinder.Inventory.Domain.Transfers;
+using Pathfinder.Inventory.Domain.Audit;
 using Pathfinder.Inventory.Infrastructure.Data;
 
 namespace Pathfinder.Inventory.Infrastructure.Transfers;
@@ -43,6 +44,18 @@ public sealed class InventoryTransferRepository : IInventoryTransferRepository
             cancellationToken );
     }
 
+    public async Task<InventoryContainer?> GetContainerByKeyAsync(
+        int campaignId,
+        Guid containerKey,
+        CancellationToken cancellationToken )
+    {
+        return await _dbContext.Containers.SingleOrDefaultAsync(
+            container =>
+                ( container.CampaignId == campaignId ) &&
+                ( container.ContainerKey == containerKey ),
+            cancellationToken );
+    }
+
     public async Task<ItemInstance?> GetItemAsync(
         Guid itemInstanceKey,
         CancellationToken cancellationToken )
@@ -75,6 +88,20 @@ public sealed class InventoryTransferRepository : IInventoryTransferRepository
                 cancellationToken );
     }
 
+    public async Task<InventoryAuditEntry?> GetAuditAsync(
+        int campaignId,
+        Guid operationId,
+        InventoryAuditActionKind actionKind,
+        CancellationToken cancellationToken )
+    {
+        return await _dbContext.AuditEntries.SingleOrDefaultAsync(
+            audit =>
+                ( audit.CampaignId == campaignId ) &&
+                ( audit.OperationId == operationId ) &&
+                ( audit.ActionKind == actionKind ),
+            cancellationToken );
+    }
+
     public void AddGift( PartyGift gift )
     {
         _dbContext.PartyGifts.Add( gift );
@@ -88,6 +115,11 @@ public sealed class InventoryTransferRepository : IInventoryTransferRepository
     public void AddContainer( InventoryContainer container )
     {
         _dbContext.Containers.Add( container );
+    }
+
+    public void AddAudit( InventoryAuditEntry audit )
+    {
+        _dbContext.AuditEntries.Add( audit );
     }
 
     public async Task SaveChangesAsync( CancellationToken cancellationToken )

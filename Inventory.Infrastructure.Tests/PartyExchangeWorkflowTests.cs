@@ -70,6 +70,7 @@ public sealed class PartyExchangeWorkflowTests
         Assert.Null( secondItem.ReservationKey );
         Assert.Equal( 2, firstItem.Version );
         Assert.Equal( 2, secondItem.Version );
+        Assert.Equal( 2, await context.AuditEntries.CountAsync() );
     }
 
     [Fact]
@@ -119,6 +120,7 @@ public sealed class PartyExchangeWorkflowTests
         Assert.Null( secondItem.ReservationKey );
         Assert.Equal( 2, firstItem.Version );
         Assert.Equal( 2, secondItem.Version );
+        Assert.Equal( 2, await context.AuditEntries.CountAsync() );
     }
 
     private static InventoryContainer CreateContainer( int characterId ) =>

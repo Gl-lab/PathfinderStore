@@ -451,6 +451,62 @@ public sealed class ItemInstance : Entity, IAggregateRoot
         return true;
     }
 
+    public InventoryMovement ForceMoveTo(
+        InventoryContainer destination,
+        string reason,
+        int expectedVersion,
+        Guid operationId,
+        string performedBy,
+        DateTimeOffset occurredAtUtc )
+    {
+        ArgumentNullException.ThrowIfNull( destination );
+        EnsureOperationId( operationId );
+        if ( FindOperation( operationId ) is not null )
+        {
+            throw new InventoryException(
+                "Operation id was already used for another inventory change." );
+        }
+
+        EnsureExpectedVersion( expectedVersion );
+        if ( IsDepleted || ( destination.CampaignId != CampaignId ) ||
+             ( destination.ContainerKey == CurrentContainerKey ) )
+        {
+            throw new InventoryException( "Item cannot be force-moved to the requested container." );
+        }
+
+        string normalizedReason = NormalizeRequiredText(
+            reason,
+            MovementReasonMaxLength,
+            "Movement reason" );
+        string normalizedPerformedBy = NormalizeRequiredText(
+            performedBy,
+            PerformedByMaxLength,
+            "Movement performer" );
+        EnsureOperationTimestamp( occurredAtUtc );
+        EnsureMovementTimestamp( occurredAtUtc );
+        InventoryMovement movement = InventoryMovement.Create(
+            InstanceKey,
+            CurrentContainerKey,
+            destination.ContainerKey,
+            Quantity,
+            normalizedReason,
+            operationId,
+            normalizedPerformedBy,
+            occurredAtUtc );
+        CurrentContainerKey = destination.ContainerKey;
+        ReservationKey = null;
+        Version++;
+        _movements.Add( movement );
+        _operations.Add( InventoryOperation.Create(
+            operationId,
+            InventoryOperationKind.Move,
+            destination.ContainerKey,
+            Quantity,
+            Version,
+            occurredAtUtc ) );
+        return movement;
+    }
+
     private static ItemInstance CreateCore(
         Guid instanceKey,
         int campaignId,
