@@ -16,7 +16,8 @@ public sealed class StartingEquipmentAllowedEquipmentReader : IAllowedEquipmentR
 
     public AllowedEquipmentLoadout Read(
         DraftCharacter character,
-        IReadOnlyList<EffectiveProficiency> proficiencies )
+        IReadOnlyList<EffectiveProficiency> proficiencies,
+        int? campaignId = null )
     {
         ArgumentNullException.ThrowIfNull( character );
         ArgumentNullException.ThrowIfNull( proficiencies );

@@ -6,7 +6,8 @@ public interface IAllowedEquipmentReader
 {
     AllowedEquipmentLoadout Read(
         DraftCharacter character,
-        IReadOnlyList<EffectiveProficiency> proficiencies );
+        IReadOnlyList<EffectiveProficiency> proficiencies,
+        int? campaignId = null );
 }
 
 public sealed record AllowedEquipmentLoadout(

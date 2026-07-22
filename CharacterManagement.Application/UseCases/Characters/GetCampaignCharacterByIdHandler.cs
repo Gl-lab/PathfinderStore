@@ -45,7 +45,7 @@ public sealed class GetCampaignCharacterByIdHandler
         }
 
         return new CampaignCharacterDto(
-            _characterDetailsDtoMapper.Convert( character ),
+            _characterDetailsDtoMapper.Convert( character, request.CampaignId ),
             access.CanAct );
     }
 }

@@ -25,6 +25,8 @@
     <ProjectReference Include="..\CharacterManagement.Application\CharacterManagement.Application.csproj" />
     <ProjectReference Include="..\CharacterManagement.Domain\CharacterManagement.Domain.csproj" />
     <ProjectReference Include="..\CharacterManagement.Infrastructure\CharacterManagement.Infrastructure.csproj" />
+    <ProjectReference Include="..\ItemCatalog.Domain\ItemCatalog.Domain.csproj" />
+    <ProjectReference Include="..\ItemCatalog.Infrastructure\ItemCatalog.Infrastructure.csproj" />
     <ProjectReference Include="..\Pathfinder.Web\Pathfinder.Web.csproj" />
     <ProjectReference Include="..\Pathfinder.Utils\Pathfinder.Utils.csproj" />
     <ProjectReference Include="..\Secure.Domain\Secure.Domain.csproj" />

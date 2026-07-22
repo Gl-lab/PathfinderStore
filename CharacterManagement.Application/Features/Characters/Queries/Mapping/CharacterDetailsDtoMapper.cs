@@ -76,7 +76,9 @@ public sealed class CharacterDetailsDtoMapper
 
     public DraftCharacter Convert( CharacterDto character ) => throw new NotSupportedException();
 
-    public CharacterDto Convert( DraftCharacter draftCharacter )
+    public CharacterDto Convert( DraftCharacter draftCharacter ) => Convert( draftCharacter, null );
+
+    public CharacterDto Convert( DraftCharacter draftCharacter, int? campaignId )
     {
         ArgumentNullException.ThrowIfNull( draftCharacter );
 
@@ -149,7 +151,8 @@ public sealed class CharacterDetailsDtoMapper
                 draftCharacter.TrainedLore );
         AllowedEquipmentLoadout? allowedEquipment = ReadAllowedEquipment(
             draftCharacter,
-            effectiveProficiencies );
+            effectiveProficiencies,
+            campaignId );
 
         return new CharacterDto
         {
@@ -280,7 +283,8 @@ public sealed class CharacterDetailsDtoMapper
 
     private AllowedEquipmentLoadout? ReadAllowedEquipment(
         DraftCharacter character,
-        IReadOnlyList<EffectiveProficiency> proficiencies )
+        IReadOnlyList<EffectiveProficiency> proficiencies,
+        int? campaignId )
     {
         if ( character.SelectedClassKitId is null )
         {
@@ -292,7 +296,7 @@ public sealed class CharacterDetailsDtoMapper
             throw new InvalidOperationException( "Allowed equipment reader is required to map starting equipment." );
         }
 
-        return _allowedEquipmentReader.Read( character, proficiencies );
+        return _allowedEquipmentReader.Read( character, proficiencies, campaignId );
     }
 
     private static IReadOnlyList<ProficiencyGrant> ResolveSpellcastingProficiencyGrants(

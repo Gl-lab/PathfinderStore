@@ -24,7 +24,7 @@ public sealed class GetCharactersHandler : IRequestHandler<GetCharactersCommand,
         List<DraftCharacter> draftCharacters = await _characterRepository.GetListAsync( request.UserId );
 
         return draftCharacters
-            .Select( _characterDetailsDtoMapper.Convert )
+            .Select( character => _characterDetailsDtoMapper.Convert( character ) )
             .ToList();
     }
 }
