@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Pathfinder.ItemCatalog.Domain.Configurations;
 using Pathfinder.ItemCatalog.Domain.Items;
 using Pathfinder.ItemCatalog.Domain.Rules;
 
@@ -14,6 +15,7 @@ public sealed class ItemCatalogDbContext : DbContext
     public DbSet<ItemDefinition> ItemDefinitions => Set<ItemDefinition>();
     public DbSet<ItemRevision> ItemRevisions => Set<ItemRevision>();
     public DbSet<AttackComponent> AttackComponents => Set<AttackComponent>();
+    public DbSet<ItemConfiguration> ItemConfigurations => Set<ItemConfiguration>();
 
     protected override void OnModelCreating( ModelBuilder modelBuilder )
     {
@@ -139,5 +141,50 @@ public sealed class ItemCatalogDbContext : DbContext
                 .HasConversion<int>();
         } );
         modelBuilder.Entity<DurabilityComponent>().ToTable( "DurabilityComponent" );
+
+        modelBuilder.Entity<ItemConfiguration>( builder =>
+        {
+            builder.ToTable( "ItemConfiguration" );
+            builder.Property( configuration => configuration.ConfigurationKey )
+                .HasMaxLength( ItemConfiguration.ConfigurationKeyLength )
+                .IsFixedLength()
+                .IsRequired();
+            builder.Property( configuration => configuration.Size )
+                .HasConversion<int>();
+            builder.Property( configuration => configuration.MaterialType )
+                .HasConversion<int>();
+            builder.Property( configuration => configuration.MaterialGrade )
+                .HasConversion<int>();
+            builder.HasIndex( configuration => configuration.ConfigurationKey )
+                .IsUnique();
+            builder.HasOne<ItemRevision>()
+                .WithMany()
+                .HasForeignKey( configuration => configuration.ItemRevisionId )
+                .IsRequired()
+                .OnDelete( DeleteBehavior.Restrict );
+            builder.HasMany( configuration => configuration.PermanentUpgrades )
+                .WithOne()
+                .HasForeignKey( upgrade => upgrade.ItemConfigurationId )
+                .IsRequired()
+                .OnDelete( DeleteBehavior.Cascade );
+        } );
+
+        modelBuilder.Entity<PermanentUpgrade>( builder =>
+        {
+            builder.ToTable( "PermanentUpgrade" );
+            builder.Property( upgrade => upgrade.Code )
+                .HasMaxLength( PermanentUpgrade.CodeMaxLength )
+                .IsRequired();
+            builder.Property( upgrade => upgrade.Kind )
+                .HasConversion<int>();
+            builder.Property( upgrade => upgrade.Visibility )
+                .HasConversion<int>();
+            builder.HasIndex( upgrade => new
+            {
+                upgrade.ItemConfigurationId,
+                upgrade.Code,
+            } )
+                .IsUnique();
+        } );
     }
 }
