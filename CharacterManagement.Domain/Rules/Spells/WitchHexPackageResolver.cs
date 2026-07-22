@@ -23,13 +23,13 @@ public static class WitchHexPackageResolver
             .Id;
         SpellDefinition patronHex = spellCatalog.Single( spell => spell.Id == patronHexId );
         SpellDefinition focusHex = spellCatalog.Single( spell => spell.Id == focusHexId );
-        bool isInitialFocusHex = ( focusHexId == "spell.patron_s_puppet" ) ||
-                                 ( focusHexId == "spell.phase_familiar" );
+        bool isInitialFocusHex = focusHexId == "spell.patron_s_puppet" ||
+                                 focusHexId == "spell.phase_familiar";
         if ( !isInitialFocusHex ||
-             ( patronHex.Kind != SpellKind.Cantrip ) ||
-             ( patronHex.Rank != 1 ) ||
-             ( focusHex.Kind != SpellKind.Focus ) ||
-             ( focusHex.Rank != 1 ) ||
+             patronHex.Kind != SpellKind.Cantrip ||
+             patronHex.Rank != 1 ||
+             focusHex.Kind != SpellKind.Focus ||
+             focusHex.Rank != 1 ||
              !patronHex.Traditions.Contains( patron.SpellTradition ) ||
              !focusHex.Traditions.Contains( patron.SpellTradition ) )
         {

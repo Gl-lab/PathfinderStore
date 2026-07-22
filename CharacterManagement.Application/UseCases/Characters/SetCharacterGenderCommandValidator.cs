@@ -15,8 +15,8 @@ public sealed class SetCharacterGenderCommandValidator : AbstractValidator<SetCh
 
         RuleFor( command => command.Gender )
             .Must( gender =>
-                ( gender == CharacterGender.Male ) ||
-                ( gender == CharacterGender.Female ) )
+                gender == CharacterGender.Male ||
+                gender == CharacterGender.Female )
             .WithMessage( "Character gender must be Male or Female." );
     }
 }

@@ -31,7 +31,7 @@ public static class WizardSpellLoadoutResolver
             baseSpellCount,
             $"A Wizard spellbook must contain exactly {baseSpellCount} unique base rank-1 spells for this school." );
         ValidateUniqueCount( preparedCantripIds, 5, "A first-level Wizard must prepare exactly 5 unique base cantrips." );
-        if ( ( preparedRankOneSpellIds.Count != 2 ) || preparedRankOneSpellIds.Any( String.IsNullOrWhiteSpace ) )
+        if ( preparedRankOneSpellIds.Count != 2 || preparedRankOneSpellIds.Any( String.IsNullOrWhiteSpace ) )
         {
             throw new ArgumentException( "A first-level Wizard must prepare exactly 2 base rank-1 spell slots." );
         }
@@ -69,7 +69,7 @@ public static class WizardSpellLoadoutResolver
                 spellCatalog );
         }
         else if ( !String.IsNullOrWhiteSpace( curriculumCantripId ) ||
-                  ( curriculumRankOneSpellIds.Count > 0 ) ||
+                  curriculumRankOneSpellIds.Count > 0 ||
                   !String.IsNullOrWhiteSpace( preparedCurriculumCantripId ) ||
                   !String.IsNullOrWhiteSpace( preparedCurriculumRankOneSpellId ) )
         {
@@ -80,7 +80,7 @@ public static class WizardSpellLoadoutResolver
             .Single( benefit => benefit.Kind == ArcaneSchoolBenefitKind.InitialSchoolSpell )
             .Id;
         SpellDefinition initialSchoolSpell = ResolveSpell( initialSchoolSpellId, spellCatalog );
-        if ( ( initialSchoolSpell.Kind != SpellKind.Focus ) ||
+        if ( initialSchoolSpell.Kind != SpellKind.Focus ||
              !initialSchoolSpell.Traditions.Contains( SpellTradition.Arcane ) )
         {
             throw new ArgumentException( "Initial Wizard school spell has invalid metadata.", nameof( spellCatalog ) );
@@ -144,8 +144,8 @@ public static class WizardSpellLoadoutResolver
 
     private static void ValidateUniqueCount( IReadOnlyList<string> spellIds, int count, string message )
     {
-        if ( ( spellIds.Count != count ) ||
-             ( spellIds.Distinct( StringComparer.Ordinal ).Count() != count ) )
+        if ( spellIds.Count != count ||
+             spellIds.Distinct( StringComparer.Ordinal ).Count() != count )
         {
             throw new ArgumentException( message );
         }

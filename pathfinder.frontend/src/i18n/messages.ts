@@ -251,6 +251,11 @@ export const messages = {
       witchFamiliarSpells: 'Заклинания фамильяра 1-го ранга',
       witchPatronGrantedSpell: 'Дарованное заклинание Покровителя',
       witchPreparedCantrips: 'Подготовленные чары ведьмы',
+      witchSelectionProgress: '{label} — выбрано {selected} из {required}',
+      witchIncompleteTitle: 'Чтобы продолжить, завершите выбор',
+      witchIncompleteSelection: '{label}: выбрано {selected} из {required}.',
+      witchPatronRequired: 'Вернитесь к выбору класса и завершите выбор Покровителя.',
+      witchFocusHexRequired: 'Выберите фокусный сглаз.',
       wizardSpellsHint:
         'Соберите книгу заклинаний и подготовьте базовые слоты. Формальная школа отдельно добавляет curriculum spells и school slots.',
       wizardSpellbookCantrips: '10 чар в книге заклинаний',
@@ -807,6 +812,11 @@ export const messages = {
       witchFamiliarSpells: 'Familiar rank-1 spells',
       witchPatronGrantedSpell: 'Patron-granted spell',
       witchPreparedCantrips: 'Prepared Witch cantrips',
+      witchSelectionProgress: '{label} — selected {selected} of {required}',
+      witchIncompleteTitle: 'Complete the remaining selections to continue',
+      witchIncompleteSelection: '{label}: selected {selected} of {required}.',
+      witchPatronRequired: 'Return to the class step and complete the Patron selection.',
+      witchFocusHexRequired: 'Select a focus hex.',
       wizardSpellsHint:
         'Build the spellbook and prepare the base slots. A formal school separately adds curriculum spells and school slots.',
       wizardSpellbookCantrips: '10 spellbook cantrips',

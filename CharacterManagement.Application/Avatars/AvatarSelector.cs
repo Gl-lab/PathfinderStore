@@ -19,8 +19,8 @@ public sealed class AvatarSelector : IAvatarSelector
     {
         ArgumentNullException.ThrowIfNull( criteria );
 
-        if ( ( criteria.Gender != CharacterGender.Male ) &&
-             ( criteria.Gender != CharacterGender.Female ) )
+        if ( criteria.Gender != CharacterGender.Male &&
+             criteria.Gender != CharacterGender.Female )
         {
             return AvatarIds.Unknown;
         }
@@ -34,7 +34,7 @@ public sealed class AvatarSelector : IAvatarSelector
             }
 
             int selectedIndex = _indexProvider.Next( matches.Count );
-            if ( ( selectedIndex < 0 ) || ( selectedIndex >= matches.Count ) )
+            if ( selectedIndex < 0 || selectedIndex >= matches.Count )
             {
                 return AvatarIds.Unknown;
             }

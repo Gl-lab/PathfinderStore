@@ -33,7 +33,7 @@ public sealed class ArcaneSchoolCurriculumSpellDescriptor
             throw new ArgumentException( "Curriculum spell name cannot be empty.", nameof( name ) );
         }
 
-        if ( ( rank < 0 ) || ( rank > 9 ) )
+        if ( rank < 0 || rank > 9 )
         {
             throw new ArgumentOutOfRangeException( nameof( rank ), rank, "Spell rank must be between 0 and 9." );
         }

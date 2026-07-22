@@ -58,6 +58,6 @@ public sealed record ProficiencyStatistic(
             bonuses.Where( bonus => bonus.Type == StatisticBonusType.Item ).ToArray(),
             bonuses.Where( bonus => bonus.Type == StatisticBonusType.Status ).ToArray(),
             bonuses.Where( bonus => bonus.Type == StatisticBonusType.Circumstance ).ToArray(),
-            ( ( baseValue + characteristic.Modifier ) + proficiencyBonus ) + bonuses.Sum( bonus => bonus.Value ) );
+            baseValue + characteristic.Modifier + proficiencyBonus + bonuses.Sum( bonus => bonus.Value ) );
     }
 }

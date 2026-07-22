@@ -166,8 +166,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
             throw new CharacterManagementException( "Character gender has already been specified." );
         }
 
-        if ( ( gender != CharacterGender.Male ) &&
-             ( gender != CharacterGender.Female ) )
+        if ( gender != CharacterGender.Male &&
+             gender != CharacterGender.Female )
         {
             throw new CharacterManagementException( "Character gender must be Male or Female." );
         }
@@ -411,101 +411,101 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
         }
 
         bool isRanger = characterClass.Id == "class.ranger";
-        if ( isRanger && ( huntersEdge is null ) )
+        if ( isRanger && huntersEdge is null )
         {
             throw new CharacterManagementException( "Ranger class requires a Hunter's Edge." );
         }
 
-        if ( !isRanger && ( huntersEdge is not null ) )
+        if ( !isRanger && huntersEdge is not null )
         {
             throw new CharacterManagementException(
                 "Hunter's Edge can only be selected for the Ranger class." );
         }
 
         bool isDruid = characterClass.Id == "class.druid";
-        if ( isDruid && ( druidicOrder is null ) )
+        if ( isDruid && druidicOrder is null )
         {
             throw new CharacterManagementException( "Druid class requires a Druidic Order." );
         }
 
-        if ( !isDruid && ( druidicOrder is not null ) )
+        if ( !isDruid && druidicOrder is not null )
         {
             throw new CharacterManagementException(
                 "Druidic Order can only be selected for the Druid class." );
         }
 
         bool isBard = characterClass.Id == "class.bard";
-        if ( isBard && ( bardMuse is null ) )
+        if ( isBard && bardMuse is null )
         {
             throw new CharacterManagementException( "Bard class requires a Muse." );
         }
 
-        if ( !isBard && ( bardMuse is not null ) )
+        if ( !isBard && bardMuse is not null )
         {
             throw new CharacterManagementException(
                 "Bard Muse can only be selected for the Bard class." );
         }
 
-        if ( ( isDruid ) && ( druidSpellLoadout is null ) )
+        if ( isDruid && druidSpellLoadout is null )
         {
             throw new CharacterManagementException( "Druid class requires a prepared spell loadout." );
         }
 
-        if ( ( !isDruid ) && ( druidSpellLoadout is not null ) )
+        if ( !isDruid && druidSpellLoadout is not null )
         {
             throw new CharacterManagementException(
                 "Druid spell choices can only be selected for the Druid class." );
         }
 
-        if ( ( isBard ) && ( bardSpellLoadout is null ) )
+        if ( isBard && bardSpellLoadout is null )
         {
             throw new CharacterManagementException( "Bard class requires a spell repertoire." );
         }
 
-        if ( ( !isBard ) && ( bardSpellLoadout is not null ) )
+        if ( !isBard && bardSpellLoadout is not null )
         {
             throw new CharacterManagementException(
                 "Bard spell choices can only be selected for the Bard class." );
         }
 
         bool isWitch = characterClass.Id == "class.witch";
-        if ( isWitch && ( witchPatron is null ) )
+        if ( isWitch && witchPatron is null )
         {
             throw new CharacterManagementException( "Witch class requires a Patron." );
         }
 
         if ( !isWitch &&
-             ( ( witchPatron is not null ) ||
+             ( witchPatron is not null ||
                !String.IsNullOrWhiteSpace( witchPatronFamiliarSpellId ) ||
-               ( witchSpellLoadout is not null ) ) )
+               witchSpellLoadout is not null ) )
         {
             throw new CharacterManagementException(
                 "Witch Patron choices can only be selected for the Witch class." );
         }
 
-        if ( isWitch && ( witchSpellLoadout is null ) )
+        if ( isWitch && witchSpellLoadout is null )
         {
             throw new CharacterManagementException( "Witch class requires a familiar spell loadout." );
         }
 
         bool isWizard = characterClass.Id == "class.wizard";
-        if ( isWizard && ( arcaneSchool is null ) )
+        if ( isWizard && arcaneSchool is null )
         {
             throw new CharacterManagementException( "Wizard class requires an Arcane School." );
         }
 
-        if ( !isWizard && ( arcaneSchool is not null ) )
+        if ( !isWizard && arcaneSchool is not null )
         {
             throw new CharacterManagementException(
                 "Arcane School can only be selected for the Wizard class." );
         }
 
-        if ( isWizard && ( arcaneThesis is null ) )
+        if ( isWizard && arcaneThesis is null )
         {
             throw new CharacterManagementException( "Wizard class requires an Arcane Thesis." );
         }
 
-        if ( !isWizard && ( arcaneThesis is not null ) )
+        if ( !isWizard && arcaneThesis is not null )
         {
             throw new CharacterManagementException(
                 "Arcane Thesis can only be selected for the Wizard class." );
@@ -642,13 +642,13 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
 
         WitchPatronBenefitDescriptor? familiarSpell = witchPatron?.ResolveFamiliarSpell(
             witchPatronFamiliarSpellId );
-        if ( ( witchSpellLoadout is not null ) &&
-             ( witchSpellLoadout.PatronGrantedSpellId != familiarSpell?.Id ) )
+        if ( witchSpellLoadout is not null &&
+             witchSpellLoadout.PatronGrantedSpellId != familiarSpell?.Id )
         {
             throw new CharacterManagementException( "Witch Patron spell does not match the familiar loadout." );
         }
 
-        if ( !isWizard && ( wizardSpellLoadout is not null ) )
+        if ( !isWizard && wizardSpellLoadout is not null )
         {
             throw new CharacterManagementException(
                 "Wizard spell loadout can only be selected for the Wizard class." );
@@ -1099,7 +1099,7 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
             throw new CharacterManagementException( "Temporary hit points cannot be negative." );
         }
 
-        if ( ( CreationStatus == CharacterCreationStatus.Draft ) != ( CompletedAtUtc is null ) )
+        if ( CreationStatus == CharacterCreationStatus.Draft != CompletedAtUtc is null )
         {
             throw new CharacterManagementException(
                 "Character creation status and completion timestamp are inconsistent." );

@@ -24,8 +24,8 @@ public sealed class GetPendingCampaignInvitationsHandler
         return campaigns
             .SelectMany( campaign => campaign.Invitations
                 .Where( invitation =>
-                    ( invitation.InvitedUserId == request.UserId ) &&
-                    ( invitation.Status == CampaignInvitationStatus.Pending ) )
+                    invitation.InvitedUserId == request.UserId &&
+                    invitation.Status == CampaignInvitationStatus.Pending )
                 .Select( invitation => new CampaignInvitationDto(
                     invitation.Id,
                     campaign.Id,

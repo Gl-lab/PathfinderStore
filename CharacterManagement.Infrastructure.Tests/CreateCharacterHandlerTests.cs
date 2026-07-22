@@ -112,8 +112,8 @@ public sealed class CreateCharacterHandlerTests
         Assert.Contains( savedCharacter.TrainedSkills, training => training.SkillId == "skill.athletics" );
         Assert.Contains( savedCharacter.TrainedLore, training => training.LoreId == "lore.circus" );
         Assert.Contains( savedCharacter.TrainedLore, training =>
-            ( training.LoreId == "lore.custom.warfare" ) &&
-            ( training.SourceGrantId == "class.fighter.skill.additional" ) );
+            training.LoreId == "lore.custom.warfare" &&
+            training.SourceGrantId == "class.fighter.skill.additional" );
         Assert.Equal( account.Id, savedCharacter.AccountId );
         Assert.Equal( 16, savedCharacter.AbilityScores.Strength.Value );
         Assert.Equal( 12, savedCharacter.AbilityScores.Intelligence.Value );
@@ -457,7 +457,7 @@ public sealed class CreateCharacterHandlerTests
         Assert.Equal( WitchSpellTestData.DivineCantrips(), savedCharacter.WitchFamiliarCantripIds );
         Assert.Equal( "spell.patron_s_puppet", savedCharacter.SelectedWitchFocusHexId );
         Assert.Contains( savedCharacter.TrainedSkills, training =>
-            ( training.SkillId == "skill.religion" ) &&
+            training.SkillId == "skill.religion" &&
             training.SourceGrantId.StartsWith( "witch_patron.", StringComparison.Ordinal ) );
     }
 

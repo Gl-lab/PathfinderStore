@@ -25,8 +25,8 @@ public sealed class CampaignCharacterDirectory : ICampaignCharacterDirectory
         return await _dbContext.Character
             .AsNoTracking()
             .Where( character =>
-                ( character.Id == characterId ) &&
-                ( character.Account.UserId == userId ) )
+                character.Id == characterId &&
+                character.Account.UserId == userId )
             .Select( character => new CampaignCharacterReference( character.Id, character.Name ) )
             .SingleOrDefaultAsync( cancellationToken );
     }

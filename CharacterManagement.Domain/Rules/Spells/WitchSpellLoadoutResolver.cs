@@ -28,7 +28,7 @@ public static class WitchSpellLoadoutResolver
         ValidateUniqueCount( familiarCantripIds, 10, "A Witch familiar must know exactly 10 unique cantrips." );
         ValidateUniqueCount( familiarRankOneSpellIds, 5, "A Witch familiar must know exactly 5 unique rank-1 spells." );
         ValidateUniqueCount( preparedCantripIds, 5, "A first-level Witch must prepare exactly 5 unique cantrips." );
-        if ( ( preparedSpellIds.Count != 2 ) || preparedSpellIds.Any( String.IsNullOrWhiteSpace ) )
+        if ( preparedSpellIds.Count != 2 || preparedSpellIds.Any( String.IsNullOrWhiteSpace ) )
         {
             throw new ArgumentException( "A first-level Witch must prepare exactly 2 rank-1 spell slots." );
         }
@@ -49,8 +49,8 @@ public static class WitchSpellLoadoutResolver
 
         WitchPatronBenefitDescriptor patronSpellBenefit = patron.ResolveFamiliarSpell( patronFamiliarSpellId );
         SpellDefinition patronSpell = ResolveSpell( patronSpellBenefit.Id, spellCatalog );
-        if ( ( patronSpell.Kind != SpellKind.Spell ) ||
-             ( patronSpell.Rank != 1 ) ||
+        if ( patronSpell.Kind != SpellKind.Spell ||
+             patronSpell.Rank != 1 ||
              !patronSpell.Traditions.Contains( patron.SpellTradition ) )
         {
             throw new ArgumentException( "Patron-granted familiar spell has invalid metadata." );
@@ -78,7 +78,7 @@ public static class WitchSpellLoadoutResolver
         }
 
         SpellDefinition focusHex = ResolveSpell( focusHexId, spellCatalog );
-        if ( ( focusHex.Kind != SpellKind.Focus ) || !focusHex.Traditions.Contains( patron.SpellTradition ) )
+        if ( focusHex.Kind != SpellKind.Focus || !focusHex.Traditions.Contains( patron.SpellTradition ) )
         {
             throw new ArgumentException( "Witch focus hex has invalid metadata.", nameof( spellCatalog ) );
         }
@@ -94,8 +94,8 @@ public static class WitchSpellLoadoutResolver
 
     private static void ValidateUniqueCount( IReadOnlyList<string> spellIds, int count, string message )
     {
-        if ( ( spellIds.Count != count ) ||
-             ( spellIds.Distinct( StringComparer.Ordinal ).Count() != count ) )
+        if ( spellIds.Count != count ||
+             spellIds.Distinct( StringComparer.Ordinal ).Count() != count )
         {
             throw new ArgumentException( message );
         }

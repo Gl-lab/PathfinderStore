@@ -142,7 +142,10 @@ import {
   isBardSpellLoadoutComplete,
 } from '@/features/character-creation/bardSpellLoadout'
 import { isDruidSpellLoadoutComplete } from '@/features/character-creation/druidSpellLoadout'
-import { isWitchSpellLoadoutComplete } from '@/features/character-creation/witchSpellLoadout'
+import {
+  getWitchSpellLoadoutProgress,
+  isWitchSpellLoadoutComplete,
+} from '@/features/character-creation/witchSpellLoadout'
 import {
   isWizardSpellLoadoutComplete,
   reconcileWizardSpellLoadoutForSchool,
@@ -377,6 +380,58 @@ const witchKnownRankOneOptions = computed(() => [
   ...selectedWitchFamiliarSpells.value,
   ...(selectedWitchPatronSpell.value ? [selectedWitchPatronSpell.value] : []),
 ])
+const witchSpellLoadoutProgress = computed(() =>
+  getWitchSpellLoadoutProgress(
+    selectedCharacterClass.value,
+    selectedWitchPatron.value,
+    form.value.witchPatronFamiliarSpellId,
+    form.value.witchFamiliarCantripIds,
+    form.value.witchFamiliarSpellIds,
+    form.value.witchPreparedCantripIds,
+    form.value.witchPreparedSpellIds,
+    form.value.witchFocusHexId,
+    witchSpellOptions.value,
+  ),
+)
+const witchSpellLoadoutRequirements = computed(() => {
+  const requirements: string[] = []
+  const progress = witchSpellLoadoutProgress.value
+  if (!progress.patronReady) requirements.push(t('classUi.witchPatronRequired'))
+  if (!progress.familiarCantrips.isComplete)
+    requirements.push(
+      t('classUi.witchIncompleteSelection', {
+        label: t('classUi.witchFamiliarCantrips'),
+        selected: progress.familiarCantrips.selected,
+        required: progress.familiarCantrips.required,
+      }),
+    )
+  if (!progress.familiarSpells.isComplete)
+    requirements.push(
+      t('classUi.witchIncompleteSelection', {
+        label: t('classUi.witchFamiliarSpells'),
+        selected: progress.familiarSpells.selected,
+        required: progress.familiarSpells.required,
+      }),
+    )
+  if (!progress.preparedCantrips.isComplete)
+    requirements.push(
+      t('classUi.witchIncompleteSelection', {
+        label: t('classUi.witchPreparedCantrips'),
+        selected: progress.preparedCantrips.selected,
+        required: progress.preparedCantrips.required,
+      }),
+    )
+  if (!progress.preparedSpellSlots.isComplete)
+    requirements.push(
+      t('classUi.witchIncompleteSelection', {
+        label: t('classUi.witchPreparedSpells'),
+        selected: progress.preparedSpellSlots.selected,
+        required: progress.preparedSpellSlots.required,
+      }),
+    )
+  if (!progress.focusHexSelected) requirements.push(t('classUi.witchFocusHexRequired'))
+  return requirements
+})
 const selectedArcaneSchool = computed(
   () => arcaneSchools.value.find((item) => item.id === form.value.arcaneSchoolId) ?? null,
 )
@@ -722,17 +777,7 @@ const canContinue = computed(() => {
         form.value.druidPreparedSpellIds,
         druidSpellOptions.value,
       ) &&
-      isWitchSpellLoadoutComplete(
-        selectedCharacterClass.value,
-        selectedWitchPatron.value,
-        form.value.witchPatronFamiliarSpellId,
-        form.value.witchFamiliarCantripIds,
-        form.value.witchFamiliarSpellIds,
-        form.value.witchPreparedCantripIds,
-        form.value.witchPreparedSpellIds,
-        form.value.witchFocusHexId,
-        witchSpellOptions.value,
-      ) &&
+      witchSpellLoadoutProgress.value.isComplete &&
       isWizardSpellLoadoutComplete(
         selectedCharacterClass.value,
         selectedArcaneSchool.value,
@@ -2012,8 +2057,16 @@ watch(
               :items="witchSpellOptions.cantrips"
               item-title="name"
               item-value="id"
-              :label="t('classUi.witchFamiliarCantrips')"
-              multiple chips closable-chips :counter="10"
+              :label="
+                t('classUi.witchSelectionProgress', {
+                  label: t('classUi.witchFamiliarCantrips'),
+                  selected: witchSpellLoadoutProgress.familiarCantrips.selected,
+                  required: witchSpellLoadoutProgress.familiarCantrips.required,
+                })
+              "
+              multiple
+              chips
+              closable-chips
               @update:model-value="selectWitchFamiliarCantrips"
             />
             <v-select
@@ -2021,8 +2074,16 @@ watch(
               :items="witchFamiliarRankOneOptions"
               item-title="name"
               item-value="id"
-              :label="t('classUi.witchFamiliarSpells')"
-              multiple chips closable-chips :counter="5"
+              :label="
+                t('classUi.witchSelectionProgress', {
+                  label: t('classUi.witchFamiliarSpells'),
+                  selected: witchSpellLoadoutProgress.familiarSpells.selected,
+                  required: witchSpellLoadoutProgress.familiarSpells.required,
+                })
+              "
+              multiple
+              chips
+              closable-chips
               @update:model-value="selectWitchFamiliarSpells"
             />
             <v-alert v-if="selectedWitchPatronSpell" type="info" variant="tonal">
@@ -2033,11 +2094,27 @@ watch(
               :items="selectedWitchFamiliarCantrips"
               item-title="name"
               item-value="id"
-              :label="t('classUi.witchPreparedCantrips')"
-              multiple chips closable-chips :counter="5"
+              :label="
+                t('classUi.witchSelectionProgress', {
+                  label: t('classUi.witchPreparedCantrips'),
+                  selected: witchSpellLoadoutProgress.preparedCantrips.selected,
+                  required: witchSpellLoadoutProgress.preparedCantrips.required,
+                })
+              "
+              multiple
+              chips
+              closable-chips
               @update:model-value="selectWitchPreparedCantrips"
             />
-            <h3>{{ t('classUi.witchPreparedSpells') }}</h3>
+            <h3>
+              {{
+                t('classUi.witchSelectionProgress', {
+                  label: t('classUi.witchPreparedSpells'),
+                  selected: witchSpellLoadoutProgress.preparedSpellSlots.selected,
+                  required: witchSpellLoadoutProgress.preparedSpellSlots.required,
+                })
+              }}
+            </h3>
             <v-select
               v-for="(_, index) in form.witchPreparedSpellIds"
               :key="index"
@@ -2054,6 +2131,19 @@ watch(
               item-value="id"
               :label="t('classUi.witchFocusHex')"
             />
+            <v-alert
+              v-if="witchSpellLoadoutRequirements.length"
+              id="witch-spell-requirements"
+              type="warning"
+              variant="tonal"
+              :title="t('classUi.witchIncompleteTitle')"
+            >
+              <ul>
+                <li v-for="requirement in witchSpellLoadoutRequirements" :key="requirement">
+                  {{ requirement }}
+                </li>
+              </ul>
+            </v-alert>
           </template>
           <template v-else-if="selectedCharacterClass?.id === 'class.wizard'">
             <p class="hint">{{ t('classUi.wizardSpellsHint') }}</p>
@@ -2464,7 +2554,18 @@ watch(
     >
     <footer>
       <v-btn variant="text" :disabled="step === 1 || isSubmitting" @click="previous">{{ t('common.back') }}</v-btn
-      ><v-spacer /><v-btn v-if="step < 11" color="primary" :disabled="!canContinue" @click="next"
+      ><v-spacer /><v-btn
+        v-if="step < 11"
+        color="primary"
+        :disabled="!canContinue"
+        :aria-describedby="
+          step === 7 &&
+          selectedCharacterClass?.id === 'class.witch' &&
+          witchSpellLoadoutRequirements.length
+            ? 'witch-spell-requirements'
+            : undefined
+        "
+        @click="next"
         >{{ t('common.next') }}</v-btn
       ><v-btn v-else color="accent" :loading="isSubmitting" @click="submit"
         >{{ t('wizard.create') }}</v-btn

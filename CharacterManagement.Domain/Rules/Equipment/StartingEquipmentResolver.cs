@@ -58,7 +58,7 @@ public static class StartingEquipmentResolver
         foreach ( ClassKitOptionGroup group in classKit.OptionGroups )
         {
             int selectedCount = group.Options.Count( option => selectedOptionIds.Contains( option.Id, StringComparer.Ordinal ) );
-            if ( ( group.Selection == ClassKitOptionSelection.AtMostOne ) && ( selectedCount > 1 ) )
+            if ( group.Selection == ClassKitOptionSelection.AtMostOne && selectedCount > 1 )
             {
                 throw new CharacterManagementException(
                     $"Starting equipment option group '{group.Id}' allows at most one selection." );
@@ -97,7 +97,7 @@ public static class StartingEquipmentResolver
                     $"Equipment '{item.EquipmentId}' from kit '{classKit.Id}' is absent from the catalog." );
             }
 
-            if ( ( definition.Rarity != EquipmentRarity.Common ) &&
+            if ( definition.Rarity != EquipmentRarity.Common &&
                  !IsDeityFavoredWeapon( definition, deity ) )
             {
                 throw new CharacterManagementException(

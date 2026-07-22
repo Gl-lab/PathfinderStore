@@ -76,8 +76,8 @@ public sealed record StrikeStatistic(
             .Modifier;
         int proficiencyBonus = ProficiencyBonusCalculator.Calculate( proficiency.Rank, level );
         int damageAbilityModifier = ResolveDamageAbilityModifier( profile, abilityScores.Strength.Modifier );
-        AbilityType? damageAbility = ( damageAbilityModifier == 0 ) &&
-                                     ( profile.Mode == StrikeMode.Ranged ) &&
+        AbilityType? damageAbility = damageAbilityModifier == 0 &&
+                                     profile.Mode == StrikeMode.Ranged &&
                                      !HasTrait( profile, "Thrown" ) &&
                                      !HasTrait( profile, "Propulsive" )
             ? null
@@ -92,7 +92,7 @@ public sealed record StrikeStatistic(
             FilterBonuses( attackBonuses, StatisticBonusType.Item ),
             FilterBonuses( attackBonuses, StatisticBonusType.Status ),
             FilterBonuses( attackBonuses, StatisticBonusType.Circumstance ),
-            ( attackAbilityModifier + proficiencyBonus ) + attackBonuses.Sum( bonus => bonus.Value ) );
+            attackAbilityModifier + proficiencyBonus + attackBonuses.Sum( bonus => bonus.Value ) );
         StrikeDamageStatistic damage = new StrikeDamageStatistic(
             1,
             profile.DamageDie,
@@ -104,7 +104,7 @@ public sealed record StrikeStatistic(
             FilterBonuses( damageBonuses, StatisticBonusType.Circumstance ),
             FormatDamageFormula(
                 profile.DamageDie,
-                ( damageAbilityModifier + damageBonuses.Sum( bonus => bonus.Value ) ),
+                damageAbilityModifier + damageBonuses.Sum( bonus => bonus.Value ),
                 profile.DamageType ) );
 
         return new StrikeStatistic( profile, attack, damage );
@@ -118,21 +118,21 @@ public sealed record StrikeStatistic(
         }
 
         return HasTrait( profile, "Finesse" ) &&
-               ( abilityScores.Dexterity.Modifier > abilityScores.Strength.Modifier )
+               abilityScores.Dexterity.Modifier > abilityScores.Strength.Modifier
             ? AbilityType.Dexterity
             : AbilityType.Strength;
     }
 
     private static int ResolveDamageAbilityModifier( StrikeProfile profile, int strengthModifier )
     {
-        if ( ( profile.Mode == StrikeMode.Melee ) || HasTrait( profile, "Thrown" ) )
+        if ( profile.Mode == StrikeMode.Melee || HasTrait( profile, "Thrown" ) )
         {
             return strengthModifier;
         }
 
         if ( HasTrait( profile, "Propulsive" ) )
         {
-            return ( strengthModifier > 0 ) ? ( strengthModifier / 2 ) : strengthModifier;
+            return strengthModifier > 0 ? strengthModifier / 2 : strengthModifier;
         }
 
         return 0;

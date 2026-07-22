@@ -29,8 +29,8 @@ public sealed class CampaignRepository : Repository<Campaign>, ICampaignReposito
             .Include( campaign => campaign.Parties )
                 .ThenInclude( party => party.Storage )
             .Where( campaign => campaign.Memberships.Any( membership =>
-                ( membership.UserId == userId ) &&
-                ( membership.Status == CampaignMembershipStatus.Active ) ) )
+                membership.UserId == userId &&
+                membership.Status == CampaignMembershipStatus.Active ) )
             .OrderByDescending( campaign => campaign.CreatedAtUtc )
             .ToArrayAsync( cancellationToken );
     }
@@ -49,10 +49,10 @@ public sealed class CampaignRepository : Repository<Campaign>, ICampaignReposito
                 .ThenInclude( party => party.Storage )
             .SingleOrDefaultAsync(
                 campaign =>
-                    ( campaign.Id == campaignId ) &&
+                    campaign.Id == campaignId &&
                     campaign.Memberships.Any( membership =>
-                        ( membership.UserId == userId ) &&
-                        ( membership.Status == CampaignMembershipStatus.Active ) ),
+                        membership.UserId == userId &&
+                        membership.Status == CampaignMembershipStatus.Active ),
                 cancellationToken );
     }
 
@@ -70,9 +70,9 @@ public sealed class CampaignRepository : Repository<Campaign>, ICampaignReposito
                 .ThenInclude( party => party.Storage )
             .SingleOrDefaultAsync(
                 campaign => campaign.Invitations.Any( invitation =>
-                    ( invitation.Id == invitationId ) &&
-                    ( invitation.InvitedUserId == userId ) &&
-                    ( invitation.Status == CampaignInvitationStatus.Pending ) ),
+                    invitation.Id == invitationId &&
+                    invitation.InvitedUserId == userId &&
+                    invitation.Status == CampaignInvitationStatus.Pending ),
                 cancellationToken );
     }
 
@@ -84,8 +84,8 @@ public sealed class CampaignRepository : Repository<Campaign>, ICampaignReposito
             .AsNoTracking()
             .Include( campaign => campaign.Invitations )
             .Where( campaign => campaign.Invitations.Any( invitation =>
-                ( invitation.InvitedUserId == userId ) &&
-                ( invitation.Status == CampaignInvitationStatus.Pending ) ) )
+                invitation.InvitedUserId == userId &&
+                invitation.Status == CampaignInvitationStatus.Pending ) )
             .ToArrayAsync( cancellationToken );
     }
 }

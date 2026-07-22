@@ -303,7 +303,7 @@ public sealed class CharacterDetailsDtoMapper
         CharacterClass characterClass,
         WitchPatron? witchPatron )
     {
-        if ( ( characterClass.Id != "class.witch" ) || ( witchPatron is null ) )
+        if ( characterClass.Id != "class.witch" || witchPatron is null )
         {
             return [];
         }
@@ -486,7 +486,7 @@ public sealed class CharacterDetailsDtoMapper
         DraftCharacter character,
         Deity? deity )
     {
-        if ( ( character.SelectedClassId != "class.cleric" ) || ( deity is null ) )
+        if ( character.SelectedClassId != "class.cleric" || deity is null )
         {
             return null;
         }
@@ -555,10 +555,10 @@ public sealed class CharacterDetailsDtoMapper
         DraftCharacter character,
         BardMuse? bardMuse )
     {
-        if ( ( character.SelectedClassId != "class.bard" ) ||
-             ( bardMuse is null ) ||
-             ( character.BardCantripIds.Count == 0 ) ||
-             ( character.BardSpellIds.Count == 0 ) )
+        if ( character.SelectedClassId != "class.bard" ||
+             bardMuse is null ||
+             character.BardCantripIds.Count == 0 ||
+             character.BardSpellIds.Count == 0 )
         {
             return null;
         }
@@ -604,7 +604,7 @@ public sealed class CharacterDetailsDtoMapper
         CharacterClass? characterClass,
         BardMuse? bardMuse )
     {
-        if ( ( characterClass?.Id != "class.bard" ) || ( bardMuse is null ) )
+        if ( characterClass?.Id != "class.bard" || bardMuse is null )
         {
             return null;
         }
@@ -630,10 +630,10 @@ public sealed class CharacterDetailsDtoMapper
         DraftCharacter character,
         DruidicOrder? druidicOrder )
     {
-        if ( ( character.SelectedClassId != "class.druid" ) ||
-             ( druidicOrder is null ) ||
-             ( character.PreparedDruidCantripIds.Count == 0 ) ||
-             ( character.PreparedDruidSpellIds.Count == 0 ) )
+        if ( character.SelectedClassId != "class.druid" ||
+             druidicOrder is null ||
+             character.PreparedDruidCantripIds.Count == 0 ||
+             character.PreparedDruidSpellIds.Count == 0 )
         {
             return null;
         }
@@ -686,11 +686,11 @@ public sealed class CharacterDetailsDtoMapper
         DraftCharacter character,
         WitchPatron? patron )
     {
-        if ( ( patron is null ) ||
-             ( character.WitchFamiliarCantripIds.Count == 0 ) ||
-             ( character.WitchFamiliarSpellIds.Count == 0 ) ||
-             ( character.PreparedWitchCantripIds.Count == 0 ) ||
-             ( character.PreparedWitchSpellIds.Count == 0 ) )
+        if ( patron is null ||
+             character.WitchFamiliarCantripIds.Count == 0 ||
+             character.WitchFamiliarSpellIds.Count == 0 ||
+             character.PreparedWitchCantripIds.Count == 0 ||
+             character.PreparedWitchSpellIds.Count == 0 )
         {
             return null;
         }
@@ -716,7 +716,7 @@ public sealed class CharacterDetailsDtoMapper
         DraftCharacter character,
         WitchPatron? patron )
     {
-        if ( ( patron is null ) || String.IsNullOrWhiteSpace( character.SelectedWitchFocusHexId ) )
+        if ( patron is null || String.IsNullOrWhiteSpace( character.SelectedWitchFocusHexId ) )
         {
             return null;
         }
@@ -750,11 +750,11 @@ public sealed class CharacterDetailsDtoMapper
         DraftCharacter character,
         ArcaneSchool? school )
     {
-        if ( ( school is null ) ||
-             ( character.WizardSpellbookCantripIds.Count == 0 ) ||
-             ( character.WizardSpellbookSpellIds.Count == 0 ) ||
-             ( character.PreparedWizardCantripIds.Count == 0 ) ||
-             ( character.PreparedWizardSpellIds.Count == 0 ) )
+        if ( school is null ||
+             character.WizardSpellbookCantripIds.Count == 0 ||
+             character.WizardSpellbookSpellIds.Count == 0 ||
+             character.PreparedWizardCantripIds.Count == 0 ||
+             character.PreparedWizardSpellIds.Count == 0 )
         {
             return null;
         }
@@ -782,9 +782,9 @@ public sealed class CharacterDetailsDtoMapper
         DraftCharacter character,
         ArcaneSchool? school )
     {
-        if ( ( character.SelectedClassId != "class.wizard" ) ||
-             ( school is null ) ||
-             ( character.WizardSpellbookCantripIds.Count == 0 ) )
+        if ( character.SelectedClassId != "class.wizard" ||
+             school is null ||
+             character.WizardSpellbookCantripIds.Count == 0 )
         {
             return null;
         }

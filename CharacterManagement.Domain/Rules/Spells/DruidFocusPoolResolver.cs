@@ -21,8 +21,8 @@ public static class DruidFocusPoolResolver
             throw new ArgumentException(
                 $"Druid Order spell '{focusSpellId}' is not defined.",
                 nameof( spellCatalog ) );
-        if ( ( focusSpell.Kind != SpellKind.Focus ) ||
-             ( focusSpell.Rank != 1 ) ||
+        if ( focusSpell.Kind != SpellKind.Focus ||
+             focusSpell.Rank != 1 ||
              !focusSpell.Traditions.Contains( SpellTradition.Primal ) )
         {
             throw new ArgumentException(

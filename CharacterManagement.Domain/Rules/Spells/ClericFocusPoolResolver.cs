@@ -16,14 +16,14 @@ public static class ClericFocusPoolResolver
         ArgumentNullException.ThrowIfNull( spellCatalog );
 
         SpellDefinition? focusSpell = spellCatalog.SingleOrDefault(
-            spell => ( spell.Id == domain.InitialFocusSpell.Id ) );
+            spell => spell.Id == domain.InitialFocusSpell.Id );
         if ( focusSpell is null )
         {
             throw new CharacterManagementException(
                 $"Initial focus spell '{domain.InitialFocusSpell.Id}' is missing from the spell catalog." );
         }
 
-        if ( ( focusSpell.Kind != SpellKind.Focus ) || ( focusSpell.Rank != 1 ) )
+        if ( focusSpell.Kind != SpellKind.Focus || focusSpell.Rank != 1 )
         {
             throw new CharacterManagementException(
                 $"Initial domain spell '{focusSpell.Id}' must be a rank-1 focus spell." );

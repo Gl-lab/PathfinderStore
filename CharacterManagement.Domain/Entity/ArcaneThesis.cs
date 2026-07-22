@@ -57,7 +57,7 @@ public sealed class ArcaneThesisEffectDescriptor
             .Distinct()
             .OrderBy( level => level )
             .ToArray();
-        if ( ( normalizedMilestones.Length == 0 ) ||
+        if ( normalizedMilestones.Length == 0 ||
              normalizedMilestones.Any( level => level < 1 ) ||
              !normalizedMilestones.SequenceEqual( milestoneLevels ) )
         {

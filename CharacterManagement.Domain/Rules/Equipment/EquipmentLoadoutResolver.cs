@@ -56,14 +56,14 @@ public static class EquipmentLoadoutResolver
 
             bool isEquipped = equippedIds.Remove( item.EquipmentId );
             if ( isEquipped &&
-                 ( definition.Category != EquipmentCategory.Weapon ) &&
-                 ( definition.Category != EquipmentCategory.Armor ) &&
-                 ( definition.Category != EquipmentCategory.Shield ) )
+                 definition.Category != EquipmentCategory.Weapon &&
+                 definition.Category != EquipmentCategory.Armor &&
+                 definition.Category != EquipmentCategory.Shield )
             {
                 throw new CharacterManagementException( $"Equipment '{definition.Id}' cannot be equipped." );
             }
 
-            if ( isEquipped && ( definition.Category == EquipmentCategory.Armor ) )
+            if ( isEquipped && definition.Category == EquipmentCategory.Armor )
             {
                 equippedArmorCount++;
             }
@@ -135,8 +135,8 @@ public static class EquipmentLoadoutResolver
             _ => null,
         };
         EffectiveProficiency? best = proficiencies
-            .Where( item => ( item.Target.Id == specificTargetId ) ||
-                            ( item.Target.Id == categoryTargetId ) )
+            .Where( item => item.Target.Id == specificTargetId ||
+                            item.Target.Id == categoryTargetId )
             .OrderByDescending( item => item.Rank )
             .FirstOrDefault();
         return new EquipmentProficiencyMatch(

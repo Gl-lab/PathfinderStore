@@ -48,8 +48,8 @@ public static class BardSpellLoadoutResolver
                 $"Muse-granted spell '{museGrantedSpellId}' is not defined in the spell catalog.",
                 nameof( spellCatalog ) );
 
-        if ( ( museGrantedSpell.Kind != SpellKind.Spell ) ||
-             ( museGrantedSpell.Rank != 1 ) ||
+        if ( museGrantedSpell.Kind != SpellKind.Spell ||
+             museGrantedSpell.Rank != 1 ||
              !museGrantedSpell.Traditions.Contains( SpellTradition.Occult ) )
         {
             throw new ArgumentException(
@@ -82,8 +82,8 @@ public static class BardSpellLoadoutResolver
                 nameof( spellIds ) );
         }
 
-        if ( ( spellIds.Any( String.IsNullOrWhiteSpace ) ) ||
-             ( spellIds.Distinct( StringComparer.Ordinal ).Count() != spellIds.Count ) )
+        if ( spellIds.Any( String.IsNullOrWhiteSpace ) ||
+             spellIds.Distinct( StringComparer.Ordinal ).Count() != spellIds.Count )
         {
             throw new ArgumentException(
                 $"Selected Bard {groupName} must be non-empty and unique.",

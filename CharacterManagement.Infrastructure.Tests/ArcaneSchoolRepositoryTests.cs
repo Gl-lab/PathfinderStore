@@ -35,9 +35,9 @@ public sealed class ArcaneSchoolRepositoryTests
 
         Assert.Equal( 198, school.Source.Page );
         Assert.Contains( school.CurriculumSpells, spell =>
-            ( spell.Id == "spell.veil_of_privacy" ) && spell.IsUncommon && ( spell.Rank == 3 ) );
+            spell.Id == "spell.veil_of_privacy" && spell.IsUncommon && spell.Rank == 3 );
         Assert.Contains( school.CurriculumSpells, spell =>
-            ( spell.Id == "spell.detonate_magic" ) && spell.IsUncommon && ( spell.Rank == 9 ) );
+            spell.Id == "spell.detonate_magic" && spell.IsUncommon && spell.Rank == 9 );
         Assert.Contains( school.Benefits, benefit => benefit.Id == "spell.protective_wards" );
         Assert.Contains( school.Benefits, benefit => benefit.Id == "spell.rune_of_observation" );
     }

@@ -88,7 +88,7 @@ public static class CharacterDerivedStatisticsDtoMapper
         AllowedEquipmentLoadout? equipment )
     {
         AllowedEquipmentItem? equippedArmor = equipment?.Items
-            .SingleOrDefault( item => ( item.EquippedQuantity > 0 ) && ( item.Armor is not null ) );
+            .SingleOrDefault( item => item.EquippedQuantity > 0 && item.Armor is not null );
         string proficiencyTargetId = equippedArmor?.ProficiencyTargetId ?? ProficiencyTargets.UnarmoredDefense.Id;
         EffectiveProficiency proficiency = proficiencies
             .Single( item => item.Target.Id == proficiencyTargetId );
@@ -156,7 +156,7 @@ public static class CharacterDerivedStatisticsDtoMapper
             ),
         ];
         IEnumerable<AllowedEquipmentItem> equippedWeapons = equipment?.Items
-            .Where( item => ( item.EquippedQuantity > 0 ) && ( item.Weapon is not null ) ) ?? [];
+            .Where( item => item.EquippedQuantity > 0 && item.Weapon is not null ) ?? [];
         foreach ( AllowedEquipmentItem weaponItem in equippedWeapons )
         {
             profiles.AddRange( CreateWeaponProfiles( weaponItem ) );
@@ -204,7 +204,7 @@ public static class CharacterDerivedStatisticsDtoMapper
                 proficiencyTargetId
             ),
         ];
-        bool hasThrownMode = ( primaryMode == StrikeMode.Melee ) &&
+        bool hasThrownMode = primaryMode == StrikeMode.Melee &&
                              weapon.Traits.Any( trait => trait.StartsWith( "Thrown", StringComparison.OrdinalIgnoreCase ) );
         if ( hasThrownMode )
         {

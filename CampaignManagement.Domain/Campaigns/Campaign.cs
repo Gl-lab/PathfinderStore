@@ -74,9 +74,9 @@ public sealed class Campaign : Entity, IAggregateRoot
 
     public bool HasActiveRole( int userId, CampaignMembershipRole role ) =>
         _memberships.Any( membership =>
-            ( membership.UserId == userId ) &&
-            ( membership.Role == role ) &&
-            ( membership.Status == CampaignMembershipStatus.Active ) );
+            membership.UserId == userId &&
+            membership.Role == role &&
+            membership.Status == CampaignMembershipStatus.Active );
 
     public CampaignInvitation Invite(
         int actingUserId,
@@ -91,8 +91,8 @@ public sealed class Campaign : Entity, IAggregateRoot
         }
 
         if ( _invitations.Any( invitation =>
-                 ( invitation.InvitedUserId == invitedUserId ) &&
-                 ( invitation.Status == CampaignInvitationStatus.Pending ) ) )
+                 invitation.InvitedUserId == invitedUserId &&
+                 invitation.Status == CampaignInvitationStatus.Pending ) )
         {
             throw new CampaignManagementException( "User already has a pending campaign invitation." );
         }
@@ -157,16 +157,16 @@ public sealed class Campaign : Entity, IAggregateRoot
         EnsureActive();
         EnsureGameMaster( actingUserId );
         CampaignMembership? membership = _memberships.SingleOrDefault( item =>
-            ( item.UserId == memberUserId ) &&
-            ( item.Role == role ) &&
-            ( item.Status == CampaignMembershipStatus.Active ) );
+            item.UserId == memberUserId &&
+            item.Role == role &&
+            item.Status == CampaignMembershipStatus.Active );
         if ( membership is null )
         {
             throw new CampaignManagementException( "Active campaign role was not found." );
         }
 
-        if ( ( role == CampaignMembershipRole.GameMaster ) &&
-             ( CountActiveGameMasters() == 1 ) )
+        if ( role == CampaignMembershipRole.GameMaster &&
+             CountActiveGameMasters() == 1 )
         {
             throw new CampaignManagementException( "The last active Game Master role cannot be removed." );
         }
@@ -180,8 +180,8 @@ public sealed class Campaign : Entity, IAggregateRoot
         EnsureActive();
         IReadOnlyCollection<CampaignMembership> activeMemberships = _memberships
             .Where( membership =>
-                ( membership.UserId == actingUserId ) &&
-                ( membership.Status == CampaignMembershipStatus.Active ) )
+                membership.UserId == actingUserId &&
+                membership.Status == CampaignMembershipStatus.Active )
             .ToArray();
         if ( activeMemberships.Count == 0 )
         {
@@ -190,7 +190,7 @@ public sealed class Campaign : Entity, IAggregateRoot
 
         bool isGameMaster = activeMemberships.Any( membership =>
             membership.Role == CampaignMembershipRole.GameMaster );
-        if ( isGameMaster && ( CountActiveGameMasters() == 1 ) )
+        if ( isGameMaster && CountActiveGameMasters() == 1 )
         {
             throw new CampaignManagementException( "The last active Game Master cannot leave the campaign." );
         }
@@ -251,14 +251,14 @@ public sealed class Campaign : Entity, IAggregateRoot
     }
 
     private bool HasActiveMembership( int userId ) => _memberships.Any( membership =>
-        ( membership.UserId == userId ) &&
-        ( membership.Status == CampaignMembershipStatus.Active ) );
+        membership.UserId == userId &&
+        membership.Status == CampaignMembershipStatus.Active );
 
     private CampaignInvitation GetInvitation( int invitationId )
     {
         CampaignInvitation? invitation = _invitations.SingleOrDefault( item =>
-            ( item.Id == invitationId ) &&
-            ( item.Status == CampaignInvitationStatus.Pending ) );
+            item.Id == invitationId &&
+            item.Status == CampaignInvitationStatus.Pending );
         return invitation ?? throw new CampaignManagementException( "Campaign invitation was not found." );
     }
 
@@ -268,8 +268,8 @@ public sealed class Campaign : Entity, IAggregateRoot
         DateTimeOffset joinedAtUtc )
     {
         CampaignMembership? existingMembership = _memberships.SingleOrDefault( membership =>
-            ( membership.UserId == userId ) &&
-            ( membership.Role == role ) );
+            membership.UserId == userId &&
+            membership.Role == role );
         if ( existingMembership is null )
         {
             _memberships.Add( CampaignMembership.Create( userId, role, joinedAtUtc ) );
@@ -299,8 +299,8 @@ public sealed class Campaign : Entity, IAggregateRoot
     }
 
     private int CountActiveGameMasters() => _memberships.Count( membership =>
-        ( membership.Role == CampaignMembershipRole.GameMaster ) &&
-        ( membership.Status == CampaignMembershipStatus.Active ) );
+        membership.Role == CampaignMembershipRole.GameMaster &&
+        membership.Status == CampaignMembershipStatus.Active );
 
     private static string NormalizeName( string name )
     {
@@ -337,8 +337,8 @@ public sealed class Campaign : Entity, IAggregateRoot
     private void EnsureInvariants()
     {
         if ( !_memberships.Any( membership =>
-                 ( membership.UserId == CreatedByUserId ) &&
-                 ( membership.Role == CampaignMembershipRole.GameMaster ) ) )
+                 membership.UserId == CreatedByUserId &&
+                 membership.Role == CampaignMembershipRole.GameMaster ) )
         {
             throw new CampaignManagementException( "Campaign creator must have the Game Master role." );
         }
@@ -348,7 +348,7 @@ public sealed class Campaign : Entity, IAggregateRoot
             throw new CampaignManagementException( "Campaign must have an active Game Master." );
         }
 
-        if ( ( Status == CampaignStatus.Active ) != ( ArchivedAtUtc is null ) )
+        if ( Status == CampaignStatus.Active != ArchivedAtUtc is null )
         {
             throw new CampaignManagementException( "Campaign status and archive timestamp are inconsistent." );
         }

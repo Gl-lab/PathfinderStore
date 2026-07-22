@@ -24,7 +24,7 @@ internal sealed class FakeCharacterCampaignAccessPolicy : ICharacterCampaignAcce
         int characterId,
         CancellationToken cancellationToken )
     {
-        bool allowed = ( userId == _allowedUserId ) && ( campaignId == _allowedCampaignId );
+        bool allowed = userId == _allowedUserId && campaignId == _allowedCampaignId;
         return Task.FromResult( new CharacterCampaignAccess( allowed, allowed && _canAct ) );
     }
 }

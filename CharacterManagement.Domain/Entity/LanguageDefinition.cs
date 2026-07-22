@@ -30,7 +30,7 @@ public sealed class LanguageDefinition
         SourceReference source )
     {
         if ( String.IsNullOrWhiteSpace( id.Value )
-            || !id.Value.All( character => ( character >= 'a' ) && ( character <= 'z' ) ) )
+            || !id.Value.All( character => character >= 'a' && character <= 'z' ) )
         {
             throw new ArgumentException(
                 "Language id must contain only lowercase ASCII letters.",

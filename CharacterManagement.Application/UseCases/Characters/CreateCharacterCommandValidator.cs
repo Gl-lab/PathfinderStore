@@ -22,8 +22,8 @@ public sealed class CreateCharacterCommandValidator : AbstractValidator<CreateCh
 
                 RuleFor( command => command.Character.Gender )
                     .Must( gender =>
-                        ( gender == CharacterGender.Male ) ||
-                        ( gender == CharacterGender.Female ) )
+                        gender == CharacterGender.Male ||
+                        gender == CharacterGender.Female )
                     .WithMessage( "Character gender must be Male or Female." );
 
                 RuleFor( command => command.Character.AncestryType )
@@ -182,7 +182,7 @@ public sealed class CreateCharacterCommandValidator : AbstractValidator<CreateCh
                             .Must( spellIds => spellIds.Count == 10 );
                         RuleFor( command => command.Character.WizardSpellbookSpellIds )
                             .NotNull()
-                            .Must( spellIds => ( spellIds.Count == 5 ) || ( spellIds.Count == 6 ) );
+                            .Must( spellIds => spellIds.Count == 5 || spellIds.Count == 6 );
                         RuleFor( command => command.Character.WizardPreparedCantripIds )
                             .NotNull()
                             .Must( spellIds => spellIds.Count == 5 );

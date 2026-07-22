@@ -82,15 +82,15 @@ public sealed class WizardSpellLoadoutResolverTests
     private IEnumerable<SpellDefinition> ArcaneCantrips() => _spellRepository
         .GetAll()
         .Where( spell =>
-            ( spell.Kind == SpellKind.Cantrip ) &&
-            ( spell.Rarity == SpellRarity.Common ) &&
+            spell.Kind == SpellKind.Cantrip &&
+            spell.Rarity == SpellRarity.Common &&
             spell.Traditions.Contains( SpellTradition.Arcane ) );
 
     private IEnumerable<SpellDefinition> ArcaneSpells() => _spellRepository
         .GetAll()
         .Where( spell =>
-            ( spell.Kind == SpellKind.Spell ) &&
-            ( spell.Rank == 1 ) &&
-            ( spell.Rarity == SpellRarity.Common ) &&
+            spell.Kind == SpellKind.Spell &&
+            spell.Rank == 1 &&
+            spell.Rarity == SpellRarity.Common &&
             spell.Traditions.Contains( SpellTradition.Arcane ) );
 }

@@ -100,8 +100,8 @@ public sealed class ClassTrainingResolverTests
             [] );
 
         Assert.Contains( result.Skills, skill =>
-            ( skill.SkillId == "skill.athletics" ) &&
-            ( skill.SourceGrantId == "class.test.skill.arcana" ) );
+            skill.SkillId == "skill.athletics" &&
+            skill.SourceGrantId == "class.test.skill.arcana" );
     }
 
     [Fact]
@@ -149,8 +149,8 @@ public sealed class ClassTrainingResolverTests
             [ orderGrant ] );
 
         Assert.Contains( result.Skills, skill =>
-            ( skill.SkillId == "skill.arcana" ) &&
-            ( skill.SourceGrantId == orderGrant.Id ) );
+            skill.SkillId == "skill.arcana" &&
+            skill.SourceGrantId == orderGrant.Id );
     }
 
     private static CharacterClass CreateClass(

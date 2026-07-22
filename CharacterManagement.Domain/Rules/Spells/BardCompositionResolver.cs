@@ -48,8 +48,8 @@ public static class BardCompositionResolver
                 nameof( definitions ) );
         }
 
-        if ( ( spell.Kind != expectedKind ) ||
-             ( spell.Rank != 1 ) ||
+        if ( spell.Kind != expectedKind ||
+             spell.Rank != 1 ||
              !spell.Traditions.Contains( SpellTradition.Occult ) )
         {
             throw new ArgumentException(

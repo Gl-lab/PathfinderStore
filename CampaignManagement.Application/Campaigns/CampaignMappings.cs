@@ -8,8 +8,8 @@ internal static class CampaignMappings
     {
         IReadOnlyCollection<CampaignMembershipRole> roles = campaign.Memberships
             .Where( membership =>
-                ( membership.UserId == userId ) &&
-                ( membership.Status == CampaignMembershipStatus.Active ) )
+                membership.UserId == userId &&
+                membership.Status == CampaignMembershipStatus.Active )
             .Select( membership => membership.Role )
             .Distinct()
             .ToArray();

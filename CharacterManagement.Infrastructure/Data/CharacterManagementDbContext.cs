@@ -132,7 +132,7 @@ public class CharacterManagementDbContext( DbContextOptions<CharacterManagementD
                 .HasDefaultValueSql( "'[]'::jsonb" )
                 .Metadata.SetValueComparer( new ValueComparer<IReadOnlyList<string>>(
                     ( first, second ) =>
-                        ( ( first != null ) && ( second != null ) ) && ( first.SequenceEqual( second ) ),
+                        first != null && second != null && first.SequenceEqual( second ),
                     collection => collection.Aggregate( 0, ( hash, item ) => HashCode.Combine( hash, item ) ),
                     collection => collection.ToList() ) );
 
@@ -146,7 +146,7 @@ public class CharacterManagementDbContext( DbContextOptions<CharacterManagementD
                 .HasDefaultValueSql( "'[]'::jsonb" )
                 .Metadata.SetValueComparer( new ValueComparer<IReadOnlyList<string>>(
                     ( first, second ) =>
-                        ( ( first != null ) && ( second != null ) ) && ( first.SequenceEqual( second ) ),
+                        first != null && second != null && first.SequenceEqual( second ),
                     collection => collection.Aggregate( 0, ( hash, item ) => HashCode.Combine( hash, item ) ),
                     collection => collection.ToList() ) );
 
@@ -160,7 +160,7 @@ public class CharacterManagementDbContext( DbContextOptions<CharacterManagementD
                 .HasDefaultValueSql( "'[]'::jsonb" )
                 .Metadata.SetValueComparer( new ValueComparer<IReadOnlyList<string>>(
                     ( first, second ) =>
-                        ( ( first != null ) && ( second != null ) ) && ( first.SequenceEqual( second ) ),
+                        first != null && second != null && first.SequenceEqual( second ),
                     collection => collection.Aggregate( 0, ( hash, item ) => HashCode.Combine( hash, item ) ),
                     collection => collection.ToList() ) );
 
@@ -174,7 +174,7 @@ public class CharacterManagementDbContext( DbContextOptions<CharacterManagementD
                 .HasDefaultValueSql( "'[]'::jsonb" )
                 .Metadata.SetValueComparer( new ValueComparer<IReadOnlyList<string>>(
                     ( first, second ) =>
-                        ( ( first != null ) && ( second != null ) ) && ( first.SequenceEqual( second ) ),
+                        first != null && second != null && first.SequenceEqual( second ),
                     collection => collection.Aggregate( 0, ( hash, item ) => HashCode.Combine( hash, item ) ),
                     collection => collection.ToList() ) );
 
@@ -328,7 +328,7 @@ public class CharacterManagementDbContext( DbContextOptions<CharacterManagementD
     {
         return new ValueComparer<IReadOnlyList<string>>(
             ( first, second ) =>
-                ( ( first != null ) && ( second != null ) ) && first.SequenceEqual( second ),
+                first != null && second != null && first.SequenceEqual( second ),
             collection => collection.Aggregate( 0, ( hash, item ) => HashCode.Combine( hash, item ) ),
             collection => collection.ToList() );
     }

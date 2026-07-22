@@ -13,15 +13,15 @@ public static class DruidSpellLoadoutResolver
         ArgumentNullException.ThrowIfNull( preparedSpellIds );
         ArgumentNullException.ThrowIfNull( spellCatalog );
 
-        if ( ( cantripIds.Count != 5 ) ||
-             ( cantripIds.Distinct( StringComparer.Ordinal ).Count() != 5 ) )
+        if ( cantripIds.Count != 5 ||
+             cantripIds.Distinct( StringComparer.Ordinal ).Count() != 5 )
         {
             throw new ArgumentException(
                 "A first-level Druid must prepare exactly 5 unique cantrips.",
                 nameof( cantripIds ) );
         }
 
-        if ( ( preparedSpellIds.Count != 2 ) || preparedSpellIds.Any( String.IsNullOrWhiteSpace ) )
+        if ( preparedSpellIds.Count != 2 || preparedSpellIds.Any( String.IsNullOrWhiteSpace ) )
         {
             throw new ArgumentException(
                 "A first-level Druid must prepare exactly 2 rank-1 spell slots.",

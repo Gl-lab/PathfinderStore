@@ -19,8 +19,8 @@ internal sealed class FakeCampaignCharacterDirectory : ICampaignCharacterDirecto
     {
         CampaignCharacterReference? character = _characters
             .Where( item =>
-                ( item.UserId == userId ) &&
-                ( item.Character.Id == characterId ) )
+                item.UserId == userId &&
+                item.Character.Id == characterId )
             .Select( item => item.Character )
             .SingleOrDefault();
         return Task.FromResult( character );

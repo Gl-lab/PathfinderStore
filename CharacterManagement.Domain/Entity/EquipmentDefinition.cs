@@ -131,11 +131,11 @@ public sealed class EquipmentDefinition
 
         bool hasValidDetails = category switch
         {
-            EquipmentCategory.Weapon => ( weapon is not null ) && ( armor is null ) && ( shield is null ) && ( ammunition is null ),
-            EquipmentCategory.Armor => ( weapon is null ) && ( armor is not null ) && ( shield is null ) && ( ammunition is null ),
-            EquipmentCategory.Shield => ( weapon is null ) && ( armor is null ) && ( shield is not null ) && ( ammunition is null ),
-            EquipmentCategory.Ammunition => ( weapon is null ) && ( armor is null ) && ( shield is null ) && ( ammunition is not null ),
-            _ => ( weapon is null ) && ( armor is null ) && ( shield is null ) && ( ammunition is null ),
+            EquipmentCategory.Weapon => weapon is not null && armor is null && shield is null && ammunition is null,
+            EquipmentCategory.Armor => weapon is null && armor is not null && shield is null && ammunition is null,
+            EquipmentCategory.Shield => weapon is null && armor is null && shield is not null && ammunition is null,
+            EquipmentCategory.Ammunition => weapon is null && armor is null && shield is null && ammunition is not null,
+            _ => weapon is null && armor is null && shield is null && ammunition is null,
         };
         if ( !hasValidDetails )
         {

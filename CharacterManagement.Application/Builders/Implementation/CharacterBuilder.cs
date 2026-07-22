@@ -137,7 +137,7 @@ public class CharacterBuilder : ICharacterBuilder
             throw new CharacterManagementException( exception.Message );
         }
 
-        if ( ( background.Grants.Count > 0 ) && ( _skillRepository is null ) )
+        if ( background.Grants.Count > 0 && _skillRepository is null )
         {
             throw new InvalidOperationException( "Skill repository is not configured." );
         }
@@ -389,8 +389,8 @@ public class CharacterBuilder : ICharacterBuilder
             }
         }
 
-        if ( ( ( characterClass.Id == "class.rogue" ) || ( deity is not null ) ) &&
-             ( _skillRepository is null ) )
+        if ( ( characterClass.Id == "class.rogue" || deity is not null ) &&
+             _skillRepository is null )
         {
             throw new InvalidOperationException( "Skill repository is not configured." );
         }
@@ -398,13 +398,13 @@ public class CharacterBuilder : ICharacterBuilder
         ClericSpellLoadout? clericSpellLoadout = null;
         bool isCleric = characterClass.Id == "class.cleric";
         if ( !isCleric &&
-             ( ( clericCantripIds?.Count > 0 ) || ( clericPreparedSpellIds?.Count > 0 ) ) )
+             ( clericCantripIds?.Count > 0 || clericPreparedSpellIds?.Count > 0 ) )
         {
             throw new CharacterManagementException(
                 "Cleric spell choices can only be selected for the Cleric class." );
         }
 
-        if ( isCleric && ( deity is not null ) )
+        if ( isCleric && deity is not null )
         {
             if ( _spellRepository is null )
             {
@@ -420,14 +420,14 @@ public class CharacterBuilder : ICharacterBuilder
 
         BardSpellLoadout? bardSpellLoadout = null;
         bool isBard = characterClass.Id == "class.bard";
-        if ( ( !isBard ) &&
-             ( ( bardCantripIds?.Count > 0 ) || ( bardSpellIds?.Count > 0 ) ) )
+        if ( !isBard &&
+             ( bardCantripIds?.Count > 0 || bardSpellIds?.Count > 0 ) )
         {
             throw new CharacterManagementException(
                 "Bard spell choices can only be selected for the Bard class." );
         }
 
-        if ( ( isBard ) && ( bardMuse is not null ) )
+        if ( isBard && bardMuse is not null )
         {
             if ( _spellRepository is null )
             {
@@ -443,8 +443,8 @@ public class CharacterBuilder : ICharacterBuilder
 
         DruidSpellLoadout? druidSpellLoadout = null;
         bool isDruid = characterClass.Id == "class.druid";
-        if ( ( !isDruid ) &&
-             ( ( druidCantripIds?.Count > 0 ) || ( druidPreparedSpellIds?.Count > 0 ) ) )
+        if ( !isDruid &&
+             ( druidCantripIds?.Count > 0 || druidPreparedSpellIds?.Count > 0 ) )
         {
             throw new CharacterManagementException(
                 "Druid spell choices can only be selected for the Druid class." );
@@ -467,7 +467,7 @@ public class CharacterBuilder : ICharacterBuilder
         bool isWitch = characterClass.Id == "class.witch";
         if ( isWitch )
         {
-            if ( ( witchPatron is null ) || ( _spellRepository is null ) )
+            if ( witchPatron is null || _spellRepository is null )
             {
                 throw new InvalidOperationException( "Witch Patron and spell repositories are required." );
             }
@@ -482,10 +482,10 @@ public class CharacterBuilder : ICharacterBuilder
                 witchFocusHexId ?? String.Empty,
                 _spellRepository.GetAll() );
         }
-        else if ( ( witchFamiliarCantripIds?.Count > 0 ) ||
-                  ( witchFamiliarSpellIds?.Count > 0 ) ||
-                  ( witchPreparedCantripIds?.Count > 0 ) ||
-                  ( witchPreparedSpellIds?.Count > 0 ) ||
+        else if ( witchFamiliarCantripIds?.Count > 0 ||
+                  witchFamiliarSpellIds?.Count > 0 ||
+                  witchPreparedCantripIds?.Count > 0 ||
+                  witchPreparedSpellIds?.Count > 0 ||
                   !String.IsNullOrWhiteSpace( witchFocusHexId ) )
         {
             throw new CharacterManagementException(
@@ -495,17 +495,17 @@ public class CharacterBuilder : ICharacterBuilder
         WizardSpellLoadout? wizardSpellLoadout = null;
         bool isWizard = characterClass.Id == "class.wizard";
         bool hasWizardSpellChoices =
-            ( wizardSpellbookCantripIds?.Count > 0 ) ||
-            ( wizardSpellbookSpellIds?.Count > 0 ) ||
+            wizardSpellbookCantripIds?.Count > 0 ||
+            wizardSpellbookSpellIds?.Count > 0 ||
             !String.IsNullOrWhiteSpace( wizardCurriculumCantripId ) ||
-            ( wizardCurriculumSpellIds?.Count > 0 ) ||
-            ( wizardPreparedCantripIds?.Count > 0 ) ||
-            ( wizardPreparedSpellIds?.Count > 0 ) ||
+            wizardCurriculumSpellIds?.Count > 0 ||
+            wizardPreparedCantripIds?.Count > 0 ||
+            wizardPreparedSpellIds?.Count > 0 ||
             !String.IsNullOrWhiteSpace( wizardPreparedCurriculumCantripId ) ||
             !String.IsNullOrWhiteSpace( wizardPreparedCurriculumSpellId );
         if ( isWizard && hasWizardSpellChoices )
         {
-            if ( ( arcaneSchool is null ) || ( _spellRepository is null ) )
+            if ( arcaneSchool is null || _spellRepository is null )
             {
                 throw new InvalidOperationException( "Wizard Arcane School and spell repositories are required." );
             }

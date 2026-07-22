@@ -27,8 +27,8 @@ public sealed class CampaignCharacterAccessPolicy : ICharacterCampaignAccessPoli
                 .ThenInclude( party => party.Characters )
             .SingleOrDefaultAsync(
                 item =>
-                    ( item.Id == campaignId ) &&
-                    ( item.Status == CampaignStatus.Active ),
+                    item.Id == campaignId &&
+                    item.Status == CampaignStatus.Active,
                 cancellationToken );
         if ( campaign is null )
         {
@@ -37,14 +37,14 @@ public sealed class CampaignCharacterAccessPolicy : ICharacterCampaignAccessPoli
 
         bool isGameMaster = campaign.HasActiveRole( userId, CampaignMembershipRole.GameMaster );
         bool belongsToActiveParty = campaign.Parties.Any( party =>
-            ( party.Status == CampaignPartyStatus.Active ) &&
+            party.Status == CampaignPartyStatus.Active &&
             party.Characters.Any( character => character.CharacterId == characterId ) );
         bool controlsCharacter = campaign.HasActiveRole( userId, CampaignMembershipRole.Player ) &&
             campaign.Parties.Any( party =>
-                ( party.Status == CampaignPartyStatus.Active ) &&
+                party.Status == CampaignPartyStatus.Active &&
                 party.Characters.Any( character =>
-                    ( character.CharacterId == characterId ) &&
-                    ( character.ControlledByUserId == userId ) ) );
+                    character.CharacterId == characterId &&
+                    character.ControlledByUserId == userId ) );
         return new CharacterCampaignAccess(
             ( isGameMaster && belongsToActiveParty ) || controlsCharacter,
             controlsCharacter );

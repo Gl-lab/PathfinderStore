@@ -106,7 +106,7 @@ public sealed class CharacterCompletionEvaluator
                     character.SelectedAdditionalLanguageIds ) );
         }
 
-        if ( ( ancestry is not null ) && ( background is not null ) && ( characterClass is not null ) )
+        if ( ancestry is not null && background is not null && characterClass is not null )
         {
             ValidateCompletePackages( issues, character, ancestry, background, characterClass );
         }
@@ -291,7 +291,7 @@ public sealed class CharacterCompletionEvaluator
     private static void ValidateIdentity( DraftCharacter character )
     {
         if ( String.IsNullOrWhiteSpace( character.Name ) ||
-             ( character.Gender == CharacterGender.NotSpecified ) )
+             character.Gender == CharacterGender.NotSpecified )
         {
             throw new InvalidOperationException( "Name and gender are required." );
         }
@@ -351,13 +351,13 @@ public sealed class CharacterCompletionEvaluator
             ? _clericDomainRepository.GetClericDomain( Require( character.SelectedClericDomainId, "Cleric Domain" ) )
             : null;
 
-        if ( ( characterClass.Id == "class.witch" ) &&
+        if ( characterClass.Id == "class.witch" &&
              String.IsNullOrWhiteSpace( character.SelectedWitchPatronFamiliarSpellId ) )
         {
             throw new InvalidOperationException( "Witch Patron familiar spell is required." );
         }
 
-        if ( ( characterClass.Id == "class.cleric" ) &&
+        if ( characterClass.Id == "class.cleric" &&
              ( !character.SelectedDivineFont.HasValue || !character.SelectedDivineSanctification.HasValue ) )
         {
             throw new InvalidOperationException( "Divine Font and sanctification are required." );

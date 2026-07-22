@@ -65,8 +65,8 @@ public sealed class WitchPatronRepositoryTests
         Assert.All(
             patrons.SelectMany( patron => patron.Benefits )
                 .Where( benefit =>
-                    ( benefit.Kind == WitchPatronBenefitKind.HexCantrip ) ||
-                    ( benefit.Kind == WitchPatronBenefitKind.FamiliarSpell ) ),
+                    benefit.Kind == WitchPatronBenefitKind.HexCantrip ||
+                    benefit.Kind == WitchPatronBenefitKind.FamiliarSpell ),
             benefit => Assert.Empty( benefit.DeferredDependencies ) );
     }
 }
