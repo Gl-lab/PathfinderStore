@@ -32,7 +32,7 @@
 - Background skill feat пока представлен декларативно и не применяется к персонажу.
 - Общий выбор дополнительных Class skills и level-up proficiency progression пока не реализованы.
 - Большинство runtime effects features/spells представлены декларативно.
-- Текущий MVP не покрывает runtime inventory/Store, hand/action economy, Raise a Shield, encounter conditions, специализированные ancestry strikes и spell execution lifecycle.
+- Текущий MVP создаёт starting loadout и мигрирует completed-character equipment в базовый runtime Inventory после назначения кампании, но пока не покрывает transfer/loot/Commerce commands, hand/action economy, Raise a Shield, encounter conditions, специализированные ancestry strikes и spell execution lifecycle.
 - Есть отдельный актуальный блок по расхождению `Secure.User` и `CharacterManagement.Account`: см. [`task_32_account_backfill.md`](task_32_account_backfill.md).
 
 ## Связанные файлы

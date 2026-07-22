@@ -2,9 +2,9 @@
 
 ## Статус решения
 
-Этот документ фиксирует ownership boundary для starting equipment в character creation. Решение действует после завершения Priority 10 и не включает Store в runtime приложения.
+Этот документ фиксирует ownership boundary для starting equipment в character creation и переход завершённого персонажа в runtime Inventory. Решение актуализировано после завершения Priority 11 и не включает Commerce в runtime приложения.
 
-Целевое состояние каталога, экземпляров, инвентаря и торговли зафиксировано отдельно в [../store/target_architecture_togaf.md](../store/target_architecture_togaf.md). Каталог реализован; до миграции character-owned state в Priority 11 настоящий документ остаётся действующей переходной границей.
+Целевое состояние каталога, экземпляров, инвентаря и торговли зафиксировано отдельно в [../store/target_architecture_togaf.md](../store/target_architecture_togaf.md). Каталог и базовый runtime Inventory реализованы; настоящий документ остаётся границей между draft selection, миграцией completed loadout и боевым чтением.
 
 ## Проблема
 
@@ -36,16 +36,17 @@ Character state хранит ссылку на catalog definition по stable ke
 
 `CharacterManagement` не получает ссылку на проекты `Store.*`, не вызывает Store API и не публикует обязательные для завершения персонажа запросы или события. Store остаётся отключённым в web composition root.
 
-### Будущая runtime inventory boundary
+### Runtime inventory boundary
 
-Будущий Store/Inventory может владеть торговыми предложениями, ценами конкретного продавца, покупками, продажами, передачей предметов и account-level ownership. Передача комплекта экипировки завершённого персонажа (`completed-character loadout`) в такую подсистему требует отдельного архитектурного решения.
+`Inventory` владеет campaign-scoped физическими экземплярами, корневыми контейнерами, количеством, расположением, версией и неизменяемыми журналами операций и перемещений. `Commerce` в будущем будет владеть предложениями, ценами продавца, покупками и продажами; передача между владельцами относится к отдельным runtime-командам.
 
-До этого решения:
+После завершения Priority 11:
 
-- completed character продолжает владеть сохранённым character item state;
-- catalog id является логической ссылкой, а не foreign key в Store database;
-- Store не может изменять или удалять character equipment;
-- интеграция не добавляется скрыто в рамках AC, attacks, damage, Массы или нагрузки.
+- draft character продолжает владеть starting-equipment selection и не зависит от Inventory или Commerce;
+- completed character, однозначно назначенный кампании, получает личный root container и экземпляры с точными `ItemConfigurationId`;
+- миграция сохраняет quantity и equipped state и безопасно повторяется;
+- completed character без кампании или с неоднозначным назначением остаётся на starting fallback до появления однозначного campaign scope;
+- `CharacterManagement.Domain` и `CharacterManagement.Application` не получают project reference на Inventory или ItemCatalog.
 
 ## API boundary
 
@@ -57,17 +58,16 @@ Runtime-команды `drop`, `trade`, `buy` и `sell` не входят в sta
 
 Боевая карточка не зависит напрямую от `IEquipmentRepository`. Application определяет порт `IAllowedEquipmentReader` и собственные безопасные типы `AllowedEquipmentLoadout`/`AllowedEquipmentItem`, содержащие только необходимые read-модели и расчётам поля.
 
-Production adapter `ItemCatalogAllowedEquipmentReader` размещён в Web integration layer и:
+Production adapter `RuntimeInventoryAllowedEquipmentReader` размещён в Web integration layer и:
 
-- разрешает только опубликованные revisions по сохранённым stable keys;
-- использует campaign revision только для карточки точной кампании, иначе global revision;
-- не допускает draft/retired revisions в боевые расчёты;
-- сохраняет starting-catalog fallback для ещё не мигрированных descriptions и metadata;
+- проверяет принадлежность character container и item instances точной кампании;
+- разрешает каждый экземпляр через его неизменяемую конфигурацию и точную revision, включая впоследствии retired revision;
+- сохраняет starting-catalog fallback только для ещё не мигрированного completed state;
 - вычисляет proficiency applicability, стоимость, Массу и нагрузку;
 - проецирует weapon/armor/shield statistics в application-owned контракт;
 - не сериализует внутренние `ItemDefinition`, `ItemRevision` или `EquipmentDefinition` клиенту.
 
-`StartingEquipmentAllowedEquipmentReader` остаётся внутренним fallback-механизмом. Будущий runtime Inventory заменит Web-адаптер, а не application-owned контракты и формулы боевой карточки.
+`StartingEquipmentAllowedEquipmentReader` остаётся внутренним fallback-механизмом. Runtime Inventory заменил источник production-адаптера, но не application-owned контракты и формулы боевой карточки.
 
 ## Инварианты для следующих slices
 
@@ -86,4 +86,4 @@ Production adapter `ItemCatalogAllowedEquipmentReader` размещён в Web i
 - loot, drop, trade и передача предметов;
 - расходуемые предметы и ammunition lifecycle;
 - магические runes и item progression;
-- перенос ownership completed inventory в отдельный bounded context.
+- пользовательские команды изменения runtime inventory и transfer ownership.

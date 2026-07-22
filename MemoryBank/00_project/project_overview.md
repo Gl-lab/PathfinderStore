@@ -38,13 +38,13 @@ Frontend:
 
 - Clean Architecture
 - DDD-подход внутри доменных модулей
-- bounded contexts для `Secure`, `CharacterManagement`, `CampaignManagement`, `ItemCatalog`, `Store`
+- bounded contexts для `Secure`, `CharacterManagement`, `CampaignManagement`, `ItemCatalog`, `Inventory`, `Store`
 
 ## Карта solution
 
 ### Web
 
-- `Pathfinder.Web` — REST API, startup/configuration, controllers, authentication policies.
+- `Pathfinder.Web` — REST API, startup/configuration, controllers, authentication policies и integration adapters между bounded contexts.
 - `pathfinder.frontend` — Vue 3 + TypeScript SPA, подключается к backend API.
 
 ### CharacterManagement
@@ -70,6 +70,13 @@ Frontend:
 - `ItemCatalog.Infrastructure` — отдельная EF Core schema `item_catalog`, миграции и repositories.
 - `ItemCatalog.Domain.Tests` — unit-тесты инвариантов каталога.
 - `ItemCatalog.Infrastructure.Tests` — persistence и application/infrastructure сценарии каталога.
+
+### Inventory
+
+- `Inventory.Domain` — campaign-scoped экземпляры, корневые контейнеры, стопки, расположение, версии и журналы операций/перемещений.
+- `Inventory.Infrastructure` — отдельная EF Core schema `inventory` и persistence.
+- `Inventory.Domain.Tests` — unit-тесты доменных инвариантов экземпляров и контейнеров.
+- `Inventory.Infrastructure.Tests` — persistence-тесты Inventory.
 
 ### Secure
 
@@ -129,6 +136,10 @@ Store сейчас не является активным направление
 
 Отвечает за stable item key, последовательность неизменяемых ревизий, global/campaign scope, типизированные attack/armor/shield/equipment/consumption/charge/durability components и неизменяемые конфигурации из ревизии, размера, материала и постоянных улучшений. Ревизии проходят lifecycle `Draft -> Published -> Retired`; глобальными описаниями управляет системный администратор, campaign-описаниями — активный ведущий точной кампании.
 
+### Inventory
+
+Отвечает за физические экземпляры в границе кампании, личные/партийные/магазинные/мировые root containers, стопки, текущее расположение, optimistic version и идемпотентный журнал операций. Completed-character starting equipment мигрирует в экземпляры после однозначного назначения кампании; точная конфигурация сохраняет применявшуюся catalog revision.
+
 ### Store
 
 Задуман для магазина и inventory, но сейчас не в приоритете.
@@ -156,7 +167,7 @@ Database:
 
 - PostgreSQL database: `Pathfinder`;
 - connection strings передаются через user secrets или environment variables;
-- ключи: `DB:Secure`, `DB:CharacterManagement`, `DB:CampaignManagement`, `DB:ItemCatalog`;
+- ключи: `DB:Secure`, `DB:CharacterManagement`, `DB:CampaignManagement`, `DB:ItemCatalog`, `DB:Inventory`;
 - JWT key передаётся через user secrets или environment variable `Authentication__SecurityKey`;
 - реальные секреты не должны попадать в tracked configuration files.
 
@@ -197,7 +208,7 @@ Seed users:
 
 ### Текущий character creation focus
 
-Frontend MVP создания персонажа реализован на Vue 3. Текущий flow включает пол и постоянный аватар, полный Ancestry/Background/Class package, обязательные классовые выборы восьми классов Player Core baseline, четыре финальных свободных boosts, стартовое снаряжение и полный spell loadout Cleric, Bard, Druid, Witch и Wizard. Общий Player Core spell catalog фильтруется сервером по tradition, rank и kind; class flows сохраняют repertoire/preparation/spellbook, granted spells, отдельные slots и focus resources. Единый Player Core feat catalog покрывает ancestry, background skill и class feats первого уровня; общий inventory различает selected/granted provenance, обязательные class/skill feat slots валидируются, а поддерживаемые постоянные feat training effects участвуют в Skills/Lore и modifiers. Боевая карточка серверно вычисляет maximum/current/temporary HP, AC, Strikes, class DC, spell attack/DC, Perception, saves и modifiers Skills/Lore с объяснимыми breakdown. Кампании поддерживают приглашения, контекстные роли, одну активную партию, назначение персонажей и campaign-scoped карточку; игрок изменяет HP только назначенного ему персонажа, а ведущий получает read-only доступ к карточкам своей партии. Каждая партия имеет пустой корневой storage contract для будущего Inventory. Версионируемый `ItemCatalog` реализован как целевой источник описаний; переходный Web-адаптер накладывает опубликованные global/campaign revisions на существующие stable starting-equipment keys, не перенося character-owned quantity/equipped state. Encounter actions/conditions, Raise a Shield, runtime spell/feat effects, progression и runtime inventory остаются отдельными подсистемами.
+Frontend MVP создания персонажа реализован на Vue 3. Текущий flow включает пол и постоянный аватар, полный Ancestry/Background/Class package, обязательные классовые выборы восьми классов Player Core baseline, четыре финальных свободных boosts, стартовое снаряжение и полный spell loadout Cleric, Bard, Druid, Witch и Wizard. Общий Player Core spell catalog фильтруется сервером по tradition, rank и kind; class flows сохраняют repertoire/preparation/spellbook, granted spells, отдельные slots и focus resources. Единый Player Core feat catalog покрывает ancestry, background skill и class feats первого уровня; starting inventory различает selected/granted provenance, обязательные class/skill feat slots валидируются, а поддерживаемые постоянные feat training effects участвуют в Skills/Lore и modifiers. Боевая карточка серверно вычисляет maximum/current/temporary HP, AC, Strikes, class DC, spell attack/DC, Perception, saves и modifiers Skills/Lore с объяснимыми breakdown. Кампании поддерживают приглашения, контекстные роли, одну активную партию, назначение персонажей и campaign-scoped карточку. Версионируемый `ItemCatalog` является источником описаний и точных конфигураций. Completed-character loadout однозначно назначенной кампании мигрирует в runtime `Inventory`, а production combat adapter читает экипированные экземпляры через точную revision; не назначенные персонажи сохраняют переходный starting fallback. Encounter actions/conditions, Raise a Shield, runtime spell/feat effects, progression, transfer-команды и Commerce остаются отдельными подсистемами.
 
 Смотреть:
 
@@ -207,6 +218,7 @@ Frontend MVP создания персонажа реализован на Vue 3
 - [`../30_task_notes/priority_8_final_review.md`](../30_task_notes/priority_8_final_review.md)
 - [`../30_task_notes/priority_9_final_review.md`](../30_task_notes/priority_9_final_review.md)
 - [`../30_task_notes/priority_10_final_review.md`](../30_task_notes/priority_10_final_review.md)
+- [`../30_task_notes/priority_11_final_review.md`](../30_task_notes/priority_11_final_review.md)
 
 ## Как работать с этим обзором
 
