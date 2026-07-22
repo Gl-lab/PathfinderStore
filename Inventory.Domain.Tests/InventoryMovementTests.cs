@@ -36,6 +36,7 @@ public sealed class InventoryMovementTests
         InventoryMovement movement = instance.MoveTo(
             destination,
             "  equipped  ",
+            0,
             operationId,
             "  user:31  ",
             occurredAtUtc );
@@ -70,6 +71,7 @@ public sealed class InventoryMovementTests
         InventoryMovement movement = stack.MoveTo(
             destination,
             "transfer",
+            0,
             Guid.NewGuid(),
             "user:31",
             _createdAtUtc );
@@ -86,6 +88,7 @@ public sealed class InventoryMovementTests
         Assert.Throws<InventoryException>( () => instance.MoveTo(
             destination,
             "transfer",
+            0,
             Guid.NewGuid(),
             "user:31",
             _createdAtUtc ) );
@@ -101,6 +104,7 @@ public sealed class InventoryMovementTests
         Assert.Throws<InventoryException>( () => instance.MoveTo(
             container,
             "transfer",
+            0,
             Guid.NewGuid(),
             "user:31",
             _createdAtUtc ) );
@@ -116,6 +120,7 @@ public sealed class InventoryMovementTests
         instance.MoveTo(
             second,
             "first",
+            0,
             Guid.NewGuid(),
             "user:31",
             _createdAtUtc.AddMinutes( 2 ) );
@@ -123,6 +128,7 @@ public sealed class InventoryMovementTests
         Assert.Throws<InventoryException>( () => instance.MoveTo(
             third,
             "second",
+            1,
             Guid.NewGuid(),
             "user:31",
             _createdAtUtc.AddMinutes( 1 ) ) );
@@ -142,6 +148,7 @@ public sealed class InventoryMovementTests
         Assert.Throws<InventoryException>( () => instance.MoveTo(
             CreateContainer( 17 ),
             reason,
+            0,
             Guid.NewGuid(),
             performedBy,
             _createdAtUtc ) );
@@ -154,6 +161,7 @@ public sealed class InventoryMovementTests
         InventoryMovement movement = instance.MoveTo(
             CreateContainer( 17 ),
             "transfer",
+            0,
             Guid.NewGuid(),
             "user:31",
             _createdAtUtc );

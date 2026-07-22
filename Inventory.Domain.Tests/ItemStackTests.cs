@@ -1,6 +1,7 @@
 using Pathfinder.Inventory.Domain.Containers;
 using Pathfinder.Inventory.Domain.Exceptions;
 using Pathfinder.Inventory.Domain.Items;
+using Pathfinder.Inventory.Domain.Operations;
 
 namespace Pathfinder.Inventory.Domain.Tests;
 
@@ -34,6 +35,8 @@ public sealed class ItemStackTests
         Assert.Throws<InventoryException>( () => instance.Split(
             Guid.NewGuid(),
             1,
+            0,
+            Guid.NewGuid(),
             _createdAtUtc ) );
     }
 
@@ -43,8 +46,15 @@ public sealed class ItemStackTests
         ItemInstance source = CreateStack( _instanceKey, 17, 23, 5, "Arrows" );
         Guid splitKey = new Guid( "4812dbff-de74-468f-8294-b952c28aed33" );
 
-        ItemInstance split = source.Split( splitKey, 2, _createdAtUtc.AddMinutes( 1 ) );
+        ItemSplitResult result = source.Split(
+            splitKey,
+            2,
+            0,
+            Guid.NewGuid(),
+            _createdAtUtc.AddMinutes( 1 ) );
+        ItemInstance split = Assert.IsType<ItemInstance>( result.NewInstance );
 
+        Assert.False( result.IsReplay );
         Assert.Equal( 3, source.Quantity );
         Assert.Equal( splitKey, split.InstanceKey );
         Assert.Equal( 2, split.Quantity );
@@ -66,6 +76,8 @@ public sealed class ItemStackTests
         Assert.Throws<InventoryException>( () => source.Split(
             Guid.NewGuid(),
             splitQuantity,
+            0,
+            Guid.NewGuid(),
             _createdAtUtc ) );
         Assert.Equal( 5, source.Quantity );
     }
@@ -78,6 +90,8 @@ public sealed class ItemStackTests
         Assert.Throws<InventoryException>( () => source.Split(
             _instanceKey,
             2,
+            0,
+            Guid.NewGuid(),
             _createdAtUtc ) );
         Assert.Equal( 5, source.Quantity );
     }
@@ -89,11 +103,21 @@ public sealed class ItemStackTests
         ItemInstance target = CreateStack( _instanceKey, 17, 23, 5, null, container );
         ItemInstance source = CreateStack( Guid.NewGuid(), 17, 23, 2, null, container );
 
-        target.MergeFrom( source );
+        bool applied = target.MergeFrom(
+            source,
+            0,
+            0,
+            Guid.NewGuid(),
+            _createdAtUtc );
 
+        Assert.True( applied );
         Assert.Equal( 7, target.Quantity );
         Assert.Equal( 0, source.Quantity );
         Assert.True( source.IsDepleted );
+        Assert.Equal( 1, target.Version );
+        Assert.Equal( 1, source.Version );
+        Assert.Single( target.Operations );
+        Assert.Single( source.Operations );
     }
 
     [Fact]
@@ -102,9 +126,16 @@ public sealed class ItemStackTests
         InventoryContainer container = CreateContainer( 17 );
         ItemInstance first = CreateStack( _instanceKey, 17, 23, 5, null, container );
         ItemInstance second = CreateStack( Guid.NewGuid(), 17, 23, 2, null, container );
-        first.MergeFrom( second );
+        Guid operationId = Guid.NewGuid();
+        first.MergeFrom( second, 0, 0, operationId, _createdAtUtc );
 
-        Assert.Throws<InventoryException>( () => first.MergeFrom( second ) );
+        bool replayApplied = first.MergeFrom(
+            second,
+            0,
+            0,
+            operationId,
+            _createdAtUtc );
+        Assert.False( replayApplied );
         Assert.Equal( 7, first.Quantity );
     }
 
@@ -130,7 +161,12 @@ public sealed class ItemStackTests
             customName,
             sourceContainer );
 
-        Assert.Throws<InventoryException>( () => target.MergeFrom( source ) );
+        Assert.Throws<InventoryException>( () => target.MergeFrom(
+            source,
+            0,
+            0,
+            Guid.NewGuid(),
+            _createdAtUtc ) );
         Assert.Equal( 5, target.Quantity );
         Assert.Equal( 2, source.Quantity );
     }
@@ -148,7 +184,12 @@ public sealed class ItemStackTests
             null,
             _createdAtUtc );
 
-        Assert.Throws<InventoryException>( () => target.MergeFrom( source ) );
+        Assert.Throws<InventoryException>( () => target.MergeFrom(
+            source,
+            0,
+            0,
+            Guid.NewGuid(),
+            _createdAtUtc ) );
     }
 
     [Fact]
@@ -164,7 +205,12 @@ public sealed class ItemStackTests
             container );
         ItemInstance source = CreateStack( Guid.NewGuid(), 17, 23, 1, null, container );
 
-        Assert.Throws<InventoryException>( () => target.MergeFrom( source ) );
+        Assert.Throws<InventoryException>( () => target.MergeFrom(
+            source,
+            0,
+            0,
+            Guid.NewGuid(),
+            _createdAtUtc ) );
         Assert.Equal( Int32.MaxValue, target.Quantity );
         Assert.Equal( 1, source.Quantity );
     }
