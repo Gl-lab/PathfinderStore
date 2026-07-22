@@ -1,3 +1,4 @@
+using Pathfinder.Inventory.Domain.Containers;
 using Pathfinder.Inventory.Domain.Exceptions;
 using Pathfinder.Inventory.Domain.Items;
 
@@ -26,6 +27,7 @@ public sealed class ItemStackTests
             _instanceKey,
             17,
             23,
+            CreateContainer( 17 ),
             null,
             _createdAtUtc );
 
@@ -48,6 +50,7 @@ public sealed class ItemStackTests
         Assert.Equal( 2, split.Quantity );
         Assert.Equal( source.CampaignId, split.CampaignId );
         Assert.Equal( source.ItemConfigurationId, split.ItemConfigurationId );
+        Assert.Equal( source.CurrentContainerKey, split.CurrentContainerKey );
         Assert.Equal( source.CustomName, split.CustomName );
     }
 
@@ -82,8 +85,9 @@ public sealed class ItemStackTests
     [Fact]
     public void MergeMovesAllQuantityAndDepletesSource()
     {
-        ItemInstance target = CreateStack( _instanceKey, 17, 23, 5, null );
-        ItemInstance source = CreateStack( Guid.NewGuid(), 17, 23, 2, null );
+        InventoryContainer container = CreateContainer( 17 );
+        ItemInstance target = CreateStack( _instanceKey, 17, 23, 5, null, container );
+        ItemInstance source = CreateStack( Guid.NewGuid(), 17, 23, 2, null, container );
 
         target.MergeFrom( source );
 
@@ -95,8 +99,9 @@ public sealed class ItemStackTests
     [Fact]
     public void MergeRejectsSecondUseOfDepletedSource()
     {
-        ItemInstance first = CreateStack( _instanceKey, 17, 23, 5, null );
-        ItemInstance second = CreateStack( Guid.NewGuid(), 17, 23, 2, null );
+        InventoryContainer container = CreateContainer( 17 );
+        ItemInstance first = CreateStack( _instanceKey, 17, 23, 5, null, container );
+        ItemInstance second = CreateStack( Guid.NewGuid(), 17, 23, 2, null, container );
         first.MergeFrom( second );
 
         Assert.Throws<InventoryException>( () => first.MergeFrom( second ) );
@@ -112,13 +117,18 @@ public sealed class ItemStackTests
         int itemConfigurationId,
         string? customName )
     {
-        ItemInstance target = CreateStack( _instanceKey, 17, 23, 5, null );
+        InventoryContainer targetContainer = CreateContainer( 17 );
+        InventoryContainer sourceContainer = campaignId == 17
+            ? targetContainer
+            : CreateContainer( campaignId );
+        ItemInstance target = CreateStack( _instanceKey, 17, 23, 5, null, targetContainer );
         ItemInstance source = CreateStack(
             Guid.NewGuid(),
             campaignId,
             itemConfigurationId,
             2,
-            customName );
+            customName,
+            sourceContainer );
 
         Assert.Throws<InventoryException>( () => target.MergeFrom( source ) );
         Assert.Equal( 5, target.Quantity );
@@ -128,11 +138,13 @@ public sealed class ItemStackTests
     [Fact]
     public void MergeRejectsNonStackableInstance()
     {
-        ItemInstance target = CreateStack( _instanceKey, 17, 23, 5, null );
+        InventoryContainer container = CreateContainer( 17 );
+        ItemInstance target = CreateStack( _instanceKey, 17, 23, 5, null, container );
         ItemInstance source = ItemInstance.Create(
             Guid.NewGuid(),
             17,
             23,
+            container,
             null,
             _createdAtUtc );
 
@@ -142,13 +154,15 @@ public sealed class ItemStackTests
     [Fact]
     public void MergeRejectsQuantityOverflow()
     {
+        InventoryContainer container = CreateContainer( 17 );
         ItemInstance target = CreateStack(
             _instanceKey,
             17,
             23,
             Int32.MaxValue,
-            null );
-        ItemInstance source = CreateStack( Guid.NewGuid(), 17, 23, 1, null );
+            null,
+            container );
+        ItemInstance source = CreateStack( Guid.NewGuid(), 17, 23, 1, null, container );
 
         Assert.Throws<InventoryException>( () => target.MergeFrom( source ) );
         Assert.Equal( Int32.MaxValue, target.Quantity );
@@ -160,14 +174,26 @@ public sealed class ItemStackTests
         int campaignId,
         int itemConfigurationId,
         int quantity,
-        string? customName )
+        string? customName,
+        InventoryContainer? container = null )
     {
         return ItemInstance.CreateStack(
             instanceKey,
             campaignId,
             itemConfigurationId,
             quantity,
+            container ?? CreateContainer( campaignId ),
             customName,
+            _createdAtUtc );
+    }
+
+    private static InventoryContainer CreateContainer( int campaignId )
+    {
+        return InventoryContainer.CreateRoot(
+            Guid.NewGuid(),
+            campaignId,
+            InventoryContainerOwnerKind.Character,
+            31,
             _createdAtUtc );
     }
 }

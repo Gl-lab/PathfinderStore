@@ -1,3 +1,4 @@
+using Pathfinder.Inventory.Domain.Containers;
 using Pathfinder.Inventory.Domain.Exceptions;
 using Pathfinder.Inventory.Domain.Items;
 
@@ -16,6 +17,7 @@ public sealed class ItemInstanceTests
             _instanceKey,
             17,
             23,
+            CreateContainer( 17 ),
             "  Dawnbringer  ",
             _createdAtUtc );
 
@@ -33,12 +35,14 @@ public sealed class ItemInstanceTests
             _instanceKey,
             17,
             23,
+            CreateContainer( 17 ),
             null,
             _createdAtUtc );
         ItemInstance second = ItemInstance.Create(
             new Guid( "83687638-ef14-4f8a-9415-e62612405ab5" ),
             17,
             23,
+            CreateContainer( 17 ),
             null,
             _createdAtUtc );
 
@@ -59,6 +63,7 @@ public sealed class ItemInstanceTests
             _instanceKey,
             campaignId,
             itemConfigurationId,
+            CreateContainer( campaignId > 0 ? campaignId : 17 ),
             null,
             _createdAtUtc ) );
     }
@@ -70,6 +75,7 @@ public sealed class ItemInstanceTests
             Guid.Empty,
             17,
             23,
+            CreateContainer( 17 ),
             null,
             _createdAtUtc ) );
     }
@@ -83,6 +89,7 @@ public sealed class ItemInstanceTests
             _instanceKey,
             17,
             23,
+            CreateContainer( 17 ),
             null,
             nonUtc ) );
     }
@@ -94,6 +101,7 @@ public sealed class ItemInstanceTests
             _instanceKey,
             17,
             23,
+            CreateContainer( 17 ),
             "   ",
             _createdAtUtc );
 
@@ -109,7 +117,18 @@ public sealed class ItemInstanceTests
             _instanceKey,
             17,
             23,
+            CreateContainer( 17 ),
             customName,
             _createdAtUtc ) );
+    }
+
+    private static InventoryContainer CreateContainer( int campaignId )
+    {
+        return InventoryContainer.CreateRoot(
+            Guid.NewGuid(),
+            campaignId,
+            InventoryContainerOwnerKind.Character,
+            31,
+            _createdAtUtc );
     }
 }
