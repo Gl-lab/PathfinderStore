@@ -3,6 +3,7 @@ using Pathfinder.Inventory.Domain.Containers;
 using Pathfinder.Inventory.Domain.Items;
 using Pathfinder.Inventory.Domain.Movements;
 using Pathfinder.Inventory.Domain.Operations;
+using Pathfinder.Inventory.Domain.Transfers;
 
 namespace Pathfinder.Inventory.Infrastructure.Data;
 
@@ -17,6 +18,7 @@ public sealed class InventoryDbContext : DbContext
     public DbSet<ItemInstance> ItemInstances => Set<ItemInstance>();
     public DbSet<InventoryMovement> Movements => Set<InventoryMovement>();
     public DbSet<InventoryOperation> Operations => Set<InventoryOperation>();
+    public DbSet<PartyGift> PartyGifts => Set<PartyGift>();
 
     protected override void OnModelCreating( ModelBuilder modelBuilder )
     {
@@ -111,6 +113,25 @@ public sealed class InventoryDbContext : DbContext
                 .HasConversion<int>();
             builder.HasIndex( "ItemInstanceId", nameof( InventoryOperation.OperationId ) )
                 .IsUnique();
+        } );
+
+        modelBuilder.Entity<PartyGift>( builder =>
+        {
+            builder.ToTable( "PartyGift", tableBuilder =>
+                tableBuilder.HasCheckConstraint(
+                    "CK_PartyGift_State",
+                    "\"CampaignId\" > 0 AND \"PartyId\" > 0 AND \"SourceCharacterId\" > 0 AND \"DestinationCharacterId\" > 0 AND \"ExpectedItemVersion\" >= 0" ) );
+            builder.Property( gift => gift.Status )
+                .HasConversion<int>();
+            builder.HasIndex( gift => gift.GiftKey )
+                .IsUnique();
+            builder.HasIndex( gift => new
+            {
+                gift.CampaignId,
+                gift.PartyId,
+                gift.Status,
+            } );
+            builder.HasIndex( gift => gift.ItemInstanceKey );
         } );
     }
 }

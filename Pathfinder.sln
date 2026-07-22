@@ -81,6 +81,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inventory.Infrastructure.Te
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CampaignManagement", "CampaignManagement", "{4E88FC97-AE4E-4BB0-8130-B2DF0FC48D34}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Inventory.Application", "Inventory.Application\Inventory.Application.csproj", "{9156FEE5-9582-4D09-A1DE-A2CD92D2497F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -447,6 +449,18 @@ Global
 		{11ED4347-512D-4613-82E4-E47D33A33283}.Release|x64.Build.0 = Release|Any CPU
 		{11ED4347-512D-4613-82E4-E47D33A33283}.Release|x86.ActiveCfg = Release|Any CPU
 		{11ED4347-512D-4613-82E4-E47D33A33283}.Release|x86.Build.0 = Release|Any CPU
+		{9156FEE5-9582-4D09-A1DE-A2CD92D2497F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9156FEE5-9582-4D09-A1DE-A2CD92D2497F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9156FEE5-9582-4D09-A1DE-A2CD92D2497F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9156FEE5-9582-4D09-A1DE-A2CD92D2497F}.Debug|x64.Build.0 = Debug|Any CPU
+		{9156FEE5-9582-4D09-A1DE-A2CD92D2497F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9156FEE5-9582-4D09-A1DE-A2CD92D2497F}.Debug|x86.Build.0 = Debug|Any CPU
+		{9156FEE5-9582-4D09-A1DE-A2CD92D2497F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9156FEE5-9582-4D09-A1DE-A2CD92D2497F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9156FEE5-9582-4D09-A1DE-A2CD92D2497F}.Release|x64.ActiveCfg = Release|Any CPU
+		{9156FEE5-9582-4D09-A1DE-A2CD92D2497F}.Release|x64.Build.0 = Release|Any CPU
+		{9156FEE5-9582-4D09-A1DE-A2CD92D2497F}.Release|x86.ActiveCfg = Release|Any CPU
+		{9156FEE5-9582-4D09-A1DE-A2CD92D2497F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
