@@ -41,6 +41,8 @@ public class Startup( IConfiguration configuration )
         services.AddCampaignManagementInfrastructureServices();
         services.AddItemCatalogApplicationServices();
         services.AddItemCatalogInfrastructureServices();
+        services.AddScoped<CompletedCharacterInventoryMigrationService>();
+        services.AddHostedService<CompletedCharacterInventoryMigrationHostedService>();
         services.AddScoped<IAllowedEquipmentReader, ItemCatalogAllowedEquipmentReader>();
 
         services.AddControllers()

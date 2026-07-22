@@ -35,6 +35,8 @@
     <ProjectReference Include="..\ItemCatalog.Application\ItemCatalog.Application.csproj" />
     <ProjectReference Include="..\ItemCatalog.Domain\ItemCatalog.Domain.csproj" />
     <ProjectReference Include="..\ItemCatalog.Infrastructure\ItemCatalog.Infrastructure.csproj" />
+    <ProjectReference Include="..\Inventory.Domain\Inventory.Domain.csproj" />
+    <ProjectReference Include="..\Inventory.Infrastructure\Inventory.Infrastructure.csproj" />
     <ProjectReference Include="..\CharacterManagement.Application\CharacterManagement.Application.csproj" />
     <ProjectReference Include="..\CharacterManagement.Infrastructure\CharacterManagement.Infrastructure.csproj" />
     <ProjectReference Include="..\Secure.Domain\Secure.Domain.csproj" />

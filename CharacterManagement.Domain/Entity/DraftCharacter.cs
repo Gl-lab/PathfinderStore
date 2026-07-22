@@ -72,6 +72,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
     public string? SelectedClassKitId { get; private set; }
     public IReadOnlyList<string> SelectedClassKitOptionIds { get; private set; } = [];
     public IReadOnlyList<CharacterEquipmentItem> StartingEquipmentItems { get; private set; } = [];
+    public bool HasRuntimeInventory { get; private set; }
+    public IReadOnlyList<CharacterRuntimeEquipmentItem> RuntimeEquipmentItems { get; private set; } = [];
     public int? CurrentHitPoints { get; private set; }
     public int TemporaryHitPoints { get; private set; }
     public bool HasCompleteAncestryPackage => !String.IsNullOrWhiteSpace( SelectedHeritageId ) && !String.IsNullOrWhiteSpace( SelectedAncestryFeatId );
@@ -750,6 +752,29 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
 
         StartingEquipmentItems = loadout.Items.ToArray();
         EnsureInvariants();
+    }
+
+    public void SetRuntimeInventory(
+        IReadOnlyCollection<CharacterRuntimeEquipmentItem> items )
+    {
+        EnsureCompleted();
+        ArgumentNullException.ThrowIfNull( items );
+        if ( items.Any( item => item.ItemInstanceKey == Guid.Empty ) )
+        {
+            throw new CharacterManagementException(
+                "Runtime inventory item instance key cannot be empty." );
+        }
+
+        if ( items
+            .GroupBy( item => item.ItemInstanceKey )
+            .Any( group => group.Count() > 1 ) )
+        {
+            throw new CharacterManagementException(
+                "Runtime inventory item instance keys must be unique." );
+        }
+
+        RuntimeEquipmentItems = items.ToArray();
+        HasRuntimeInventory = true;
     }
 
     public CharacterHitPointState GetHitPointState( int maximumHitPoints )

@@ -57,6 +57,18 @@ public class CharacterManagementDbContext( DbContextOptions<CharacterManagementD
                     ( first, second ) => first != null && second != null && first.SequenceEqual( second ),
                     collection => collection.Aggregate( 0, ( hash, item ) => HashCode.Combine( hash, item ) ),
                     collection => collection.ToList() ) );
+            b.Property( x => x.RuntimeEquipmentItems )
+                .HasConversion(
+                    value => JsonSerializer.Serialize( value.ToList(), (JsonSerializerOptions?)null ),
+                    value => String.IsNullOrEmpty( value )
+                        ? (IReadOnlyList<CharacterRuntimeEquipmentItem>)Array.Empty<CharacterRuntimeEquipmentItem>()
+                        : (IReadOnlyList<CharacterRuntimeEquipmentItem>)( JsonSerializer.Deserialize<List<CharacterRuntimeEquipmentItem>>( value, (JsonSerializerOptions?)null ) ?? new List<CharacterRuntimeEquipmentItem>() ) )
+                .HasColumnType( "jsonb" )
+                .HasDefaultValueSql( "'[]'::jsonb" )
+                .Metadata.SetValueComparer( new ValueComparer<IReadOnlyList<CharacterRuntimeEquipmentItem>>(
+                    ( first, second ) => first != null && second != null && first.SequenceEqual( second ),
+                    collection => collection.Aggregate( 0, ( hash, item ) => HashCode.Combine( hash, item ) ),
+                    collection => collection.ToList() ) );
             b.Property( x => x.SelectedClassKeyAbility ).HasConversion<int>();
             b.Property( x => x.SelectedClassFeatChoices )
                 .HasConversion(
