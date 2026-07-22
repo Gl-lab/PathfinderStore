@@ -7,4 +7,6 @@ public enum InventoryOperationKind
     Move = 2,
     Reserve = 3,
     ReleaseReservation = 4,
+    RestrictTransfer = 5,
+    AllowTransfer = 6,
 }

@@ -67,6 +67,7 @@ public sealed class CreatePartyGiftHandler
         if ( ( item.CampaignId != request.CampaignId ) ||
              ( item.CurrentContainerKey != sourceContainer.ContainerKey ) ||
              item.IsDepleted ||
+             item.IsTransferRestricted ||
              ( item.ReservationKey is not null ) ||
              ( item.Version != request.ExpectedItemVersion ) )
         {

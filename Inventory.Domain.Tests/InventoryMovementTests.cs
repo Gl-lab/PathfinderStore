@@ -171,6 +171,47 @@ public sealed class InventoryMovementTests
         Assert.Throws<NotSupportedException>( () => movements.Add( movement ) );
     }
 
+    [Fact]
+    public void TransferRestrictionBlocksPlayerTransfersButAllowsForcedMove()
+    {
+        InventoryContainer source = CreateContainer( 17 );
+        InventoryContainer destination = CreateContainer( 17 );
+        ItemInstance instance = CreateInstance( source );
+
+        bool restricted = instance.SetTransferRestriction(
+            true,
+            0,
+            Guid.NewGuid(),
+            _createdAtUtc.AddMinutes( 1 ) );
+
+        Assert.True( restricted );
+        Assert.True( instance.IsTransferRestricted );
+        Assert.Throws<InventoryException>( () => instance.MoveTo(
+            destination,
+            "party-storage-deposit",
+            1,
+            Guid.NewGuid(),
+            "user:31",
+            _createdAtUtc.AddMinutes( 2 ) ) );
+        Assert.Throws<InventoryException>( () => instance.Reserve(
+            Guid.NewGuid(),
+            1,
+            Guid.NewGuid(),
+            _createdAtUtc.AddMinutes( 2 ) ) );
+
+        InventoryMovement movement = instance.ForceMoveTo(
+            destination,
+            "GM ruling",
+            1,
+            Guid.NewGuid(),
+            "gm:41",
+            _createdAtUtc.AddMinutes( 2 ) );
+
+        Assert.Equal( destination.ContainerKey, instance.CurrentContainerKey );
+        Assert.Equal( destination.ContainerKey, movement.ToContainerKey );
+        Assert.True( instance.IsTransferRestricted );
+    }
+
     private static ItemInstance CreateInstance( InventoryContainer container )
     {
         return ItemInstance.Create(

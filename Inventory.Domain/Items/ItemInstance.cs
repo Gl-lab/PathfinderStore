@@ -29,6 +29,7 @@ public sealed class ItemInstance : Entity, IAggregateRoot
     public Guid CurrentContainerKey { get; private set; }
     public int Version { get; private set; }
     public Guid? ReservationKey { get; private set; }
+    public bool IsTransferRestricted { get; private set; }
     public DateTimeOffset CreatedAtUtc { get; private set; }
     public IReadOnlyList<InventoryMovement> Movements { get => _movements.AsReadOnly(); }
     public IReadOnlyList<InventoryOperation> Operations { get => _operations.AsReadOnly(); }
@@ -270,6 +271,7 @@ public sealed class ItemInstance : Entity, IAggregateRoot
         }
 
         EnsureNotReserved();
+        EnsureTransferAllowed();
 
         if ( destination.CampaignId != CampaignId )
         {
@@ -341,6 +343,8 @@ public sealed class ItemInstance : Entity, IAggregateRoot
             throw new InventoryException( "A depleted item cannot be reserved." );
         }
 
+        EnsureTransferAllowed();
+
         if ( ReservationKey is not null )
         {
             throw new InventoryException( "Item is already reserved." );
@@ -379,6 +383,8 @@ public sealed class ItemInstance : Entity, IAggregateRoot
         {
             throw new InventoryException( "Item is not reserved for this transfer." );
         }
+
+        EnsureTransferAllowed();
 
         if ( IsDepleted || ( destination.CampaignId != CampaignId ) ||
              ( destination.ContainerKey == CurrentContainerKey ) )
@@ -505,6 +511,42 @@ public sealed class ItemInstance : Entity, IAggregateRoot
             Version,
             occurredAtUtc ) );
         return movement;
+    }
+
+    public bool SetTransferRestriction(
+        bool isRestricted,
+        int expectedVersion,
+        Guid operationId,
+        DateTimeOffset appliedAtUtc )
+    {
+        EnsureOperationId( operationId );
+        InventoryOperationKind kind = isRestricted
+            ? InventoryOperationKind.RestrictTransfer
+            : InventoryOperationKind.AllowTransfer;
+        InventoryOperation? replay = FindOperation( operationId );
+        if ( replay is not null )
+        {
+            replay.EnsureMatches( kind, InstanceKey, Quantity );
+            return false;
+        }
+
+        EnsureExpectedVersion( expectedVersion );
+        EnsureOperationTimestamp( appliedAtUtc );
+        if ( IsTransferRestricted == isRestricted )
+        {
+            throw new InventoryException( "Item transfer restriction already has the requested state." );
+        }
+
+        IsTransferRestricted = isRestricted;
+        Version++;
+        _operations.Add( InventoryOperation.Create(
+            operationId,
+            kind,
+            InstanceKey,
+            Quantity,
+            Version,
+            appliedAtUtc ) );
+        return true;
     }
 
     private static ItemInstance CreateCore(
@@ -675,6 +717,14 @@ public sealed class ItemInstance : Entity, IAggregateRoot
         if ( ReservationKey is not null )
         {
             throw new InventoryException( "A reserved item instance cannot be changed." );
+        }
+    }
+
+    private void EnsureTransferAllowed()
+    {
+        if ( IsTransferRestricted )
+        {
+            throw new InventoryException( "Item instance is prohibited from transfer." );
         }
     }
 
