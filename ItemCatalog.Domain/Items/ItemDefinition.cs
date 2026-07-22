@@ -15,19 +15,27 @@ public sealed class ItemDefinition : Entity, IAggregateRoot
     }
 
     public string Key { get; private set; } = String.Empty;
+    public ItemCatalogScope Scope { get; private set; }
+    public int? CampaignId { get; private set; }
     public DateTimeOffset CreatedAtUtc { get; private set; }
     public IReadOnlyList<ItemRevision> Revisions { get => _revisions.AsReadOnly(); }
 
-    public static ItemDefinition Create( string key, DateTimeOffset createdAtUtc )
+    public static ItemDefinition CreateGlobal( string key, DateTimeOffset createdAtUtc )
     {
-        string normalizedKey = NormalizeKey( key );
-        EnsureUtc( createdAtUtc, "Creation timestamp" );
+        return Create( key, ItemCatalogScope.Global, null, createdAtUtc );
+    }
 
-        return new ItemDefinition
+    public static ItemDefinition CreateForCampaign(
+        string key,
+        int campaignId,
+        DateTimeOffset createdAtUtc )
+    {
+        if ( campaignId <= 0 )
         {
-            Key = normalizedKey,
-            CreatedAtUtc = createdAtUtc,
-        };
+            throw new ItemCatalogException( "Campaign id must be greater than zero." );
+        }
+
+        return Create( key, ItemCatalogScope.Campaign, campaignId, createdAtUtc );
     }
 
     public ItemRevision CreateRevision(
@@ -95,6 +103,24 @@ public sealed class ItemDefinition : Entity, IAggregateRoot
         }
 
         return normalizedKey;
+    }
+
+    private static ItemDefinition Create(
+        string key,
+        ItemCatalogScope scope,
+        int? campaignId,
+        DateTimeOffset createdAtUtc )
+    {
+        string normalizedKey = NormalizeKey( key );
+        EnsureUtc( createdAtUtc, "Creation timestamp" );
+
+        return new ItemDefinition
+        {
+            Key = normalizedKey,
+            Scope = scope,
+            CampaignId = campaignId,
+            CreatedAtUtc = createdAtUtc,
+        };
     }
 
     private static void EnsureUtc( DateTimeOffset value, string fieldName )

@@ -21,12 +21,27 @@ public sealed class ItemCatalogDbContext : DbContext
 
         modelBuilder.Entity<ItemDefinition>( builder =>
         {
-            builder.ToTable( "ItemDefinition" );
+            builder.ToTable( "ItemDefinition", tableBuilder =>
+                tableBuilder.HasCheckConstraint(
+                    "CK_ItemDefinition_Scope",
+                    "(\"Scope\" = 1 AND \"CampaignId\" IS NULL) OR " +
+                    "(\"Scope\" = 2 AND \"CampaignId\" > 0)" ) );
             builder.Property( definition => definition.Key )
                 .HasMaxLength( ItemDefinition.KeyMaxLength )
                 .IsRequired();
+            builder.Property( definition => definition.Scope )
+                .HasConversion<int>()
+                .HasDefaultValue( ItemCatalogScope.Global );
             builder.HasIndex( definition => definition.Key )
-                .IsUnique();
+                .IsUnique()
+                .HasFilter( "\"Scope\" = 1" );
+            builder.HasIndex( definition => new
+            {
+                definition.CampaignId,
+                definition.Key,
+            } )
+                .IsUnique()
+                .HasFilter( "\"Scope\" = 2" );
             builder.HasMany( definition => definition.Revisions )
                 .WithOne()
                 .HasForeignKey( revision => revision.ItemDefinitionId )

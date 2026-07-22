@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Pathfinder.ItemCatalog.Infrastructure.Data;
@@ -11,9 +12,11 @@ using Pathfinder.ItemCatalog.Infrastructure.Data;
 namespace Pathfinder.ItemCatalog.Infrastructure.Migrations
 {
     [DbContext(typeof(ItemCatalogDbContext))]
-    partial class ItemCatalogDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260722101432_ScopeItemDefinitions")]
+    partial class ScopeItemDefinitions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

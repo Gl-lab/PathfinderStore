@@ -12,11 +12,13 @@ public sealed class ItemDefinitionTests
     [Fact]
     public void CreateKeepsStableLogicalKey()
     {
-        ItemDefinition definition = ItemDefinition.Create(
+        ItemDefinition definition = ItemDefinition.CreateGlobal(
             "  equipment.longsword  ",
             _createdAtUtc );
 
         Assert.Equal( "equipment.longsword", definition.Key );
+        Assert.Equal( ItemCatalogScope.Global, definition.Scope );
+        Assert.Null( definition.CampaignId );
         Assert.Equal( _createdAtUtc, definition.CreatedAtUtc );
         Assert.Empty( definition.Revisions );
     }
@@ -29,13 +31,13 @@ public sealed class ItemDefinitionTests
     [InlineData( "equipment.long_sword" )]
     public void CreateRejectsInvalidLogicalKey( string key )
     {
-        Assert.Throws<ItemCatalogException>( () => ItemDefinition.Create( key, _createdAtUtc ) );
+        Assert.Throws<ItemCatalogException>( () => ItemDefinition.CreateGlobal( key, _createdAtUtc ) );
     }
 
     [Fact]
     public void CreateRevisionAssignsConsecutiveSnapshotNumbers()
     {
-        ItemDefinition definition = ItemDefinition.Create( "equipment.longsword", _createdAtUtc );
+        ItemDefinition definition = ItemDefinition.CreateGlobal( "equipment.longsword", _createdAtUtc );
 
         ItemRevision firstRevision = definition.CreateRevision(
             " Longsword ",
@@ -68,7 +70,7 @@ public sealed class ItemDefinitionTests
     [Fact]
     public void LaterRevisionDoesNotChangePreviousSnapshot()
     {
-        ItemDefinition definition = ItemDefinition.Create( "equipment.longsword", _createdAtUtc );
+        ItemDefinition definition = ItemDefinition.CreateGlobal( "equipment.longsword", _createdAtUtc );
         ItemRevision firstRevision = definition.CreateRevision(
             "Longsword",
             "Original rules text.",
@@ -95,7 +97,7 @@ public sealed class ItemDefinitionTests
     [Fact]
     public void RevisionCollectionCannotBeChangedByCaller()
     {
-        ItemDefinition definition = ItemDefinition.Create( "equipment.longsword", _createdAtUtc );
+        ItemDefinition definition = ItemDefinition.CreateGlobal( "equipment.longsword", _createdAtUtc );
         definition.CreateRevision(
             "Longsword",
             String.Empty,
@@ -120,7 +122,7 @@ public sealed class ItemDefinitionTests
         int priceInCopperPieces,
         decimal bulk )
     {
-        ItemDefinition definition = ItemDefinition.Create( "equipment.longsword", _createdAtUtc );
+        ItemDefinition definition = ItemDefinition.CreateGlobal( "equipment.longsword", _createdAtUtc );
 
         Assert.Throws<ItemCatalogException>( () => definition.CreateRevision(
             "Longsword",
@@ -135,7 +137,7 @@ public sealed class ItemDefinitionTests
     [Fact]
     public void CreateRevisionRejectsTimestampBeforePreviousRevision()
     {
-        ItemDefinition definition = ItemDefinition.Create( "equipment.longsword", _createdAtUtc );
+        ItemDefinition definition = ItemDefinition.CreateGlobal( "equipment.longsword", _createdAtUtc );
         definition.CreateRevision(
             "Longsword",
             String.Empty,
@@ -158,7 +160,7 @@ public sealed class ItemDefinitionTests
     [Fact]
     public void CreateRevisionRejectsRulesComponentSetAlreadyOwnedByAnotherRevision()
     {
-        ItemDefinition definition = ItemDefinition.Create( "equipment.longsword", _createdAtUtc );
+        ItemDefinition definition = ItemDefinition.CreateGlobal( "equipment.longsword", _createdAtUtc );
         ItemRevisionRules rules = CreateBasicRules();
         definition.CreateRevision(
             "Longsword",
@@ -177,6 +179,27 @@ public sealed class ItemDefinitionTests
             1,
             rules,
             _createdAtUtc.AddMinutes( 2 ) ) );
+    }
+
+    [Fact]
+    public void CreateForCampaignKeepsCampaignScope()
+    {
+        ItemDefinition definition = ItemDefinition.CreateForCampaign(
+            "custom.sun-blade",
+            42,
+            _createdAtUtc );
+
+        Assert.Equal( ItemCatalogScope.Campaign, definition.Scope );
+        Assert.Equal( 42, definition.CampaignId );
+    }
+
+    [Fact]
+    public void CreateForCampaignRejectsInvalidCampaignId()
+    {
+        Assert.Throws<ItemCatalogException>( () => ItemDefinition.CreateForCampaign(
+            "custom.sun-blade",
+            0,
+            _createdAtUtc ) );
     }
 
     private static ItemRevisionRules CreateBasicRules()

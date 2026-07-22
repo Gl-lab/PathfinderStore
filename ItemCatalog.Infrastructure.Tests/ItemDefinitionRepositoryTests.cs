@@ -17,7 +17,7 @@ public sealed class ItemDefinitionRepositoryTests
         DbContextOptions<ItemCatalogDbContext> options = CreateOptions();
         await using ( ItemCatalogDbContext writeContext = new ItemCatalogDbContext( options ) )
         {
-            ItemDefinition definition = ItemDefinition.Create(
+            ItemDefinition definition = ItemDefinition.CreateGlobal(
                 "equipment.longsword",
                 _createdAtUtc );
             definition.CreateRevision(
@@ -35,7 +35,7 @@ public sealed class ItemDefinitionRepositoryTests
         await using ( ItemCatalogDbContext readContext = new ItemCatalogDbContext( options ) )
         {
             ItemDefinitionRepository repository = new ItemDefinitionRepository( readContext );
-            ItemDefinition? definition = await repository.GetByKeyWithRevisionsAsync(
+            ItemDefinition? definition = await repository.GetGlobalByKeyWithRevisionsAsync(
                 "equipment.longsword",
                 CancellationToken.None );
 
@@ -58,7 +58,7 @@ public sealed class ItemDefinitionRepositoryTests
         await using ( ItemCatalogDbContext verifyContext = new ItemCatalogDbContext( options ) )
         {
             ItemDefinitionRepository repository = new ItemDefinitionRepository( verifyContext );
-            ItemDefinition? definition = await repository.GetByKeyWithRevisionsAsync(
+            ItemDefinition? definition = await repository.GetGlobalByKeyWithRevisionsAsync(
                 "equipment.longsword",
                 CancellationToken.None );
             Assert.NotNull( definition );
@@ -82,7 +82,9 @@ public sealed class ItemDefinitionRepositoryTests
         DbContextOptions<ItemCatalogDbContext> options = CreateOptions();
         await using ( ItemCatalogDbContext writeContext = new ItemCatalogDbContext( options ) )
         {
-            ItemDefinition definition = ItemDefinition.Create( "custom.arcane-buckler", _createdAtUtc );
+            ItemDefinition definition = ItemDefinition.CreateGlobal(
+                "custom.arcane-buckler",
+                _createdAtUtc );
             ItemRevisionRules rules = ItemRevisionRules.Create(
                 ItemCategory.Shield,
                 attacks:
@@ -115,7 +117,7 @@ public sealed class ItemDefinitionRepositoryTests
         await using ( ItemCatalogDbContext readContext = new ItemCatalogDbContext( options ) )
         {
             ItemDefinitionRepository repository = new ItemDefinitionRepository( readContext );
-            ItemDefinition? definition = await repository.GetByKeyWithRevisionsAsync(
+            ItemDefinition? definition = await repository.GetGlobalByKeyWithRevisionsAsync(
                 "custom.arcane-buckler",
                 CancellationToken.None );
 
@@ -128,6 +130,41 @@ public sealed class ItemDefinitionRepositoryTests
             Assert.NotNull( revision.Consumption );
             Assert.NotNull( revision.Charges );
             Assert.NotNull( revision.Durability );
+        }
+    }
+
+    [Fact]
+    public async Task VisibleQueryIncludesGlobalAndExactCampaignScopesOnly()
+    {
+        DbContextOptions<ItemCatalogDbContext> options = CreateOptions();
+        await using ( ItemCatalogDbContext writeContext = new ItemCatalogDbContext( options ) )
+        {
+            writeContext.ItemDefinitions.AddRange(
+                ItemDefinition.CreateGlobal( "equipment.torch", _createdAtUtc ),
+                ItemDefinition.CreateForCampaign( "custom.relic", 42, _createdAtUtc ),
+                ItemDefinition.CreateForCampaign( "custom.relic", 43, _createdAtUtc ) );
+            await writeContext.SaveChangesAsync();
+        }
+
+        await using ( ItemCatalogDbContext readContext = new ItemCatalogDbContext( options ) )
+        {
+            ItemDefinitionRepository repository = new ItemDefinitionRepository( readContext );
+            IReadOnlyCollection<ItemDefinition> visible = await repository.GetVisibleWithRevisionsAsync(
+                42,
+                CancellationToken.None );
+
+            Assert.Equal( 2, visible.Count );
+            Assert.Contains( visible, definition => definition.Scope == ItemCatalogScope.Global );
+            Assert.Contains( visible, definition => definition.CampaignId == 42 );
+            Assert.DoesNotContain( visible, definition => definition.CampaignId == 43 );
+            Assert.NotNull( await repository.GetCampaignByKeyWithRevisionsAsync(
+                "custom.relic",
+                42,
+                CancellationToken.None ) );
+            Assert.Null( await repository.GetCampaignByKeyWithRevisionsAsync(
+                "custom.relic",
+                44,
+                CancellationToken.None ) );
         }
     }
 

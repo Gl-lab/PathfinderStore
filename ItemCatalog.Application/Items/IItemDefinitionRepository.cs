@@ -8,7 +8,14 @@ public interface IItemDefinitionRepository : IRepository<ItemDefinition>
     Task<ItemDefinition?> GetByIdWithRevisionsAsync(
         int itemDefinitionId,
         CancellationToken cancellationToken );
-    Task<ItemDefinition?> GetByKeyWithRevisionsAsync(
+    Task<ItemDefinition?> GetGlobalByKeyWithRevisionsAsync(
         string key,
+        CancellationToken cancellationToken );
+    Task<ItemDefinition?> GetCampaignByKeyWithRevisionsAsync(
+        string key,
+        int campaignId,
+        CancellationToken cancellationToken );
+    Task<IReadOnlyCollection<ItemDefinition>> GetVisibleWithRevisionsAsync(
+        int campaignId,
         CancellationToken cancellationToken );
 }

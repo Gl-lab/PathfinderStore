@@ -20,31 +20,55 @@ public sealed class ItemDefinitionRepository : Repository<ItemDefinition>, IItem
         int itemDefinitionId,
         CancellationToken cancellationToken )
     {
-        return await _dbContext.ItemDefinitions
-            .Include( definition => definition.Revisions )
-                .ThenInclude( revision => revision.Attacks )
-            .Include( definition => definition.Revisions )
-                .ThenInclude( revision => revision.Armor )
-            .Include( definition => definition.Revisions )
-                .ThenInclude( revision => revision.Shield )
-            .Include( definition => definition.Revisions )
-                .ThenInclude( revision => revision.Equipment )
-            .Include( definition => definition.Revisions )
-                .ThenInclude( revision => revision.Consumption )
-            .Include( definition => definition.Revisions )
-                .ThenInclude( revision => revision.Charges )
-            .Include( definition => definition.Revisions )
-                .ThenInclude( revision => revision.Durability )
+        return await WithRevisions()
             .SingleOrDefaultAsync(
                 definition => definition.Id == itemDefinitionId,
                 cancellationToken );
     }
 
-    public async Task<ItemDefinition?> GetByKeyWithRevisionsAsync(
+    public async Task<ItemDefinition?> GetGlobalByKeyWithRevisionsAsync(
         string key,
         CancellationToken cancellationToken )
     {
-        return await _dbContext.ItemDefinitions
+        return await WithRevisions()
+            .SingleOrDefaultAsync(
+                definition =>
+                    ( definition.Scope == ItemCatalogScope.Global ) &&
+                    ( definition.Key == key ),
+                cancellationToken );
+    }
+
+    public async Task<ItemDefinition?> GetCampaignByKeyWithRevisionsAsync(
+        string key,
+        int campaignId,
+        CancellationToken cancellationToken )
+    {
+        return await WithRevisions()
+            .SingleOrDefaultAsync(
+                definition =>
+                    ( definition.Scope == ItemCatalogScope.Campaign ) &&
+                    ( definition.CampaignId == campaignId ) &&
+                    ( definition.Key == key ),
+                cancellationToken );
+    }
+
+    public async Task<IReadOnlyCollection<ItemDefinition>> GetVisibleWithRevisionsAsync(
+        int campaignId,
+        CancellationToken cancellationToken )
+    {
+        return await WithRevisions()
+            .Where( definition =>
+                ( definition.Scope == ItemCatalogScope.Global ) ||
+                ( ( definition.Scope == ItemCatalogScope.Campaign ) &&
+                  ( definition.CampaignId == campaignId ) ) )
+            .OrderBy( definition => definition.Key )
+            .ToArrayAsync( cancellationToken );
+    }
+
+    private IQueryable<ItemDefinition> WithRevisions()
+    {
+        return _dbContext.ItemDefinitions
+            .AsSplitQuery()
             .Include( definition => definition.Revisions )
                 .ThenInclude( revision => revision.Attacks )
             .Include( definition => definition.Revisions )
@@ -58,9 +82,6 @@ public sealed class ItemDefinitionRepository : Repository<ItemDefinition>, IItem
             .Include( definition => definition.Revisions )
                 .ThenInclude( revision => revision.Charges )
             .Include( definition => definition.Revisions )
-                .ThenInclude( revision => revision.Durability )
-            .SingleOrDefaultAsync(
-                definition => definition.Key == key,
-                cancellationToken );
+                .ThenInclude( revision => revision.Durability );
     }
 }
