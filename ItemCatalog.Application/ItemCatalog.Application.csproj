@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>12</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Pathfinder.ItemCatalog.Application</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ItemCatalog.Domain\ItemCatalog.Domain.csproj" />
+    <ProjectReference Include="..\Pathfinder.Utils\Pathfinder.Utils.csproj" />
+  </ItemGroup>
+</Project>
