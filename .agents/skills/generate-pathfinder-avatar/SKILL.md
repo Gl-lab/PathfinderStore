@@ -49,14 +49,17 @@ because it is more convenient.
 
 1. Build the English production prompt from the exact selected matrix row and
    `avatar_generation_prompts.md`.
-2. Apply every constant constraint, the selected ancestry/class/variant
+2. Inspect the existing batch notes for the selected ancestry + class block and
+   apply its ancestry-specific phenotype balance rules. Do not choose each
+   phenotype independently when that would create a skewed four-variant set.
+3. Apply every constant constraint, the selected ancestry/class/variant
    profiles, and the full negative prompt.
-3. Use the available image-generation skill/tool for a square `1024x1024` or
+4. Use the available image-generation skill/tool for a square `1024x1024` or
    larger PNG master.
-4. Use the first successfully generated result. Do not open it for visual
+5. Use the first successfully generated result. Do not open it for visual
    inspection, create crop or `48x48` previews, score its appearance, or
    regenerate it based on visual quality.
-5. Verify only that the source file exists, is decodable, square, large enough,
+6. Verify only that the source file exists, is decodable, square, large enough,
    and has a supported opaque color mode. Stop only on a generation or technical
    file failure.
 

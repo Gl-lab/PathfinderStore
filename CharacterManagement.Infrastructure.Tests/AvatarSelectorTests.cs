@@ -102,6 +102,7 @@ public sealed class AvatarSelectorTests
     [InlineData( "class.witch", CharacterGender.Male, 2 )]
     [InlineData( "class.witch", CharacterGender.Female, 2 )]
     [InlineData( "class.wizard", CharacterGender.Male, 2 )]
+    [InlineData( "class.wizard", CharacterGender.Female, 2 )]
     public void RuntimeCatalogReturnsOnlyAcceptedDwarfAssets(
         string characterClassId,
         CharacterGender gender,
@@ -120,14 +121,42 @@ public sealed class AvatarSelectorTests
         Assert.All( result, avatar => Assert.EndsWith( ".webp", avatar.Path ) );
     }
 
+    [Theory]
+    [InlineData( "class.bard", CharacterGender.Male, 2 )]
+    [InlineData( "class.bard", CharacterGender.Female, 2 )]
+    [InlineData( "class.cleric", CharacterGender.Male, 2 )]
+    [InlineData( "class.cleric", CharacterGender.Female, 2 )]
+    [InlineData( "class.druid", CharacterGender.Male, 2 )]
+    [InlineData( "class.druid", CharacterGender.Female, 2 )]
+    [InlineData( "class.fighter", CharacterGender.Male, 2 )]
+    [InlineData( "class.fighter", CharacterGender.Female, 2 )]
+    [InlineData( "class.ranger", CharacterGender.Male, 2 )]
+    public void RuntimeCatalogReturnsOnlyAcceptedElfAssets(
+        string characterClassId,
+        CharacterGender gender,
+        int expectedCount )
+    {
+        AvatarCatalog catalog = new AvatarCatalog();
+
+        IReadOnlyList<AvatarDefinition> result = catalog.FindMatches( new AvatarSelectionCriteria(
+            AncestryType.Elf,
+            characterClassId,
+            gender ) );
+
+        Assert.Equal( expectedCount, result.Count );
+        Assert.All( result, avatar => Assert.NotNull( avatar.Variant ) );
+        Assert.All( result, avatar => Assert.StartsWith( "/avatars/pc/", avatar.Path ) );
+        Assert.All( result, avatar => Assert.EndsWith( ".webp", avatar.Path ) );
+    }
+
     [Fact]
     public void RuntimeCatalogLeavesUncoveredCombinationEmpty()
     {
         AvatarCatalog catalog = new AvatarCatalog();
 
         IReadOnlyList<AvatarDefinition> result = catalog.FindMatches( new AvatarSelectionCriteria(
-            AncestryType.Dwarf,
-            "class.wizard",
+            AncestryType.Elf,
+            "class.ranger",
             CharacterGender.Female ) );
 
         Assert.Empty( result );
