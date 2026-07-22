@@ -65,6 +65,7 @@ public sealed class CreatePartyGiftHandler
         if ( ( item.CampaignId != request.CampaignId ) ||
              ( item.CurrentContainerKey != sourceContainer.ContainerKey ) ||
              item.IsDepleted ||
+             ( item.ReservationKey is not null ) ||
              ( item.Version != request.ExpectedItemVersion ) )
         {
             throw new InventoryException(

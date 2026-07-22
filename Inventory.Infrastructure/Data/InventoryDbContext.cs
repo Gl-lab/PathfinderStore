@@ -19,6 +19,7 @@ public sealed class InventoryDbContext : DbContext
     public DbSet<InventoryMovement> Movements => Set<InventoryMovement>();
     public DbSet<InventoryOperation> Operations => Set<InventoryOperation>();
     public DbSet<PartyGift> PartyGifts => Set<PartyGift>();
+    public DbSet<PartyExchange> PartyExchanges => Set<PartyExchange>();
 
     protected override void OnModelCreating( ModelBuilder modelBuilder )
     {
@@ -132,6 +133,37 @@ public sealed class InventoryDbContext : DbContext
                 gift.Status,
             } );
             builder.HasIndex( gift => gift.ItemInstanceKey );
+        } );
+
+        modelBuilder.Entity<PartyExchange>( builder =>
+        {
+            builder.ToTable( "PartyExchange", tableBuilder =>
+                tableBuilder.HasCheckConstraint(
+                    "CK_PartyExchange_State",
+                    "\"CampaignId\" > 0 AND \"PartyId\" > 0 AND \"InitiatorCharacterId\" > 0 AND \"CounterpartyCharacterId\" > 0" ) );
+            builder.Property( exchange => exchange.Status )
+                .HasConversion<int>();
+            builder.HasIndex( exchange => exchange.ExchangeKey )
+                .IsUnique();
+            builder.HasMany( exchange => exchange.Lines )
+                .WithOne()
+                .HasForeignKey( line => line.PartyExchangeId )
+                .IsRequired()
+                .OnDelete( DeleteBehavior.Cascade );
+        } );
+
+        modelBuilder.Entity<PartyExchangeLine>( builder =>
+        {
+            builder.ToTable( "PartyExchangeLine", tableBuilder =>
+                tableBuilder.HasCheckConstraint(
+                    "CK_PartyExchangeLine_State",
+                    "\"FromCharacterId\" > 0 AND \"ExpectedItemVersion\" >= 0" ) );
+            builder.HasIndex( line => new
+            {
+                line.PartyExchangeId,
+                line.ItemInstanceKey,
+            } )
+                .IsUnique();
         } );
     }
 }

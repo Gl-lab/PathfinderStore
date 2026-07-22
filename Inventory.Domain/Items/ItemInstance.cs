@@ -28,6 +28,7 @@ public sealed class ItemInstance : Entity, IAggregateRoot
     public bool IsDepleted => Quantity == 0;
     public Guid CurrentContainerKey { get; private set; }
     public int Version { get; private set; }
+    public Guid? ReservationKey { get; private set; }
     public DateTimeOffset CreatedAtUtc { get; private set; }
     public IReadOnlyList<InventoryMovement> Movements { get => _movements.AsReadOnly(); }
     public IReadOnlyList<InventoryOperation> Operations { get => _operations.AsReadOnly(); }
@@ -97,6 +98,7 @@ public sealed class ItemInstance : Entity, IAggregateRoot
         EnsureExpectedVersion( expectedVersion );
         EnsureOperationTimestamp( createdAtUtc );
         EnsureActiveStack();
+        EnsureNotReserved();
         if ( ( splitQuantity <= 0 ) || ( splitQuantity >= Quantity ) )
         {
             throw new InventoryException(
@@ -177,6 +179,8 @@ public sealed class ItemInstance : Entity, IAggregateRoot
         source.EnsureOperationTimestamp( occurredAtUtc );
         EnsureActiveStack();
         source.EnsureActiveStack();
+        EnsureNotReserved();
+        source.EnsureNotReserved();
 
         if ( InstanceKey == source.InstanceKey )
         {
@@ -265,6 +269,8 @@ public sealed class ItemInstance : Entity, IAggregateRoot
             throw new InventoryException( "A depleted item instance cannot be moved." );
         }
 
+        EnsureNotReserved();
+
         if ( destination.CampaignId != CampaignId )
         {
             throw new InventoryException(
@@ -307,6 +313,49 @@ public sealed class ItemInstance : Entity, IAggregateRoot
             Version,
             occurredAtUtc ) );
         return movement;
+    }
+
+    public bool Reserve(
+        Guid reservationKey,
+        int expectedVersion,
+        Guid operationId,
+        DateTimeOffset reservedAtUtc )
+    {
+        if ( reservationKey == Guid.Empty )
+        {
+            throw new InventoryException( "Reservation key cannot be empty." );
+        }
+
+        EnsureOperationId( operationId );
+        InventoryOperation? replay = FindOperation( operationId );
+        if ( replay is not null )
+        {
+            replay.EnsureMatches( InventoryOperationKind.Reserve, reservationKey, Quantity );
+            return false;
+        }
+
+        EnsureExpectedVersion( expectedVersion );
+        EnsureOperationTimestamp( reservedAtUtc );
+        if ( IsDepleted )
+        {
+            throw new InventoryException( "A depleted item cannot be reserved." );
+        }
+
+        if ( ReservationKey is not null )
+        {
+            throw new InventoryException( "Item is already reserved." );
+        }
+
+        ReservationKey = reservationKey;
+        Version++;
+        _operations.Add( InventoryOperation.Create(
+            operationId,
+            InventoryOperationKind.Reserve,
+            reservationKey,
+            Quantity,
+            Version,
+            reservedAtUtc ) );
+        return true;
     }
 
     private static ItemInstance CreateCore(
@@ -469,6 +518,14 @@ public sealed class ItemInstance : Entity, IAggregateRoot
         if ( IsDepleted )
         {
             throw new InventoryException( "A depleted item stack cannot be changed." );
+        }
+    }
+
+    private void EnsureNotReserved()
+    {
+        if ( ReservationKey is not null )
+        {
+            throw new InventoryException( "A reserved item instance cannot be changed." );
         }
     }
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -99,6 +100,48 @@ public sealed class PartyInventoryController : AuthorizedController
         }
     }
 
+    [HttpPost( "exchanges" )]
+    [ProducesResponseType( typeof( PartyExchangeDto ), StatusCodes.Status200OK )]
+    [ProducesResponseType( typeof( IReadOnlyCollection<string> ), StatusCodes.Status400BadRequest )]
+    public async Task<ActionResult<PartyExchangeDto>> CreateExchange(
+        int campaignId,
+        [FromBody] CreatePartyExchangeRequest request )
+    {
+        try
+        {
+            PartyExchangeDto exchange = await _mediator.Send( new CreatePartyExchangeCommand(
+                CurrentUserId(),
+                campaignId,
+                request.ExchangeKey,
+                request.InitiatorCharacterId,
+                request.CounterpartyCharacterId,
+                request.Lines
+                    .Select( line => new CreatePartyExchangeLine(
+                        line.FromCharacterId,
+                        line.ItemInstanceKey,
+                        line.ExpectedItemVersion,
+                        line.ReservationOperationId ) )
+                    .ToArray() ) );
+            return Ok( exchange );
+        }
+        catch ( InvalidOperationException )
+        {
+            return Unauthorized();
+        }
+        catch ( InventoryException exception )
+        {
+            return BadRequest( MapError( exception.Message ) );
+        }
+        catch ( DbUpdateException exception )
+        {
+            return DatabaseUnavailable( exception );
+        }
+        catch ( PostgresException exception )
+        {
+            return DatabaseUnavailable( exception );
+        }
+    }
+
     private ObjectResult DatabaseUnavailable( Exception exception )
     {
         _logger.LogError( exception, "Failed to update party inventory." );
@@ -116,3 +159,15 @@ public sealed record CreatePartyGiftRequest(
     int ExpectedItemVersion );
 
 public sealed record AcceptPartyGiftRequest( Guid OperationId );
+
+public sealed record CreatePartyExchangeRequest(
+    Guid ExchangeKey,
+    int InitiatorCharacterId,
+    int CounterpartyCharacterId,
+    IReadOnlyCollection<CreatePartyExchangeLineRequest> Lines );
+
+public sealed record CreatePartyExchangeLineRequest(
+    int FromCharacterId,
+    Guid ItemInstanceKey,
+    int ExpectedItemVersion,
+    Guid ReservationOperationId );

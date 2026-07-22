@@ -12,6 +12,8 @@ public interface IInventoryTransferRepository
         CancellationToken cancellationToken );
     Task<ItemInstance?> GetItemAsync( Guid itemInstanceKey, CancellationToken cancellationToken );
     Task<PartyGift?> GetGiftAsync( Guid giftKey, CancellationToken cancellationToken );
+    Task<PartyExchange?> GetExchangeAsync( Guid exchangeKey, CancellationToken cancellationToken );
     void AddGift( PartyGift gift );
+    void AddExchange( PartyExchange exchange );
     Task SaveChangesAsync( CancellationToken cancellationToken );
 }

@@ -69,7 +69,9 @@ public sealed class AcceptPartyGiftHandler
         ItemInstance item = await _repository.GetItemAsync(
             gift.ItemInstanceKey,
             cancellationToken ) ?? throw new InventoryException( "Gift item was not found." );
-        if ( ( item.CurrentContainerKey != sourceContainer.ContainerKey ) || item.IsDepleted )
+        if ( ( item.CurrentContainerKey != sourceContainer.ContainerKey ) ||
+             item.IsDepleted ||
+             ( item.ReservationKey is not null ) )
         {
             throw new InventoryException( "Gift item is no longer available from the source character." );
         }

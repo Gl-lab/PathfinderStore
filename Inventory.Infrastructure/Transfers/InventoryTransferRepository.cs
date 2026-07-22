@@ -50,9 +50,25 @@ public sealed class InventoryTransferRepository : IInventoryTransferRepository
             cancellationToken );
     }
 
+    public async Task<PartyExchange?> GetExchangeAsync(
+        Guid exchangeKey,
+        CancellationToken cancellationToken )
+    {
+        return await _dbContext.PartyExchanges
+            .Include( exchange => exchange.Lines )
+            .SingleOrDefaultAsync(
+                exchange => exchange.ExchangeKey == exchangeKey,
+                cancellationToken );
+    }
+
     public void AddGift( PartyGift gift )
     {
         _dbContext.PartyGifts.Add( gift );
+    }
+
+    public void AddExchange( PartyExchange exchange )
+    {
+        _dbContext.PartyExchanges.Add( exchange );
     }
 
     public async Task SaveChangesAsync( CancellationToken cancellationToken )
