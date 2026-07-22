@@ -1,4 +1,5 @@
 using Pathfinder.ItemCatalog.Domain.Exceptions;
+using Pathfinder.ItemCatalog.Domain.Rules;
 using Pathfinder.Utils.Entities.Base;
 
 namespace Pathfinder.ItemCatalog.Domain.Items;
@@ -12,6 +13,8 @@ public sealed class ItemRevision : Entity
     {
     }
 
+    private readonly List<AttackComponent> _attacks = [];
+
     public int ItemDefinitionId { get; private set; }
     public int RevisionNumber { get; private set; }
     public string Name { get; private set; } = String.Empty;
@@ -19,7 +22,15 @@ public sealed class ItemRevision : Entity
     public int Level { get; private set; }
     public int PriceInCopperPieces { get; private set; }
     public decimal Bulk { get; private set; }
+    public ItemCategory PrimaryCategory { get; private set; }
     public DateTimeOffset CreatedAtUtc { get; private set; }
+    public IReadOnlyList<AttackComponent> Attacks { get => _attacks.AsReadOnly(); }
+    public ArmorComponent? Armor { get; private set; }
+    public ShieldComponent? Shield { get; private set; }
+    public EquipmentComponent? Equipment { get; private set; }
+    public ConsumptionComponent? Consumption { get; private set; }
+    public ChargeComponent? Charges { get; private set; }
+    public DurabilityComponent? Durability { get; private set; }
 
     internal static ItemRevision Create(
         int revisionNumber,
@@ -28,6 +39,7 @@ public sealed class ItemRevision : Entity
         int level,
         int priceInCopperPieces,
         decimal bulk,
+        ItemRevisionRules rules,
         DateTimeOffset createdAtUtc )
     {
         string normalizedName = NormalizeRequiredText( name, "Revision name", NameMaxLength );
@@ -55,7 +67,10 @@ public sealed class ItemRevision : Entity
             throw new ItemCatalogException( "Item Bulk cannot be negative." );
         }
 
-        return new ItemRevision
+        ArgumentNullException.ThrowIfNull( rules );
+        rules.AssignToRevision();
+
+        ItemRevision revision = new ItemRevision
         {
             RevisionNumber = revisionNumber,
             Name = normalizedName,
@@ -63,8 +78,17 @@ public sealed class ItemRevision : Entity
             Level = level,
             PriceInCopperPieces = priceInCopperPieces,
             Bulk = bulk,
+            PrimaryCategory = rules.PrimaryCategory,
             CreatedAtUtc = createdAtUtc,
+            Armor = rules.Armor,
+            Shield = rules.Shield,
+            Equipment = rules.Equipment,
+            Consumption = rules.Consumption,
+            Charges = rules.Charges,
+            Durability = rules.Durability,
         };
+        revision._attacks.AddRange( rules.Attacks );
+        return revision;
     }
 
     private static string NormalizeRequiredText(

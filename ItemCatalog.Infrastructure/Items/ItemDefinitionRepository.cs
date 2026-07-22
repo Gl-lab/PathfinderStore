@@ -22,6 +22,19 @@ public sealed class ItemDefinitionRepository : Repository<ItemDefinition>, IItem
     {
         return await _dbContext.ItemDefinitions
             .Include( definition => definition.Revisions )
+                .ThenInclude( revision => revision.Attacks )
+            .Include( definition => definition.Revisions )
+                .ThenInclude( revision => revision.Armor )
+            .Include( definition => definition.Revisions )
+                .ThenInclude( revision => revision.Shield )
+            .Include( definition => definition.Revisions )
+                .ThenInclude( revision => revision.Equipment )
+            .Include( definition => definition.Revisions )
+                .ThenInclude( revision => revision.Consumption )
+            .Include( definition => definition.Revisions )
+                .ThenInclude( revision => revision.Charges )
+            .Include( definition => definition.Revisions )
+                .ThenInclude( revision => revision.Durability )
             .SingleOrDefaultAsync(
                 definition => definition.Id == itemDefinitionId,
                 cancellationToken );
@@ -33,6 +46,19 @@ public sealed class ItemDefinitionRepository : Repository<ItemDefinition>, IItem
     {
         return await _dbContext.ItemDefinitions
             .Include( definition => definition.Revisions )
+                .ThenInclude( revision => revision.Attacks )
+            .Include( definition => definition.Revisions )
+                .ThenInclude( revision => revision.Armor )
+            .Include( definition => definition.Revisions )
+                .ThenInclude( revision => revision.Shield )
+            .Include( definition => definition.Revisions )
+                .ThenInclude( revision => revision.Equipment )
+            .Include( definition => definition.Revisions )
+                .ThenInclude( revision => revision.Consumption )
+            .Include( definition => definition.Revisions )
+                .ThenInclude( revision => revision.Charges )
+            .Include( definition => definition.Revisions )
+                .ThenInclude( revision => revision.Durability )
             .SingleOrDefaultAsync(
                 definition => definition.Key == key,
                 cancellationToken );

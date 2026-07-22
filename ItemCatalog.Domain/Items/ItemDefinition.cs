@@ -1,4 +1,5 @@
 using Pathfinder.ItemCatalog.Domain.Exceptions;
+using Pathfinder.ItemCatalog.Domain.Rules;
 using Pathfinder.Utils.Entities.Base;
 
 namespace Pathfinder.ItemCatalog.Domain.Items;
@@ -35,6 +36,7 @@ public sealed class ItemDefinition : Entity, IAggregateRoot
         int level,
         int priceInCopperPieces,
         decimal bulk,
+        ItemRevisionRules rules,
         DateTimeOffset createdAtUtc )
     {
         EnsureUtc( createdAtUtc, "Revision creation timestamp" );
@@ -59,6 +61,7 @@ public sealed class ItemDefinition : Entity, IAggregateRoot
             level,
             priceInCopperPieces,
             bulk,
+            rules,
             createdAtUtc );
         _revisions.Add( revision );
         return revision;

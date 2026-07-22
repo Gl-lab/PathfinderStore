@@ -1,5 +1,6 @@
 using Pathfinder.ItemCatalog.Domain.Exceptions;
 using Pathfinder.ItemCatalog.Domain.Items;
+using Pathfinder.ItemCatalog.Domain.Rules;
 
 namespace Pathfinder.ItemCatalog.Domain.Tests;
 
@@ -42,6 +43,7 @@ public sealed class ItemDefinitionTests
             0,
             100,
             1,
+            CreateBasicRules(),
             _createdAtUtc.AddMinutes( 1 ) );
         ItemRevision secondRevision = definition.CreateRevision(
             "Longsword (remastered)",
@@ -49,6 +51,7 @@ public sealed class ItemDefinitionTests
             1,
             120,
             1,
+            CreateBasicRules(),
             _createdAtUtc.AddMinutes( 2 ) );
 
         Assert.Equal( 1, firstRevision.RevisionNumber );
@@ -72,6 +75,7 @@ public sealed class ItemDefinitionTests
             0,
             100,
             1,
+            CreateBasicRules(),
             _createdAtUtc.AddMinutes( 1 ) );
 
         definition.CreateRevision(
@@ -80,6 +84,7 @@ public sealed class ItemDefinitionTests
             1,
             120,
             1,
+            CreateBasicRules(),
             _createdAtUtc.AddMinutes( 2 ) );
 
         Assert.Equal( "Original rules text.", firstRevision.Description );
@@ -97,6 +102,7 @@ public sealed class ItemDefinitionTests
             0,
             100,
             1,
+            CreateBasicRules(),
             _createdAtUtc.AddMinutes( 1 ) );
         IList<ItemRevision> revisions = Assert.IsAssignableFrom<IList<ItemRevision>>(
             definition.Revisions );
@@ -122,6 +128,7 @@ public sealed class ItemDefinitionTests
             level,
             priceInCopperPieces,
             bulk,
+            CreateBasicRules(),
             _createdAtUtc.AddMinutes( 1 ) ) );
     }
 
@@ -135,6 +142,7 @@ public sealed class ItemDefinitionTests
             0,
             100,
             1,
+            CreateBasicRules(),
             _createdAtUtc.AddMinutes( 2 ) );
 
         Assert.Throws<ItemCatalogException>( () => definition.CreateRevision(
@@ -143,6 +151,38 @@ public sealed class ItemDefinitionTests
             0,
             100,
             1,
+            CreateBasicRules(),
             _createdAtUtc.AddMinutes( 1 ) ) );
+    }
+
+    [Fact]
+    public void CreateRevisionRejectsRulesComponentSetAlreadyOwnedByAnotherRevision()
+    {
+        ItemDefinition definition = ItemDefinition.Create( "equipment.longsword", _createdAtUtc );
+        ItemRevisionRules rules = CreateBasicRules();
+        definition.CreateRevision(
+            "Longsword",
+            String.Empty,
+            0,
+            100,
+            1,
+            rules,
+            _createdAtUtc.AddMinutes( 1 ) );
+
+        Assert.Throws<ItemCatalogException>( () => definition.CreateRevision(
+            "Longsword",
+            String.Empty,
+            1,
+            120,
+            1,
+            rules,
+            _createdAtUtc.AddMinutes( 2 ) ) );
+    }
+
+    private static ItemRevisionRules CreateBasicRules()
+    {
+        return ItemRevisionRules.Create(
+            ItemCategory.OtherEquipment,
+            equipment: EquipmentComponent.Create( EquipmentUsage.Worn, 0 ) );
     }
 }
