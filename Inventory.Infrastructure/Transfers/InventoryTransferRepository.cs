@@ -29,6 +29,20 @@ public sealed class InventoryTransferRepository : IInventoryTransferRepository
             cancellationToken );
     }
 
+    public async Task<InventoryContainer?> GetContainerAsync(
+        int campaignId,
+        InventoryContainerOwnerKind ownerKind,
+        int ownerId,
+        CancellationToken cancellationToken )
+    {
+        return await _dbContext.Containers.SingleOrDefaultAsync(
+            container =>
+                ( container.CampaignId == campaignId ) &&
+                ( container.OwnerKind == ownerKind ) &&
+                ( container.OwnerId == ownerId ),
+            cancellationToken );
+    }
+
     public async Task<ItemInstance?> GetItemAsync(
         Guid itemInstanceKey,
         CancellationToken cancellationToken )
@@ -69,6 +83,11 @@ public sealed class InventoryTransferRepository : IInventoryTransferRepository
     public void AddExchange( PartyExchange exchange )
     {
         _dbContext.PartyExchanges.Add( exchange );
+    }
+
+    public void AddContainer( InventoryContainer container )
+    {
+        _dbContext.Containers.Add( container );
     }
 
     public async Task SaveChangesAsync( CancellationToken cancellationToken )

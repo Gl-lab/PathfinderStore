@@ -250,6 +250,19 @@ public sealed class Campaign : Entity, IAggregateRoot
         return party.AssignCharacter( characterId, controlledByUserId, assignedAtUtc );
     }
 
+    public CampaignPartyStorage SetActivePartyStorageAccessPolicy(
+        int actingUserId,
+        CampaignPartyStorageAccessPolicy accessPolicy )
+    {
+        EnsureActive();
+        EnsureGameMaster( actingUserId );
+        CampaignParty party = _parties.SingleOrDefault( item =>
+            item.Status == CampaignPartyStatus.Active ) ??
+            throw new CampaignManagementException( "Campaign does not have an active party." );
+        party.Storage.SetAccessPolicy( accessPolicy );
+        return party.Storage;
+    }
+
     private bool HasActiveMembership( int userId ) => _memberships.Any( membership =>
         membership.UserId == userId &&
         membership.Status == CampaignMembershipStatus.Active );

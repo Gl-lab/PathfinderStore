@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Npgsql;
 using Pathfinder.Inventory.Application.Transfers;
+using Pathfinder.Inventory.Application.Storage;
 using Pathfinder.Inventory.Domain.Exceptions;
 using Pathfinder.Web.Controllers.Base;
 
@@ -198,6 +199,62 @@ public sealed class PartyInventoryController : AuthorizedController
         }
     }
 
+    [HttpPost( "party-storage/deposit" )]
+    [ProducesResponseType( typeof( PartyStorageItemDto ), StatusCodes.Status200OK )]
+    public async Task<ActionResult<PartyStorageItemDto>> DepositPartyStorage(
+        int campaignId,
+        [FromBody] PartyStorageTransferRequest request )
+    {
+        return await TransferPartyStorage( userId => new DepositPartyStorageCommand(
+            userId,
+            campaignId,
+            request.CharacterId,
+            request.ItemInstanceKey,
+            request.ExpectedItemVersion,
+            request.OperationId ) );
+    }
+
+    [HttpPost( "party-storage/withdraw" )]
+    [ProducesResponseType( typeof( PartyStorageItemDto ), StatusCodes.Status200OK )]
+    public async Task<ActionResult<PartyStorageItemDto>> WithdrawPartyStorage(
+        int campaignId,
+        [FromBody] PartyStorageTransferRequest request )
+    {
+        return await TransferPartyStorage( userId => new WithdrawPartyStorageCommand(
+            userId,
+            campaignId,
+            request.CharacterId,
+            request.ItemInstanceKey,
+            request.ExpectedItemVersion,
+            request.OperationId ) );
+    }
+
+    private async Task<ActionResult<PartyStorageItemDto>> TransferPartyStorage(
+        Func<int, IRequest<PartyStorageItemDto>> commandFactory )
+    {
+        try
+        {
+            PartyStorageItemDto item = await _mediator.Send( commandFactory( CurrentUserId() ) );
+            return Ok( item );
+        }
+        catch ( InvalidOperationException )
+        {
+            return Unauthorized();
+        }
+        catch ( InventoryException exception )
+        {
+            return BadRequest( MapError( exception.Message ) );
+        }
+        catch ( DbUpdateException exception )
+        {
+            return DatabaseUnavailable( exception );
+        }
+        catch ( PostgresException exception )
+        {
+            return DatabaseUnavailable( exception );
+        }
+    }
+
     private ObjectResult DatabaseUnavailable( Exception exception )
     {
         _logger.LogError( exception, "Failed to update party inventory." );
@@ -229,3 +286,9 @@ public sealed record CreatePartyExchangeLineRequest(
     Guid ReservationOperationId );
 
 public sealed record FinalizePartyExchangeRequest( Guid OperationId );
+
+public sealed record PartyStorageTransferRequest(
+    int CharacterId,
+    Guid ItemInstanceKey,
+    int ExpectedItemVersion,
+    Guid OperationId );

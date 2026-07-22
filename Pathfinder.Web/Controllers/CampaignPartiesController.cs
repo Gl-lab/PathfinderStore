@@ -11,6 +11,7 @@ using Npgsql;
 using Pathfinder.CampaignManagement.Application.Campaigns;
 using Pathfinder.CampaignManagement.Application.Exceptions;
 using Pathfinder.CampaignManagement.Domain.Exceptions;
+using Pathfinder.CampaignManagement.Domain.Campaigns;
 using Pathfinder.Web.Controllers.Base;
 
 namespace Pathfinder.Web.Controllers;
@@ -128,6 +129,43 @@ public sealed class CampaignPartiesController : AuthorizedController
         }
     }
 
+    [HttpPost( "campaigns/{campaignId:int}/storage-policy" )]
+    [ProducesResponseType( typeof( CampaignDto ), StatusCodes.Status200OK )]
+    public async Task<ActionResult<CampaignDto>> SetStoragePolicy(
+        int campaignId,
+        [FromBody] SetPartyStoragePolicyRequest request )
+    {
+        try
+        {
+            CampaignDto campaign = await _mediator.Send(
+                new SetPartyStorageAccessPolicyCommand(
+                    CurrentUserId(),
+                    campaignId,
+                    request.AccessPolicy ) );
+            return Ok( campaign );
+        }
+        catch ( InvalidOperationException )
+        {
+            return Unauthorized();
+        }
+        catch ( CampaignManagementApplicationException exception )
+        {
+            return NotFound( MapError( exception.Message ) );
+        }
+        catch ( CampaignManagementException exception )
+        {
+            return BadRequest( MapError( exception.Message ) );
+        }
+        catch ( DbUpdateException exception )
+        {
+            return DatabaseUnavailable( exception, "set party storage policy" );
+        }
+        catch ( PostgresException exception )
+        {
+            return DatabaseUnavailable( exception, "set party storage policy" );
+        }
+    }
+
     private ObjectResult DatabaseUnavailable( Exception exception, string operation )
     {
         _logger.LogError( exception, "Failed to {Operation} in the database.", operation );
@@ -142,3 +180,6 @@ public sealed record CreateCampaignPartyRequest( string Name );
 public sealed record AssignCampaignPartyCharacterRequest(
     int CharacterId,
     int? ControlledByUserId );
+
+public sealed record SetPartyStoragePolicyRequest(
+    CampaignPartyStorageAccessPolicy AccessPolicy );

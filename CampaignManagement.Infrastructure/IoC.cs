@@ -3,6 +3,7 @@ using Pathfinder.CampaignManagement.Application.Campaigns;
 using Pathfinder.CampaignManagement.Infrastructure.Campaigns;
 using Pathfinder.CharacterManagement.Application.Access;
 using Pathfinder.Inventory.Application.Transfers;
+using Pathfinder.Inventory.Application.Storage;
 
 namespace Pathfinder.CampaignManagement.Infrastructure;
 
@@ -13,5 +14,6 @@ public static class DependencyInjection
         services.AddScoped<ICampaignRepository, CampaignRepository>();
         services.AddScoped<ICharacterCampaignAccessPolicy, CampaignCharacterAccessPolicy>();
         services.AddScoped<IPartyTransferAccessPolicy, PartyTransferAccessPolicy>();
+        services.AddScoped<IPartyStorageAccessPolicy, PartyStorageAccessPolicy>();
     }
 }

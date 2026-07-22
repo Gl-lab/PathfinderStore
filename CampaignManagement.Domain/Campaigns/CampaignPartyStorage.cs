@@ -26,4 +26,15 @@ public sealed class CampaignPartyStorage : Entity
             CreatedAtUtc = createdAtUtc,
         };
     }
+
+    internal void SetAccessPolicy( CampaignPartyStorageAccessPolicy accessPolicy )
+    {
+        if ( !Enum.IsDefined( accessPolicy ) ||
+             ( accessPolicy == CampaignPartyStorageAccessPolicy.Unconfigured ) )
+        {
+            throw new CampaignManagementException( "Party storage access policy is invalid." );
+        }
+
+        AccessPolicy = accessPolicy;
+    }
 }

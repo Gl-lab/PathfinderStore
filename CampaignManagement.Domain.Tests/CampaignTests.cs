@@ -176,6 +176,28 @@ public sealed class CampaignTests
     }
 
     [Fact]
+    public void OnlyGameMasterConfiguresPartyStoragePolicy()
+    {
+        Campaign campaign = CreateCampaignWithPlayer();
+        CampaignParty party = campaign.CreateParty(
+            42,
+            "Heroes",
+            _createdAtUtc.AddHours( 3 ) );
+
+        campaign.SetActivePartyStorageAccessPolicy(
+            42,
+            CampaignPartyStorageAccessPolicy.FreeForMembers );
+
+        Assert.Equal(
+            CampaignPartyStorageAccessPolicy.FreeForMembers,
+            party.Storage.AccessPolicy );
+        Assert.Throws<CampaignManagementException>( () =>
+            campaign.SetActivePartyStorageAccessPolicy(
+                7,
+                CampaignPartyStorageAccessPolicy.GameMasterOnly ) );
+    }
+
+    [Fact]
     public void PlayerCannotAssignCharacterForAnotherPlayer()
     {
         Campaign campaign = CreateCampaignWithPlayer();
