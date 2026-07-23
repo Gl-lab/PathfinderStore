@@ -30,6 +30,9 @@
 
   
   <ItemGroup>
+    <ProjectReference Include="..\Commerce.Application\Commerce.Application.csproj" />
+    <ProjectReference Include="..\Commerce.Domain\Commerce.Domain.csproj" />
+    <ProjectReference Include="..\Commerce.Infrastructure\Commerce.Infrastructure.csproj" />
     <ProjectReference Include="..\CampaignManagement.Application\CampaignManagement.Application.csproj" />
     <ProjectReference Include="..\CampaignManagement.Infrastructure\CampaignManagement.Infrastructure.csproj" />
     <ProjectReference Include="..\ItemCatalog.Application\ItemCatalog.Application.csproj" />

@@ -19,6 +19,8 @@ using Pathfinder.ItemCatalog.Infrastructure;
 using Pathfinder.Inventory.Application;
 using Pathfinder.Inventory.Application.Transfers;
 using Pathfinder.Inventory.Infrastructure;
+using Pathfinder.Commerce.Application;
+using Pathfinder.Commerce.Infrastructure;
 using Pathfinder.CharacterManagement.Infrastructure.Consumers;
 using Pathfinder.Web.Extensions;
 using Pathfinder.Web.Integration;
@@ -46,6 +48,8 @@ public class Startup( IConfiguration configuration )
         services.AddItemCatalogInfrastructureServices();
         services.AddInventoryApplicationServices();
         services.AddInventoryInfrastructureServices();
+        services.AddCommerceApplicationServices();
+        services.AddCommerceInfrastructureServices();
         services.AddScoped<IItemTransferRestrictionPolicy, ItemTransferRestrictionPolicy>();
         services.AddScoped<CompletedCharacterInventoryMigrationService>();
         services.AddHostedService<CompletedCharacterInventoryMigrationHostedService>();

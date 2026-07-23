@@ -2,10 +2,13 @@ using Microsoft.EntityFrameworkCore;
 using Pathfinder.CampaignManagement.Domain.Campaigns;
 using Pathfinder.CampaignManagement.Infrastructure.Data;
 using Pathfinder.Inventory.Application.Administration;
+using Pathfinder.Commerce.Application.Shops;
 
 namespace Pathfinder.CampaignManagement.Infrastructure.Campaigns;
 
-public sealed class InventoryGameMasterAccessPolicy : IInventoryGameMasterAccessPolicy
+public sealed class InventoryGameMasterAccessPolicy :
+    IInventoryGameMasterAccessPolicy,
+    ICommerceCampaignAccessPolicy
 {
     private readonly CampaignManagementDbContext _dbContext;
 

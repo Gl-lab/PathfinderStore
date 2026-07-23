@@ -22,6 +22,7 @@ using Pathfinder.CampaignManagement.Application.Campaigns;
 using Pathfinder.ItemCatalog.Application.Administration;
 using Pathfinder.ItemCatalog.Infrastructure.Data;
 using Pathfinder.Inventory.Infrastructure.Data;
+using Pathfinder.Commerce.Infrastructure.Data;
 using Pathfinder.Secure.Infrastructure.Data;
 using Pathfinder.Utils.UnitOfWork;
 using Pathfinder.Web.Authentication;
@@ -59,6 +60,12 @@ public static class ServiceCollection
         ?? configuration[ "DB:CharacterManagement" ]
         ?? configuration[ "DB_CONNECTION" ]
         ?? throw new InvalidOperationException( "Connection string 'DB:Inventory' was not found. Configure 'DB:Inventory'." );
+
+    private static string GetCommerceConnectionString( IConfiguration configuration ) =>
+        configuration[ "DB:Commerce" ]
+        ?? configuration[ "DB:CharacterManagement" ]
+        ?? configuration[ "DB_CONNECTION" ]
+        ?? throw new InvalidOperationException( "Connection string 'DB:Commerce' was not found. Configure 'DB:Commerce'." );
 
     private static string GetSecurityKey( IConfiguration configuration ) =>
         configuration[ "Authentication:SecurityKey" ]
@@ -137,6 +144,10 @@ public static class ServiceCollection
             options
                .UseNpgsql( connectionString: GetInventoryConnectionString( configuration ) ) );
 
+        services.AddDbContext<CommerceDbContext>( options =>
+            options
+               .UseNpgsql( connectionString: GetCommerceConnectionString( configuration ) ) );
+
         services.AddScoped<IUnitOfWork>( context =>
         {
             UnitOfWork unitOfWork = new();
@@ -146,6 +157,7 @@ public static class ServiceCollection
             unitOfWork.AddDbContext( context.GetRequiredService<CampaignManagementDbContext>() );
             unitOfWork.AddDbContext( context.GetRequiredService<ItemCatalogDbContext>() );
             unitOfWork.AddDbContext( context.GetRequiredService<InventoryDbContext>() );
+            unitOfWork.AddDbContext( context.GetRequiredService<CommerceDbContext>() );
             return unitOfWork;
         } );
     }
