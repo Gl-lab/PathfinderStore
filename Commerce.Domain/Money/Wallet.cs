@@ -92,6 +92,100 @@ public sealed class Wallet : Entity, IAggregateRoot
         return entry;
     }
 
+    public WalletLedgerEntry ReserveFunds(
+        Guid operationId,
+        long amountCopper,
+        int performedByUserId,
+        DateTimeOffset occurredAtUtc )
+    {
+        EnsureReservationOperation( operationId, performedByUserId, occurredAtUtc );
+        if ( amountCopper <= 0 )
+        {
+            throw new CommerceException( "Reserved amount must be greater than zero." );
+        }
+
+        WalletLedgerEntry? existing = FindEntry( operationId );
+        if ( existing is not null )
+        {
+            if ( ( existing.Kind != WalletTransactionKind.ReservationHold ) ||
+                 ( existing.AmountCopper != -amountCopper ) )
+            {
+                throw new CommerceException(
+                    "Wallet operation id was already used with different data." );
+            }
+
+            return existing;
+        }
+
+        if ( amountCopper > AvailableCopper )
+        {
+            throw new CommerceException( "Wallet has insufficient available funds." );
+        }
+
+        ReservedCopper = checked( ReservedCopper + amountCopper );
+        Version++;
+        WalletLedgerEntry entry = WalletLedgerEntry.Create(
+            operationId,
+            WalletTransactionKind.ReservationHold,
+            -amountCopper,
+            BalanceCopper,
+            "Purchase funds reserved.",
+            performedByUserId,
+            occurredAtUtc );
+        _entries.Add( entry );
+        return entry;
+    }
+
+    public WalletLedgerEntry ReleaseFunds(
+        Guid operationId,
+        long amountCopper,
+        int performedByUserId,
+        DateTimeOffset occurredAtUtc )
+    {
+        EnsureReservationOperation( operationId, performedByUserId, occurredAtUtc );
+        if ( ( amountCopper <= 0 ) || ( amountCopper > ReservedCopper ) )
+        {
+            throw new CommerceException( "Released reservation amount is invalid." );
+        }
+
+        WalletLedgerEntry? existing = FindEntry( operationId );
+        if ( existing is not null )
+        {
+            return existing;
+        }
+
+        ReservedCopper -= amountCopper;
+        Version++;
+        WalletLedgerEntry entry = WalletLedgerEntry.Create(
+            operationId,
+            WalletTransactionKind.ReservationRelease,
+            amountCopper,
+            BalanceCopper,
+            "Purchase funds released.",
+            performedByUserId,
+            occurredAtUtc );
+        _entries.Add( entry );
+        return entry;
+    }
+
+    private static void EnsureReservationOperation(
+        Guid operationId,
+        int performedByUserId,
+        DateTimeOffset occurredAtUtc )
+    {
+        if ( operationId == Guid.Empty )
+        {
+            throw new CommerceException( "Wallet operation id cannot be empty." );
+        }
+
+        if ( performedByUserId <= 0 )
+        {
+            throw new CommerceException( "Wallet actor user id must be greater than zero." );
+        }
+
+        EnsureUtc( occurredAtUtc );
+    }
+
     private WalletLedgerEntry? FindEntry( Guid operationId ) =>
         _entries.SingleOrDefault( entry => entry.OperationId == operationId );
 

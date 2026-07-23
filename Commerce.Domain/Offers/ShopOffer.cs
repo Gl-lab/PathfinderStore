@@ -16,8 +16,10 @@ public sealed class ShopOffer : Entity, IAggregateRoot
     public int? ItemConfigurationId { get; private set; }
     public Guid? ItemInstanceKey { get; private set; }
     public int AvailableQuantity { get; private set; }
+    public int ReservedQuantity { get; private set; }
     public long UnitPriceCopper { get; private set; }
     public ShopOfferStatus Status { get; private set; }
+    public int Version { get; private set; }
     public DateTimeOffset CreatedAtUtc { get; private set; }
 
     public static ShopOffer CreateCatalog(
@@ -91,9 +93,38 @@ public sealed class ShopOffer : Entity, IAggregateRoot
             ItemConfigurationId = itemConfigurationId,
             ItemInstanceKey = itemInstanceKey,
             AvailableQuantity = availableQuantity,
+            ReservedQuantity = 0,
             UnitPriceCopper = unitPriceCopper,
             Status = ShopOfferStatus.Active,
+            Version = 0,
             CreatedAtUtc = createdAtUtc,
         };
+    }
+
+    public void Reserve( int quantity )
+    {
+        if ( Status != ShopOfferStatus.Active )
+        {
+            throw new CommerceException( "Only an active offer can be reserved." );
+        }
+
+        if ( ( quantity <= 0 ) || ( quantity > ( AvailableQuantity - ReservedQuantity ) ) )
+        {
+            throw new CommerceException( "Offer has insufficient unreserved quantity." );
+        }
+
+        ReservedQuantity += quantity;
+        Version++;
+    }
+
+    public void Release( int quantity )
+    {
+        if ( ( quantity <= 0 ) || ( quantity > ReservedQuantity ) )
+        {
+            throw new CommerceException( "Offer reservation quantity is invalid." );
+        }
+
+        ReservedQuantity -= quantity;
+        Version++;
     }
 }

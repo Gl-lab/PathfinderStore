@@ -6,6 +6,7 @@ using Pathfinder.Inventory.Application.Transfers;
 using Pathfinder.Inventory.Application.Storage;
 using Pathfinder.Inventory.Application.Administration;
 using Pathfinder.Commerce.Application.Shops;
+using Pathfinder.Commerce.Application.Transactions;
 
 namespace Pathfinder.CampaignManagement.Infrastructure;
 
@@ -19,5 +20,6 @@ public static class DependencyInjection
         services.AddScoped<IPartyStorageAccessPolicy, PartyStorageAccessPolicy>();
         services.AddScoped<IInventoryGameMasterAccessPolicy, InventoryGameMasterAccessPolicy>();
         services.AddScoped<ICommerceCampaignAccessPolicy, InventoryGameMasterAccessPolicy>();
+        services.AddScoped<ICommerceBuyerAccessPolicy, CommerceBuyerAccessPolicy>();
     }
 }

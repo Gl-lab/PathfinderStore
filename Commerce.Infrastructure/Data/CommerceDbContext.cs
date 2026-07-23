@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Pathfinder.Commerce.Domain.Shops;
 using Pathfinder.Commerce.Domain.Offers;
 using Pathfinder.Commerce.Domain.Money;
+using Pathfinder.Commerce.Domain.Transactions;
 
 namespace Pathfinder.Commerce.Infrastructure.Data;
 
@@ -17,6 +18,7 @@ public sealed class CommerceDbContext : DbContext
     public DbSet<ShopOffer> ShopOffers => Set<ShopOffer>();
     public DbSet<Wallet> Wallets => Set<Wallet>();
     public DbSet<WalletLedgerEntry> WalletLedgerEntries => Set<WalletLedgerEntry>();
+    public DbSet<PurchaseReservation> PurchaseReservations => Set<PurchaseReservation>();
 
     protected override void OnModelCreating( ModelBuilder modelBuilder )
     {
@@ -86,7 +88,8 @@ public sealed class CommerceDbContext : DbContext
                     "\"CampaignId\" > 0 AND \"ShopId\" > 0" );
                 tableBuilder.HasCheckConstraint(
                     "CK_ShopOffer_QuantityPrice",
-                    "\"AvailableQuantity\" > 0 AND \"UnitPriceCopper\" >= 0" );
+                    "\"AvailableQuantity\" > 0 AND \"ReservedQuantity\" >= 0 AND " +
+                    "\"ReservedQuantity\" <= \"AvailableQuantity\" AND \"UnitPriceCopper\" >= 0" );
                 tableBuilder.HasCheckConstraint(
                     "CK_ShopOffer_Target",
                     "(\"Kind\" = 1 AND \"ItemConfigurationId\" IS NOT NULL AND \"ItemInstanceKey\" IS NULL) OR " +
@@ -96,6 +99,8 @@ public sealed class CommerceDbContext : DbContext
                 .HasConversion<int>();
             builder.Property( offer => offer.Status )
                 .HasConversion<int>();
+            builder.Property( offer => offer.Version )
+                .IsConcurrencyToken();
             builder.HasIndex( offer => offer.OfferKey )
                 .IsUnique();
             builder.HasIndex( offer => offer.ItemInstanceKey )
@@ -159,6 +164,34 @@ public sealed class CommerceDbContext : DbContext
                 entry.OperationId,
             } )
                 .IsUnique();
+        } );
+        modelBuilder.Entity<PurchaseReservation>( builder =>
+        {
+            builder.ToTable( "PurchaseReservation", tableBuilder =>
+            {
+                tableBuilder.HasCheckConstraint(
+                    "CK_PurchaseReservation_Identity",
+                    "\"CampaignId\" > 0 AND \"BuyerCharacterId\" > 0 AND \"Quantity\" > 0" );
+                tableBuilder.HasCheckConstraint(
+                    "CK_PurchaseReservation_Price",
+                    "\"UnitPriceCopper\" >= 0 AND \"TotalPriceCopper\" >= 0" );
+            } );
+            builder.Property( reservation => reservation.Status )
+                .HasConversion<int>();
+            builder.HasIndex( reservation => reservation.ReservationKey )
+                .IsUnique();
+            builder.HasIndex( reservation => new
+            {
+                reservation.CampaignId,
+                reservation.OperationId,
+            } )
+                .IsUnique();
+            builder.HasIndex( reservation => new
+            {
+                reservation.CampaignId,
+                reservation.OfferKey,
+                reservation.Status,
+            } );
         } );
     }
 }
