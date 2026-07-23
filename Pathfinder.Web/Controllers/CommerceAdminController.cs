@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Pathfinder.Commerce.Application.Shops;
 using Pathfinder.Commerce.Domain.Exceptions;
 using Pathfinder.Commerce.Application.Offers;
+using Pathfinder.Commerce.Application.Money;
 using Pathfinder.Web.Controllers.Base;
 
 namespace Pathfinder.Web.Controllers;
@@ -14,13 +15,45 @@ public sealed class CommerceAdminController : AuthorizedController
 {
     private readonly ShopAdministrationService _service;
     private readonly ShopOfferAdministrationService _offerService;
+    private readonly WalletAdministrationService _walletService;
 
     public CommerceAdminController(
         ShopAdministrationService service,
-        ShopOfferAdministrationService offerService )
+        ShopOfferAdministrationService offerService,
+        WalletAdministrationService walletService )
     {
         _service = service;
         _offerService = offerService;
+        _walletService = walletService;
+    }
+
+    [HttpPost( "wallets/{characterId:int}/adjustments" )]
+    public async Task<ActionResult<WalletDto>> AdjustWallet(
+        int campaignId,
+        int characterId,
+        [FromBody] AdjustWalletApiRequest request,
+        CancellationToken cancellationToken )
+    {
+        try
+        {
+            WalletDto result = await _walletService.AdjustAsync(
+                campaignId,
+                characterId,
+                request.OperationId,
+                request.AmountCopper,
+                request.Description,
+                CurrentUserId(),
+                cancellationToken );
+            return Ok( result );
+        }
+        catch ( UnauthorizedAccessException )
+        {
+            return Forbid();
+        }
+        catch ( CommerceException exception )
+        {
+            return BadRequest( MapError( exception.Message ) );
+        }
     }
 
     [HttpPost( "shops/{shopId:int}/catalog-offers" )]
@@ -167,3 +200,8 @@ public sealed record CreateStockOfferApiRequest(
     Guid ItemInstanceKey,
     int Quantity,
     long UnitPriceCopper );
+
+public sealed record AdjustWalletApiRequest(
+    Guid OperationId,
+    long AmountCopper,
+    string Description );

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Pathfinder.Commerce.Domain.Shops;
 using Pathfinder.Commerce.Domain.Offers;
+using Pathfinder.Commerce.Domain.Money;
 
 namespace Pathfinder.Commerce.Infrastructure.Data;
 
@@ -14,6 +15,8 @@ public sealed class CommerceDbContext : DbContext
     public DbSet<Settlement> Settlements => Set<Settlement>();
     public DbSet<Shop> Shops => Set<Shop>();
     public DbSet<ShopOffer> ShopOffers => Set<ShopOffer>();
+    public DbSet<Wallet> Wallets => Set<Wallet>();
+    public DbSet<WalletLedgerEntry> WalletLedgerEntries => Set<WalletLedgerEntry>();
 
     protected override void OnModelCreating( ModelBuilder modelBuilder )
     {
@@ -108,6 +111,54 @@ public sealed class CommerceDbContext : DbContext
                 .WithMany()
                 .HasForeignKey( offer => offer.ShopId )
                 .OnDelete( DeleteBehavior.Cascade );
+        } );
+        modelBuilder.Entity<Wallet>( builder =>
+        {
+            builder.ToTable( "Wallet", tableBuilder =>
+            {
+                tableBuilder.HasCheckConstraint(
+                    "CK_Wallet_Identity",
+                    "\"CampaignId\" > 0 AND \"CharacterId\" > 0" );
+                tableBuilder.HasCheckConstraint(
+                    "CK_Wallet_Balance",
+                    "\"BalanceCopper\" >= 0 AND \"ReservedCopper\" >= 0 AND " +
+                    "\"ReservedCopper\" <= \"BalanceCopper\"" );
+            } );
+            builder.Property( wallet => wallet.Version )
+                .IsConcurrencyToken();
+            builder.HasIndex( wallet => new
+            {
+                wallet.CampaignId,
+                wallet.CharacterId,
+            } )
+                .IsUnique();
+            builder.HasMany( wallet => wallet.Entries )
+                .WithOne()
+                .HasForeignKey( entry => entry.WalletId )
+                .OnDelete( DeleteBehavior.Restrict );
+        } );
+        modelBuilder.Entity<WalletLedgerEntry>( builder =>
+        {
+            builder.ToTable( "WalletLedgerEntry", tableBuilder =>
+            {
+                tableBuilder.HasCheckConstraint(
+                    "CK_WalletLedgerEntry_Amount",
+                    "\"AmountCopper\" <> 0" );
+                tableBuilder.HasCheckConstraint(
+                    "CK_WalletLedgerEntry_Actor",
+                    "\"PerformedByUserId\" > 0" );
+            } );
+            builder.Property( entry => entry.Kind )
+                .HasConversion<int>();
+            builder.Property( entry => entry.Description )
+                .HasMaxLength( WalletLedgerEntry.DescriptionMaxLength )
+                .IsRequired();
+            builder.HasIndex( entry => new
+            {
+                entry.WalletId,
+                entry.OperationId,
+            } )
+                .IsUnique();
         } );
     }
 }

@@ -3,6 +3,8 @@ using Pathfinder.Commerce.Application.Shops;
 using Pathfinder.Commerce.Infrastructure.Shops;
 using Pathfinder.Commerce.Application.Offers;
 using Pathfinder.Commerce.Infrastructure.Offers;
+using Pathfinder.Commerce.Application.Money;
+using Pathfinder.Commerce.Infrastructure.Money;
 
 namespace Pathfinder.Commerce.Infrastructure;
 
@@ -12,5 +14,6 @@ public static class DependencyInjection
     {
         services.AddScoped<ISettlementRepository, SettlementRepository>();
         services.AddScoped<IShopOfferRepository, ShopOfferRepository>();
+        services.AddScoped<IWalletRepository, WalletRepository>();
     }
 }
