@@ -168,6 +168,73 @@ public sealed class Wallet : Entity, IAggregateRoot
         return entry;
     }
 
+    public WalletLedgerEntry CompletePurchase(
+        Guid operationId,
+        long amountCopper,
+        int performedByUserId,
+        DateTimeOffset occurredAtUtc )
+    {
+        EnsureReservationOperation( operationId, performedByUserId, occurredAtUtc );
+        if ( ( amountCopper <= 0 ) ||
+             ( amountCopper > ReservedCopper ) ||
+             ( amountCopper > BalanceCopper ) )
+        {
+            throw new CommerceException( "Purchase amount is not fully reserved." );
+        }
+
+        WalletLedgerEntry? existing = FindEntry( operationId );
+        if ( existing is not null )
+        {
+            return existing;
+        }
+
+        ReservedCopper -= amountCopper;
+        BalanceCopper -= amountCopper;
+        Version++;
+        WalletLedgerEntry entry = WalletLedgerEntry.Create(
+            operationId,
+            WalletTransactionKind.Purchase,
+            -amountCopper,
+            BalanceCopper,
+            "Purchase completed.",
+            performedByUserId,
+            occurredAtUtc );
+        _entries.Add( entry );
+        return entry;
+    }
+
+    public WalletLedgerEntry CreditSale(
+        Guid operationId,
+        long amountCopper,
+        int performedByUserId,
+        DateTimeOffset occurredAtUtc )
+    {
+        EnsureReservationOperation( operationId, performedByUserId, occurredAtUtc );
+        if ( amountCopper <= 0 )
+        {
+            throw new CommerceException( "Sale amount must be greater than zero." );
+        }
+
+        WalletLedgerEntry? existing = FindEntry( operationId );
+        if ( existing is not null )
+        {
+            return existing;
+        }
+
+        BalanceCopper = checked( BalanceCopper + amountCopper );
+        Version++;
+        WalletLedgerEntry entry = WalletLedgerEntry.Create(
+            operationId,
+            WalletTransactionKind.Sale,
+            amountCopper,
+            BalanceCopper,
+            "Item sold to shop.",
+            performedByUserId,
+            occurredAtUtc );
+        _entries.Add( entry );
+        return entry;
+    }
+
     private static void EnsureReservationOperation(
         Guid operationId,
         int performedByUserId,

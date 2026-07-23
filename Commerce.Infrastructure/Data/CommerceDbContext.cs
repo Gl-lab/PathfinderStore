@@ -19,6 +19,7 @@ public sealed class CommerceDbContext : DbContext
     public DbSet<Wallet> Wallets => Set<Wallet>();
     public DbSet<WalletLedgerEntry> WalletLedgerEntries => Set<WalletLedgerEntry>();
     public DbSet<PurchaseReservation> PurchaseReservations => Set<PurchaseReservation>();
+    public DbSet<ShopSale> ShopSales => Set<ShopSale>();
 
     protected override void OnModelCreating( ModelBuilder modelBuilder )
     {
@@ -192,6 +193,27 @@ public sealed class CommerceDbContext : DbContext
                 reservation.OfferKey,
                 reservation.Status,
             } );
+        } );
+        modelBuilder.Entity<ShopSale>( builder =>
+        {
+            builder.ToTable( "ShopSale", tableBuilder =>
+            {
+                tableBuilder.HasCheckConstraint(
+                    "CK_ShopSale_Identity",
+                    "\"CampaignId\" > 0 AND \"ShopId\" > 0 AND " +
+                    "\"SellerCharacterId\" > 0 AND \"ItemConfigurationId\" > 0" );
+                tableBuilder.HasCheckConstraint(
+                    "CK_ShopSale_Price",
+                    "\"Quantity\" > 0 AND \"UnitPriceCopper\" >= 0 AND \"TotalPriceCopper\" >= 0" );
+            } );
+            builder.HasIndex( sale => sale.SaleKey )
+                .IsUnique();
+            builder.HasIndex( sale => new
+            {
+                sale.CampaignId,
+                sale.OperationId,
+            } )
+                .IsUnique();
         } );
     }
 }

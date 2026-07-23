@@ -6,4 +6,8 @@ public interface ICommerceCatalogReader
         int itemConfigurationId,
         int campaignId,
         CancellationToken cancellationToken );
+    Task<long?> GetBasePriceCopperAsync(
+        int itemConfigurationId,
+        int campaignId,
+        CancellationToken cancellationToken ) => Task.FromResult<long?>( null );
 }

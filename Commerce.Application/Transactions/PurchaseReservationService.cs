@@ -2,6 +2,8 @@ using Pathfinder.Commerce.Domain.Exceptions;
 using Pathfinder.Commerce.Domain.Money;
 using Pathfinder.Commerce.Domain.Offers;
 using Pathfinder.Commerce.Domain.Transactions;
+using Pathfinder.Commerce.Application.Offers;
+using Pathfinder.Commerce.Domain.Shops;
 
 namespace Pathfinder.Commerce.Application.Transactions;
 
@@ -11,16 +13,168 @@ public sealed class PurchaseReservationService
 
     private readonly IPurchaseReservationRepository _repository;
     private readonly ICommerceBuyerAccessPolicy _accessPolicy;
+    private readonly ICommerceInventoryTradePort _inventoryTradePort;
+    private readonly ICommerceCatalogReader _catalogReader;
     private readonly TimeProvider _timeProvider;
 
     public PurchaseReservationService(
         IPurchaseReservationRepository repository,
         ICommerceBuyerAccessPolicy accessPolicy,
+        ICommerceInventoryTradePort inventoryTradePort,
+        ICommerceCatalogReader catalogReader,
         TimeProvider timeProvider )
     {
         _repository = repository;
         _accessPolicy = accessPolicy;
+        _inventoryTradePort = inventoryTradePort;
+        _catalogReader = catalogReader;
         _timeProvider = timeProvider;
+    }
+
+    public async Task<PurchaseReservationDto> CompleteAsync(
+        int campaignId,
+        Guid reservationKey,
+        Guid operationId,
+        int actingUserId,
+        CancellationToken cancellationToken )
+    {
+        PurchaseReservation reservation = await _repository.GetAsync(
+            campaignId,
+            reservationKey,
+            cancellationToken ) ?? throw new CommerceException( "Reservation was not found." );
+        await EnsureControlsCharacterAsync(
+            campaignId,
+            actingUserId,
+            reservation.BuyerCharacterId,
+            cancellationToken );
+        if ( reservation.Status == PurchaseReservationStatus.Completed )
+        {
+            return ToDto( reservation );
+        }
+
+        ShopOffer offer = await _repository.GetOfferAsync(
+            campaignId,
+            reservation.OfferKey,
+            cancellationToken ) ?? throw new CommerceException( "Reserved offer was not found." );
+        Wallet wallet = await _repository.GetWalletAsync(
+            campaignId,
+            reservation.BuyerCharacterId,
+            cancellationToken ) ?? throw new CommerceException( "Buyer wallet was not found." );
+        DateTimeOffset now = _timeProvider.GetUtcNow();
+        if ( now > reservation.ExpiresAtUtc )
+        {
+            throw new CommerceException( "Purchase reservation has expired." );
+        }
+
+        Guid purchasedItemKey = await _inventoryTradePort.CompletePurchaseAsync(
+            campaignId,
+            offer.ShopId,
+            reservation.BuyerCharacterId,
+            offer.Kind,
+            offer.ItemConfigurationId,
+            offer.ItemInstanceKey,
+            reservation.Quantity,
+            operationId,
+            actingUserId,
+            now,
+            cancellationToken );
+        offer.CompleteReserved( reservation.Quantity );
+        if ( reservation.TotalPriceCopper > 0 )
+        {
+            wallet.CompletePurchase(
+                operationId,
+                reservation.TotalPriceCopper,
+                actingUserId,
+                now );
+        }
+
+        reservation.Complete( purchasedItemKey, now );
+        await _repository.SaveChangesAsync( cancellationToken );
+        return ToDto( reservation );
+    }
+
+    public async Task<ShopSaleDto> SellAsync(
+        int campaignId,
+        int shopId,
+        int sellerCharacterId,
+        Guid itemInstanceKey,
+        Guid operationId,
+        int actingUserId,
+        CancellationToken cancellationToken )
+    {
+        await EnsureControlsCharacterAsync(
+            campaignId,
+            actingUserId,
+            sellerCharacterId,
+            cancellationToken );
+        ShopSale? existing = await _repository.GetSaleByOperationAsync(
+            campaignId,
+            operationId,
+            cancellationToken );
+        if ( existing is not null )
+        {
+            return ToDto( existing );
+        }
+
+        Shop shop = await _repository.GetShopAsync(
+            campaignId,
+            shopId,
+            cancellationToken ) ?? throw new CommerceException( "Campaign shop was not found." );
+        CommerceSellableItem item = await _inventoryTradePort.GetSellableItemAsync(
+            campaignId,
+            sellerCharacterId,
+            itemInstanceKey,
+            operationId,
+            actingUserId,
+            cancellationToken ) ?? throw new CommerceException( "Seller item was not found." );
+        if ( !item.CanTransfer )
+        {
+            throw new CommerceException( "Item cannot be sold in its current state." );
+        }
+
+        long basePrice = await _catalogReader.GetBasePriceCopperAsync(
+            item.ItemConfigurationId,
+            campaignId,
+            cancellationToken ) ?? throw new CommerceException(
+            "Item configuration is not available to this campaign." );
+        long unitPrice = basePrice / 2;
+        DateTimeOffset now = _timeProvider.GetUtcNow();
+        ShopSale sale = ShopSale.Create(
+            operationId,
+            campaignId,
+            shop.Id,
+            sellerCharacterId,
+            itemInstanceKey,
+            item.ItemConfigurationId,
+            item.Quantity,
+            unitPrice,
+            now );
+        await _inventoryTradePort.MoveSaleToShopAsync(
+            campaignId,
+            shop.Id,
+            item,
+            operationId,
+            actingUserId,
+            now,
+            cancellationToken );
+        Wallet? wallet = await _repository.GetWalletAsync(
+            campaignId,
+            sellerCharacterId,
+            cancellationToken );
+        if ( wallet is null )
+        {
+            wallet = Wallet.Create( campaignId, sellerCharacterId, now );
+            _repository.AddWallet( wallet );
+        }
+
+        if ( sale.TotalPriceCopper > 0 )
+        {
+            wallet.CreditSale( operationId, sale.TotalPriceCopper, actingUserId, now );
+        }
+
+        _repository.AddSale( sale );
+        await _repository.SaveChangesAsync( cancellationToken );
+        return ToDto( sale );
     }
 
     public async Task<PurchaseReservationDto> ReserveAsync(
@@ -168,5 +322,18 @@ public sealed class PurchaseReservationService
             reservation.UnitPriceCopper,
             reservation.TotalPriceCopper,
             reservation.Status,
-            reservation.ExpiresAtUtc );
+            reservation.ExpiresAtUtc,
+            reservation.PurchasedItemInstanceKey );
+
+    private static ShopSaleDto ToDto( ShopSale sale ) => new ShopSaleDto(
+        sale.SaleKey,
+        sale.OperationId,
+        sale.CampaignId,
+        sale.ShopId,
+        sale.SellerCharacterId,
+        sale.ItemInstanceKey,
+        sale.Quantity,
+        sale.UnitPriceCopper,
+        sale.TotalPriceCopper,
+        sale.CompletedAtUtc );
 }

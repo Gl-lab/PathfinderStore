@@ -21,6 +21,7 @@ public sealed class PurchaseReservation : Entity, IAggregateRoot
     public DateTimeOffset CreatedAtUtc { get; private set; }
     public DateTimeOffset ExpiresAtUtc { get; private set; }
     public DateTimeOffset? ClosedAtUtc { get; private set; }
+    public Guid? PurchasedItemInstanceKey { get; private set; }
 
     public static PurchaseReservation Create(
         Guid operationId,
@@ -77,5 +78,32 @@ public sealed class PurchaseReservation : Entity, IAggregateRoot
 
         Status = PurchaseReservationStatus.Cancelled;
         ClosedAtUtc = cancelledAtUtc;
+    }
+
+    public void Complete( Guid itemInstanceKey, DateTimeOffset completedAtUtc )
+    {
+        if ( Status == PurchaseReservationStatus.Completed )
+        {
+            if ( PurchasedItemInstanceKey != itemInstanceKey )
+            {
+                throw new CommerceException( "Reservation completed with another item instance." );
+            }
+
+            return;
+        }
+
+        if ( Status != PurchaseReservationStatus.Active )
+        {
+            throw new CommerceException( "Only an active reservation can be completed." );
+        }
+
+        if ( completedAtUtc > ExpiresAtUtc )
+        {
+            throw new CommerceException( "Purchase reservation has expired." );
+        }
+
+        Status = PurchaseReservationStatus.Completed;
+        PurchasedItemInstanceKey = itemInstanceKey;
+        ClosedAtUtc = completedAtUtc;
     }
 }

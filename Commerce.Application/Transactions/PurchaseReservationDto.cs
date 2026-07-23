@@ -12,4 +12,17 @@ public sealed record PurchaseReservationDto(
     long UnitPriceCopper,
     long TotalPriceCopper,
     PurchaseReservationStatus Status,
-    DateTimeOffset ExpiresAtUtc );
+    DateTimeOffset ExpiresAtUtc,
+    Guid? PurchasedItemInstanceKey );
+
+public sealed record ShopSaleDto(
+    Guid SaleKey,
+    Guid OperationId,
+    int CampaignId,
+    int ShopId,
+    int SellerCharacterId,
+    Guid ItemInstanceKey,
+    int Quantity,
+    long UnitPriceCopper,
+    long TotalPriceCopper,
+    DateTimeOffset CompletedAtUtc );

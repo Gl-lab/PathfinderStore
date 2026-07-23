@@ -88,6 +88,62 @@ public sealed class CommerceAdminController : AuthorizedController
         }
     }
 
+    [HttpPost( "purchase-reservations/{reservationKey:guid}/complete" )]
+    public async Task<ActionResult<PurchaseReservationDto>> CompletePurchase(
+        int campaignId,
+        Guid reservationKey,
+        [FromBody] CompletePurchaseApiRequest request,
+        CancellationToken cancellationToken )
+    {
+        try
+        {
+            PurchaseReservationDto result = await _reservationService.CompleteAsync(
+                campaignId,
+                reservationKey,
+                request.OperationId,
+                CurrentUserId(),
+                cancellationToken );
+            return Ok( result );
+        }
+        catch ( UnauthorizedAccessException )
+        {
+            return Forbid();
+        }
+        catch ( CommerceException exception )
+        {
+            return BadRequest( MapError( exception.Message ) );
+        }
+    }
+
+    [HttpPost( "shops/{shopId:int}/sales" )]
+    public async Task<ActionResult<ShopSaleDto>> SellItem(
+        int campaignId,
+        int shopId,
+        [FromBody] SellItemApiRequest request,
+        CancellationToken cancellationToken )
+    {
+        try
+        {
+            ShopSaleDto result = await _reservationService.SellAsync(
+                campaignId,
+                shopId,
+                request.SellerCharacterId,
+                request.ItemInstanceKey,
+                request.OperationId,
+                CurrentUserId(),
+                cancellationToken );
+            return Ok( result );
+        }
+        catch ( UnauthorizedAccessException )
+        {
+            return Forbid();
+        }
+        catch ( CommerceException exception )
+        {
+            return BadRequest( MapError( exception.Message ) );
+        }
+    }
+
     [HttpPost( "wallets/{characterId:int}/adjustments" )]
     public async Task<ActionResult<WalletDto>> AdjustWallet(
         int campaignId,
@@ -274,3 +330,10 @@ public sealed record ReservePurchaseApiRequest(
     int Quantity );
 
 public sealed record CancelPurchaseReservationApiRequest( Guid OperationId );
+
+public sealed record CompletePurchaseApiRequest( Guid OperationId );
+
+public sealed record SellItemApiRequest(
+    Guid OperationId,
+    int SellerCharacterId,
+    Guid ItemInstanceKey );

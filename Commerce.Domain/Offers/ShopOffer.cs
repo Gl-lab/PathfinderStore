@@ -127,4 +127,23 @@ public sealed class ShopOffer : Entity, IAggregateRoot
         ReservedQuantity -= quantity;
         Version++;
     }
+
+    public void CompleteReserved( int quantity )
+    {
+        if ( ( quantity <= 0 ) ||
+             ( quantity > ReservedQuantity ) ||
+             ( quantity > AvailableQuantity ) )
+        {
+            throw new CommerceException( "Completed offer quantity is invalid." );
+        }
+
+        ReservedQuantity -= quantity;
+        AvailableQuantity -= quantity;
+        if ( AvailableQuantity == 0 )
+        {
+            Status = ShopOfferStatus.SoldOut;
+        }
+
+        Version++;
+    }
 }

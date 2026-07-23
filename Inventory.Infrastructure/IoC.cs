@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Pathfinder.Inventory.Application.Transfers;
 using Pathfinder.Inventory.Infrastructure.Transfers;
 using Pathfinder.Commerce.Application.Offers;
+using Pathfinder.Commerce.Application.Transactions;
 using Pathfinder.Inventory.Infrastructure.Commerce;
 
 namespace Pathfinder.Inventory.Infrastructure;
@@ -12,5 +13,6 @@ public static class DependencyInjection
     {
         services.AddScoped<IInventoryTransferRepository, InventoryTransferRepository>();
         services.AddScoped<ICommerceInventoryReader, CommerceInventoryReader>();
+        services.AddScoped<ICommerceInventoryTradePort, CommerceInventoryTradePort>();
     }
 }

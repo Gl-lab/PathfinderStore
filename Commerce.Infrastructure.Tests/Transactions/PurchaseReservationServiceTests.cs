@@ -5,6 +5,7 @@ using Pathfinder.Commerce.Domain.Offers;
 using Pathfinder.Commerce.Domain.Shops;
 using Pathfinder.Commerce.Infrastructure.Data;
 using Pathfinder.Commerce.Infrastructure.Transactions;
+using Pathfinder.Commerce.Application.Offers;
 
 namespace Pathfinder.Commerce.Infrastructure.Tests.Transactions;
 
@@ -17,6 +18,8 @@ public sealed class PurchaseReservationServiceTests
         PurchaseReservationService service = new PurchaseReservationService(
             new PurchaseReservationRepository( state.DbContext ),
             new StubBuyerAccessPolicy(),
+            new StubInventoryTradePort(),
+            new StubCatalogReader(),
             new FixedTimeProvider() );
         Guid operationId = Guid.NewGuid();
 
@@ -53,6 +56,8 @@ public sealed class PurchaseReservationServiceTests
         PurchaseReservationService service = new PurchaseReservationService(
             new PurchaseReservationRepository( state.DbContext ),
             new StubBuyerAccessPolicy(),
+            new StubInventoryTradePort(),
+            new StubCatalogReader(),
             new FixedTimeProvider() );
         Guid operationId = Guid.NewGuid();
 
@@ -76,6 +81,78 @@ public sealed class PurchaseReservationServiceTests
         Assert.Equal( 100, state.Wallet.ReservedCopper );
         Assert.Equal( 1, state.Offer.ReservedQuantity );
         Assert.Single( state.DbContext.PurchaseReservations );
+    }
+
+    [Fact]
+    public async Task CompletionTransfersCapturedPriceFromReservedFunds()
+    {
+        TestState state = await TestState.CreateAsync();
+        StubInventoryTradePort inventory = new StubInventoryTradePort();
+        PurchaseReservationService service = new PurchaseReservationService(
+            new PurchaseReservationRepository( state.DbContext ),
+            new StubBuyerAccessPolicy(),
+            inventory,
+            new StubCatalogReader(),
+            new FixedTimeProvider() );
+        PurchaseReservationDto reservation = await service.ReserveAsync(
+            7,
+            Guid.NewGuid(),
+            state.Offer.OfferKey,
+            21,
+            2,
+            11,
+            CancellationToken.None );
+
+        PurchaseReservationDto completed = await service.CompleteAsync(
+            7,
+            reservation.ReservationKey,
+            Guid.NewGuid(),
+            11,
+            CancellationToken.None );
+
+        Assert.Equal( 800, state.Wallet.BalanceCopper );
+        Assert.Equal( 0, state.Wallet.ReservedCopper );
+        Assert.Equal( 3, state.Offer.AvailableQuantity );
+        Assert.Equal(
+            Pathfinder.Commerce.Domain.Transactions.PurchaseReservationStatus.Completed,
+            completed.Status );
+        Assert.True( inventory.PurchaseCalled );
+    }
+
+    [Fact]
+    public async Task SaleMovesItemAndCreditsHalfBasePrice()
+    {
+        TestState state = await TestState.CreateAsync();
+        StubInventoryTradePort inventory = new StubInventoryTradePort
+        {
+            SellableItem = new CommerceSellableItem(
+                Guid.NewGuid(),
+                7,
+                21,
+                19,
+                1,
+                0,
+                true ),
+        };
+        PurchaseReservationService service = new PurchaseReservationService(
+            new PurchaseReservationRepository( state.DbContext ),
+            new StubBuyerAccessPolicy(),
+            inventory,
+            new StubCatalogReader(),
+            new FixedTimeProvider() );
+
+        ShopSaleDto sale = await service.SellAsync(
+            7,
+            state.Offer.ShopId,
+            21,
+            inventory.SellableItem.ItemInstanceKey,
+            Guid.NewGuid(),
+            11,
+            CancellationToken.None );
+
+        Assert.Equal( 500, sale.TotalPriceCopper );
+        Assert.Equal( 1500, state.Wallet.BalanceCopper );
+        Assert.True( inventory.SaleCalled );
     }
 
     private sealed class TestState
@@ -137,5 +214,71 @@ public sealed class PurchaseReservationServiceTests
     {
         public override DateTimeOffset GetUtcNow() =>
             new DateTimeOffset( 2026, 7, 23, 11, 0, 0, TimeSpan.Zero );
+    }
+
+    private sealed class StubCatalogReader : ICommerceCatalogReader
+    {
+        public Task<bool> IsPublishedConfigurationAsync(
+            int itemConfigurationId,
+            int campaignId,
+            CancellationToken cancellationToken ) => Task.FromResult( true );
+
+        public Task<long?> GetBasePriceCopperAsync(
+            int itemConfigurationId,
+            int campaignId,
+            CancellationToken cancellationToken ) => Task.FromResult<long?>( 1000 );
+    }
+
+    private sealed class StubInventoryTradePort : ICommerceInventoryTradePort
+    {
+        public bool PurchaseCalled { get; private set; }
+        public bool SaleCalled { get; private set; }
+        public CommerceSellableItem SellableItem { get; init; } = new CommerceSellableItem(
+            Guid.NewGuid(),
+            7,
+            21,
+            19,
+            1,
+            0,
+            true );
+
+        public Task<Guid> CompletePurchaseAsync(
+            int campaignId,
+            int shopId,
+            int buyerCharacterId,
+            ShopOfferKind offerKind,
+            int? itemConfigurationId,
+            Guid? itemInstanceKey,
+            int quantity,
+            Guid operationId,
+            int actingUserId,
+            DateTimeOffset occurredAtUtc,
+            CancellationToken cancellationToken )
+        {
+            PurchaseCalled = true;
+            return Task.FromResult( operationId );
+        }
+
+        public Task<CommerceSellableItem?> GetSellableItemAsync(
+            int campaignId,
+            int characterId,
+            Guid itemInstanceKey,
+            Guid operationId,
+            int actingUserId,
+            CancellationToken cancellationToken ) => Task.FromResult<CommerceSellableItem?>(
+            SellableItem.ItemInstanceKey == itemInstanceKey ? SellableItem : null );
+
+        public Task MoveSaleToShopAsync(
+            int campaignId,
+            int shopId,
+            CommerceSellableItem item,
+            Guid operationId,
+            int actingUserId,
+            DateTimeOffset occurredAtUtc,
+            CancellationToken cancellationToken )
+        {
+            SaleCalled = true;
+            return Task.CompletedTask;
+        }
     }
 }

@@ -28,4 +28,25 @@ public sealed class CommerceCatalogReader : ICommerceCatalogReader
                     ( ( definition.Scope == ItemCatalogScope.Global ) ||
                       ( definition.CampaignId == campaignId ) ) ) ),
         cancellationToken );
+
+    public async Task<long?> GetBasePriceCopperAsync(
+        int itemConfigurationId,
+        int campaignId,
+        CancellationToken cancellationToken )
+    {
+        int? price = await (
+            from configuration in _dbContext.ItemConfigurations
+            join revision in _dbContext.ItemRevisions
+                on configuration.ItemRevisionId equals revision.Id
+            join definition in _dbContext.ItemDefinitions
+                on revision.ItemDefinitionId equals definition.Id
+            where
+                ( configuration.Id == itemConfigurationId ) &&
+                ( revision.Status == ItemRevisionStatus.Published ) &&
+                ( ( definition.Scope == ItemCatalogScope.Global ) ||
+                  ( definition.CampaignId == campaignId ) )
+            select ( int? )revision.PriceInCopperPieces )
+            .SingleOrDefaultAsync( cancellationToken );
+        return price;
+    }
 }
