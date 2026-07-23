@@ -63,4 +63,20 @@ public sealed class WalletTests
 
         Assert.Contains( "insufficient", exception.Message );
     }
+
+    [Fact]
+    public void RejectsOperationIdReusedForDifferentLedgerTransition()
+    {
+        Wallet wallet = Wallet.Create( 7, 19, _now );
+        wallet.ApplyAdjustment( Guid.NewGuid(), 1000, "Starting funds", 11, _now );
+        Guid operationId = Guid.NewGuid();
+        wallet.ReserveFunds( operationId, 100, 11, _now );
+
+        CommerceException exception = Assert.Throws<CommerceException>(
+            () => wallet.CompletePurchase( operationId, 100, 11, _now ) );
+
+        Assert.Contains( "different data", exception.Message );
+        Assert.Equal( 1000, wallet.BalanceCopper );
+        Assert.Equal( 100, wallet.ReservedCopper );
+    }
 }

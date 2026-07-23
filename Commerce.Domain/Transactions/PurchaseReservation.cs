@@ -106,4 +106,25 @@ public sealed class PurchaseReservation : Entity, IAggregateRoot
         PurchasedItemInstanceKey = itemInstanceKey;
         ClosedAtUtc = completedAtUtc;
     }
+
+    public void Expire( DateTimeOffset expiredAtUtc )
+    {
+        if ( Status == PurchaseReservationStatus.Expired )
+        {
+            return;
+        }
+
+        if ( Status != PurchaseReservationStatus.Active )
+        {
+            throw new CommerceException( "Only an active reservation can expire." );
+        }
+
+        if ( expiredAtUtc <= ExpiresAtUtc )
+        {
+            throw new CommerceException( "Reservation has not expired yet." );
+        }
+
+        Status = PurchaseReservationStatus.Expired;
+        ClosedAtUtc = expiredAtUtc;
+    }
 }

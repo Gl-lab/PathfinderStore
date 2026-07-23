@@ -120,6 +120,48 @@ public sealed class PurchaseReservationServiceTests
     }
 
     [Fact]
+    public async Task CompletionAfterExpiryReleasesReservationWithoutMovingInventory()
+    {
+        TestState state = await TestState.CreateAsync();
+        StubInventoryTradePort inventory = new StubInventoryTradePort();
+        PurchaseReservationService reservationService = new PurchaseReservationService(
+            new PurchaseReservationRepository( state.DbContext ),
+            new StubBuyerAccessPolicy(),
+            inventory,
+            new StubCatalogReader(),
+            new FixedTimeProvider() );
+        PurchaseReservationDto reservation = await reservationService.ReserveAsync(
+            7,
+            Guid.NewGuid(),
+            state.Offer.OfferKey,
+            21,
+            2,
+            11,
+            CancellationToken.None );
+        PurchaseReservationService completionService = new PurchaseReservationService(
+            new PurchaseReservationRepository( state.DbContext ),
+            new StubBuyerAccessPolicy(),
+            inventory,
+            new StubCatalogReader(),
+            new ExpiredTimeProvider() );
+
+        PurchaseReservationDto expired = await completionService.CompleteAsync(
+            7,
+            reservation.ReservationKey,
+            Guid.NewGuid(),
+            11,
+            CancellationToken.None );
+
+        Assert.Equal( 1000, state.Wallet.BalanceCopper );
+        Assert.Equal( 0, state.Wallet.ReservedCopper );
+        Assert.Equal( 0, state.Offer.ReservedQuantity );
+        Assert.Equal(
+            Pathfinder.Commerce.Domain.Transactions.PurchaseReservationStatus.Expired,
+            expired.Status );
+        Assert.False( inventory.PurchaseCalled );
+    }
+
+    [Fact]
     public async Task SaleMovesItemAndCreditsHalfBasePrice()
     {
         TestState state = await TestState.CreateAsync();
@@ -214,6 +256,12 @@ public sealed class PurchaseReservationServiceTests
     {
         public override DateTimeOffset GetUtcNow() =>
             new DateTimeOffset( 2026, 7, 23, 11, 0, 0, TimeSpan.Zero );
+    }
+
+    private sealed class ExpiredTimeProvider : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() =>
+            new DateTimeOffset( 2026, 7, 23, 11, 16, 0, TimeSpan.Zero );
     }
 
     private sealed class StubCatalogReader : ICommerceCatalogReader

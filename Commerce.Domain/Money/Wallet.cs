@@ -151,6 +151,13 @@ public sealed class Wallet : Entity, IAggregateRoot
         WalletLedgerEntry? existing = FindEntry( operationId );
         if ( existing is not null )
         {
+            if ( ( existing.Kind != WalletTransactionKind.ReservationRelease ) ||
+                 ( existing.AmountCopper != amountCopper ) )
+            {
+                throw new CommerceException(
+                    "Wallet operation id was already used with different data." );
+            }
+
             return existing;
         }
 
@@ -185,6 +192,13 @@ public sealed class Wallet : Entity, IAggregateRoot
         WalletLedgerEntry? existing = FindEntry( operationId );
         if ( existing is not null )
         {
+            if ( ( existing.Kind != WalletTransactionKind.Purchase ) ||
+                 ( existing.AmountCopper != -amountCopper ) )
+            {
+                throw new CommerceException(
+                    "Wallet operation id was already used with different data." );
+            }
+
             return existing;
         }
 
@@ -218,6 +232,13 @@ public sealed class Wallet : Entity, IAggregateRoot
         WalletLedgerEntry? existing = FindEntry( operationId );
         if ( existing is not null )
         {
+            if ( ( existing.Kind != WalletTransactionKind.Sale ) ||
+                 ( existing.AmountCopper != amountCopper ) )
+            {
+                throw new CommerceException(
+                    "Wallet operation id was already used with different data." );
+            }
+
             return existing;
         }
 

@@ -63,7 +63,29 @@ public sealed class PurchaseReservationService
         DateTimeOffset now = _timeProvider.GetUtcNow();
         if ( now > reservation.ExpiresAtUtc )
         {
-            throw new CommerceException( "Purchase reservation has expired." );
+            offer.Release( reservation.Quantity );
+            if ( reservation.TotalPriceCopper > 0 )
+            {
+                wallet.ReleaseFunds(
+                    operationId,
+                    reservation.TotalPriceCopper,
+                    actingUserId,
+                    now );
+            }
+
+            reservation.Expire( now );
+            await _repository.SaveChangesAsync( cancellationToken );
+            return ToDto( reservation );
+        }
+
+        offer.CompleteReserved( reservation.Quantity );
+        if ( reservation.TotalPriceCopper > 0 )
+        {
+            wallet.CompletePurchase(
+                operationId,
+                reservation.TotalPriceCopper,
+                actingUserId,
+                now );
         }
 
         Guid purchasedItemKey = await _inventoryTradePort.CompletePurchaseAsync(
@@ -78,16 +100,6 @@ public sealed class PurchaseReservationService
             actingUserId,
             now,
             cancellationToken );
-        offer.CompleteReserved( reservation.Quantity );
-        if ( reservation.TotalPriceCopper > 0 )
-        {
-            wallet.CompletePurchase(
-                operationId,
-                reservation.TotalPriceCopper,
-                actingUserId,
-                now );
-        }
-
         reservation.Complete( purchasedItemKey, now );
         await _repository.SaveChangesAsync( cancellationToken );
         return ToDto( reservation );
@@ -113,6 +125,14 @@ public sealed class PurchaseReservationService
             cancellationToken );
         if ( existing is not null )
         {
+            if ( ( existing.ShopId != shopId ) ||
+                 ( existing.SellerCharacterId != sellerCharacterId ) ||
+                 ( existing.ItemInstanceKey != itemInstanceKey ) )
+            {
+                throw new CommerceException(
+                    "Sale operation id was already used with different data." );
+            }
+
             return ToDto( existing );
         }
 
@@ -149,14 +169,6 @@ public sealed class PurchaseReservationService
             item.Quantity,
             unitPrice,
             now );
-        await _inventoryTradePort.MoveSaleToShopAsync(
-            campaignId,
-            shop.Id,
-            item,
-            operationId,
-            actingUserId,
-            now,
-            cancellationToken );
         Wallet? wallet = await _repository.GetWalletAsync(
             campaignId,
             sellerCharacterId,
@@ -172,6 +184,14 @@ public sealed class PurchaseReservationService
             wallet.CreditSale( operationId, sale.TotalPriceCopper, actingUserId, now );
         }
 
+        await _inventoryTradePort.MoveSaleToShopAsync(
+            campaignId,
+            shop.Id,
+            item,
+            operationId,
+            actingUserId,
+            now,
+            cancellationToken );
         _repository.AddSale( sale );
         await _repository.SaveChangesAsync( cancellationToken );
         return ToDto( sale );
