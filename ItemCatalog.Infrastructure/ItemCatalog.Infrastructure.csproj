@@ -18,6 +18,7 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.8" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Commerce.Application\Commerce.Application.csproj" />
     <ProjectReference Include="..\Infrasturture.Shared\Infrasturture.Shared.csproj" />
     <ProjectReference Include="..\ItemCatalog.Application\ItemCatalog.Application.csproj" />
     <ProjectReference Include="..\ItemCatalog.Domain\ItemCatalog.Domain.csproj" />

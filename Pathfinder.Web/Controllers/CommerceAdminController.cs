@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Pathfinder.Commerce.Application.Shops;
 using Pathfinder.Commerce.Domain.Exceptions;
+using Pathfinder.Commerce.Application.Offers;
 using Pathfinder.Web.Controllers.Base;
 
 namespace Pathfinder.Web.Controllers;
@@ -12,10 +13,76 @@ namespace Pathfinder.Web.Controllers;
 public sealed class CommerceAdminController : AuthorizedController
 {
     private readonly ShopAdministrationService _service;
+    private readonly ShopOfferAdministrationService _offerService;
 
-    public CommerceAdminController( ShopAdministrationService service )
+    public CommerceAdminController(
+        ShopAdministrationService service,
+        ShopOfferAdministrationService offerService )
     {
         _service = service;
+        _offerService = offerService;
+    }
+
+    [HttpPost( "shops/{shopId:int}/catalog-offers" )]
+    public async Task<ActionResult<ShopOfferDto>> CreateCatalogOffer(
+        int campaignId,
+        int shopId,
+        [FromBody] CreateCatalogOfferApiRequest request,
+        CancellationToken cancellationToken )
+    {
+        try
+        {
+            ShopOfferDto result = await _offerService.CreateCatalogOfferAsync(
+                campaignId,
+                shopId,
+                request.ItemConfigurationId,
+                request.Quantity,
+                request.UnitPriceCopper,
+                CurrentUserId(),
+                cancellationToken );
+            return Created(
+                $"api/commerce-admin/campaigns/{campaignId}/shops/{shopId}/offers/{result.OfferKey}",
+                result );
+        }
+        catch ( UnauthorizedAccessException )
+        {
+            return Forbid();
+        }
+        catch ( CommerceException exception )
+        {
+            return BadRequest( MapError( exception.Message ) );
+        }
+    }
+
+    [HttpPost( "shops/{shopId:int}/stock-offers" )]
+    public async Task<ActionResult<ShopOfferDto>> CreateStockOffer(
+        int campaignId,
+        int shopId,
+        [FromBody] CreateStockOfferApiRequest request,
+        CancellationToken cancellationToken )
+    {
+        try
+        {
+            ShopOfferDto result = await _offerService.CreateStockInstanceOfferAsync(
+                campaignId,
+                shopId,
+                request.ItemInstanceKey,
+                request.Quantity,
+                request.UnitPriceCopper,
+                CurrentUserId(),
+                cancellationToken );
+            return Created(
+                $"api/commerce-admin/campaigns/{campaignId}/shops/{shopId}/offers/{result.OfferKey}",
+                result );
+        }
+        catch ( UnauthorizedAccessException )
+        {
+            return Forbid();
+        }
+        catch ( CommerceException exception )
+        {
+            return BadRequest( MapError( exception.Message ) );
+        }
     }
 
     [HttpPost( "settlements" )]
@@ -90,3 +157,13 @@ public sealed record CreateShopApiRequest(
     string Name,
     string Specialization,
     int ShopLevel );
+
+public sealed record CreateCatalogOfferApiRequest(
+    int ItemConfigurationId,
+    int Quantity,
+    long UnitPriceCopper );
+
+public sealed record CreateStockOfferApiRequest(
+    Guid ItemInstanceKey,
+    int Quantity,
+    long UnitPriceCopper );

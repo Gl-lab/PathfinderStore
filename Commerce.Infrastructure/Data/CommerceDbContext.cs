@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Pathfinder.Commerce.Domain.Shops;
+using Pathfinder.Commerce.Domain.Offers;
 
 namespace Pathfinder.Commerce.Infrastructure.Data;
 
@@ -12,6 +13,7 @@ public sealed class CommerceDbContext : DbContext
 
     public DbSet<Settlement> Settlements => Set<Settlement>();
     public DbSet<Shop> Shops => Set<Shop>();
+    public DbSet<ShopOffer> ShopOffers => Set<ShopOffer>();
 
     protected override void OnModelCreating( ModelBuilder modelBuilder )
     {
@@ -71,6 +73,41 @@ public sealed class CommerceDbContext : DbContext
                 shop.CampaignId,
                 shop.Id,
             } );
+        } );
+        modelBuilder.Entity<ShopOffer>( builder =>
+        {
+            builder.ToTable( "ShopOffer", tableBuilder =>
+            {
+                tableBuilder.HasCheckConstraint(
+                    "CK_ShopOffer_Identity",
+                    "\"CampaignId\" > 0 AND \"ShopId\" > 0" );
+                tableBuilder.HasCheckConstraint(
+                    "CK_ShopOffer_QuantityPrice",
+                    "\"AvailableQuantity\" > 0 AND \"UnitPriceCopper\" >= 0" );
+                tableBuilder.HasCheckConstraint(
+                    "CK_ShopOffer_Target",
+                    "(\"Kind\" = 1 AND \"ItemConfigurationId\" IS NOT NULL AND \"ItemInstanceKey\" IS NULL) OR " +
+                    "(\"Kind\" = 2 AND \"ItemConfigurationId\" IS NULL AND \"ItemInstanceKey\" IS NOT NULL)" );
+            } );
+            builder.Property( offer => offer.Kind )
+                .HasConversion<int>();
+            builder.Property( offer => offer.Status )
+                .HasConversion<int>();
+            builder.HasIndex( offer => offer.OfferKey )
+                .IsUnique();
+            builder.HasIndex( offer => offer.ItemInstanceKey )
+                .IsUnique()
+                .HasFilter( "\"Status\" = 1 AND \"ItemInstanceKey\" IS NOT NULL" );
+            builder.HasIndex( offer => new
+            {
+                offer.CampaignId,
+                offer.ShopId,
+                offer.Status,
+            } );
+            builder.HasOne<Shop>()
+                .WithMany()
+                .HasForeignKey( offer => offer.ShopId )
+                .OnDelete( DeleteBehavior.Cascade );
         } );
     }
 }
