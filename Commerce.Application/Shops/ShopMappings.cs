@@ -21,5 +21,8 @@ internal static class ShopMappings
         shop.SettlementId,
         shop.Name,
         shop.Specialization,
-        shop.ShopLevel );
+        shop.ShopLevel,
+        shop.CatalogPricePercent,
+        shop.BuybackPricePercent,
+        shop.PricingPolicyVersion );
 }

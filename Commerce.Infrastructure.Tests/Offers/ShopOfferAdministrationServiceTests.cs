@@ -23,11 +23,11 @@ public sealed class ShopOfferAdministrationServiceTests
             test.Shop.Id,
             19,
             3,
-            250,
             11,
             CancellationToken.None );
 
         Assert.Equal( 19, offer.ItemConfigurationId );
+        Assert.Equal( 250, offer.UnitPriceCopper );
         Assert.True( test.Inventory.EnsureCalled );
     }
 
@@ -125,6 +125,11 @@ public sealed class ShopOfferAdministrationServiceTests
             int itemConfigurationId,
             int campaignId,
             CancellationToken cancellationToken ) => Task.FromResult( _isPublished );
+
+        public Task<long?> GetBasePriceCopperAsync(
+            int itemConfigurationId,
+            int campaignId,
+            CancellationToken cancellationToken ) => Task.FromResult<long?>( 250 );
     }
 
     private sealed class StubInventoryReader : ICommerceInventoryReader

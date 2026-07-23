@@ -32,7 +32,6 @@ public sealed class ShopOfferAdministrationService
         int shopId,
         int itemConfigurationId,
         int quantity,
-        long unitPriceCopper,
         int actingUserId,
         CancellationToken cancellationToken )
     {
@@ -50,6 +49,13 @@ public sealed class ShopOfferAdministrationService
             throw new CommerceException(
                 "Catalog offer requires a published configuration available to this campaign." );
         }
+
+        long basePrice = await _catalogReader.GetBasePriceCopperAsync(
+            itemConfigurationId,
+            campaignId,
+            cancellationToken ) ?? throw new CommerceException(
+            "Catalog configuration price was not found." );
+        long unitPriceCopper = shop.CalculateCatalogPrice( basePrice );
 
         await _inventoryReader.EnsureShopContainerAsync(
             campaignId,

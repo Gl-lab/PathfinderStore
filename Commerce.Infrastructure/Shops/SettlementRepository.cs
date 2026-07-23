@@ -20,6 +20,14 @@ public sealed class SettlementRepository : ISettlementRepository
         .Include( settlement => settlement.Shops )
         .SingleOrDefaultAsync( settlement => settlement.Id == settlementId, cancellationToken );
 
+    public Task<Settlement?> GetByShopAsync(
+        int shopId,
+        CancellationToken cancellationToken ) => _dbContext.Settlements
+        .Include( settlement => settlement.Shops )
+        .SingleOrDefaultAsync(
+            settlement => settlement.Shops.Any( shop => shop.Id == shopId ),
+            cancellationToken );
+
     public void Add( Settlement settlement )
     {
         _dbContext.Settlements.Add( settlement );

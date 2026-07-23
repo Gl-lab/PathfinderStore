@@ -64,6 +64,30 @@ public sealed class ShopAdministrationService
         return shop.ToDto();
     }
 
+    public async Task<ShopDto> UpdatePricingPolicyAsync(
+        UpdateShopPricingPolicyRequest request,
+        CancellationToken cancellationToken )
+    {
+        await EnsureGameMasterAsync(
+            request.CampaignId,
+            request.ActingUserId,
+            cancellationToken );
+        Settlement settlement = await _repository.GetByShopAsync(
+            request.ShopId,
+            cancellationToken ) ?? throw new CommerceException( "Shop was not found." );
+        if ( settlement.CampaignId != request.CampaignId )
+        {
+            throw new CommerceException( "Shop does not belong to this campaign." );
+        }
+
+        Shop shop = settlement.Shops.Single( candidate => candidate.Id == request.ShopId );
+        shop.SetPricingPolicy(
+            request.CatalogPricePercent,
+            request.BuybackPricePercent );
+        await _repository.SaveChangesAsync( cancellationToken );
+        return shop.ToDto();
+    }
+
     private async Task EnsureGameMasterAsync(
         int campaignId,
         int actingUserId,

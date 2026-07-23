@@ -187,7 +187,6 @@ public sealed class CommerceAdminController : AuthorizedController
                 shopId,
                 request.ItemConfigurationId,
                 request.Quantity,
-                request.UnitPriceCopper,
                 CurrentUserId(),
                 cancellationToken );
             return Created(
@@ -295,6 +294,35 @@ public sealed class CommerceAdminController : AuthorizedController
             return BadRequest( MapError( exception.Message ) );
         }
     }
+
+    [HttpPost( "shops/{shopId:int}/pricing-policy" )]
+    public async Task<ActionResult<ShopDto>> UpdatePricingPolicy(
+        int campaignId,
+        int shopId,
+        [FromBody] UpdateShopPricingPolicyApiRequest request,
+        CancellationToken cancellationToken )
+    {
+        try
+        {
+            ShopDto result = await _service.UpdatePricingPolicyAsync(
+                new UpdateShopPricingPolicyRequest(
+                    campaignId,
+                    shopId,
+                    request.CatalogPricePercent,
+                    request.BuybackPricePercent,
+                    CurrentUserId() ),
+                cancellationToken );
+            return Ok( result );
+        }
+        catch ( UnauthorizedAccessException )
+        {
+            return Forbid();
+        }
+        catch ( CommerceException exception )
+        {
+            return BadRequest( MapError( exception.Message ) );
+        }
+    }
 }
 
 public sealed record CreateSettlementApiRequest(
@@ -308,10 +336,13 @@ public sealed record CreateShopApiRequest(
     string Specialization,
     int ShopLevel );
 
+public sealed record UpdateShopPricingPolicyApiRequest(
+    int CatalogPricePercent,
+    int BuybackPricePercent );
+
 public sealed record CreateCatalogOfferApiRequest(
     int ItemConfigurationId,
-    int Quantity,
-    long UnitPriceCopper );
+    int Quantity );
 
 public sealed record CreateStockOfferApiRequest(
     Guid ItemInstanceKey,

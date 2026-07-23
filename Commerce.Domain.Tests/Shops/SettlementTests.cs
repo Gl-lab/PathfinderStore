@@ -44,4 +44,25 @@ public sealed class SettlementTests
 
         Assert.Contains( "already contains", exception.Message );
     }
+
+    [Fact]
+    public void PricingPolicyCalculatesRetailAndBuybackWithoutChangingPastValues()
+    {
+        Settlement settlement = Settlement.Create(
+            17,
+            "Otari",
+            4,
+            String.Empty,
+            String.Empty,
+            _now );
+        Shop shop = settlement.AddShop( "Market", String.Empty, 4, _now );
+        long originalRetail = shop.CalculateCatalogPrice( 1000 );
+
+        shop.SetPricingPolicy( 125, 40 );
+
+        Assert.Equal( 1000, originalRetail );
+        Assert.Equal( 1250, shop.CalculateCatalogPrice( 1000 ) );
+        Assert.Equal( 400, shop.CalculateBuybackPrice( 1000 ) );
+        Assert.Equal( 2, shop.PricingPolicyVersion );
+    }
 }

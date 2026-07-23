@@ -68,6 +68,13 @@ public sealed class CommerceDbContext : DbContext
             builder.Property( shop => shop.Specialization )
                 .HasMaxLength( Shop.SpecializationMaxLength )
                 .IsRequired();
+            builder.Property( shop => shop.CatalogPricePercent )
+                .HasDefaultValue( 100 );
+            builder.Property( shop => shop.BuybackPricePercent )
+                .HasDefaultValue( 50 );
+            builder.Property( shop => shop.PricingPolicyVersion )
+                .IsConcurrencyToken()
+                .HasDefaultValue( 1 );
             builder.HasIndex( shop => new
             {
                 shop.SettlementId,

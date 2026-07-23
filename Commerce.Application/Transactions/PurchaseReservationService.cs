@@ -137,7 +137,7 @@ public sealed class PurchaseReservationService
             campaignId,
             cancellationToken ) ?? throw new CommerceException(
             "Item configuration is not available to this campaign." );
-        long unitPrice = basePrice / 2;
+        long unitPrice = shop.CalculateBuybackPrice( basePrice );
         DateTimeOffset now = _timeProvider.GetUtcNow();
         ShopSale sale = ShopSale.Create(
             operationId,

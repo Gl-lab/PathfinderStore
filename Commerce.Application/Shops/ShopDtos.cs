@@ -6,7 +6,17 @@ public sealed record ShopDto(
     int SettlementId,
     string Name,
     string Specialization,
-    int ShopLevel );
+    int ShopLevel,
+    int CatalogPricePercent,
+    int BuybackPricePercent,
+    int PricingPolicyVersion );
+
+public sealed record UpdateShopPricingPolicyRequest(
+    int CampaignId,
+    int ShopId,
+    int CatalogPricePercent,
+    int BuybackPricePercent,
+    int ActingUserId );
 
 public sealed record SettlementDto(
     int Id,
