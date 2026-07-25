@@ -77,8 +77,8 @@ public sealed class PermanentUpgrade : Entity
         bool hasInvalidCharacter = normalizedCode.Any( character =>
             !( Char.IsAsciiLetterLower( character ) ||
                Char.IsAsciiDigit( character ) ||
-               ( character == '.' ) ||
-               ( character == '-' ) ) );
+               character == '.' ||
+               character == '-' ) );
         if ( hasInvalidCharacter )
         {
             throw new ItemCatalogException(

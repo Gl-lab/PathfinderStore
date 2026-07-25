@@ -27,8 +27,8 @@ public sealed class CommerceBuyerAccessPolicy : ICommerceBuyerAccessPolicy
                 .ThenInclude( party => party.Characters )
             .SingleOrDefaultAsync(
                 item =>
-                    ( item.Id == campaignId ) &&
-                    ( item.Status == CampaignStatus.Active ),
+                    item.Id == campaignId &&
+                    item.Status == CampaignStatus.Active,
                 cancellationToken );
         if ( campaign is null ||
              !campaign.HasActiveRole( actingUserId, CampaignMembershipRole.Player ) )
@@ -37,9 +37,9 @@ public sealed class CommerceBuyerAccessPolicy : ICommerceBuyerAccessPolicy
         }
 
         return campaign.Parties.Any( party =>
-            ( party.Status == CampaignPartyStatus.Active ) &&
+            party.Status == CampaignPartyStatus.Active &&
             party.Characters.Any( character =>
-                ( character.CharacterId == characterId ) &&
-                ( character.ControlledByUserId == actingUserId ) ) );
+                character.CharacterId == characterId &&
+                character.ControlledByUserId == actingUserId ) );
     }
 }

@@ -24,9 +24,9 @@ public sealed class InventoryTransferRepository : IInventoryTransferRepository
     {
         return await _dbContext.Containers.SingleOrDefaultAsync(
             container =>
-                ( container.CampaignId == campaignId ) &&
-                ( container.OwnerKind == InventoryContainerOwnerKind.Character ) &&
-                ( container.OwnerId == characterId ),
+                container.CampaignId == campaignId &&
+                container.OwnerKind == InventoryContainerOwnerKind.Character &&
+                container.OwnerId == characterId,
             cancellationToken );
     }
 
@@ -38,9 +38,9 @@ public sealed class InventoryTransferRepository : IInventoryTransferRepository
     {
         return await _dbContext.Containers.SingleOrDefaultAsync(
             container =>
-                ( container.CampaignId == campaignId ) &&
-                ( container.OwnerKind == ownerKind ) &&
-                ( container.OwnerId == ownerId ),
+                container.CampaignId == campaignId &&
+                container.OwnerKind == ownerKind &&
+                container.OwnerId == ownerId,
             cancellationToken );
     }
 
@@ -51,8 +51,8 @@ public sealed class InventoryTransferRepository : IInventoryTransferRepository
     {
         return await _dbContext.Containers.SingleOrDefaultAsync(
             container =>
-                ( container.CampaignId == campaignId ) &&
-                ( container.ContainerKey == containerKey ),
+                container.CampaignId == campaignId &&
+                container.ContainerKey == containerKey,
             cancellationToken );
     }
 
@@ -96,9 +96,9 @@ public sealed class InventoryTransferRepository : IInventoryTransferRepository
     {
         return await _dbContext.AuditEntries.SingleOrDefaultAsync(
             audit =>
-                ( audit.CampaignId == campaignId ) &&
-                ( audit.OperationId == operationId ) &&
-                ( audit.ActionKind == actionKind ),
+                audit.CampaignId == campaignId &&
+                audit.OperationId == operationId &&
+                audit.ActionKind == actionKind,
             cancellationToken );
     }
 

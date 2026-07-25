@@ -46,10 +46,10 @@ public sealed class CommerceInventoryTradePort : ICommerceInventoryTradePort
             .Include( item => item.Operations )
             .SingleOrDefaultAsync(
                 item =>
-                    ( item.CampaignId == campaignId ) &&
-                    ( ( item.InstanceKey == operationId ) ||
-                      ( item.InstanceKey == itemInstanceKey ) ) &&
-                    ( item.CurrentContainerKey == destination.ContainerKey ),
+                    item.CampaignId == campaignId &&
+                    ( item.InstanceKey == operationId ||
+                      item.InstanceKey == itemInstanceKey ) &&
+                    item.CurrentContainerKey == destination.ContainerKey,
                 cancellationToken );
         if ( replay is not null )
         {
@@ -93,8 +93,8 @@ public sealed class CommerceInventoryTradePort : ICommerceInventoryTradePort
             .Include( item => item.Operations )
             .SingleOrDefaultAsync(
                 item =>
-                    ( item.CampaignId == campaignId ) &&
-                    ( item.InstanceKey == stockKey ),
+                    item.CampaignId == campaignId &&
+                    item.InstanceKey == stockKey,
                 cancellationToken ) ?? throw new CommerceException( "Shop stock item was not found." );
         if ( stock.CurrentContainerKey != shopContainer.ContainerKey )
         {
@@ -142,26 +142,26 @@ public sealed class CommerceInventoryTradePort : ICommerceInventoryTradePort
             .AsNoTracking()
             .SingleOrDefaultAsync(
                 item =>
-                    ( item.CampaignId == campaignId ) &&
-                    ( item.OwnerKind == InventoryContainerOwnerKind.Character ) &&
-                    ( item.OwnerId == characterId ),
+                    item.CampaignId == campaignId &&
+                    item.OwnerKind == InventoryContainerOwnerKind.Character &&
+                    item.OwnerId == characterId,
                 cancellationToken );
         ItemInstance? item = await _dbContext.ItemInstances
             .AsNoTracking()
             .Include( candidate => candidate.Movements )
             .SingleOrDefaultAsync(
                 candidate =>
-                    ( candidate.CampaignId == campaignId ) &&
-                    ( candidate.InstanceKey == itemInstanceKey ),
+                    candidate.CampaignId == campaignId &&
+                    candidate.InstanceKey == itemInstanceKey,
                 cancellationToken );
-        if ( ( container is null ) || ( item is null ) )
+        if ( container is null || item is null )
         {
             return null;
         }
 
         bool isReplay = item.Movements.Any( movement =>
-            ( movement.OperationId == operationId ) &&
-            ( movement.FromContainerKey == container.ContainerKey ) );
+            movement.OperationId == operationId &&
+            movement.FromContainerKey == container.ContainerKey );
         bool isEquipped = false;
         if ( !isReplay )
         {
@@ -178,7 +178,7 @@ public sealed class CommerceInventoryTradePort : ICommerceInventoryTradePort
 
         bool canTransfer = isReplay ||
             ( !item.IsDepleted &&
-              ( item.ReservationKey is null ) &&
+              item.ReservationKey is null &&
               !item.IsTransferRestricted &&
               !isEquipped );
         return new CommerceSellableItem(
@@ -232,8 +232,8 @@ public sealed class CommerceInventoryTradePort : ICommerceInventoryTradePort
         int ownerId,
         CancellationToken cancellationToken ) => await _dbContext.Containers.SingleOrDefaultAsync(
         container =>
-            ( container.CampaignId == campaignId ) &&
-            ( container.OwnerKind == ownerKind ) &&
-            ( container.OwnerId == ownerId ),
+            container.CampaignId == campaignId &&
+            container.OwnerKind == ownerKind &&
+            container.OwnerId == ownerId,
         cancellationToken ) ?? throw new CommerceException( "Inventory container was not found." );
 }

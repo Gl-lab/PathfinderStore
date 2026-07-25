@@ -64,12 +64,12 @@ public sealed class CreatePartyGiftHandler
         ItemInstance item = await _repository.GetItemAsync(
             request.ItemInstanceKey,
             cancellationToken ) ?? throw new InventoryException( "Gift item was not found." );
-        if ( ( item.CampaignId != request.CampaignId ) ||
-             ( item.CurrentContainerKey != sourceContainer.ContainerKey ) ||
+        if ( item.CampaignId != request.CampaignId ||
+             item.CurrentContainerKey != sourceContainer.ContainerKey ||
              item.IsDepleted ||
              item.IsTransferRestricted ||
-             ( item.ReservationKey is not null ) ||
-             ( item.Version != request.ExpectedItemVersion ) )
+             item.ReservationKey is not null ||
+             item.Version != request.ExpectedItemVersion )
         {
             throw new InventoryException(
                 "Gift item is unavailable, not owned by the source character, or has changed." );

@@ -40,8 +40,8 @@ public sealed class PartyExchange : Entity, IAggregateRoot
             throw new InventoryException( "Exchange key cannot be empty." );
         }
 
-        if ( ( campaignId <= 0 ) || ( partyId <= 0 ) ||
-             ( initiatorCharacterId <= 0 ) || ( counterpartyCharacterId <= 0 ) )
+        if ( campaignId <= 0 || partyId <= 0 ||
+             initiatorCharacterId <= 0 || counterpartyCharacterId <= 0 )
         {
             throw new InventoryException( "Exchange campaign, party, and character ids must be positive." );
         }
@@ -51,12 +51,12 @@ public sealed class PartyExchange : Entity, IAggregateRoot
             throw new InventoryException( "Exchange characters must be different." );
         }
 
-        if ( ( lines.Count < 2 ) ||
+        if ( lines.Count < 2 ||
              !lines.Any( line => line.FromCharacterId == initiatorCharacterId ) ||
              !lines.Any( line => line.FromCharacterId == counterpartyCharacterId ) ||
              lines.Any( line =>
-                 ( line.FromCharacterId != initiatorCharacterId ) &&
-                 ( line.FromCharacterId != counterpartyCharacterId ) ) )
+                 line.FromCharacterId != initiatorCharacterId &&
+                 line.FromCharacterId != counterpartyCharacterId ) )
         {
             throw new InventoryException( "Exchange must contain items from both characters only." );
         }
@@ -147,14 +147,14 @@ public sealed class PartyExchange : Entity, IAggregateRoot
         int counterpartyCharacterId,
         IReadOnlyCollection<PartyExchangeLineRequest> lines )
     {
-        bool linesMatch = ( lines.Count == _lines.Count ) && lines.All( requested =>
+        bool linesMatch = lines.Count == _lines.Count && lines.All( requested =>
             _lines.Any( existing =>
-                ( existing.FromCharacterId == requested.FromCharacterId ) &&
-                ( existing.ItemInstanceKey == requested.ItemInstanceKey ) &&
-                ( existing.ExpectedItemVersion == requested.ExpectedItemVersion ) ) );
-        if ( ( CampaignId != campaignId ) ||
-             ( InitiatorCharacterId != initiatorCharacterId ) ||
-             ( CounterpartyCharacterId != counterpartyCharacterId ) ||
+                existing.FromCharacterId == requested.FromCharacterId &&
+                existing.ItemInstanceKey == requested.ItemInstanceKey &&
+                existing.ExpectedItemVersion == requested.ExpectedItemVersion ) );
+        if ( CampaignId != campaignId ||
+             InitiatorCharacterId != initiatorCharacterId ||
+             CounterpartyCharacterId != counterpartyCharacterId ||
              !linesMatch )
         {
             throw new InventoryException( "Exchange key was already used for another proposal." );

@@ -33,17 +33,17 @@ public sealed class PurchaseReservation : Entity, IAggregateRoot
         DateTimeOffset createdAtUtc,
         DateTimeOffset expiresAtUtc )
     {
-        if ( ( operationId == Guid.Empty ) || ( offerKey == Guid.Empty ) )
+        if ( operationId == Guid.Empty || offerKey == Guid.Empty )
         {
             throw new CommerceException( "Reservation operation and offer keys cannot be empty." );
         }
 
-        if ( ( campaignId <= 0 ) || ( buyerCharacterId <= 0 ) || ( quantity <= 0 ) )
+        if ( campaignId <= 0 || buyerCharacterId <= 0 || quantity <= 0 )
         {
             throw new CommerceException( "Reservation ids and quantity must be greater than zero." );
         }
 
-        if ( ( unitPriceCopper < 0 ) || ( expiresAtUtc <= createdAtUtc ) )
+        if ( unitPriceCopper < 0 || expiresAtUtc <= createdAtUtc )
         {
             throw new CommerceException( "Reservation price or expiration is invalid." );
         }

@@ -125,9 +125,9 @@ public sealed class PurchaseReservationService
             cancellationToken );
         if ( existing is not null )
         {
-            if ( ( existing.ShopId != shopId ) ||
-                 ( existing.SellerCharacterId != sellerCharacterId ) ||
-                 ( existing.ItemInstanceKey != itemInstanceKey ) )
+            if ( existing.ShopId != shopId ||
+                 existing.SellerCharacterId != sellerCharacterId ||
+                 existing.ItemInstanceKey != itemInstanceKey )
             {
                 throw new CommerceException(
                     "Sale operation id was already used with different data." );
@@ -322,9 +322,9 @@ public sealed class PurchaseReservationService
         int buyerCharacterId,
         int quantity )
     {
-        if ( ( existing.OfferKey != offerKey ) ||
-             ( existing.BuyerCharacterId != buyerCharacterId ) ||
-             ( existing.Quantity != quantity ) )
+        if ( existing.OfferKey != offerKey ||
+             existing.BuyerCharacterId != buyerCharacterId ||
+             existing.Quantity != quantity )
         {
             throw new CommerceException(
                 "Purchase operation id was already used with different data." );

@@ -32,17 +32,17 @@ public sealed class ShopSale : Entity, IAggregateRoot
         long unitPriceCopper,
         DateTimeOffset completedAtUtc )
     {
-        if ( ( operationId == Guid.Empty ) || ( itemInstanceKey == Guid.Empty ) )
+        if ( operationId == Guid.Empty || itemInstanceKey == Guid.Empty )
         {
             throw new CommerceException( "Sale operation and item keys cannot be empty." );
         }
 
-        if ( ( campaignId <= 0 ) ||
-             ( shopId <= 0 ) ||
-             ( sellerCharacterId <= 0 ) ||
-             ( itemConfigurationId <= 0 ) ||
-             ( quantity <= 0 ) ||
-             ( unitPriceCopper < 0 ) )
+        if ( campaignId <= 0 ||
+             shopId <= 0 ||
+             sellerCharacterId <= 0 ||
+             itemConfigurationId <= 0 ||
+             quantity <= 0 ||
+             unitPriceCopper < 0 )
         {
             throw new CommerceException( "Sale identifiers, quantity or price are invalid." );
         }

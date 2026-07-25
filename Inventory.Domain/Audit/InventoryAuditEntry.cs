@@ -34,12 +34,12 @@ public sealed class InventoryAuditEntry : Entity, IAggregateRoot
         Guid? relatedKey,
         DateTimeOffset occurredAtUtc )
     {
-        if ( ( auditKey == Guid.Empty ) || ( operationId == Guid.Empty ) )
+        if ( auditKey == Guid.Empty || operationId == Guid.Empty )
         {
             throw new InventoryException( "Audit and operation keys cannot be empty." );
         }
 
-        if ( ( campaignId <= 0 ) || ( actorUserId <= 0 ) || !Enum.IsDefined( actionKind ) )
+        if ( campaignId <= 0 || actorUserId <= 0 || !Enum.IsDefined( actionKind ) )
         {
             throw new InventoryException( "Inventory audit identity is invalid." );
         }
@@ -87,14 +87,14 @@ public sealed class InventoryAuditEntry : Entity, IAggregateRoot
         Guid? relatedKey )
     {
         string normalizedReason = reason?.Trim() ?? String.Empty;
-        if ( ( CampaignId != campaignId ) ||
-             ( OperationId != operationId ) ||
-             ( ActionKind != actionKind ) ||
-             ( ActorUserId != actorUserId ) ||
-             ( IsForced != isForced ) ||
+        if ( CampaignId != campaignId ||
+             OperationId != operationId ||
+             ActionKind != actionKind ||
+             ActorUserId != actorUserId ||
+             IsForced != isForced ||
              !String.Equals( Reason, normalizedReason, StringComparison.Ordinal ) ||
-             ( ItemInstanceKey != itemInstanceKey ) ||
-             ( RelatedKey != relatedKey ) )
+             ItemInstanceKey != itemInstanceKey ||
+             RelatedKey != relatedKey )
         {
             throw new InventoryException( "Audit operation was already used for another action." );
         }

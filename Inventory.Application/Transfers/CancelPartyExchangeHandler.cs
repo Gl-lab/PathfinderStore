@@ -43,7 +43,7 @@ public sealed class CancelPartyExchangeHandler
             exchange.CounterpartyCharacterId,
             cancellationToken );
         if ( !access.SameActiveParty ||
-             ( access.PartyId != exchange.PartyId ) ||
+             access.PartyId != exchange.PartyId ||
              ( !access.ControlsSource && !access.ControlsDestination ) )
         {
             throw new InventoryException( "Only an exchange participant can cancel it." );
@@ -61,8 +61,8 @@ public sealed class CancelPartyExchangeHandler
             ItemInstance item = await _repository.GetItemAsync(
                 line.ItemInstanceKey,
                 cancellationToken ) ?? throw new InventoryException( "Exchange item was not found." );
-            if ( ( item.ReservationKey != exchange.ExchangeKey ) ||
-                 ( item.Version != ( line.ExpectedItemVersion + 1 ) ) )
+            if ( item.ReservationKey != exchange.ExchangeKey ||
+                 item.Version != line.ExpectedItemVersion + 1 )
             {
                 throw new InventoryException( "Exchange reservation is no longer valid." );
             }

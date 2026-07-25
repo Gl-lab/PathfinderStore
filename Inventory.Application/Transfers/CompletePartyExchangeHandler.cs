@@ -70,10 +70,10 @@ public sealed class CompletePartyExchangeHandler
             ItemInstance item = await _repository.GetItemAsync(
                 line.ItemInstanceKey,
                 cancellationToken ) ?? throw new InventoryException( "Exchange item was not found." );
-            if ( ( item.CurrentContainerKey != source.ContainerKey ) ||
+            if ( item.CurrentContainerKey != source.ContainerKey ||
                  item.IsDepleted ||
-                 ( item.ReservationKey != exchange.ExchangeKey ) ||
-                 ( item.Version != ( line.ExpectedItemVersion + 1 ) ) )
+                 item.ReservationKey != exchange.ExchangeKey ||
+                 item.Version != line.ExpectedItemVersion + 1 )
             {
                 throw new InventoryException( "Exchange item changed after reservation." );
             }
@@ -131,7 +131,7 @@ public sealed class CompletePartyExchangeHandler
             exchange.InitiatorCharacterId,
             exchange.CounterpartyCharacterId,
             cancellationToken );
-        if ( !access.SameActiveParty || ( access.PartyId != exchange.PartyId ) )
+        if ( !access.SameActiveParty || access.PartyId != exchange.PartyId )
         {
             throw new InventoryException( "Exchange participants are no longer in the same active party." );
         }

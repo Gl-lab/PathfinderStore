@@ -19,14 +19,14 @@ public sealed class CommerceCatalogReader : ICommerceCatalogReader
         int campaignId,
         CancellationToken cancellationToken ) => _dbContext.ItemConfigurations.AnyAsync(
         configuration =>
-            ( configuration.Id == itemConfigurationId ) &&
+            configuration.Id == itemConfigurationId &&
             _dbContext.ItemRevisions.Any( revision =>
-                ( revision.Id == configuration.ItemRevisionId ) &&
-                ( revision.Status == ItemRevisionStatus.Published ) &&
+                revision.Id == configuration.ItemRevisionId &&
+                revision.Status == ItemRevisionStatus.Published &&
                 _dbContext.ItemDefinitions.Any( definition =>
-                    ( definition.Id == revision.ItemDefinitionId ) &&
-                    ( ( definition.Scope == ItemCatalogScope.Global ) ||
-                      ( definition.CampaignId == campaignId ) ) ) ),
+                    definition.Id == revision.ItemDefinitionId &&
+                    ( definition.Scope == ItemCatalogScope.Global ||
+                      definition.CampaignId == campaignId ) ) ),
         cancellationToken );
 
     public async Task<long?> GetBasePriceCopperAsync(
@@ -41,10 +41,10 @@ public sealed class CommerceCatalogReader : ICommerceCatalogReader
             join definition in _dbContext.ItemDefinitions
                 on revision.ItemDefinitionId equals definition.Id
             where
-                ( configuration.Id == itemConfigurationId ) &&
-                ( revision.Status == ItemRevisionStatus.Published ) &&
-                ( ( definition.Scope == ItemCatalogScope.Global ) ||
-                  ( definition.CampaignId == campaignId ) )
+                configuration.Id == itemConfigurationId &&
+                revision.Status == ItemRevisionStatus.Published &&
+                ( definition.Scope == ItemCatalogScope.Global ||
+                  definition.CampaignId == campaignId )
             select ( int? )revision.PriceInCopperPieces )
             .SingleOrDefaultAsync( cancellationToken );
         return price;

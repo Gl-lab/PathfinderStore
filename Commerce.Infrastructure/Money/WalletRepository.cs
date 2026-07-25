@@ -21,8 +21,8 @@ public sealed class WalletRepository : IWalletRepository
         .Include( wallet => wallet.Entries )
         .SingleOrDefaultAsync(
             wallet =>
-                ( wallet.CampaignId == campaignId ) &&
-                ( wallet.CharacterId == characterId ),
+                wallet.CampaignId == campaignId &&
+                wallet.CharacterId == characterId,
             cancellationToken );
 
     public void Add( Wallet wallet )

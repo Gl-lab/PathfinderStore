@@ -102,10 +102,10 @@ public sealed class ItemCatalogAllowedEquipmentReader : IAllowedEquipmentReader
             .AsSplitQuery()
             .Where( definition =>
                 requestedKeyValues.Contains( definition.Key ) &&
-                ( ( definition.Scope == ItemCatalogScope.Global ) ||
+                ( definition.Scope == ItemCatalogScope.Global ||
                   ( campaignId.HasValue &&
-                    ( definition.Scope == ItemCatalogScope.Campaign ) &&
-                    ( definition.CampaignId == campaignId.Value ) ) ) )
+                    definition.Scope == ItemCatalogScope.Campaign &&
+                    definition.CampaignId == campaignId.Value ) ) )
             .Include( definition => definition.Revisions )
                 .ThenInclude( revision => revision.Attacks )
             .Include( definition => definition.Revisions )

@@ -29,13 +29,13 @@ public sealed class PartyStorageAccessPolicy : IPartyStorageAccessPolicy
                 .ThenInclude( party => party.Storage )
             .SingleOrDefaultAsync(
                 item =>
-                    ( item.Id == campaignId ) &&
-                    ( item.Status == CampaignStatus.Active ),
+                    item.Id == campaignId &&
+                    item.Status == CampaignStatus.Active,
                 cancellationToken );
         CampaignParty? party = campaign?.Parties.SingleOrDefault( item =>
-            ( item.Status == CampaignPartyStatus.Active ) &&
+            item.Status == CampaignPartyStatus.Active &&
             item.Characters.Any( character => character.CharacterId == characterId ) );
-        if ( ( campaign is null ) || ( party is null ) )
+        if ( campaign is null || party is null )
         {
             return PartyStorageAccess.Denied;
         }
@@ -46,8 +46,8 @@ public sealed class PartyStorageAccessPolicy : IPartyStorageAccessPolicy
         bool controlsCharacter = campaign.HasActiveRole(
             actingUserId,
             CampaignMembershipRole.Player ) && party.Characters.Any( character =>
-            ( character.CharacterId == characterId ) &&
-            ( character.ControlledByUserId == actingUserId ) );
+            character.CharacterId == characterId &&
+            character.ControlledByUserId == actingUserId );
         PartyStorageWithdrawalPolicy policy = party.Storage.AccessPolicy switch
         {
             CampaignPartyStorageAccessPolicy.FreeForMembers =>

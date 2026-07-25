@@ -64,7 +64,7 @@ public sealed class ShopOffer : Entity, IAggregateRoot
         long unitPriceCopper,
         DateTimeOffset createdAtUtc )
     {
-        if ( ( campaignId <= 0 ) || ( shopId <= 0 ) )
+        if ( campaignId <= 0 || shopId <= 0 )
         {
             throw new CommerceException( "Campaign and shop ids must be greater than zero." );
         }
@@ -108,7 +108,7 @@ public sealed class ShopOffer : Entity, IAggregateRoot
             throw new CommerceException( "Only an active offer can be reserved." );
         }
 
-        if ( ( quantity <= 0 ) || ( quantity > ( AvailableQuantity - ReservedQuantity ) ) )
+        if ( quantity <= 0 || quantity > AvailableQuantity - ReservedQuantity )
         {
             throw new CommerceException( "Offer has insufficient unreserved quantity." );
         }
@@ -119,7 +119,7 @@ public sealed class ShopOffer : Entity, IAggregateRoot
 
     public void Release( int quantity )
     {
-        if ( ( quantity <= 0 ) || ( quantity > ReservedQuantity ) )
+        if ( quantity <= 0 || quantity > ReservedQuantity )
         {
             throw new CommerceException( "Offer reservation quantity is invalid." );
         }
@@ -130,9 +130,9 @@ public sealed class ShopOffer : Entity, IAggregateRoot
 
     public void CompleteReserved( int quantity )
     {
-        if ( ( quantity <= 0 ) ||
-             ( quantity > ReservedQuantity ) ||
-             ( quantity > AvailableQuantity ) )
+        if ( quantity <= 0 ||
+             quantity > ReservedQuantity ||
+             quantity > AvailableQuantity )
         {
             throw new CommerceException( "Completed offer quantity is invalid." );
         }

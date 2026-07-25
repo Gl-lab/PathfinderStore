@@ -22,9 +22,9 @@ public sealed class PurchaseReservationRepository : IPurchaseReservationReposito
         Guid offerKey,
         CancellationToken cancellationToken ) => _dbContext.ShopOffers.SingleOrDefaultAsync(
         offer =>
-            ( offer.CampaignId == campaignId ) &&
-            ( offer.OfferKey == offerKey ) &&
-            ( offer.Status == ShopOfferStatus.Active ),
+            offer.CampaignId == campaignId &&
+            offer.OfferKey == offerKey &&
+            offer.Status == ShopOfferStatus.Active,
         cancellationToken );
 
     public Task<Shop?> GetShopAsync(
@@ -32,8 +32,8 @@ public sealed class PurchaseReservationRepository : IPurchaseReservationReposito
         int shopId,
         CancellationToken cancellationToken ) => _dbContext.Shops.SingleOrDefaultAsync(
         shop =>
-            ( shop.CampaignId == campaignId ) &&
-            ( shop.Id == shopId ),
+            shop.CampaignId == campaignId &&
+            shop.Id == shopId,
         cancellationToken );
 
     public Task<Wallet?> GetWalletAsync(
@@ -43,8 +43,8 @@ public sealed class PurchaseReservationRepository : IPurchaseReservationReposito
         .Include( wallet => wallet.Entries )
         .SingleOrDefaultAsync(
             wallet =>
-                ( wallet.CampaignId == campaignId ) &&
-                ( wallet.CharacterId == characterId ),
+                wallet.CampaignId == campaignId &&
+                wallet.CharacterId == characterId,
             cancellationToken );
 
     public Task<PurchaseReservation?> GetByOperationAsync(
@@ -53,8 +53,8 @@ public sealed class PurchaseReservationRepository : IPurchaseReservationReposito
         CancellationToken cancellationToken ) => _dbContext.PurchaseReservations
         .SingleOrDefaultAsync(
             reservation =>
-                ( reservation.CampaignId == campaignId ) &&
-                ( reservation.OperationId == operationId ),
+                reservation.CampaignId == campaignId &&
+                reservation.OperationId == operationId,
             cancellationToken );
 
     public Task<PurchaseReservation?> GetAsync(
@@ -63,8 +63,8 @@ public sealed class PurchaseReservationRepository : IPurchaseReservationReposito
         CancellationToken cancellationToken ) => _dbContext.PurchaseReservations
         .SingleOrDefaultAsync(
             reservation =>
-                ( reservation.CampaignId == campaignId ) &&
-                ( reservation.ReservationKey == reservationKey ),
+                reservation.CampaignId == campaignId &&
+                reservation.ReservationKey == reservationKey,
         cancellationToken );
 
     public Task<ShopSale?> GetSaleByOperationAsync(
@@ -72,8 +72,8 @@ public sealed class PurchaseReservationRepository : IPurchaseReservationReposito
         Guid operationId,
         CancellationToken cancellationToken ) => _dbContext.ShopSales.SingleOrDefaultAsync(
         sale =>
-            ( sale.CampaignId == campaignId ) &&
-            ( sale.OperationId == operationId ),
+            sale.CampaignId == campaignId &&
+            sale.OperationId == operationId,
         cancellationToken );
 
     public void Add( PurchaseReservation reservation )

@@ -52,10 +52,10 @@ public sealed class ItemRevisionRules
         }
 
         IReadOnlyCollection<AttackComponent> normalizedAttacks = attacks ?? [];
-        bool hasAnyComponent = ( normalizedAttacks.Count > 0 ) || ( armor is not null ) ||
-            ( shield is not null ) || ( equipment is not null ) ||
-            ( consumption is not null ) || ( charges is not null ) ||
-            ( durability is not null );
+        bool hasAnyComponent = normalizedAttacks.Count > 0 || armor is not null ||
+            shield is not null || equipment is not null ||
+            consumption is not null || charges is not null ||
+            durability is not null;
         if ( !hasAnyComponent )
         {
             throw new ItemCatalogException( "Item revision must contain at least one rules component." );
@@ -63,9 +63,9 @@ public sealed class ItemRevisionRules
 
         if ( shield is not null )
         {
-            if ( ( normalizedAttacks.Count == 0 ) ||
-                 ( equipment is null ) ||
-                 ( durability is null ) )
+            if ( normalizedAttacks.Count == 0 ||
+                 equipment is null ||
+                 durability is null )
             {
                 throw new ItemCatalogException(
                     "Shield rules require attack, equipment, and durability components." );

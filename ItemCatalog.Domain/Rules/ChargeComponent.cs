@@ -24,7 +24,7 @@ public sealed class ChargeComponent : Entity
             throw new ItemCatalogException( "Maximum charges must be greater than zero." );
         }
 
-        if ( ( defaultActivationCost <= 0 ) || ( defaultActivationCost > maximumCharges ) )
+        if ( defaultActivationCost <= 0 || defaultActivationCost > maximumCharges )
         {
             throw new ItemCatalogException(
                 "Default activation cost must be positive and cannot exceed maximum charges." );

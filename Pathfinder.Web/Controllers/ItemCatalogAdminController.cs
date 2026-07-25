@@ -53,8 +53,8 @@ public sealed class ItemCatalogAdminController : AuthorizedController
             return Forbid();
         }
         catch ( Exception exception ) when (
-            ( exception is ItemCatalogException ) ||
-            ( exception is ItemCatalogApplicationException ) )
+            exception is ItemCatalogException ||
+            exception is ItemCatalogApplicationException )
         {
             return BadRequest( MapError( exception.Message ) );
         }
@@ -114,8 +114,8 @@ public sealed class ItemCatalogAdminController : AuthorizedController
             return Forbid();
         }
         catch ( Exception exception ) when (
-            ( exception is ItemCatalogException ) ||
-            ( exception is ItemCatalogApplicationException ) )
+            exception is ItemCatalogException ||
+            exception is ItemCatalogApplicationException )
         {
             return BadRequest( MapError( exception.Message ) );
         }

@@ -42,12 +42,12 @@ public sealed class ItemCatalogAdministrativeAccess : IItemCatalogAdministrative
             .AsNoTracking()
             .AnyAsync(
                 campaign =>
-                    ( campaign.Id == campaignId ) &&
-                    ( campaign.Status == CampaignStatus.Active ) &&
+                    campaign.Id == campaignId &&
+                    campaign.Status == CampaignStatus.Active &&
                     campaign.Memberships.Any( membership =>
-                        ( membership.UserId == userId ) &&
-                        ( membership.Role == CampaignMembershipRole.GameMaster ) &&
-                        ( membership.Status == CampaignMembershipStatus.Active ) ),
+                        membership.UserId == userId &&
+                        membership.Role == CampaignMembershipRole.GameMaster &&
+                        membership.Status == CampaignMembershipStatus.Active ),
                 cancellationToken );
     }
 }

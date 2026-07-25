@@ -48,7 +48,7 @@ public sealed class AttackComponent : Entity
             throw new ItemCatalogException( "Attack damage definition is invalid." );
         }
 
-        if ( ( hands < 0 ) || ( hands > 2 ) )
+        if ( hands < 0 || hands > 2 )
         {
             throw new ItemCatalogException( "Attack hands must be between zero and two." );
         }

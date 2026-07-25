@@ -44,8 +44,8 @@ public abstract class PartyStorageHandlerBase
             itemInstanceKey,
             cancellationToken ) ?? throw new InventoryException( "Storage item was not found." );
         if ( item.IsDepleted ||
-             ( item.ReservationKey is not null ) ||
-             ( item.Version != expectedVersion ) )
+             item.ReservationKey is not null ||
+             item.Version != expectedVersion )
         {
             throw new InventoryException( "Storage item is depleted, reserved, or changed." );
         }
@@ -64,7 +64,7 @@ public abstract class PartyStorageHandlerBase
             campaignId,
             partyId,
             cancellationToken );
-        if ( ( container is null ) && createIfMissing )
+        if ( container is null && createIfMissing )
         {
             container = InventoryContainer.CreateRoot(
                 CreatePartyContainerKey( campaignId, partyId ),

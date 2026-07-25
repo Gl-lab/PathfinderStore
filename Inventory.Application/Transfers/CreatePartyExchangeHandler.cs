@@ -86,11 +86,11 @@ public sealed class CreatePartyExchangeHandler
             ItemInstance item = await _repository.GetItemAsync(
                 line.ItemInstanceKey,
                 cancellationToken ) ?? throw new InventoryException( "Exchange item was not found." );
-            if ( ( item.CampaignId != request.CampaignId ) ||
-                 ( item.CurrentContainerKey != expectedContainer.ContainerKey ) ||
+            if ( item.CampaignId != request.CampaignId ||
+                 item.CurrentContainerKey != expectedContainer.ContainerKey ||
                  item.IsDepleted ||
-                 ( item.ReservationKey is not null ) ||
-                 ( item.Version != line.ExpectedItemVersion ) )
+                 item.ReservationKey is not null ||
+                 item.Version != line.ExpectedItemVersion )
             {
                 throw new InventoryException(
                     "Exchange item is unavailable, not owned by its declared character, reserved, or changed." );

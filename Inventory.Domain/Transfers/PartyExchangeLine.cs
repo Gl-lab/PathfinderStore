@@ -19,7 +19,7 @@ public sealed class PartyExchangeLine : Entity
         Guid itemInstanceKey,
         int expectedItemVersion )
     {
-        if ( ( fromCharacterId <= 0 ) || ( itemInstanceKey == Guid.Empty ) )
+        if ( fromCharacterId <= 0 || itemInstanceKey == Guid.Empty )
         {
             throw new InventoryException( "Exchange line character id and item key are required." );
         }

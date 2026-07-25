@@ -90,12 +90,12 @@ public sealed class ShopOfferAdministrationService
         CommerceStockItem item = await _inventoryReader.GetShopStockAsync(
             itemInstanceKey,
             cancellationToken ) ?? throw new CommerceException( "Stock item was not found." );
-        if ( ( item.CampaignId != campaignId ) || ( item.OwnerShopId != shop.Id ) )
+        if ( item.CampaignId != campaignId || item.OwnerShopId != shop.Id )
         {
             throw new CommerceException( "Stock item does not belong to this campaign shop." );
         }
 
-        if ( !item.IsAvailable || ( quantity > item.Quantity ) )
+        if ( !item.IsAvailable || quantity > item.Quantity )
         {
             throw new CommerceException( "Stock item is unavailable or has insufficient quantity." );
         }

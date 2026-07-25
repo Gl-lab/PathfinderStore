@@ -28,8 +28,8 @@ public sealed class PartyTransferAccessPolicy : IPartyTransferAccessPolicy
                 .ThenInclude( party => party.Characters )
             .SingleOrDefaultAsync(
                 item =>
-                    ( item.Id == campaignId ) &&
-                    ( item.Status == CampaignStatus.Active ),
+                    item.Id == campaignId &&
+                    item.Status == CampaignStatus.Active,
                 cancellationToken );
         if ( campaign is null )
         {
@@ -37,7 +37,7 @@ public sealed class PartyTransferAccessPolicy : IPartyTransferAccessPolicy
         }
 
         CampaignParty? party = campaign.Parties.SingleOrDefault( item =>
-            ( item.Status == CampaignPartyStatus.Active ) &&
+            item.Status == CampaignPartyStatus.Active &&
             item.Characters.Any( character => character.CharacterId == sourceCharacterId ) &&
             item.Characters.Any( character => character.CharacterId == destinationCharacterId ) );
         if ( party is null )
@@ -63,9 +63,9 @@ public sealed class PartyTransferAccessPolicy : IPartyTransferAccessPolicy
 
         bool isPlayer = campaign.HasActiveRole( actingUserId, CampaignMembershipRole.Player );
         bool controlsSource = isPlayer &&
-            ( sourceCharacter.ControlledByUserId == actingUserId );
+            sourceCharacter.ControlledByUserId == actingUserId;
         bool controlsDestination = isPlayer &&
-            ( destinationCharacter.ControlledByUserId == actingUserId );
+            destinationCharacter.ControlledByUserId == actingUserId;
         return new PartyTransferAccess( true, party.Id, controlsSource, controlsDestination );
     }
 }

@@ -24,9 +24,9 @@ public sealed class CommerceInventoryReader : ICommerceInventoryReader
     {
         bool exists = await _dbContext.Containers.AnyAsync(
             container =>
-                ( container.CampaignId == campaignId ) &&
-                ( container.OwnerKind == InventoryContainerOwnerKind.Shop ) &&
-                ( container.OwnerId == shopId ),
+                container.CampaignId == campaignId &&
+                container.OwnerKind == InventoryContainerOwnerKind.Shop &&
+                container.OwnerId == shopId,
             cancellationToken );
         if ( exists )
         {
@@ -61,9 +61,9 @@ public sealed class CommerceInventoryReader : ICommerceInventoryReader
             .AsNoTracking()
             .SingleOrDefaultAsync(
                 candidate =>
-                    ( candidate.CampaignId == item.CampaignId ) &&
-                    ( candidate.ContainerKey == item.CurrentContainerKey ) &&
-                    ( candidate.OwnerKind == InventoryContainerOwnerKind.Shop ),
+                    candidate.CampaignId == item.CampaignId &&
+                    candidate.ContainerKey == item.CurrentContainerKey &&
+                    candidate.OwnerKind == InventoryContainerOwnerKind.Shop,
                 cancellationToken );
         return container is null
             ? null
@@ -72,6 +72,6 @@ public sealed class CommerceInventoryReader : ICommerceInventoryReader
                 item.CampaignId,
                 container.OwnerId,
                 item.Quantity,
-                !item.IsDepleted && ( item.ReservationKey is null ) );
+                !item.IsDepleted && item.ReservationKey is null );
     }
 }

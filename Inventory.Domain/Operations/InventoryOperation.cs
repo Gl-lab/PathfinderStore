@@ -40,9 +40,9 @@ public sealed class InventoryOperation : Entity
         Guid relatedKey,
         int quantity )
     {
-        if ( ( Kind != kind ) ||
-             ( RelatedKey != relatedKey ) ||
-             ( Quantity != quantity ) )
+        if ( Kind != kind ||
+             RelatedKey != relatedKey ||
+             Quantity != quantity )
         {
             throw new InventoryException(
                 "Operation id was already used for a different inventory change." );

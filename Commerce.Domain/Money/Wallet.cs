@@ -25,7 +25,7 @@ public sealed class Wallet : Entity, IAggregateRoot
         int characterId,
         DateTimeOffset createdAtUtc )
     {
-        if ( ( campaignId <= 0 ) || ( characterId <= 0 ) )
+        if ( campaignId <= 0 || characterId <= 0 )
         {
             throw new CommerceException( "Campaign and character ids must be greater than zero." );
         }
@@ -52,8 +52,8 @@ public sealed class Wallet : Entity, IAggregateRoot
         WalletLedgerEntry? existing = FindEntry( operationId );
         if ( existing is not null )
         {
-            if ( ( existing.AmountCopper != amountCopper ) ||
-                 ( existing.PerformedByUserId != performedByUserId ) ||
+            if ( existing.AmountCopper != amountCopper ||
+                 existing.PerformedByUserId != performedByUserId ||
                  !String.Equals( existing.Description, description.Trim(), StringComparison.Ordinal ) )
             {
                 throw new CommerceException(
@@ -107,8 +107,8 @@ public sealed class Wallet : Entity, IAggregateRoot
         WalletLedgerEntry? existing = FindEntry( operationId );
         if ( existing is not null )
         {
-            if ( ( existing.Kind != WalletTransactionKind.ReservationHold ) ||
-                 ( existing.AmountCopper != -amountCopper ) )
+            if ( existing.Kind != WalletTransactionKind.ReservationHold ||
+                 existing.AmountCopper != -amountCopper )
             {
                 throw new CommerceException(
                     "Wallet operation id was already used with different data." );
@@ -143,7 +143,7 @@ public sealed class Wallet : Entity, IAggregateRoot
         DateTimeOffset occurredAtUtc )
     {
         EnsureReservationOperation( operationId, performedByUserId, occurredAtUtc );
-        if ( ( amountCopper <= 0 ) || ( amountCopper > ReservedCopper ) )
+        if ( amountCopper <= 0 || amountCopper > ReservedCopper )
         {
             throw new CommerceException( "Released reservation amount is invalid." );
         }
@@ -151,8 +151,8 @@ public sealed class Wallet : Entity, IAggregateRoot
         WalletLedgerEntry? existing = FindEntry( operationId );
         if ( existing is not null )
         {
-            if ( ( existing.Kind != WalletTransactionKind.ReservationRelease ) ||
-                 ( existing.AmountCopper != amountCopper ) )
+            if ( existing.Kind != WalletTransactionKind.ReservationRelease ||
+                 existing.AmountCopper != amountCopper )
             {
                 throw new CommerceException(
                     "Wallet operation id was already used with different data." );
@@ -182,9 +182,9 @@ public sealed class Wallet : Entity, IAggregateRoot
         DateTimeOffset occurredAtUtc )
     {
         EnsureReservationOperation( operationId, performedByUserId, occurredAtUtc );
-        if ( ( amountCopper <= 0 ) ||
-             ( amountCopper > ReservedCopper ) ||
-             ( amountCopper > BalanceCopper ) )
+        if ( amountCopper <= 0 ||
+             amountCopper > ReservedCopper ||
+             amountCopper > BalanceCopper )
         {
             throw new CommerceException( "Purchase amount is not fully reserved." );
         }
@@ -192,8 +192,8 @@ public sealed class Wallet : Entity, IAggregateRoot
         WalletLedgerEntry? existing = FindEntry( operationId );
         if ( existing is not null )
         {
-            if ( ( existing.Kind != WalletTransactionKind.Purchase ) ||
-                 ( existing.AmountCopper != -amountCopper ) )
+            if ( existing.Kind != WalletTransactionKind.Purchase ||
+                 existing.AmountCopper != -amountCopper )
             {
                 throw new CommerceException(
                     "Wallet operation id was already used with different data." );
@@ -232,8 +232,8 @@ public sealed class Wallet : Entity, IAggregateRoot
         WalletLedgerEntry? existing = FindEntry( operationId );
         if ( existing is not null )
         {
-            if ( ( existing.Kind != WalletTransactionKind.Sale ) ||
-                 ( existing.AmountCopper != amountCopper ) )
+            if ( existing.Kind != WalletTransactionKind.Sale ||
+                 existing.AmountCopper != amountCopper )
             {
                 throw new CommerceException(
                     "Wallet operation id was already used with different data." );
@@ -300,7 +300,7 @@ public sealed class Wallet : Entity, IAggregateRoot
         }
 
         if ( String.IsNullOrWhiteSpace( description ) ||
-             ( description.Trim().Length > WalletLedgerEntry.DescriptionMaxLength ) )
+             description.Trim().Length > WalletLedgerEntry.DescriptionMaxLength )
         {
             throw new CommerceException(
                 $"Wallet description must contain at most {WalletLedgerEntry.DescriptionMaxLength} characters." );

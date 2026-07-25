@@ -27,6 +27,6 @@ public sealed class ItemTransferRestrictionPolicy : IItemTransferRestrictionPoli
             .AsNoTracking()
             .SingleOrDefaultAsync( item => item.Id == characterId, cancellationToken );
         return character?.RuntimeEquipmentItems.Any( item =>
-            ( item.ItemInstanceKey == itemInstanceKey ) && item.IsEquipped ) ?? false;
+            item.ItemInstanceKey == itemInstanceKey && item.IsEquipped ) ?? false;
     }
 }

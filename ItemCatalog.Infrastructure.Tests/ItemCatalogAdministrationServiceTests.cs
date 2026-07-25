@@ -177,8 +177,8 @@ public sealed class ItemCatalogAdministrationServiceTests
         {
             LastCampaignCheck = (userId, campaignId);
             return Task.FromResult(
-                ( AllowedUserId == userId ) &&
-                ( AllowedCampaignId == campaignId ) );
+                AllowedUserId == userId &&
+                AllowedCampaignId == campaignId );
         }
     }
 

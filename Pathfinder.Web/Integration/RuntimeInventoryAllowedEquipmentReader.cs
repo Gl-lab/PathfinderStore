@@ -107,9 +107,9 @@ public sealed class RuntimeInventoryAllowedEquipmentReader : IAllowedEquipmentRe
         {
             int runtimeCampaignId = instances[ 0 ].CampaignId;
             bool definitionsAreVisible = definitions.All( definition =>
-                ( definition.Scope == ItemCatalogScope.Global ) ||
-                ( ( definition.Scope == ItemCatalogScope.Campaign ) &&
-                  ( definition.CampaignId == runtimeCampaignId ) ) );
+                definition.Scope == ItemCatalogScope.Global ||
+                ( definition.Scope == ItemCatalogScope.Campaign &&
+                  definition.CampaignId == runtimeCampaignId ) );
             if ( !definitionsAreVisible )
             {
                 throw new InvalidOperationException(
@@ -192,13 +192,13 @@ public sealed class RuntimeInventoryAllowedEquipmentReader : IAllowedEquipmentRe
             .AsNoTracking()
             .Where( container => containerKeys.Contains( container.ContainerKey ) )
             .ToArray();
-        bool ownsAllContainers = ( containers.Length == containerKeys.Length ) &&
+        bool ownsAllContainers = containers.Length == containerKeys.Length &&
             containers.All( container =>
-                ( container.OwnerKind == InventoryContainerOwnerKind.Character ) &&
-                ( container.OwnerId == character.Id ) &&
-                ( !campaignId.HasValue || ( container.CampaignId == campaignId.Value ) ) );
+                container.OwnerKind == InventoryContainerOwnerKind.Character &&
+                container.OwnerId == character.Id &&
+                ( !campaignId.HasValue || container.CampaignId == campaignId.Value ) );
         bool scopesAllInstances = instances.All( instance =>
-            !campaignId.HasValue || ( instance.CampaignId == campaignId.Value ) );
+            !campaignId.HasValue || instance.CampaignId == campaignId.Value );
         bool hasSingleCampaign = instances
             .Select( instance => instance.CampaignId )
             .Distinct()

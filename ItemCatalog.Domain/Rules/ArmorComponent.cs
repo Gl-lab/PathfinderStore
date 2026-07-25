@@ -30,9 +30,9 @@ public sealed class ArmorComponent : Entity
             throw new ItemCatalogException( "Armor category is invalid." );
         }
 
-        if ( ( armorClassBonus < 0 ) || ( dexterityCap < 0 ) ||
-             ( checkPenalty > 0 ) || ( speedPenaltyFeet > 0 ) ||
-             ( strengthRequirement < 0 ) )
+        if ( armorClassBonus < 0 || dexterityCap < 0 ||
+             checkPenalty > 0 || speedPenaltyFeet > 0 ||
+             strengthRequirement < 0 )
         {
             throw new ItemCatalogException( "Armor statistics are invalid." );
         }

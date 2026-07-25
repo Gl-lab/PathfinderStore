@@ -33,8 +33,8 @@ public sealed class ItemDefinitionRepository : Repository<ItemDefinition>, IItem
         return await WithRevisions()
             .SingleOrDefaultAsync(
                 definition =>
-                    ( definition.Scope == ItemCatalogScope.Global ) &&
-                    ( definition.Key == key ),
+                    definition.Scope == ItemCatalogScope.Global &&
+                    definition.Key == key,
                 cancellationToken );
     }
 
@@ -46,9 +46,9 @@ public sealed class ItemDefinitionRepository : Repository<ItemDefinition>, IItem
         return await WithRevisions()
             .SingleOrDefaultAsync(
                 definition =>
-                    ( definition.Scope == ItemCatalogScope.Campaign ) &&
-                    ( definition.CampaignId == campaignId ) &&
-                    ( definition.Key == key ),
+                    definition.Scope == ItemCatalogScope.Campaign &&
+                    definition.CampaignId == campaignId &&
+                    definition.Key == key,
                 cancellationToken );
     }
 
@@ -58,9 +58,9 @@ public sealed class ItemDefinitionRepository : Repository<ItemDefinition>, IItem
     {
         return await WithRevisions()
             .Where( definition =>
-                ( definition.Scope == ItemCatalogScope.Global ) ||
-                ( ( definition.Scope == ItemCatalogScope.Campaign ) &&
-                  ( definition.CampaignId == campaignId ) ) )
+                definition.Scope == ItemCatalogScope.Global ||
+                ( definition.Scope == ItemCatalogScope.Campaign &&
+                  definition.CampaignId == campaignId ) )
             .OrderBy( definition => definition.Key )
             .ToArrayAsync( cancellationToken );
     }

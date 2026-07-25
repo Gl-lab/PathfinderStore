@@ -100,7 +100,7 @@ public sealed class ItemInstance : Entity, IAggregateRoot
         EnsureOperationTimestamp( createdAtUtc );
         EnsureActiveStack();
         EnsureNotReserved();
-        if ( ( splitQuantity <= 0 ) || ( splitQuantity >= Quantity ) )
+        if ( splitQuantity <= 0 || splitQuantity >= Quantity )
         {
             throw new InventoryException(
                 "Split quantity must be greater than zero and less than the current quantity." );
@@ -155,9 +155,9 @@ public sealed class ItemInstance : Entity, IAggregateRoot
         EnsureOperationId( operationId );
         InventoryOperation? replay = FindOperation( operationId );
         InventoryOperation? sourceReplay = source.FindOperation( operationId );
-        if ( ( replay is not null ) || ( sourceReplay is not null ) )
+        if ( replay is not null || sourceReplay is not null )
         {
-            if ( ( replay is null ) || ( sourceReplay is null ) )
+            if ( replay is null || sourceReplay is null )
             {
                 throw new InventoryException(
                     "Merge operation history is inconsistent between item stacks." );
@@ -188,16 +188,16 @@ public sealed class ItemInstance : Entity, IAggregateRoot
             throw new InventoryException( "An item stack cannot be merged with itself." );
         }
 
-        if ( ( CampaignId != source.CampaignId ) ||
-             ( ItemConfigurationId != source.ItemConfigurationId ) ||
-             ( CurrentContainerKey != source.CurrentContainerKey ) ||
+        if ( CampaignId != source.CampaignId ||
+             ItemConfigurationId != source.ItemConfigurationId ||
+             CurrentContainerKey != source.CurrentContainerKey ||
              !String.Equals( CustomName, source.CustomName, StringComparison.Ordinal ) )
         {
             throw new InventoryException(
                 "Item stacks must have the same campaign, configuration, location, and custom name." );
         }
 
-        if ( Quantity > ( Int32.MaxValue - source.Quantity ) )
+        if ( Quantity > Int32.MaxValue - source.Quantity )
         {
             throw new InventoryException( "Merged item stack quantity is too large." );
         }
@@ -246,10 +246,10 @@ public sealed class ItemInstance : Entity, IAggregateRoot
                 performedBy,
                 PerformedByMaxLength,
                 "Movement performer" );
-            if ( ( replay.ToContainerKey != destination.ContainerKey ) ||
+            if ( replay.ToContainerKey != destination.ContainerKey ||
                  !String.Equals( replay.Reason, replayReason, StringComparison.Ordinal ) ||
                  !String.Equals( replay.PerformedBy, replayPerformedBy, StringComparison.Ordinal ) ||
-                 ( replay.OccurredAtUtc != occurredAtUtc ) )
+                 replay.OccurredAtUtc != occurredAtUtc )
             {
                 throw new InventoryException(
                     "Operation id was already used for a different inventory movement." );
@@ -386,8 +386,8 @@ public sealed class ItemInstance : Entity, IAggregateRoot
 
         EnsureTransferAllowed();
 
-        if ( IsDepleted || ( destination.CampaignId != CampaignId ) ||
-             ( destination.ContainerKey == CurrentContainerKey ) )
+        if ( IsDepleted || destination.CampaignId != CampaignId ||
+             destination.ContainerKey == CurrentContainerKey )
         {
             throw new InventoryException( "Reserved item cannot move to the requested container." );
         }
@@ -474,8 +474,8 @@ public sealed class ItemInstance : Entity, IAggregateRoot
         }
 
         EnsureExpectedVersion( expectedVersion );
-        if ( IsDepleted || ( destination.CampaignId != CampaignId ) ||
-             ( destination.ContainerKey == CurrentContainerKey ) )
+        if ( IsDepleted || destination.CampaignId != CampaignId ||
+             destination.ContainerKey == CurrentContainerKey )
         {
             throw new InventoryException( "Item cannot be force-moved to the requested container." );
         }

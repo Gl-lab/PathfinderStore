@@ -29,7 +29,7 @@ public sealed class DurabilityComponent : Entity
             throw new ItemCatalogException( "Maximum item Hit Points must be greater than zero." );
         }
 
-        if ( ( brokenThreshold <= 0 ) || ( brokenThreshold > maximumHitPoints ) )
+        if ( brokenThreshold <= 0 || brokenThreshold > maximumHitPoints )
         {
             throw new ItemCatalogException(
                 "Broken Threshold must be positive and cannot exceed maximum item Hit Points." );

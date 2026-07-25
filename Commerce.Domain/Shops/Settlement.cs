@@ -36,7 +36,7 @@ public sealed class Settlement : Entity, IAggregateRoot
             throw new CommerceException( "Campaign id must be greater than zero." );
         }
 
-        if ( ( level < 0 ) || ( level > 20 ) )
+        if ( level < 0 || level > 20 )
         {
             throw new CommerceException( "Settlement level must be between 0 and 20." );
         }
@@ -59,7 +59,7 @@ public sealed class Settlement : Entity, IAggregateRoot
         int shopLevel,
         DateTimeOffset createdAtUtc )
     {
-        if ( ( shopLevel < 0 ) || ( shopLevel > 20 ) )
+        if ( shopLevel < 0 || shopLevel > 20 )
         {
             throw new CommerceException( "Shop level must be between 0 and 20." );
         }

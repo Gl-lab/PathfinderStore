@@ -98,9 +98,9 @@ public sealed class CompletedCharacterInventoryMigrationService
             .OrderBy( item => item.EquipmentId, StringComparer.Ordinal )
             .ToArray();
         if ( orderedEquipment.Any( item =>
-            ( item.PurchaseQuantity < 0 ) ||
-            ( item.EquippedQuantity < 0 ) ||
-            ( item.EquippedQuantity > item.PurchaseQuantity ) ) )
+            item.PurchaseQuantity < 0 ||
+            item.EquippedQuantity < 0 ||
+            item.EquippedQuantity > item.PurchaseQuantity ) )
         {
             throw new InvalidOperationException(
                 "Completed character equipment quantities are inconsistent." );
@@ -152,9 +152,9 @@ public sealed class CompletedCharacterInventoryMigrationService
                         migratedAtUtc );
                     _inventoryDbContext.ItemInstances.Add( instance );
                 }
-                else if ( ( instance.CampaignId != campaignId ) ||
-                          ( instance.ItemConfigurationId != configurationIds[ equipment.EquipmentId ] ) ||
-                          ( instance.CurrentContainerKey != container.ContainerKey ) )
+                else if ( instance.CampaignId != campaignId ||
+                          instance.ItemConfigurationId != configurationIds[ equipment.EquipmentId ] ||
+                          instance.CurrentContainerKey != container.ContainerKey )
                 {
                     throw new InvalidOperationException(
                         $"Existing migrated item instance '{instanceKey}' does not match its source equipment." );
@@ -181,7 +181,7 @@ public sealed class CompletedCharacterInventoryMigrationService
     {
         int[] characterIds = await _characterDbContext.Character
             .Where( character =>
-                ( character.CreationStatus == CharacterCreationStatus.Completed ) &&
+                character.CreationStatus == CharacterCreationStatus.Completed &&
                 !character.HasRuntimeInventory )
             .Select( character => character.Id )
             .ToArrayAsync( cancellationToken );
@@ -206,9 +206,9 @@ public sealed class CompletedCharacterInventoryMigrationService
         InventoryContainer? container = await _inventoryDbContext.Containers
             .SingleOrDefaultAsync(
                 item =>
-                    ( item.CampaignId == campaignId ) &&
-                    ( item.OwnerKind == InventoryContainerOwnerKind.Character ) &&
-                    ( item.OwnerId == characterId ),
+                    item.CampaignId == campaignId &&
+                    item.OwnerKind == InventoryContainerOwnerKind.Character &&
+                    item.OwnerId == characterId,
                 cancellationToken );
         if ( container is not null )
         {
@@ -234,15 +234,15 @@ public sealed class CompletedCharacterInventoryMigrationService
         ItemDefinition? definition = await _itemCatalogDbContext.ItemDefinitions
             .Include( item => item.Revisions )
             .Where( item =>
-                ( item.Key == equipmentId ) &&
-                ( ( item.Scope == ItemCatalogScope.Global ) ||
-                  ( ( item.Scope == ItemCatalogScope.Campaign ) &&
-                    ( item.CampaignId == campaignId ) ) ) )
+                item.Key == equipmentId &&
+                ( item.Scope == ItemCatalogScope.Global ||
+                  ( item.Scope == ItemCatalogScope.Campaign &&
+                    item.CampaignId == campaignId ) ) )
             .OrderByDescending( item => item.Scope == ItemCatalogScope.Campaign )
             .FirstOrDefaultAsync( cancellationToken );
         ItemRevision? revision = definition?.Revisions
             .SingleOrDefault( item => item.Status == ItemRevisionStatus.Published );
-        if ( ( revision is null ) && ( definition is null ) )
+        if ( revision is null && definition is null )
         {
             definition = await BootstrapDefinitionAsync(
                 equipmentId,
@@ -260,10 +260,10 @@ public sealed class CompletedCharacterInventoryMigrationService
         ItemConfiguration? configuration = await _itemCatalogDbContext.ItemConfigurations
             .SingleOrDefaultAsync(
                 item =>
-                    ( item.ItemRevisionId == revision.Id ) &&
-                    ( item.Size == ItemSize.Medium ) &&
-                    ( item.MaterialType == ItemMaterialType.Standard ) &&
-                    ( item.MaterialGrade == ItemMaterialGrade.Standard ) &&
+                    item.ItemRevisionId == revision.Id &&
+                    item.Size == ItemSize.Medium &&
+                    item.MaterialType == ItemMaterialType.Standard &&
+                    item.MaterialGrade == ItemMaterialGrade.Standard &&
                     !item.PermanentUpgrades.Any(),
                 cancellationToken );
         if ( configuration is not null )

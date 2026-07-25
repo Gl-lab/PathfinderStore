@@ -20,7 +20,7 @@ public sealed class EquipmentComponent : Entity
             throw new ItemCatalogException( "Equipment usage is invalid." );
         }
 
-        if ( ( requiredHands < 0 ) || ( requiredHands > 2 ) )
+        if ( requiredHands < 0 || requiredHands > 2 )
         {
             throw new ItemCatalogException( "Equipment required hands must be between zero and two." );
         }

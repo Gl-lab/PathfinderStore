@@ -24,8 +24,8 @@ public sealed class ShopOfferRepository : IShopOfferRepository
         Guid itemInstanceKey,
         CancellationToken cancellationToken ) => _dbContext.ShopOffers.AnyAsync(
         offer =>
-            ( offer.ItemInstanceKey == itemInstanceKey ) &&
-            ( offer.Status == ShopOfferStatus.Active ),
+            offer.ItemInstanceKey == itemInstanceKey &&
+            offer.Status == ShopOfferStatus.Active,
         cancellationToken );
 
     public void Add( ShopOffer offer )

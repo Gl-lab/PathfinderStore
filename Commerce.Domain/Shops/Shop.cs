@@ -51,13 +51,13 @@ public sealed class Shop : Entity
 
     public void SetPricingPolicy( int catalogPricePercent, int buybackPricePercent )
     {
-        if ( ( catalogPricePercent < 1 ) || ( catalogPricePercent > 1000 ) )
+        if ( catalogPricePercent < 1 || catalogPricePercent > 1000 )
         {
             throw new CommerceException(
                 "Catalog price percent must be between 1 and 1000." );
         }
 
-        if ( ( buybackPricePercent < 0 ) || ( buybackPricePercent > 100 ) )
+        if ( buybackPricePercent < 0 || buybackPricePercent > 100 )
         {
             throw new CommerceException(
                 "Buyback price percent must be between 0 and 100." );

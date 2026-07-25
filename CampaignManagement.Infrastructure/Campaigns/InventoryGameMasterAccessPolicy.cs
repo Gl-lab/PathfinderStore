@@ -27,8 +27,8 @@ public sealed class InventoryGameMasterAccessPolicy :
             .Include( item => item.Memberships )
             .SingleOrDefaultAsync(
                 item =>
-                    ( item.Id == campaignId ) &&
-                    ( item.Status == CampaignStatus.Active ),
+                    item.Id == campaignId &&
+                    item.Status == CampaignStatus.Active,
                 cancellationToken );
         return campaign?.HasActiveRole(
             actingUserId,

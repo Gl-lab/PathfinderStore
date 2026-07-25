@@ -55,8 +55,8 @@ public sealed class ItemDefinition : Entity, IAggregateRoot
         }
 
         ItemRevision? previousRevision = _revisions.LastOrDefault();
-        if ( ( previousRevision is not null ) &&
-             ( createdAtUtc < previousRevision.CreatedAtUtc ) )
+        if ( previousRevision is not null &&
+             createdAtUtc < previousRevision.CreatedAtUtc )
         {
             throw new ItemCatalogException(
                 "Revision creation timestamp cannot precede the previous revision." );
@@ -117,11 +117,11 @@ public sealed class ItemDefinition : Entity, IAggregateRoot
 
         string[] segments = normalizedKey.Split( '.' );
         bool hasInvalidSegment = segments.Any( segment =>
-            ( segment.Length == 0 ) ||
+            segment.Length == 0 ||
             segment.Any( character =>
                 !( Char.IsAsciiLetterLower( character ) ||
                    Char.IsAsciiDigit( character ) ||
-                   ( character == '-' ) ) ) );
+                   character == '-' ) ) );
         if ( hasInvalidSegment )
         {
             throw new ItemCatalogException(

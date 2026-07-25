@@ -33,15 +33,15 @@ public sealed class PartyGift : Entity, IAggregateRoot
         DateTimeOffset createdAtUtc,
         DateTimeOffset expiresAtUtc )
     {
-        if ( ( giftKey == Guid.Empty ) || ( itemInstanceKey == Guid.Empty ) )
+        if ( giftKey == Guid.Empty || itemInstanceKey == Guid.Empty )
         {
             throw new InventoryException( "Gift and item keys cannot be empty." );
         }
 
-        if ( ( campaignId <= 0 ) ||
-             ( partyId <= 0 ) ||
-             ( sourceCharacterId <= 0 ) ||
-             ( destinationCharacterId <= 0 ) )
+        if ( campaignId <= 0 ||
+             partyId <= 0 ||
+             sourceCharacterId <= 0 ||
+             destinationCharacterId <= 0 )
         {
             throw new InventoryException( "Gift campaign, party, and character ids must be positive." );
         }
@@ -85,11 +85,11 @@ public sealed class PartyGift : Entity, IAggregateRoot
         Guid itemInstanceKey,
         int expectedItemVersion )
     {
-        if ( ( CampaignId != campaignId ) ||
-             ( SourceCharacterId != sourceCharacterId ) ||
-             ( DestinationCharacterId != destinationCharacterId ) ||
-             ( ItemInstanceKey != itemInstanceKey ) ||
-             ( ExpectedItemVersion != expectedItemVersion ) )
+        if ( CampaignId != campaignId ||
+             SourceCharacterId != sourceCharacterId ||
+             DestinationCharacterId != destinationCharacterId ||
+             ItemInstanceKey != itemInstanceKey ||
+             ExpectedItemVersion != expectedItemVersion )
         {
             throw new InventoryException( "Gift key was already used for another proposal." );
         }
