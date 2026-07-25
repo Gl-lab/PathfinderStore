@@ -38,12 +38,8 @@ public sealed class GetCampaignCharacterByIdHandler
             throw new CharacterManagementException( "Campaign character was not found." );
         }
 
-        DraftCharacter? character = await _characterRepository.GetByIdAsync( request.CharacterId );
-        if ( character is null )
-        {
-            throw new CharacterManagementException( "Campaign character was not found." );
-        }
-
+        DraftCharacter character = await _characterRepository.GetByIdAsync( request.CharacterId )
+            ?? throw new CharacterManagementException( "Campaign character was not found." );
         return new CampaignCharacterDto(
             _characterDetailsDtoMapper.Convert( character, request.CampaignId ),
             access.CanAct );

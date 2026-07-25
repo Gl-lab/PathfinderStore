@@ -23,15 +23,10 @@ public sealed class SetCharacterGenderHandler : IRequestHandler<SetCharacterGend
         SetCharacterGenderCommand request,
         CancellationToken cancellationToken )
     {
-        DraftCharacter? character = await _characterRepository.GetByIdAsync(
+        DraftCharacter character = await _characterRepository.GetByIdAsync(
             request.CharacterId,
-            request.UserId );
-        if ( character is null )
-        {
-            throw new CharacterManagementException(
+            request.UserId ) ?? throw new CharacterManagementException(
                 $"Character {request.CharacterId} was not found for current user." );
-        }
-
         character.SetGender( request.Gender );
         await _unitOfWork.Commit();
     }

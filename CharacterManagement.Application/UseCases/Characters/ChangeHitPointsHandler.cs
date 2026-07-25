@@ -47,12 +47,8 @@ public sealed class ChangeHitPointsHandler
                 "Campaign character was not found." );
         }
 
-        DraftCharacter? character = await _characterRepository.GetByIdAsync( request.CharacterId );
-        if ( character is null )
-        {
-            throw new CharacterManagementException( "Campaign character was not found." );
-        }
-
+        DraftCharacter character = await _characterRepository.GetByIdAsync( request.CharacterId )
+            ?? throw new CharacterManagementException( "Campaign character was not found." );
         if ( String.IsNullOrWhiteSpace( character.SelectedClassId ) )
         {
             throw new Pathfinder.CharacterManagement.Domain.Exceptions.CharacterManagementException(

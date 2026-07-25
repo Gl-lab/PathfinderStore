@@ -21,12 +21,10 @@ public sealed class DeleteCharacterHandler : IRequestHandler<DeleteCharacterComm
 
     public async Task Handle( DeleteCharacterCommand request, CancellationToken cancellationToken )
     {
-        DraftCharacter? draftCharacter = await _characterRepository.GetByIdAsync( request.DeletedCharacterId, request.UserId );
-        if ( draftCharacter is null )
-        {
-            throw new CharacterManagementException( $"Character {request.DeletedCharacterId} was not found for current user." );
-        }
-
+        DraftCharacter draftCharacter = await _characterRepository.GetByIdAsync(
+            request.DeletedCharacterId,
+            request.UserId ) ?? throw new CharacterManagementException(
+            $"Character {request.DeletedCharacterId} was not found for current user." );
         _characterRepository.Delete( draftCharacter );
         await _unitOfWork.Commit();
     }

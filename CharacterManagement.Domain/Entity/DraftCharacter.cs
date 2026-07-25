@@ -1113,14 +1113,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
             throw new CharacterManagementException( "HeritageId must be specified." );
         }
 
-        Heritage? heritage = ancestry.Heritages
-            .SingleOrDefault( item => item.Id == heritageId );
-
-        if ( heritage is null )
-        {
-            throw new CharacterManagementException( $"Heritage '{heritageId}' does not belong to {ancestry.AncestryType}." );
-        }
-
+        Heritage heritage = ancestry.Heritages
+            .SingleOrDefault( item => item.Id == heritageId ) ?? throw new CharacterManagementException( $"Heritage '{heritageId}' does not belong to {ancestry.AncestryType}." );
         return heritage;
     }
 
@@ -1131,14 +1125,8 @@ public class DraftCharacter : Utils.Entities.Base.Entity, IAggregateRoot
             throw new CharacterManagementException( "AncestryFeatId must be specified." );
         }
 
-        AncestryFeat? ancestryFeat = ancestry.AncestryFeats
-            .SingleOrDefault( item => item.Id == ancestryFeatId );
-
-        if ( ancestryFeat is null )
-        {
-            throw new CharacterManagementException( $"Ancestry feat '{ancestryFeatId}' does not belong to {ancestry.AncestryType}." );
-        }
-
+        AncestryFeat ancestryFeat = ancestry.AncestryFeats
+            .SingleOrDefault( item => item.Id == ancestryFeatId ) ?? throw new CharacterManagementException( $"Ancestry feat '{ancestryFeatId}' does not belong to {ancestry.AncestryType}." );
         if ( ancestryFeat.Level != 1 )
         {
             throw new CharacterManagementException( $"Ancestry feat '{ancestryFeatId}' must have level 1." );

@@ -26,15 +26,10 @@ public sealed class RespondToCampaignInvitationHandler
         RespondToCampaignInvitationCommand request,
         CancellationToken cancellationToken )
     {
-        Campaign? campaign = await _campaignRepository.GetByInvitationIdForUserAsync(
+        Campaign campaign = await _campaignRepository.GetByInvitationIdForUserAsync(
             request.InvitationId,
             request.UserId,
-            cancellationToken );
-        if ( campaign is null )
-        {
-            throw new CampaignManagementApplicationException( "Pending campaign invitation was not found." );
-        }
-
+            cancellationToken ) ?? throw new CampaignManagementApplicationException( "Pending campaign invitation was not found." );
         if ( request.Accept )
         {
             campaign.AcceptInvitation(

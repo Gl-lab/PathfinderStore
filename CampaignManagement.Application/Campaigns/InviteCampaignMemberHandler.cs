@@ -33,24 +33,15 @@ public sealed class InviteCampaignMemberHandler : IRequestHandler<InviteCampaign
         CancellationToken cancellationToken )
     {
         await _validator.ValidateAndThrowAsync( request, cancellationToken );
-        Campaign? campaign = await _campaignRepository.GetByIdForUserAsync(
+        Campaign campaign = await _campaignRepository.GetByIdForUserAsync(
             request.CampaignId,
             request.ActingUserId,
-            cancellationToken );
-        if ( campaign is null )
-        {
-            throw new CampaignManagementApplicationException( "Campaign was not found." );
-        }
+            cancellationToken ) ?? throw new CampaignManagementApplicationException( "Campaign was not found." );
 
-        int? invitedUserId = await _userDirectory.FindUserIdByNameAsync(
+        int invitedUserId = await _userDirectory.FindUserIdByNameAsync(
             request.UserName.Trim(),
-            cancellationToken );
-        if ( invitedUserId is null )
-        {
-            throw new CampaignManagementApplicationException( "Invited user was not found." );
-        }
-
-        campaign.Invite( request.ActingUserId, invitedUserId.Value, _timeProvider.GetUtcNow() );
+            cancellationToken ) ?? throw new CampaignManagementApplicationException( "Invited user was not found." );
+        campaign.Invite( request.ActingUserId, invitedUserId, _timeProvider.GetUtcNow() );
         await _unitOfWork.Commit();
     }
 }

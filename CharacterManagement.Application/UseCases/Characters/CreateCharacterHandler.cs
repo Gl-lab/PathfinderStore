@@ -30,12 +30,8 @@ public sealed class CreateCharacterHandler : IRequestHandler<CreateCharacterComm
 
     public async Task Handle( CreateCharacterCommand request, CancellationToken cancellationToken )
     {
-        Account? account = await _accountRepository.GetByUserIdAsync( request.UserId );
-        if ( account is null )
-        {
-            throw new CharacterManagementException( $"Account was not found for user {request.UserId}." );
-        }
-
+        Account account = await _accountRepository.GetByUserIdAsync( request.UserId )
+            ?? throw new CharacterManagementException( $"Account was not found for user {request.UserId}." );
         AbilityType backgroundRestrictedBoost = request.Character.BackgroundRestrictedBoost
             ?? throw new CharacterManagementException( "Background restricted boost must be specified." );
         AbilityType backgroundFreeBoost = request.Character.BackgroundFreeBoost

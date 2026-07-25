@@ -30,15 +30,10 @@ public sealed class CreateCampaignPartyHandler : IRequestHandler<CreateCampaignP
         CancellationToken cancellationToken )
     {
         await _validator.ValidateAndThrowAsync( request, cancellationToken );
-        Campaign? campaign = await _campaignRepository.GetByIdForUserAsync(
+        Campaign campaign = await _campaignRepository.GetByIdForUserAsync(
             request.CampaignId,
             request.UserId,
-            cancellationToken );
-        if ( campaign is null )
-        {
-            throw new CampaignManagementApplicationException( "Campaign was not found." );
-        }
-
+            cancellationToken ) ?? throw new CampaignManagementApplicationException( "Campaign was not found." );
         campaign.CreateParty( request.UserId, request.Name, _timeProvider.GetUtcNow() );
         await _unitOfWork.Commit();
         return campaign.ToDto( request.UserId );

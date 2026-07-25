@@ -18,15 +18,10 @@ public sealed class LeaveCampaignHandler : IRequestHandler<LeaveCampaignCommand>
 
     public async Task Handle( LeaveCampaignCommand request, CancellationToken cancellationToken )
     {
-        Campaign? campaign = await _campaignRepository.GetByIdForUserAsync(
+        Campaign campaign = await _campaignRepository.GetByIdForUserAsync(
             request.CampaignId,
             request.UserId,
-            cancellationToken );
-        if ( campaign is null )
-        {
-            throw new CampaignManagementApplicationException( "Campaign was not found." );
-        }
-
+            cancellationToken ) ?? throw new CampaignManagementApplicationException( "Campaign was not found." );
         campaign.Leave( request.UserId );
         await _unitOfWork.Commit();
     }

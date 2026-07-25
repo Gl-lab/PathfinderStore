@@ -281,12 +281,8 @@ public static class CharacterFeatResolver
         string classTrait = characterClass.Name;
         foreach ( FeatChoiceSlot slot in slots )
         {
-            FeatChoice? choice = choices.SingleOrDefault( item => item.SourceId == slot.SourceId );
-            if ( choice is null )
-            {
-                throw new CharacterManagementException( $"Feat choice '{slot.SourceId}' is required." );
-            }
-
+            FeatChoice choice = choices.SingleOrDefault( item => item.SourceId == slot.SourceId )
+                ?? throw new CharacterManagementException( $"Feat choice '{slot.SourceId}' is required." );
             FeatDefinition feat = GetFeat( feats, choice.FeatId, slot.Category );
             bool hasRequiredClassTrait = slot.Category != FeatCategory.Class ||
                                          feat.Traits.Contains( classTrait, StringComparer.OrdinalIgnoreCase );

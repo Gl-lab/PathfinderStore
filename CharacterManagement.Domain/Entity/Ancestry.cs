@@ -61,27 +61,17 @@ public sealed class Ancestry
 
         if ( !String.IsNullOrWhiteSpace( heritageId ) )
         {
-            Heritage? heritage = Heritages
-                .SingleOrDefault( item => item.Id == heritageId );
-            if ( heritage is null )
-            {
-                throw new CharacterManagementException(
+            Heritage heritage = Heritages
+                .SingleOrDefault( item => item.Id == heritageId ) ?? throw new CharacterManagementException(
                     $"Heritage '{heritageId}' does not belong to {AncestryType}." );
-            }
-
             selectedEffects.AddRange( heritage.Effects );
         }
 
         if ( !String.IsNullOrWhiteSpace( ancestryFeatId ) )
         {
-            AncestryFeat? ancestryFeat = AncestryFeats
-                .SingleOrDefault( item => item.Id == ancestryFeatId );
-            if ( ancestryFeat is null )
-            {
-                throw new CharacterManagementException(
+            AncestryFeat ancestryFeat = AncestryFeats
+                .SingleOrDefault( item => item.Id == ancestryFeatId ) ?? throw new CharacterManagementException(
                     $"Ancestry feat '{ancestryFeatId}' does not belong to {AncestryType}." );
-            }
-
             selectedEffects.AddRange( ancestryFeat.Effects );
         }
 

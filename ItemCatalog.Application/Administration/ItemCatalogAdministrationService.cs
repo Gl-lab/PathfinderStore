@@ -107,14 +107,9 @@ public sealed class ItemCatalogAdministrationService
         string actingUserName,
         CancellationToken cancellationToken )
     {
-        ItemDefinition? definition = await _itemDefinitionRepository.GetByIdWithRevisionsAsync(
+        ItemDefinition definition = await _itemDefinitionRepository.GetByIdWithRevisionsAsync(
             itemDefinitionId,
-            cancellationToken );
-        if ( definition is null )
-        {
-            throw new ItemCatalogApplicationException( "Item definition was not found." );
-        }
-
+            cancellationToken ) ?? throw new ItemCatalogApplicationException( "Item definition was not found." );
         await EnsureAccessAsync(
             definition.Scope,
             definition.CampaignId,

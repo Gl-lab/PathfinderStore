@@ -156,15 +156,10 @@ public sealed class Campaign : Entity, IAggregateRoot
     {
         EnsureActive();
         EnsureGameMaster( actingUserId );
-        CampaignMembership? membership = _memberships.SingleOrDefault( item =>
+        CampaignMembership membership = _memberships.SingleOrDefault( item =>
             item.UserId == memberUserId &&
             item.Role == role &&
-            item.Status == CampaignMembershipStatus.Active );
-        if ( membership is null )
-        {
-            throw new CampaignManagementException( "Active campaign role was not found." );
-        }
-
+            item.Status == CampaignMembershipStatus.Active ) ?? throw new CampaignManagementException( "Active campaign role was not found." );
         if ( role == CampaignMembershipRole.GameMaster &&
              CountActiveGameMasters() == 1 )
         {
@@ -240,13 +235,8 @@ public sealed class Campaign : Entity, IAggregateRoot
             throw new CampaignManagementException( "Character controller must be an active campaign Player." );
         }
 
-        CampaignParty? party = _parties.SingleOrDefault(
-            item => item.Status == CampaignPartyStatus.Active );
-        if ( party is null )
-        {
-            throw new CampaignManagementException( "Campaign does not have an active party." );
-        }
-
+        CampaignParty party = _parties.SingleOrDefault(
+            item => item.Status == CampaignPartyStatus.Active ) ?? throw new CampaignManagementException( "Campaign does not have an active party." );
         return party.AssignCharacter( characterId, controlledByUserId, assignedAtUtc );
     }
 

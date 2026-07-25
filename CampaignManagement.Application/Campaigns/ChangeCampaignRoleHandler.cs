@@ -26,15 +26,10 @@ public sealed class ChangeCampaignRoleHandler
         ChangeCampaignRoleCommand request,
         CancellationToken cancellationToken )
     {
-        Campaign? campaign = await _campaignRepository.GetByIdForUserAsync(
+        Campaign campaign = await _campaignRepository.GetByIdForUserAsync(
             request.CampaignId,
             request.ActingUserId,
-            cancellationToken );
-        if ( campaign is null )
-        {
-            throw new CampaignManagementApplicationException( "Campaign was not found." );
-        }
-
+            cancellationToken ) ?? throw new CampaignManagementApplicationException( "Campaign was not found." );
         if ( request.Assign )
         {
             campaign.AssignRole(

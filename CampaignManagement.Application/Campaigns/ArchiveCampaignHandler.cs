@@ -25,15 +25,10 @@ public sealed class ArchiveCampaignHandler : IRequestHandler<ArchiveCampaignComm
         ArchiveCampaignCommand request,
         CancellationToken cancellationToken )
     {
-        Campaign? campaign = await _campaignRepository.GetByIdForUserAsync(
+        Campaign campaign = await _campaignRepository.GetByIdForUserAsync(
             request.CampaignId,
             request.UserId,
-            cancellationToken );
-        if ( campaign is null )
-        {
-            throw new CampaignManagementApplicationException( "Campaign was not found." );
-        }
-
+            cancellationToken ) ?? throw new CampaignManagementApplicationException( "Campaign was not found." );
         campaign.Archive( request.UserId, _timeProvider.GetUtcNow() );
         await _unitOfWork.Commit();
         return campaign.ToDto( request.UserId );

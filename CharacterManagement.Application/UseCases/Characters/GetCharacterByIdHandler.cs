@@ -22,12 +22,10 @@ public sealed class GetCharacterByIdHandler : IRequestHandler<GetCharacterByIdCo
 
     public async Task<CharacterDto> Handle( GetCharacterByIdCommand request, CancellationToken cancellationToken )
     {
-        DraftCharacter? draftCharacter = await _characterRepository.GetByIdAsync( request.CharacterId, request.UserId );
-        if ( draftCharacter is null )
-        {
-            throw new CharacterManagementException( $"Character {request.CharacterId} was not found for current user." );
-        }
-
+        DraftCharacter draftCharacter = await _characterRepository.GetByIdAsync(
+            request.CharacterId,
+            request.UserId ) ?? throw new CharacterManagementException(
+            $"Character {request.CharacterId} was not found for current user." );
         return _characterDetailsDtoMapper.Convert( draftCharacter );
     }
 }

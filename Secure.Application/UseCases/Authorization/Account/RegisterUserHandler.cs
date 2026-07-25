@@ -77,12 +77,7 @@ public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, Register
         }
 
         user = await _userService.FindByNameAsync( request.UserName )
-           .ConfigureAwait( false );
-        if ( user is null )
-        {
-            throw new SecureException( $"User {request.UserName} not created" );
-        }
-
+           .ConfigureAwait( false ) ?? throw new SecureException( $"User {request.UserName} not created" );
         Guid correlationId = NewId.NextGuid();
         UserRegisteredEvent registeredEvent = new UserRegisteredEvent( user.Id, request.Name, request.Surname );
 

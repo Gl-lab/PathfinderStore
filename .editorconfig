@@ -36,6 +36,7 @@ resharper_wrap_chained_binary_patterns = chop_if_long
 resharper_wrap_chained_method_calls = chop_always
 resharper_wrap_list_pattern = chop_if_long
 resharper_wrap_property_pattern = chop_always
+resharper_csharp_parentheses_redundancy_style = remove_if_not_clarifies_precedence
 
 # Standard properties
 insert_final_newline = false
@@ -174,6 +175,7 @@ dotnet_style_qualification_for_property = false:warning
 dotnet_style_require_accessibility_modifiers = for_non_interface_members:error
 
 # ReSharper inspection severities
+resharper_arrange_redundant_parentheses_highlighting = error
 resharper_inconsistent_naming_highlighting = suggestion
 resharper_mvc_action_not_resolved_highlighting = warning
 resharper_mvc_area_not_resolved_highlighting = warning
@@ -213,6 +215,10 @@ dotnet_style_parentheses_in_arithmetic_binary_operators = always_for_clarity:err
 dotnet_style_parentheses_in_relational_binary_operators = always_for_clarity:error
 dotnet_style_parentheses_in_other_binary_operators = always_for_clarity:error
 dotnet_style_parentheses_in_other_operators = never_if_unnecessary:error
+# IDE0047: Remove unnecessary parentheses
+dotnet_diagnostic.IDE0047.severity = error
+# IDE0270: Null check can be simplified
+dotnet_diagnostic.IDE0270.severity = error
 # Modifier preferences 
 dotnet_style_require_accessibility_modifiers = for_non_interface_members:error
 dotnet_style_readonly_field = true:error
