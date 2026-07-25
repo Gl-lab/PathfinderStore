@@ -28,7 +28,7 @@
 - `LanguageCategory`: `Standard` или `Regional`;
 - ссылку на книгу и страницу источника.
 
-Каталог является immutable code-owned reference data и не копируется в состояние персонажа. Ancestry packages и будущие пользовательские choices хранят только stable ids.
+Каталог является immutable code-owned reference data и не копируется в состояние персонажа. Ancestry packages и пользовательские choices хранят только stable ids.
 
 ## Common languages
 
@@ -75,4 +75,4 @@ Regional uncommon ids: `hallit`, `kelish`, `mwangi`, `osiriani`, `shoanti`, `ska
 
 Frontend использует server options как единственный источник количества и допустимого pool. Переданная в preview итоговая оценка Intelligence не является доверенной при сохранении: create pipeline заново получает modifier из применённых ancestry, background, class и final boosts.
 
-Контекст, который выдаёт доступ к uncommon языкам (регион, feat или иной источник), пока отсутствует и остаётся отдельным расширением. Финализация draft относится к следующим slices приоритета 6.
+Контекст, который выдаёт доступ к uncommon языкам (регион, feat или иной источник), пока отсутствует и остаётся отдельным расширением. Финализация draft реализована и проверяет языковой пакет вместе с остальными обязательными выборами.

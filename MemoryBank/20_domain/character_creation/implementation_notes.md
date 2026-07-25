@@ -21,7 +21,7 @@
 - progression выше первого уровня и respec завершённого персонажа;
 - encounter actions/conditions, Raise a Shield и dying/wounded lifecycle;
 - исполнение spell/feat/class-feature effects;
-- runtime Inventory/Store, торговля и hand/action economy;
+- frontend для runtime Inventory/transfer/trade/Commerce и hand/action economy;
 - специализированные ancestry strikes и остальные отложенные ancestry effects.
 
 ## Ancestry Model
@@ -97,7 +97,7 @@ Remastered-документы требуют более широкую моде�
 
 ## Legacy Item Endpoints
 
-Пустые legacy endpoints `GET /api/character/items` и `DELETE /api/character/items/drop` удалены до появления типизированного equipment API. Ownership catalog, starting rules и комплекта экипировки черновика зафиксирована за `CharacterManagement` в [equipment_inventory_boundary.md](equipment_inventory_boundary.md); runtime shop/trade inventory остаётся будущей отдельной границей.
+Пустые legacy endpoints `GET /api/character/items` и `DELETE /api/character/items/drop` удалены. Ownership starting rules и комплекта экипировки черновика зафиксирована за `CharacterManagement` в [equipment_inventory_boundary.md](equipment_inventory_boundary.md); definitions/revisions принадлежат `ItemCatalog`, физические экземпляры и передачи — `Inventory`, магазины и сделки — `Commerce`. Backend runtime-сценарии реализованы отдельно от character creation API.
 
 ## Что проверить перед задачами по расширению
 

@@ -8,7 +8,8 @@ Pathfinder 2e Web App — учебное/хобби веб-приложение 
 
 - создание и управление персонажами;
 - просмотр карточки персонажа;
-- будущие inventory/store сценарии.
+- кампании и партии;
+- runtime inventory и торговые сценарии.
 
 Проект строится как ASP.NET Core backend + Vue.js frontend с разделением backend-кода по bounded contexts.
 
@@ -38,7 +39,7 @@ Frontend:
 
 - Clean Architecture
 - DDD-подход внутри доменных модулей
-- bounded contexts для `Secure`, `CharacterManagement`, `CampaignManagement`, `ItemCatalog`, `Inventory`, `Commerce`; legacy `Store` отключён
+- bounded contexts для `Secure`, `CharacterManagement`, `CampaignManagement`, `ItemCatalog`, `Inventory`, `Commerce`; legacy `Store` удалён из solution
 
 ## Карта solution
 
@@ -93,13 +94,9 @@ Frontend:
 - `Secure.Application` — application contracts/use cases.
 - `Secure.Infrastructure` — ASP.NET Identity, persistence, seed/auth infrastructure.
 
-### Store
+### Legacy Store
 
-- `Store.Domain`
-- `Store.Application`
-- `Store.Infrastructure`
-
-Store сейчас не является активным направлением и временно отключён в `Pathfinder.Web`.
+Проекты `Store.*` удалены из текущего solution. Их неактивные controller stubs ещё остаются в `Pathfinder.Web`, но не считаются целевым API. Магазины, ассортимент и сделки принадлежат `Commerce`, а физические экземпляры — `Inventory`.
 
 ### Shared
 
@@ -155,7 +152,7 @@ Store сейчас не является активным направление
 
 Административные команды опубликованы под `api/commerce-admin/campaigns/{campaignId}`, пользовательские резервы, покупки и продажи — под `api/commerce/campaigns/{campaignId}`.
 
-Целевая архитектура зафиксирована в [`../20_domain/store/target_architecture_togaf.md`](../20_domain/store/target_architecture_togaf.md). Legacy-реализации `TeamsController` и `Store.*` не считаются целевой моделью; `Store.*` остаётся отключённым в `Pathfinder.Web`.
+Целевая архитектура зафиксирована в [`../20_domain/store/target_architecture_togaf.md`](../20_domain/store/target_architecture_togaf.md). Legacy `TeamsController` и оставшиеся shop-controller stubs не считаются целевой моделью; проекты `Store.*` удалены из solution.
 
 ## Dev setup
 
@@ -176,7 +173,8 @@ Database:
 
 - PostgreSQL database: `Pathfinder`;
 - connection strings передаются через user secrets или environment variables;
-- ключи: `DB:Secure`, `DB:CharacterManagement`, `DB:CampaignManagement`, `DB:ItemCatalog`, `DB:Inventory`;
+- ключи: `DB:Secure`, `DB:CharacterManagement`, `DB:CampaignManagement`, `DB:ItemCatalog`, `DB:Inventory`, `DB:Commerce`;
+- если отдельный ключ для `CampaignManagement`, `ItemCatalog`, `Inventory` или `Commerce` не задан, web-слой использует `DB:CharacterManagement`, затем legacy fallback `DB_CONNECTION`;
 - JWT key передаётся через user secrets или environment variable `Authentication__SecurityKey`;
 - реальные секреты не должны попадать в tracked configuration files.
 
@@ -213,6 +211,9 @@ Seed users:
   - `POST /api/item-catalog-admin/drafts`;
   - `POST /api/item-catalog-admin/definitions/{id}/revisions/{revision}/publish`;
   - `POST /api/item-catalog-admin/definitions/{id}/revisions/{revision}/retire`;
+  - inventory gift/exchange/storage/force-move endpoints под `/api/campaigns/{campaignId}/inventory`;
+  - commerce admin endpoints под `/api/commerce-admin/campaigns/{campaignId}`;
+  - commerce purchase/sale endpoints под `/api/commerce/campaigns/{campaignId}`;
   - domain/application/infrastructure тесты для ключевых сценариев.
 
 ### Текущий character creation focus

@@ -2,13 +2,13 @@
 
 ## Статус решения
 
-Этот документ фиксирует ownership boundary для starting equipment в character creation и переход завершённого персонажа в runtime Inventory. Решение актуализировано после завершения Priority 11 и не включает Commerce в runtime приложения.
+Этот документ фиксирует ownership boundary для starting equipment в character creation, переход завершённого персонажа в runtime `Inventory` и отделение торговых сценариев `Commerce`.
 
-Целевое состояние каталога, экземпляров, инвентаря и торговли зафиксировано отдельно в [../store/target_architecture_togaf.md](../store/target_architecture_togaf.md). Каталог и базовый runtime Inventory реализованы; настоящий документ остаётся границей между draft selection, миграцией completed loadout и боевым чтением.
+Целевое состояние каталога, экземпляров, инвентаря и торговли зафиксировано отдельно в [../store/target_architecture_togaf.md](../store/target_architecture_togaf.md). `ItemCatalog`, runtime `Inventory` и backend `Commerce` реализованы; настоящий документ остаётся границей между draft selection, миграцией completed loadout, боевым чтением и runtime-командами.
 
 ## Проблема
 
-Для starting equipment нужны правила стоимости, Массы (`Bulk`), proficiency и экипировки. В solution уже есть незавершённый bounded context `Store`, однако его модель описывает товары и магазины и не является источником правил персонажа. Если character creation начнёт зависеть от Store, завершение персонажа станет зависеть от отключённой подсистемы, а PF2e item definitions смешаются с коммерческими offer и ownership records.
+Для starting equipment нужны правила стоимости, Массы (`Bulk`), proficiency и экипировки. Legacy-модель `Store` смешивала товары, магазины и ownership records и потому не могла быть источником правил персонажа. Эта граница сохраняется после удаления `Store.*` из solution: character creation не зависит от `Commerce`, а PF2e item definitions не смешиваются с offers и физическими экземплярами.
 
 ## Решение
 
@@ -24,9 +24,9 @@
 
 Character state хранит ссылку на catalog definition по stable key и только изменяемое состояние конкретного персонажа. Полная catalog definition в aggregate и persistence не копируется. Денежный лимит создания вычисляется из правил starting wealth и не является runtime-кошельком. Legacy `EquipmentRepository` временно сохраняет class kits и недостающие Priority 8 metadata/fallback, пока starting selection не мигрирован на новый каталог.
 
-### Store не участвует в character creation
+### Commerce не участвует в character creation
 
-Текущий `Store` не является владельцем PF2e equipment rules и не используется для:
+`Commerce` не является владельцем PF2e equipment rules и не используется для:
 
 - выдачи catalog definitions character creation;
 - проверки starting wealth;
@@ -34,13 +34,13 @@ Character state хранит ссылку на catalog definition по stable ke
 - вычисления proficiency, Массы, нагрузки или derived combat statistics;
 - хранения комплекта экипировки черновика (`draft loadout`).
 
-`CharacterManagement` не получает ссылку на проекты `Store.*`, не вызывает Store API и не публикует обязательные для завершения персонажа запросы или события. Store остаётся отключённым в web composition root.
+`CharacterManagement` не получает ссылку на проекты `Commerce.*`, не вызывает Commerce API и не публикует обязательные для завершения персонажа запросы или события. Legacy-проекты `Store.*` удалены из solution.
 
 ### Runtime inventory boundary
 
-`Inventory` владеет campaign-scoped физическими экземплярами, корневыми контейнерами, количеством, расположением, версией и неизменяемыми журналами операций и перемещений. `Commerce` в будущем будет владеть предложениями, ценами продавца, покупками и продажами; передача между владельцами относится к отдельным runtime-командам.
+`Inventory` владеет campaign-scoped физическими экземплярами, корневыми контейнерами, количеством, расположением, версией и неизменяемыми журналами операций и перемещений. `Commerce` владеет поселениями, магазинами, предложениями, ценовыми политиками, кошельками, резервами, покупками и продажами. Дарение, обмен и перемещение между контейнерами относятся к отдельным runtime-командам `Inventory`.
 
-После завершения Priority 11:
+Текущая реализация:
 
 - draft character продолжает владеть starting-equipment selection и не зависит от Inventory или Commerce;
 - completed character, однозначно назначенный кампании, получает личный root container и экземпляры с точными `ItemConfigurationId`;
@@ -76,14 +76,14 @@ Production adapter `RuntimeInventoryAllowedEquipmentReader` размещён в 
 - character item ссылается на существующий stable catalog id;
 - quantity и equipped state принадлежат персонажу, catalog definition остаётся общей;
 - смена class package до финализации повторно валидирует или удаляет class-kit selection;
-- завершение персонажа не зависит от доступности Store;
-- проекты `CharacterManagement.Domain` и `CharacterManagement.Application` не ссылаются на проекты `ItemCatalog.*`, `Inventory.*` или `Store.*`.
+- завершение персонажа не зависит от доступности `Inventory` или `Commerce`;
+- проекты `CharacterManagement.Domain` и `CharacterManagement.Application` не ссылаются на проекты `ItemCatalog.*`, `Inventory.*` или `Commerce.*`.
 
 ## Не входит в решение
 
-- runtime economy и кошелёк;
-- магазины, ассортимент и цены продавцов;
-- loot, drop, trade и передача предметов;
+- frontend для runtime inventory, transfer/trade и commerce;
+- encounter-связанные loot/drop действия;
+- произвольное управление содержимым контейнеров вне реализованных gift/exchange/storage/force-move команд;
 - расходуемые предметы и ammunition lifecycle;
 - магические runes и item progression;
-- пользовательские команды изменения runtime inventory и transfer ownership.
+- произвольные re-equip/drop/consume команды и расширенный lifecycle экземпляров.

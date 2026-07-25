@@ -68,7 +68,7 @@
 - `GET /api/campaigns/{campaignId}/characters/{characterId}`
 - `POST /api/campaigns/{campaignId}/characters/{characterId}/hit-points`
 
-Личные endpoints создания, финализации и удаления остаются owner-scoped. Просмотр игровой карточки и команды HP используют `ICharacterCampaignAccessPolicy`: назначенный активный игрок может просматривать персонажа и действовать им, ведущий той же кампании получает только просмотр. Пустые legacy item endpoints удалены. Starting equipment catalog и loadout следуют ownership boundary из [`../20_domain/character_creation/equipment_inventory_boundary.md`](../20_domain/character_creation/equipment_inventory_boundary.md); runtime Store/Inventory остаётся отключённым.
+Личные endpoints создания, финализации и удаления остаются owner-scoped. Просмотр игровой карточки и команды HP используют `ICharacterCampaignAccessPolicy`: назначенный активный игрок может просматривать персонажа и действовать им, ведущий той же кампании получает только просмотр. Пустые legacy item endpoints удалены. Starting equipment catalog и loadout следуют ownership boundary из [`../20_domain/character_creation/equipment_inventory_boundary.md`](../20_domain/character_creation/equipment_inventory_boundary.md); completed loadout однозначно назначенной кампании мигрирует в runtime `Inventory`, а боевая карточка читает его через application-owned порт.
 
 ## Tests
 
@@ -80,7 +80,7 @@
 
 - skill feats и progression proficiency;
 - spellcasting lifecycle, current spell slots/Focus Points и progression выше первого уровня;
-- class features, runtime inventory и исполняемые ancestry effects;
+- class features, runtime inventory UI и исполняемые ancestry effects;
 - encounter conditions, Raise a Shield, multiple attack penalty и специализированные ancestry strikes;
 - server-side access sources для uncommon languages;
 - respec завершённого персонажа;

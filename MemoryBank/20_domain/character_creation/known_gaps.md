@@ -59,11 +59,11 @@ Player Core каталог оформлен в [deities_player_core.md](deities_
 
 ### Equipment And Starting Wealth
 
-Ownership boundary зафиксирована в [equipment_inventory_boundary.md](equipment_inventory_boundary.md): catalog, starting rules и комплект экипировки черновика принадлежат `CharacterManagement`, а Store остаётся отключённым. Минимальный catalog v1, starting wealth и kits восьми поддерживаемых классов нормализованы в [equipment_starting_wealth_catalog.md](equipment_starting_wealth_catalog.md) и доступны через API.
+Ownership boundary зафиксирована в [equipment_inventory_boundary.md](equipment_inventory_boundary.md): starting rules и комплект экипировки черновика принадлежат `CharacterManagement`, определения и ревизии — `ItemCatalog`, физические экземпляры — `Inventory`, торговые сценарии — `Commerce`. Legacy `Store.*` удалён из solution. Минимальный catalog v1, starting wealth и kits восьми поддерживаемых классов нормализованы в [equipment_starting_wealth_catalog.md](equipment_starting_wealth_catalog.md) и доступны через API.
 
 Выбор и persistence комплекта экипировки персонажа (`character loadout`), equipped state, server-side total cost validation, proficiency matching, общая Масса и пороги нагрузки реализованы. Aggregate хранит только stable references и purchase/equipped quantity; сервер получает каталожные описания и вычисляет производные totals.
 
-Остаются полный ассортимент Player Core вне starting kits, hand/action economy, shield runtime, изменение inventory после создания и интеграция с будущим Store/Inventory.
+Completed-character loadout однозначно назначенной кампании мигрирует в runtime `Inventory`. Реализованы backend-команды дарения, обмена, партийного хранилища, принудительного перемещения, покупки и продажи. Остаются полный ассортимент Player Core вне starting kits, hand/action economy, shield runtime, произвольное изменение inventory и frontend для transfer/trade/commerce.
 
 ### Languages
 
