@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UI торговли и инвентаря — Pathfinder</title>
+<style>
+  :root {
+    --bg: #e9e4d8;
+    --ink: #1c2b3a;
+    --muted: #5d6675;
+    --card: #f4f0e6;
+    --line: #d5cdbc;
+    --accent: #b66b22;
+    --teal: #236b68;
+    --code-bg: #efe9db;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #151a20;
+      --ink: #e8e2d4;
+      --muted: #9aa3ae;
+      --card: #1d242c;
+      --line: #313a44;
+      --accent: #d08a3f;
+      --teal: #5fb0ac;
+      --code-bg: #10141a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #151a20; --ink: #e8e2d4; --muted: #9aa3ae; --card: #1d242c;
+    --line: #313a44; --accent: #d08a3f; --teal: #5fb0ac; --code-bg: #10141a;
+  }
+  :root[data-theme="light"] {
+    --bg: #e9e4d8; --ink: #1c2b3a; --muted: #5d6675; --card: #f4f0e6;
+    --line: #d5cdbc; --accent: #b66b22; --teal: #236b68; --code-bg: #efe9db;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Segoe UI", system-ui, Roboto, sans-serif;
+    line-height: 1.55;
+    margin: 0;
+    padding: 48px 24px 96px;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; }
+
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--teal);
+    margin: 0 0 8px;
+  }
+  h1, h2 { font-family: Georgia, "Times New Roman", serif; font-weight: 600; text-wrap: balance; margin: 0; }
+  h1 { font-size: 40px; line-height: 1.15; }
+  h2 { font-size: 26px; margin-bottom: 4px; }
+  h3 { font-size: 16px; margin: 0 0 6px; }
+  .lead { color: var(--muted); max-width: 62ch; font-size: 17px; margin: 14px 0 0; }
+  header.page { margin-bottom: 56px; }
+  .meta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+  .meta span {
+    border: 1px solid var(--line); border-radius: 999px; padding: 3px 12px;
+    font-size: 12.5px; color: var(--muted); background: var(--card);
+  }
+
+  section { margin: 64px 0; }
+  .sec-head { max-width: 70ch; margin-bottom: 22px; }
+  .sec-head p { color: var(--muted); margin: 8px 0 0; }
+
+  /* ---------- annotation notes ---------- */
+  .note {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    font-size: 11px; font-weight: 700; font-family: "Segoe UI", system-ui, sans-serif;
+    vertical-align: middle; margin: 0 2px; flex: none;
+  }
+  .legend { list-style: none; padding: 0; margin: 18px 0 0; display: grid; gap: 8px; }
+  .legend li { display: flex; gap: 10px; align-items: baseline; font-size: 14.5px; color: var(--ink); max-width: 78ch; }
+  .legend li .note { transform: translateY(3px); }
+  .legend b { font-weight: 600; }
+  .legend .g { color: var(--muted); }
+
+  /* ---------- mockup frame ---------- */
+  .frame-scroll { overflow-x: auto; border-radius: 18px; }
+  .frame {
+    min-width: 880px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 12px 32px rgba(20, 25, 35, 0.14);
+    background: #f6f1e8;
+  }
+  .frame-bar {
+    display: flex; align-items: center; gap: 8px;
+    background: #162b42; color: #f6f1e8;
+    padding: 9px 16px; font-size: 13px;
+  }
+  .frame-bar .dots { display: flex; gap: 5px; margin-right: 8px; }
+  .frame-bar .dots i { width: 9px; height: 9px; border-radius: 50%; background: rgba(246,241,232,0.35); }
+  .frame-bar .url {
+    font-family: Consolas, monospace; font-size: 12px;
+    background: rgba(246,241,232,0.12); border-radius: 6px; padding: 2px 10px;
+  }
+
+  /* ---------- product (mockup) styles: fixed light characterLedger ---------- */
+  .mk { --m-bg:#f6f1e8; --m-sf:#fffdf8; --m-var:#eae1d4; --m-navy:#162b42; --m-teal:#236b68;
+        --m-bronze:#b66b22; --m-ink:#20293a; --m-mut:#6f7686; --m-err:#a4302a; --m-ok:#2e6b46;
+    background: var(--m-bg); color: var(--m-ink); padding: 22px 24px 26px;
+    font-family: "Segoe UI", Roboto, system-ui, sans-serif; font-size: 13.5px;
+  }
+  .mk * { box-sizing: border-box; }
+  .mk .m-eyebrow { text-transform: uppercase; letter-spacing: .13em; font-size: 10.5px; font-weight: 600; color: var(--m-teal); margin-bottom: 2px; }
+  .mk .m-h1 { font-family: Georgia, serif; font-size: 23px; font-weight: 600; color: var(--m-navy); }
+  .mk .m-sub { color: var(--m-mut); font-size: 12.5px; margin-top: 2px; }
+  .mk .m-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 16px; }
+
+  .mk .card { background: var(--m-sf); border: 1px solid var(--m-var); border-radius: 16px; padding: 14px 16px; }
+  .mk .card h4 { margin: 0 0 10px; font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--m-mut); font-weight: 600; }
+
+  .mk .btn { display: inline-flex; align-items: center; gap: 6px; border-radius: 9px; padding: 6px 14px;
+    font-size: 12.5px; font-weight: 600; border: none; white-space: nowrap; }
+  .mk .btn.primary { background: var(--m-navy); color: #f6f1e8; }
+  .mk .btn.tonal { background: var(--m-var); color: var(--m-navy); }
+  .mk .btn.outline { background: transparent; border: 1px solid var(--m-var); color: var(--m-navy); }
+  .mk .btn.danger { background: transparent; border: 1px solid #d9b6ae; color: var(--m-err); }
+  .mk .btn[disabled] { opacity: .45; }
+
+  .mk .chip { display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 2px 10px;
+    font-size: 11px; font-weight: 600; background: var(--m-var); color: var(--m-navy); white-space: nowrap; }
+  .mk .chip.teal { background: #dcebe8; color: var(--m-teal); }
+  .mk .chip.bronze { background: #f3e2cf; color: #8a4d14; }
+  .mk .chip.err { background: #f4ddda; color: var(--m-err); }
+  .mk .chip.ok { background: #ddeadf; color: var(--m-ok); }
+
+  .mk .money { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--m-navy); white-space: nowrap; }
+  .mk .money small { color: var(--m-mut); font-weight: 500; }
+
+  .mk .row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; }
+  .mk .row + .row { border-top: 1px solid var(--m-var); border-radius: 0 0 10px 10px; }
+  .mk .row .ic { width: 30px; height: 30px; border-radius: 8px; background: var(--m-var);
+    display: flex; align-items: center; justify-content: center; font-size: 15px; flex: none; }
+  .mk .row .nm { font-weight: 600; }
+  .mk .row .ds { color: var(--m-mut); font-size: 11.5px; }
+  .mk .row .grow { flex: 1; min-width: 0; }
+  .mk .row.sel { background: #f1e7d4; outline: 1px solid #dcc9a6; }
+
+  .mk .alert { border-radius: 12px; padding: 10px 14px; font-size: 12.5px; display: flex; gap: 8px; align-items: flex-start; }
+  .mk .alert.info { background: #e3ebec; color: #1d4e55; }
+  .mk .alert.warn { background: #f6e8d2; color: #7a4d10; }
+  .mk .alert.err  { background: #f4ddda; color: var(--m-err); }
+
+  .mk .meter { height: 8px; border-radius: 6px; background: var(--m-var); overflow: hidden; position: relative; }
+  .mk .meter i { display: block; height: 100%; border-radius: 6px; background: var(--m-teal); }
+  .mk .meter em { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--m-bronze); }
+
+  .mk .menu { background: var(--m-sf); border: 1px solid var(--m-var); border-radius: 12px;
+    box-shadow: 0 8px 22px rgba(22,43,66,.16); padding: 6px; width: 210px; font-size: 12.5px; }
+  .mk .menu div { padding: 7px 10px; border-radius: 8px; display: flex; gap: 8px; align-items: center; }
+  .mk .menu div.hover { background: var(--m-var); }
+  .mk .menu div.dis { color: var(--m-mut); }
+
+  .mk table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+  .mk th { text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--m-mut); font-weight: 600; padding: 4px 10px; border-bottom: 1px solid var(--m-var); }
+  .mk td { padding: 7px 10px; border-bottom: 1px solid var(--m-var); vertical-align: middle; }
+  .mk tr:last-child td { border-bottom: none; }
+
+  /* layout helpers */
+  .mk .cols { display: grid; gap: 14px; }
+  .mk .g-inv { grid-template-columns: 230px 1fr 260px; align-items: start; }
+  .mk .g-2 { grid-template-columns: 1fr 1fr; align-items: start; }
+  .mk .g-shop { grid-template-columns: 1fr 280px; align-items: start; }
+  .mk .stack { display: grid; gap: 14px; }
+  .mk .between { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .mk .tabs { display: flex; gap: 2px; border-bottom: 2px solid var(--m-var); margin-bottom: 14px; }
+  .mk .tabs span { padding: 7px 14px; font-weight: 600; font-size: 12.5px; color: var(--m-mut); }
+  .mk .tabs span.on { color: var(--m-navy); border-bottom: 2px solid var(--m-bronze); margin-bottom: -2px; }
+  .mk .badge { background: var(--m-bronze); color: #fff; border-radius: 999px; font-size: 10px;
+    padding: 1px 6px; font-weight: 700; }
+
+  /* ---------- IA tree ---------- */
+  .tree {
+    font-family: Consolas, "Cascadia Mono", monospace; font-size: 13.5px;
+    background: var(--code-bg); border: 1px solid var(--line); border-radius: 14px;
+    padding: 20px 24px; overflow-x: auto; line-height: 1.9; white-space: pre;
+  }
+  .tree b { color: var(--accent); font-weight: 600; }
+  .tree i { color: var(--muted); font-style: normal; }
+  .tree .new { color: var(--teal); font-weight: 600; }
+
+  /* ---------- spec tables / cards ---------- */
+  .spec { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .spec table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  .spec th { text-align: left; font-size: 11.5px; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--muted); padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--card); }
+  .spec td { padding: 10px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .spec tr:last-child td { border-bottom: none; }
+  .spec code { font-family: Consolas, monospace; font-size: 12.5px; background: var(--code-bg);
+    border-radius: 6px; padding: 1px 7px; }
+  .spec-scroll { overflow-x: auto; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+  .cards article { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; }
+  .cards article p { color: var(--muted); font-size: 14px; margin: 6px 0 0; }
+  .cards .k { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--accent); font-weight: 700; }
+
+  .steps { counter-reset: st; list-style: none; padding: 0; margin: 20px 0 0; display: grid; gap: 12px; }
+  .steps li { display: flex; gap: 14px; align-items: baseline; }
+  .steps li::before {
+    counter-increment: st; content: counter(st);
+    font-family: Georgia, serif; font-size: 20px; color: var(--accent); font-weight: 600; flex: none; width: 20px; text-align: center;
+  }
+  .steps b { font-weight: 600; }
+  .steps span { color: var(--muted); }
+
+  @media (max-width: 760px) {
+    h1 { font-size: 30px; }
+    body { padding: 28px 14px 64px; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    section { animation: rise .5s ease both; }
+    @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+<header class="page">
+  <p class="eyebrow">Pathfinder 2e · pathfinder.frontend · дизайн-проект</p>
+  <h1>Инвентарь, магазины и торговля</h1>
+  <p class="lead">Проект UI поверх готовых команд backend&nbsp;— Inventory (дарение, обмен, партийное хранилище) и Commerce (магазины, кошельки, резервы). Мокапы выдержаны в действующей теме <b>characterLedger</b>: пергамент, чернильный navy, бронзовый акцент, плоские карточки с рамкой.</p>
+  <div class="meta">
+    <span>Vue 3 + Vuetify 3</span><span>тема characterLedger</span><span>деньги — медь (long)</span><span>optimistic versioning</span><span>26.07.2026</span>
+  </div>
+</header>
+
+<!-- ================= IA ================= -->
+<section>
+  <div class="sec-head">
+    <p class="eyebrow">01 · Информационная архитектура</p>
+    <h2>Кампания становится якорем</h2>
+    <p>Инвентарь и торговля существуют только внутри кампании. Монолитный <code>CampaignsView</code> разделяется: список кампаний и отдельная страница кампании с вкладками, от которой ветвятся новые разделы. Зелёным — новые маршруты.</p>
+  </div>
+  <div class="tree">/campaigns                        <i>список кампаний (карточки-ссылки)</i>
+<span class="new">/campaigns/:cid</span>                   <i>страница кампании</i> — <b>Обзор · Участники · Партия · Хранилище · Торговля</b>
+├─ /characters/:id                <i>campaign-карточка персонажа (есть) + вкладка «Инвентарь»</i>
+├─ <span class="new">/inventory/:characterId</span>       <i>инвентарь: кошелёк · нагрузка · рюкзак · входящие</i>
+├─ <span class="new">/shops/:shopId</span>                <i>магазин игрока: Товары · Продажа · Мои резервы</i>
+└─ <span class="new">/commerce-admin</span>               <i>панель ведущего: Поселения · Магазины · Кошельки · Инструменты</i></div>
+  <ul class="legend">
+    <li><span class="note">→</span><span>Код фронтенда: новые фичи <code>src/features/inventory/</code> и <code>src/features/commerce/</code> по существующей конвенции (typed <code>api.ts</code>, чистая логика с co-located тестами), плюс первая общая папка <code>src/components/</code> — <b>MoneyText, ItemListRow, BulkMeter, OperationStatusChip, CountdownChip, AppSnackbarHost</b>.</span></li>
+  </ul>
+</section>
+
+<!-- ================= INVENTORY ================= -->
+<section>
+  <div class="sec-head">
+    <p class="eyebrow">02 · Экран инвентаря</p>
+    <h2>Инвентарь персонажа</h2>
+    <p>Три зоны: сводка слева, предметы в центре, детали справа. Все торговые действия начинаются отсюда — из меню строки предмета.</p>
+  </div>
+  <div class="frame-scroll"><div class="frame">
+    <div class="frame-bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">/campaigns/12/inventory/7</span></div>
+    <div class="mk">
+      <div class="m-head">
+        <div>
+          <div class="m-eyebrow">Кампания «Пепел Отари»</div>
+          <div class="m-h1">Инвентарь — Сейни Ллеутар</div>
+          <div class="m-sub">Плутовка 1 уровня · партия «Косые тени»</div>
+        </div>
+        <span class="chip bronze">Входящие: 1 подарок · 1 обмен <span class="note">1</span></span>
+      </div>
+
+      <div class="cols g-inv">
+        <div class="stack">
+          <div class="card">
+            <h4>Кошелёк <span class="note">2</span></h4>
+            <div class="money" style="font-size:22px;">12 зм 4 см</div>
+            <div class="m-sub">доступно</div>
+            <div style="margin-top:8px; display:grid; gap:2px; font-size:12px; color:var(--m-mut);">
+              <div class="between"><span>Баланс</span><span class="money">14 зм 4 см</span></div>
+              <div class="between"><span>В резерве</span><span class="money">2 зм</span></div>
+            </div>
+            <button class="btn outline" style="margin-top:10px; width:100%;">Журнал операций</button>
+          </div>
+          <div class="card">
+            <h4>Нагрузка <span class="note">3</span></h4>
+            <div class="between" style="font-size:12px;"><span>3.4 bulk</span><span style="color:var(--m-mut);">норма 5 · макс 10</span></div>
+            <div class="meter" style="margin-top:6px;"><i style="width:34%;"></i><em style="left:50%;"></em></div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:10px 8px;">
+          <h4 style="padding:0 10px;">Экипировано</h4>
+          <div class="row">
+            <span class="ic">🗡</span>
+            <div class="grow"><div class="nm">Рапира</div><div class="ds">Оружие · 1 bulk · экипировано</div></div>
+            <span class="chip teal">эксперт</span><button class="btn tonal">⋮</button>
+          </div>
+          <div class="row">
+            <span class="ic">🛡</span>
+            <div class="grow"><div class="nm">Кожаный доспех</div><div class="ds">Доспех · 1 bulk · экипировано</div></div>
+            <button class="btn tonal">⋮</button>
+          </div>
+          <h4 style="padding:12px 10px 0;">Рюкзак</h4>
+          <div class="row sel">
+            <span class="ic">🧪</span>
+            <div class="grow"><div class="nm">Малое зелье лечения <span style="color:var(--m-mut);font-weight:500;">×3</span></div><div class="ds">Расходник · L bulk · стопка</div></div>
+            <span class="note">4</span><button class="btn tonal">⋮</button>
+          </div>
+          <div class="row">
+            <span class="ic">🪢</span>
+            <div class="grow"><div class="nm">Верёвка (15 м)</div><div class="ds">Снаряжение · L bulk</div></div>
+            <button class="btn tonal">⋮</button>
+          </div>
+          <div style="display:flex; justify-content:flex-end; margin:-86px 6px 0 0; position:relative; pointer-events:none;">
+            <div class="menu" style="position:relative;">
+              <div class="hover">🎁 Подарить… <span class="note" style="margin-left:auto;">5</span></div>
+              <div>⇄ Предложить обмен…</div>
+              <div>📦 В хранилище партии</div>
+              <div class="dis">🪙 Продать… <span style="margin-left:auto;font-size:10.5px;">нет магазина</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h4>Малое зелье лечения <span class="note">6</span></h4>
+          <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;">
+            <span class="chip">1 уровень</span><span class="chip">расходник</span><span class="chip bronze">ревизия №3</span>
+          </div>
+          <div style="font-size:12.5px; color:var(--m-mut); line-height:1.5;">Восстанавливает 1d8 ОЗ при употреблении. Действие: 1 (взаимодействие).</div>
+          <div style="margin-top:10px; display:grid; gap:3px; font-size:12px;">
+            <div class="between"><span style="color:var(--m-mut);">Цена каталога</span><span class="money">4 зм</span></div>
+            <div class="between"><span style="color:var(--m-mut);">Bulk</span><span>L</span></div>
+            <div class="between"><span style="color:var(--m-mut);">Происхождение</span><span>куплено · «Тихая гавань»</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+  <ul class="legend">
+    <li><span class="note">1</span><span><b>Полоса входящих.</b> Ожидающие подарки и обмены — бейдж и переход к подтверждению. Обновляется опросом раз в 30–60 с (composable <code>usePendingOperations</code>), без WebSocket.</span></li>
+    <li><span class="note">2</span><span><b>Кошелёк</b> показывает крупно <i>доступное</i> (<code>AvailableCopper</code>), отдельно баланс и резерв — игрок сразу видит, почему «не хватает» при активном резерве. Формат: <code>MoneyText</code>, 1 зм = 10 см = 100 мм.</span></li>
+    <li><span class="note">3</span><span><b>Нагрузка</b> — <code>bulkTenths / 10</code>, бронзовая насечка = порог перегрузки, конец шкалы = максимум.</span></li>
+    <li><span class="note">4</span><span>Стопки (<code>×3</code>) — одна строка на стопку; выбранная строка подсвечивается и раскрывает панель деталей справа.</span></li>
+    <li><span class="note">5</span><span><b>Меню действий строки</b> — единая точка входа в дарение, обмен, хранилище и продажу. «Продать» неактивна с объяснением, если в кампании нет магазинов.</span></li>
+    <li><span class="note">6</span><span><b>Панель деталей</b> читает точную catalog revision экземпляра (закон домена: конфигурация зафиксирована ревизией) + происхождение из журнала операций.</span></li>
+  </ul>
+</section>
+
+<!-- ================= GIFT + PARTY STORAGE ================= -->
+<section>
+  <div class="sec-head">
+    <p class="eyebrow">03 · Передача предметов</p>
+    <h2>Дарение и партийное хранилище</h2>
+    <p>Дарение — компактный диалог с подтверждением получателем. Хранилище — вкладка кампании с аудитом «кто положил».</p>
+  </div>
+  <div class="frame-scroll"><div class="frame">
+    <div class="frame-bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">/campaigns/12 · вкладка «Хранилище»</span></div>
+    <div class="mk">
+      <div class="cols g-2">
+        <div class="stack">
+          <div class="card">
+            <h4>Входящий подарок <span class="note">1</span></h4>
+            <div class="row" style="padding-left:0;">
+              <span class="ic">🗡</span>
+              <div class="grow"><div class="nm">Кинжал</div><div class="ds">от Варга Каменщита · 2 мин назад</div></div>
+              <span class="chip bronze">ожидает</span>
+            </div>
+            <div style="display:flex; gap:8px; margin-top:8px;">
+              <button class="btn primary">Принять</button>
+              <button class="btn outline">Позже</button>
+            </div>
+          </div>
+          <div class="card">
+            <h4>Подарить предмет</h4>
+            <div style="display:grid; gap:8px;">
+              <div class="row" style="border:1px solid var(--m-var); border-radius:10px;">
+                <span class="ic">🧪</span>
+                <div class="grow"><div class="nm">Малое зелье лечения ×1</div><div class="ds">из стопки ×3</div></div>
+              </div>
+              <div class="row" style="border:1px solid var(--m-var); border-radius:10px;">
+                <div class="grow"><div class="ds">Получатель</div><div class="nm">Варг Каменщит ▾ <span class="note">2</span></div></div>
+              </div>
+              <div class="alert info">Подарок вступит в силу после подтверждения получателем. До этого предмет остаётся у вас и заблокирован от других операций.</div>
+              <div style="display:flex; gap:8px; justify-content:flex-end;">
+                <button class="btn outline">Отмена</button><button class="btn primary">Отправить</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:10px 8px;">
+          <div class="between" style="padding:0 10px 6px;">
+            <h4 style="margin:0;">Хранилище партии</h4>
+            <span class="chip err">политика не настроена <span class="note">3</span></span>
+          </div>
+          <div class="row">
+            <span class="ic">🪙</span>
+            <div class="grow"><div class="nm">Факел ×5</div><div class="ds">положил Варг · вчера</div></div>
+            <button class="btn tonal">Взять</button>
+          </div>
+          <div class="row">
+            <span class="ic">🛡</span>
+            <div class="grow"><div class="nm">Тяжёлый щит</div><div class="ds">положила Сейни · 3 дня назад</div></div>
+            <button class="btn tonal">Взять</button>
+          </div>
+          <div style="padding:10px;">
+            <button class="btn primary">Положить из инвентаря…</button>
+          </div>
+          <div style="padding:4px 10px 6px; font-size:11.5px; color:var(--m-mut);">
+            Журнал: Варг положил «Факел ×5» · Сейни взяла «Верёвка» · … <span class="note">4</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+  <ul class="legend">
+    <li><span class="note">1</span><span><b>Подтверждение получателем</b> — прямое отражение домена (подарок = pending до accept). Команды «отклонить» на бэкенде нет — UI честно предлагает «Позже», без фиктивной кнопки.</span></li>
+    <li><span class="note">2</span><span>Список получателей — персонажи активной партии, кроме собственных. <code>OperationId</code> генерируется при открытии диалога и переиспользуется при повторе после сбоя (идемпотентность).</span></li>
+    <li><span class="note">3</span><span><code>accessPolicy: Unconfigured</code> — предупреждающий чип; у ведущего здесь появляется действие «Настроить политику».</span></li>
+    <li><span class="note">4</span><span>Журнал из неизменяемого аудита Inventory — сворачиваемый, последние 5 операций.</span></li>
+  </ul>
+</section>
+
+<!-- ================= EXCHANGE ================= -->
+<section>
+  <div class="sec-head">
+    <p class="eyebrow">04 · Обмен</p>
+    <h2>Стол сделки</h2>
+    <p>Атомарный обмен из домена: линии резервируются при добавлении, сделку завершает контрагент, отменить может любой. Полноэкранный диалог.</p>
+  </div>
+  <div class="frame-scroll"><div class="frame">
+    <div class="frame-bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">обмен · Сейни ⇄ Варг</span></div>
+    <div class="mk">
+      <div class="m-head">
+        <div>
+          <div class="m-eyebrow">Обмен предметами</div>
+          <div class="m-h1">Сейни ⇄ Варг Каменщит</div>
+        </div>
+        <span class="chip bronze">Ожидает партнёра <span class="note">1</span></span>
+      </div>
+      <div class="cols g-2">
+        <div class="card" style="padding:10px 8px;">
+          <h4 style="padding:0 10px;">Вы отдаёте</h4>
+          <div class="row">
+            <span class="ic">🧪</span>
+            <div class="grow"><div class="nm">Малое зелье лечения ×2</div><div class="ds">зарезервировано <span class="note">2</span></div></div>
+            <span class="chip teal">резерв</span><button class="btn tonal">✕</button>
+          </div>
+          <div style="padding:8px 10px;"><button class="btn outline">+ Добавить предмет</button></div>
+        </div>
+        <div class="card" style="padding:10px 8px;">
+          <h4 style="padding:0 10px;">Вы получаете</h4>
+          <div class="row">
+            <span class="ic">🪓</span>
+            <div class="grow"><div class="nm">Ручной топор</div><div class="ds">от Варга · зарезервировано</div></div>
+            <span class="chip teal">резерв</span>
+          </div>
+          <div class="row" style="border-top:none;">
+            <div class="grow">
+              <div class="alert err" style="margin:4px 0;">Предмет «Праща» изменился у владельца — строка снята с резерва. Добавьте её заново. <span class="note">3</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="between" style="margin-top:14px;">
+        <span style="color:var(--m-mut); font-size:12px;">Черновик → <b style="color:var(--m-navy);">Ожидает партнёра</b> → Завершён / Отменён</span>
+        <div style="display:flex; gap:8px;">
+          <button class="btn danger">Отменить сделку</button>
+          <button class="btn primary" disabled>Завершить обмен — жмёт партнёр <span class="note">4</span></button>
+        </div>
+      </div>
+    </div>
+  </div></div>
+  <ul class="legend">
+    <li><span class="note">1</span><span>Статусная лента повторяет доменные состояния; после отправки состав линий заморожен.</span></li>
+    <li><span class="note">2</span><span>Каждая линия несёт <code>ExpectedItemVersion</code> + <code>ReservationOperationId</code> — предмет блокируется от параллельных операций и помечается «резерв» в инвентаре владельца.</span></li>
+    <li><span class="note">3</span><span><b>Конфликт версии подсвечивает конкретную строку</b>, не роняя весь диалог — главное UX-правило работы с optimistic concurrency.</span></li>
+    <li><span class="note">4</span><span>Кнопка завершения активна только у контрагента; у инициатора она показана неактивной с объяснением, чтобы протокол сделки был виден обоим.</span></li>
+  </ul>
+</section>
+
+<!-- ================= SHOP ================= -->
+<section>
+  <div class="sec-head">
+    <p class="eyebrow">05 · Магазин</p>
+    <h2>Лавка глазами игрока</h2>
+    <p>Покупка двухфазная: резерв замораживает деньги и товар, оплата завершает сделку. Резерв с таймером — центральный элемент экрана.</p>
+  </div>
+  <div class="frame-scroll"><div class="frame">
+    <div class="frame-bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">/campaigns/12/shops/3</span></div>
+    <div class="mk">
+      <div class="m-head">
+        <div>
+          <div class="m-eyebrow">Поселение Отари</div>
+          <div class="m-h1">Лавка «Тихая гавань»</div>
+          <div class="m-sub">торгует: Сейни Ллеутар ▾</div>
+        </div>
+        <span class="chip">покупка ×1.0 · скупка ×0.5 <span class="note">1</span></span>
+      </div>
+      <div class="tabs"><span class="on">Товары</span><span>Продажа</span><span>Мои резервы <span class="badge">1</span></span></div>
+      <div class="cols g-shop">
+        <div class="card" style="padding:6px 4px;">
+          <table>
+            <tr><th>Товар</th><th>Ур.</th><th>Цена</th><th>Наличие</th><th></th></tr>
+            <tr>
+              <td><b>Малое зелье лечения</b> <span class="chip teal" style="margin-left:6px;">каталог <span class="note">2</span></span></td>
+              <td>1</td><td class="money">4 зм</td><td>12</td>
+              <td><button class="btn tonal">Купить</button></td>
+            </tr>
+            <tr>
+              <td><b>Рапира с гравировкой</b> <span class="chip bronze">экземпляр</span></td>
+              <td>1</td><td class="money">2 зм 5 см</td><td>1</td>
+              <td><button class="btn tonal">Купить</button></td>
+            </tr>
+            <tr>
+              <td><b>Составной лук</b></td>
+              <td>1</td><td class="money">20 зм</td><td>2</td>
+              <td><button class="btn tonal" disabled>Купить</button></td>
+            </tr>
+          </table>
+          <div class="alert warn" style="margin:8px 6px 4px;">«Составной лук» — не хватает 7 зм 6 см: доступно 12 зм 4 см, в резерве ещё 2 зм. <span class="note">3</span></div>
+        </div>
+        <div class="stack">
+          <div class="card">
+            <h4>Резерв покупки <span class="note">4</span></h4>
+            <div class="row" style="padding-left:0;">
+              <span class="ic">🧪</span>
+              <div class="grow"><div class="nm">Малое зелье лечения</div><div class="ds">×2 · по 4 зм</div></div>
+            </div>
+            <div class="between" style="margin-top:6px;"><span style="color:var(--m-mut);">Итого</span><span class="money" style="font-size:17px;">8 зм</span></div>
+            <div class="between" style="margin-top:2px;"><span style="color:var(--m-mut);">Резерв истекает</span><span class="chip bronze">через 9:42</span></div>
+            <div style="display:grid; gap:6px; margin-top:10px;">
+              <button class="btn primary">Оплатить</button>
+              <button class="btn outline">Отменить резерв</button>
+            </div>
+          </div>
+          <div class="card">
+            <h4>Кошелёк</h4>
+            <div class="money" style="font-size:18px;">12 зм 4 см</div>
+            <div class="m-sub">доступно · 8 зм будет списано</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+  <ul class="legend">
+    <li><span class="note">1</span><span><b>Ценовая политика видна сразу</b> — игрок понимает и цену покупки, и по какому курсу магазин скупает. Данные из pricing-policy магазина.</span></li>
+    <li><span class="note">2</span><span>Два вида offer'ов из домена: <b>каталог</b> (порождает новый экземпляр из ревизии ItemCatalog) и <b>экземпляр</b> (физический предмет из контейнера магазина, уникален).</span></li>
+    <li><span class="note">3</span><span>Недостаток средств блокирует покупку <i>с объяснением</i> — сравнение с <code>AvailableCopper</code>, включая замороженный резерв.</span></li>
+    <li><span class="note">4</span><span>Панель резерва: количество, итог, обратный отсчёт до <code>ExpiresAtUtc</code>. Истёкший резерв переходит в «Мои резервы» со статусом Expired и кнопкой «Повторить» (новый <code>OperationId</code>).</span></li>
+    <li><span class="note">·</span><span class="g">Вкладка «Продажа» — зеркальный список инвентаря с расчётной ценой скупки и подтверждением; после продажи — снэкбар «Продано за 2 зм» и обновлённый кошелёк.</span></li>
+  </ul>
+</section>
+
+<!-- ================= GM ================= -->
+<section>
+  <div class="sec-head">
+    <p class="eyebrow">06 · Ведущий</p>
+    <h2>Панель торговли ведущего</h2>
+    <p>Все admin-команды уже есть на бэкенде: поселения, магазины, offer'ы, ценовые политики, корректировки кошельков, force-move. Один экран с вкладками.</p>
+  </div>
+  <div class="frame-scroll"><div class="frame">
+    <div class="frame-bar"><span class="dots"><i></i><i></i><i></i></span><span class="url">/campaigns/12/commerce-admin</span></div>
+    <div class="mk">
+      <div class="tabs"><span>Поселения</span><span class="on">Магазин «Тихая гавань»</span><span>Кошельки</span><span>Инструменты</span></div>
+      <div class="cols g-2">
+        <div class="card" style="padding:6px 4px;">
+          <div class="between" style="padding:6px 10px;">
+            <h4 style="margin:0;">Ассортимент</h4>
+            <div style="display:flex; gap:6px;">
+              <button class="btn tonal">+ Из каталога <span class="note">1</span></button>
+              <button class="btn outline">+ Экземпляр</button>
+            </div>
+          </div>
+          <table>
+            <tr><th>Offer</th><th>Цена</th><th>Кол-во</th><th>Статус</th></tr>
+            <tr><td>Малое зелье лечения <span class="chip teal">каталог</span></td><td class="money">4 зм</td><td>12</td><td><span class="chip ok">активен</span></td></tr>
+            <tr><td>Рапира с гравировкой <span class="chip bronze">экземпляр</span></td><td class="money">2 зм 5 см</td><td>1</td><td><span class="chip ok">активен</span></td></tr>
+            <tr><td>Свиток огненного шара</td><td class="money">60 зм</td><td>1</td><td><span class="chip">скрыт</span></td></tr>
+          </table>
+        </div>
+        <div class="stack">
+          <div class="card">
+            <h4>Кошельки персонажей <span class="note">2</span></h4>
+            <div class="row" style="padding-left:0;">
+              <div class="grow"><div class="nm">Сейни Ллеутар</div><div class="ds">резерв 2 зм</div></div>
+              <span class="money">14 зм 4 см</span><button class="btn tonal">±</button>
+            </div>
+            <div class="row" style="padding-left:0;">
+              <div class="grow"><div class="nm">Варг Каменщит</div></div>
+              <span class="money">9 зм</span><button class="btn tonal">±</button>
+            </div>
+            <div class="alert info" style="margin-top:8px;">Корректировка требует описания — оно попадает в неизменяемый денежный журнал.</div>
+          </div>
+          <div class="card">
+            <h4>Принудительное перемещение <span class="note">3</span></h4>
+            <div style="font-size:12.5px; color:var(--m-mut);">Предмет → контейнер, обязательная причина. Действие аудируется и видно игрокам в журнале.</div>
+            <button class="btn danger" style="margin-top:8px;">Force-move…</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+  <ul class="legend">
+    <li><span class="note">1</span><span>«Из каталога» — поиск по опубликованным ревизиям ItemCatalog (нужна read-проекция поиска), затем цена и количество. «Экземпляр» — выбор из контейнера магазина.</span></li>
+    <li><span class="note">2</span><span>Корректировка кошелька (<code>AmountCopper</code> ±) с обязательным описанием — UI навязывает дисциплину журнала.</span></li>
+    <li><span class="note">3</span><span>Force-move вынесен в «Инструменты» и стилизован как опасное действие: рамка danger, обязательная причина, предупреждение об аудите.</span></li>
+  </ul>
+</section>
+
+<!-- ================= API GAPS ================= -->
+<section>
+  <div class="sec-head">
+    <p class="eyebrow">07 · Блокер</p>
+    <h2>Недостающие read-проекции</h2>
+    <p>Backend сейчас — только команды (POST). Ни один экран выше не собрать без проекций чтения. Минимальный контракт:</p>
+  </div>
+  <div class="spec spec-scroll"><table>
+    <tr><th>Endpoint (предложение)</th><th>Питает</th></tr>
+    <tr><td><code>GET …/inventory/characters/{id}</code></td><td>инвентарь: контейнеры, предметы + version, bulk</td></tr>
+    <tr><td><code>GET …/inventory/party-storage</code></td><td>хранилище + политика + аудит</td></tr>
+    <tr><td><code>GET …/inventory/gifts?role=&status=</code></td><td>входящие/исходящие подарки</td></tr>
+    <tr><td><code>GET …/inventory/exchanges?participant=</code></td><td>стол сделки, статусы, линии</td></tr>
+    <tr><td><code>GET …/commerce/settlements</code> · <code>…/shops/{id}/offers</code></td><td>лавки и ассортимент</td></tr>
+    <tr><td><code>GET …/commerce/wallets/{characterId}</code></td><td>кошелёк + журнал (WalletDto уже есть)</td></tr>
+    <tr><td><code>GET …/shops/{id}/sell-quote?itemInstanceKey=</code></td><td>цена скупки до подтверждения</td></tr>
+    <tr><td><code>GET …/purchase-reservations?status=active</code></td><td>«Мои резервы», таймеры</td></tr>
+    <tr><td><code>GET /api/item-catalog/revisions?search=</code></td><td>поиск для admin-offer'ов</td></tr>
+  </table></div>
+</section>
+
+<!-- ================= IMPROVEMENTS ================= -->
+<section>
+  <div class="sec-head">
+    <p class="eyebrow">08 · Попутные улучшения</p>
+    <h2>Что подтянуть в текущем UI</h2>
+  </div>
+  <div class="cards">
+    <article><span class="k">Навигация</span><h3>Страница кампании с вкладками</h3><p>CampaignsView перегружен: создание, приглашения, роли, партии — в одной простыне. Список отдельно, кампания отдельно; торговле нужен этот якорь.</p></article>
+    <article><span class="k">Обратная связь</span><h3>Snackbar-хост и центр уведомлений</h3><p>Сейчас ошибки только inline. Асинхронные события (подарок принят, резерв истёк) требуют глобальных снэкбаров и бейджей входящих.</p></article>
+    <article><span class="k">Консистентность</span><h3>Единый формат денег</h3><p>Мастер создания показывает «120 cp» сырой медью. MoneyText (зм/см/мм) — везде, включая шаг Starting Equipment.</p></article>
+    <article><span class="k">Код</span><h3>Общие компоненты</h3><p>CharacterCreateView — 2665 строк, DetailsView — 1186. Строки предметов, бюджет-алерт и bulk-сводка из шага 10 переиспользуются инвентарём — время выделить src/components/.</p></article>
+    <article><span class="k">Производительность</span><h3>Ленивые маршруты</h3><p>Dynamic import для route-компонентов: бандл растёт с каждым большим view, торговля добавит ещё четыре.</p></article>
+    <article><span class="k">Опционально</span><h3>Тёмная тема characterLedger</h3><p>Vuetify поддерживает пары тем; инверсия чернила/пергамент с теми же navy-teal-bronze акцентами.</p></article>
+  </div>
+</section>
+
+<!-- ================= ROADMAP ================= -->
+<section>
+  <div class="sec-head">
+    <p class="eyebrow">09 · Этапность</p>
+    <h2>Порядок внедрения</h2>
+  </div>
+  <ol class="steps">
+    <li><div><b>«Посмотреть и передать».</b> <span>Read-проекции инвентаря и подарков → экран инвентаря → дарение → партийное хранилище. Самая быстрая ощутимая ценность.</span></div></li>
+    <li><div><b>«Магазин».</b> <span>Проекции commerce → лавка игрока: покупка через резерв, продажа, кошелёк с журналом.</span></div></li>
+    <li><div><b>«Сделки и админ».</b> <span>Стол обмена → панель ведущего → force-move → центр уведомлений с опросом.</span></div></li>
+  </ol>
+</section>
+</div>
+
+</body>
+</html>
