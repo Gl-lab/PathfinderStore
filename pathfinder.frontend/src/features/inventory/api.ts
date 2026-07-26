@@ -142,3 +142,31 @@ export async function getPartyExchanges(
     })
   ).data
 }
+
+export async function createPartyGift(
+  campaignId: number,
+  request: {
+    giftKey: string
+    sourceCharacterId: number
+    destinationCharacterId: number
+    itemInstanceKey: string
+    expectedItemVersion: number
+  },
+): Promise<PartyGift['gift']> {
+  return (
+    await http.post<PartyGift['gift']>(`/api/campaigns/${campaignId}/inventory/gifts`, request)
+  ).data
+}
+
+export async function acceptPartyGift(
+  campaignId: number,
+  giftKey: string,
+  operationId: string,
+): Promise<PartyGift['gift']> {
+  return (
+    await http.post<PartyGift['gift']>(
+      `/api/campaigns/${campaignId}/inventory/gifts/${giftKey}/accept`,
+      { operationId },
+    )
+  ).data
+}
