@@ -21,17 +21,20 @@ public sealed class UniqueItemAdministrationService
     private readonly ItemCatalogDbContext _itemCatalogDbContext;
     private readonly InventoryDbContext _inventoryDbContext;
     private readonly IItemCatalogAdministrativeAccess _administrativeAccess;
+    private readonly ItemEffectRestrictionPolicy _effectRestrictionPolicy;
     private readonly TimeProvider _timeProvider;
 
     public UniqueItemAdministrationService(
         ItemCatalogDbContext itemCatalogDbContext,
         InventoryDbContext inventoryDbContext,
         IItemCatalogAdministrativeAccess administrativeAccess,
+        ItemEffectRestrictionPolicy effectRestrictionPolicy,
         TimeProvider timeProvider )
     {
         _itemCatalogDbContext = itemCatalogDbContext;
         _inventoryDbContext = inventoryDbContext;
         _administrativeAccess = administrativeAccess;
+        _effectRestrictionPolicy = effectRestrictionPolicy;
         _timeProvider = timeProvider;
     }
 
@@ -109,6 +112,16 @@ public sealed class UniqueItemAdministrationService
             container,
             request.CustomName,
             _timeProvider.GetUtcNow() );
+        if ( _effectRestrictionPolicy.RequiresTransferRestriction(
+                 configuration.PermanentUpgrades ) )
+        {
+            expected.SetTransferRestriction(
+                true,
+                expected.Version,
+                request.InstanceKey,
+                _timeProvider.GetUtcNow() );
+        }
+
         ItemInstance? instance = await _inventoryDbContext.ItemInstances
             .SingleOrDefaultAsync(
                 item => item.InstanceKey == request.InstanceKey,
@@ -122,6 +135,7 @@ public sealed class UniqueItemAdministrationService
         else if ( instance.CampaignId != expected.CampaignId ||
                   instance.ItemConfigurationId != expected.ItemConfigurationId ||
                   instance.CurrentContainerKey != expected.CurrentContainerKey ||
+                  instance.IsTransferRestricted != expected.IsTransferRestricted ||
                   !String.Equals(
                       instance.CustomName,
                       expected.CustomName,

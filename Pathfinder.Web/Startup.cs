@@ -53,6 +53,7 @@ public class Startup( IConfiguration configuration )
         services.AddScoped<IItemTransferRestrictionPolicy, ItemTransferRestrictionPolicy>();
         services.AddScoped<CompletedCharacterInventoryMigrationService>();
         services.AddScoped<UniqueItemAdministrationService>();
+        services.AddScoped<ItemEffectRestrictionPolicy>();
         services.AddScoped<ItemObservationService>();
         services.AddScoped<IItemObservationAccess, CampaignItemObservationAccess>();
         services.AddScoped<ItemKnowledgeAdministrationService>();

@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Pathfinder.Inventory.Domain.Containers;
+using Pathfinder.Inventory.Domain.Exceptions;
+using Pathfinder.Inventory.Domain.Items;
 using Pathfinder.Inventory.Infrastructure.Data;
 using Pathfinder.ItemCatalog.Application.Administration;
 using Pathfinder.ItemCatalog.Application.Exceptions;
@@ -66,7 +68,22 @@ public sealed class UniqueItemAdministrationServiceTests
 
         Assert.Equal( first, replay );
         Assert.Equal( 42, Assert.Single( itemCatalogDbContext.ItemConfigurations ).CampaignId );
-        Assert.Single( inventoryDbContext.ItemInstances );
+        ItemInstance instance = Assert.Single( inventoryDbContext.ItemInstances );
+        Assert.True( instance.IsTransferRestricted );
+        InventoryContainer destination = InventoryContainer.CreateRoot(
+            Guid.NewGuid(),
+            42,
+            InventoryContainerOwnerKind.World,
+            10,
+            _now );
+        Assert.Throws<InventoryException>( () =>
+            instance.MoveTo(
+                destination,
+                "player-transfer",
+                instance.Version,
+                Guid.NewGuid(),
+                "player",
+                _now ) );
     }
 
     [Fact]
@@ -121,6 +138,7 @@ public sealed class UniqueItemAdministrationServiceTests
             itemCatalogDbContext,
             inventoryDbContext,
             new FakeAdministrativeAccess( allowedCampaignId, allowedUserId ),
+            new ItemEffectRestrictionPolicy(),
             new FixedTimeProvider( _now ) );
     }
 
