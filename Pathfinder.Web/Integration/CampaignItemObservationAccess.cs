@@ -33,8 +33,37 @@ public sealed class CampaignItemObservationAccess : IItemObservationAccess
                 campaign.Id == campaignId &&
                 campaign.Status == CampaignStatus.Active,
             cancellationToken );
+        int[] controlledCharacterIds = await _dbContext.CampaignPartyCharacters
+            .Join(
+                _dbContext.CampaignParties.Where( party =>
+                    party.CampaignId == campaignId &&
+                    party.Status == CampaignPartyStatus.Active ),
+                assignment => assignment.CampaignPartyId,
+                party => party.Id,
+                ( assignment, party ) => assignment )
+            .Where( assignment => assignment.ControlledByUserId == observerUserId )
+            .Select( assignment => assignment.CharacterId )
+            .ToArrayAsync( cancellationToken );
+        int[] partyIds = await _dbContext.CampaignPartyCharacters
+            .Join(
+                _dbContext.CampaignParties.Where( party =>
+                    party.CampaignId == campaignId &&
+                    party.Status == CampaignPartyStatus.Active ),
+                assignment => assignment.CampaignPartyId,
+                party => party.Id,
+                ( assignment, party ) => new
+                {
+                    Assignment = assignment,
+                    PartyId = party.Id,
+                } )
+            .Where( item => item.Assignment.ControlledByUserId == observerUserId )
+            .Select( item => item.PartyId )
+            .Distinct()
+            .ToArrayAsync( cancellationToken );
         return new ItemObservationAccess(
             isActiveCampaign && roles.Length > 0,
-            isActiveCampaign && roles.Contains( CampaignMembershipRole.GameMaster ) );
+            isActiveCampaign && roles.Contains( CampaignMembershipRole.GameMaster ),
+            controlledCharacterIds,
+            partyIds );
     }
 }

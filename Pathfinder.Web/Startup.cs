@@ -55,6 +55,7 @@ public class Startup( IConfiguration configuration )
         services.AddScoped<UniqueItemAdministrationService>();
         services.AddScoped<ItemObservationService>();
         services.AddScoped<IItemObservationAccess, CampaignItemObservationAccess>();
+        services.AddScoped<ItemKnowledgeAdministrationService>();
         services.AddHostedService<CompletedCharacterInventoryMigrationHostedService>();
         services.AddScoped<ItemCatalogAllowedEquipmentReader>();
         services.AddScoped<IAllowedEquipmentReader, RuntimeInventoryAllowedEquipmentReader>();

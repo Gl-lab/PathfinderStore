@@ -9,6 +9,7 @@ using Pathfinder.Inventory.Domain.Items;
 using Pathfinder.Inventory.Infrastructure.Data;
 using Pathfinder.ItemCatalog.Domain.Configurations;
 using Pathfinder.ItemCatalog.Domain.Items;
+using Pathfinder.ItemCatalog.Domain.Knowledge;
 using Pathfinder.ItemCatalog.Infrastructure.Data;
 
 namespace Pathfinder.Web.Integration;
@@ -79,6 +80,7 @@ public sealed class ItemObservationService
         int campaignId,
         Guid instanceKey,
         int observerUserId,
+        int? observerCharacterId,
         CancellationToken cancellationToken )
     {
         ItemObservationAccess access = await _observationAccess.GetAccessAsync(
@@ -90,15 +92,36 @@ public sealed class ItemObservationService
             throw new ItemObservationAccessDeniedException();
         }
 
+        if ( observerCharacterId is not null &&
+             !access.ControlledCharacterIds.Contains( observerCharacterId.Value ) )
+        {
+            throw new ItemObservationAccessDeniedException();
+        }
+
         ResolvedItemDto resolved = await ResolveAsync(
             campaignId,
             instanceKey,
             cancellationToken );
-        IReadOnlyCollection<ResolvedUpgradeDto> upgrades = access.IsGameMaster
-            ? resolved.PermanentUpgrades
-            : resolved.PermanentUpgrades
-                .Where( item => item.Visibility == PermanentUpgradeVisibility.Public )
-                .ToArray();
+        string[] knownUpgradeCodes = access.IsGameMaster
+            ? []
+            : await _itemCatalogDbContext.ItemPropertyKnowledgeEntries
+                .Where( knowledge =>
+                    knowledge.CampaignId == campaignId &&
+                    knowledge.InstanceKey == instanceKey &&
+                    ((observerCharacterId != null &&
+                      knowledge.SubjectKind == ItemKnowledgeSubjectKind.Character &&
+                      knowledge.SubjectId == observerCharacterId.Value) ||
+                     (knowledge.SubjectKind == ItemKnowledgeSubjectKind.Party &&
+                      access.PartyIds.Contains( knowledge.SubjectId ))) )
+                .Select( knowledge => knowledge.UpgradeCode )
+                .Distinct()
+                .ToArrayAsync( cancellationToken );
+        IReadOnlyCollection<ResolvedUpgradeDto> upgrades = resolved.PermanentUpgrades
+            .Where( item =>
+                access.IsGameMaster ||
+                item.Visibility == PermanentUpgradeVisibility.Public ||
+                knownUpgradeCodes.Contains( item.Code ) )
+            .ToArray();
         return new VisibleItemDto(
             resolved.InstanceKey,
             resolved.CampaignId,
@@ -111,7 +134,8 @@ public sealed class ItemObservationService
             resolved.Bulk,
             resolved.PrimaryCategory,
             upgrades,
-            access.IsGameMaster );
+            upgrades.Any( item =>
+                item.Visibility == PermanentUpgradeVisibility.Hidden ) );
     }
 
     private static ResolvedUpgradeDto ToDto( PermanentUpgrade upgrade ) =>
@@ -130,7 +154,11 @@ public interface IItemObservationAccess
         CancellationToken cancellationToken );
 }
 
-public sealed record ItemObservationAccess( bool IsMember, bool IsGameMaster );
+public sealed record ItemObservationAccess(
+    bool IsMember,
+    bool IsGameMaster,
+    IReadOnlyCollection<int> ControlledCharacterIds,
+    IReadOnlyCollection<int> PartyIds );
 
 public sealed class ItemObservationAccessDeniedException : Exception
 {

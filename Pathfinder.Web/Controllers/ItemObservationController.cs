@@ -22,6 +22,7 @@ public sealed class ItemObservationController : AuthorizedController
     public async Task<ActionResult<VisibleItemDto>> Get(
         int campaignId,
         Guid instanceKey,
+        [FromQuery] int? observerCharacterId,
         CancellationToken cancellationToken )
     {
         try
@@ -30,6 +31,7 @@ public sealed class ItemObservationController : AuthorizedController
                 campaignId,
                 instanceKey,
                 CurrentUserId(),
+                observerCharacterId,
                 cancellationToken );
             return Ok( result );
         }

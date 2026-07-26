@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Pathfinder.ItemCatalog.Domain.Configurations;
 using Pathfinder.ItemCatalog.Domain.Items;
+using Pathfinder.ItemCatalog.Domain.Knowledge;
 using Pathfinder.ItemCatalog.Domain.Rules;
 
 namespace Pathfinder.ItemCatalog.Infrastructure.Data;
@@ -16,6 +17,8 @@ public sealed class ItemCatalogDbContext : DbContext
     public DbSet<ItemRevision> ItemRevisions => Set<ItemRevision>();
     public DbSet<AttackComponent> AttackComponents => Set<AttackComponent>();
     public DbSet<ItemConfiguration> ItemConfigurations => Set<ItemConfiguration>();
+    public DbSet<ItemPropertyKnowledge> ItemPropertyKnowledgeEntries =>
+        Set<ItemPropertyKnowledge>();
 
     protected override void OnModelCreating( ModelBuilder modelBuilder )
     {
@@ -203,6 +206,28 @@ public sealed class ItemCatalogDbContext : DbContext
             {
                 upgrade.ItemConfigurationId,
                 upgrade.Code,
+            } )
+                .IsUnique();
+        } );
+
+        modelBuilder.Entity<ItemPropertyKnowledge>( builder =>
+        {
+            builder.ToTable( "ItemPropertyKnowledge", tableBuilder =>
+                tableBuilder.HasCheckConstraint(
+                    "CK_ItemPropertyKnowledge_Identity",
+                    "\"CampaignId\" > 0 AND \"SubjectId\" > 0 AND \"RevealedByUserId\" > 0" ) );
+            builder.Property( knowledge => knowledge.SubjectKind )
+                .HasConversion<int>();
+            builder.Property( knowledge => knowledge.UpgradeCode )
+                .HasMaxLength( ItemPropertyKnowledge.UpgradeCodeMaxLength )
+                .IsRequired();
+            builder.HasIndex( knowledge => new
+            {
+                knowledge.CampaignId,
+                knowledge.InstanceKey,
+                knowledge.SubjectKind,
+                knowledge.SubjectId,
+                knowledge.UpgradeCode,
             } )
                 .IsUnique();
         } );

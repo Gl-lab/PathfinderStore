@@ -5,6 +5,7 @@ using Pathfinder.Inventory.Domain.Items;
 using Pathfinder.Inventory.Infrastructure.Data;
 using Pathfinder.ItemCatalog.Domain.Configurations;
 using Pathfinder.ItemCatalog.Domain.Items;
+using Pathfinder.ItemCatalog.Domain.Knowledge;
 using Pathfinder.ItemCatalog.Domain.Rules;
 using Pathfinder.ItemCatalog.Infrastructure.Data;
 using Pathfinder.Web.Integration;
@@ -27,7 +28,8 @@ public sealed class ItemObservationServiceTests
         ItemObservationService service = new ItemObservationService(
             inventoryDbContext,
             catalogDbContext,
-            new FakeObservationAccess( new ItemObservationAccess( true, false ) ) );
+            new FakeObservationAccess(
+                new ItemObservationAccess( true, false, [11], [3] ) ) );
 
         ResolvedItemDto resolved = await service.ResolveAsync(
             42,
@@ -37,6 +39,7 @@ public sealed class ItemObservationServiceTests
             42,
             instanceKey,
             7,
+            11,
             CancellationToken.None );
         string serialized = JsonSerializer.Serialize( visible );
 
@@ -57,12 +60,14 @@ public sealed class ItemObservationServiceTests
         ItemObservationService service = new ItemObservationService(
             inventoryDbContext,
             catalogDbContext,
-            new FakeObservationAccess( new ItemObservationAccess( true, true ) ) );
+            new FakeObservationAccess(
+                new ItemObservationAccess( true, true, [], [] ) ) );
 
         VisibleItemDto visible = await service.GetVisibleAsync(
             42,
             instanceKey,
             7,
+            null,
             CancellationToken.None );
 
         Assert.Equal( 2, visible.PermanentUpgrades.Count );
@@ -70,6 +75,51 @@ public sealed class ItemObservationServiceTests
             visible.PermanentUpgrades,
             item => item.Code == "curse.binding" );
         Assert.True( visible.IncludesHiddenProperties );
+    }
+
+    [Fact]
+    public async Task CharacterKnowledgeDoesNotRevealPropertyToAnotherCharacter()
+    {
+        await using ItemCatalogDbContext catalogDbContext = CreateCatalogContext();
+        await using InventoryDbContext inventoryDbContext = CreateInventoryContext();
+        Guid instanceKey = await AddItemAsync(
+            catalogDbContext,
+            inventoryDbContext );
+        catalogDbContext.ItemPropertyKnowledgeEntries.Add(
+            ItemPropertyKnowledge.Create(
+                42,
+                instanceKey,
+                ItemKnowledgeSubjectKind.Character,
+                11,
+                "curse.binding",
+                7,
+                _now ) );
+        await catalogDbContext.SaveChangesAsync();
+        ItemObservationService service = new ItemObservationService(
+            inventoryDbContext,
+            catalogDbContext,
+            new FakeObservationAccess(
+                new ItemObservationAccess( true, false, [11, 12], [3] ) ) );
+
+        VisibleItemDto informed = await service.GetVisibleAsync(
+            42,
+            instanceKey,
+            7,
+            11,
+            CancellationToken.None );
+        VisibleItemDto uninformed = await service.GetVisibleAsync(
+            42,
+            instanceKey,
+            7,
+            12,
+            CancellationToken.None );
+
+        Assert.Contains(
+            informed.PermanentUpgrades,
+            item => item.Code == "curse.binding" );
+        Assert.DoesNotContain(
+            uninformed.PermanentUpgrades,
+            item => item.Code == "curse.binding" );
     }
 
     private static async Task<Guid> AddItemAsync(
