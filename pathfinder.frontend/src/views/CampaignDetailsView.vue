@@ -278,6 +278,20 @@ onMounted(load)
                     variant="text"
                     >{{ characterName(character.characterId) }}</v-btn
                   >
+                  <v-btn
+                    prepend-icon="mdi-bag-personal-outline"
+                    size="small"
+                    :to="{
+                      name: 'campaign-inventory',
+                      params: {
+                        campaignId: campaign.id,
+                        characterId: character.characterId,
+                      },
+                    }"
+                    variant="tonal"
+                  >
+                    {{ t('campaigns.inventory') }}
+                  </v-btn>
                   <v-chip size="x-small" variant="outlined">
                     {{ t('campaigns.controlledBy', { userId: character.controlledByUserId }) }}
                   </v-chip>

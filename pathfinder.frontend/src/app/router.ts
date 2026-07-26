@@ -55,6 +55,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: 'routes.campaignDetails', requiresAuth: true },
   },
   {
+    path: '/campaigns/:campaignId(\\d+)/inventory/:characterId(\\d+)',
+    name: 'campaign-inventory',
+    component: () => import('@/views/CampaignInventoryView.vue'),
+    meta: { title: 'routes.campaignInventory', requiresAuth: true },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
     component: NotFoundView,

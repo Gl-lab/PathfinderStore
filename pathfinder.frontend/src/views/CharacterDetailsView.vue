@@ -33,10 +33,7 @@ import {
   isLegacyGenderSelectionRequired,
   type SelectableCharacterGender,
 } from '@/features/characters/gender'
-import {
-  formatProficiency,
-  groupProficiencies,
-} from '@/features/characters/proficiencies'
+import { formatProficiency, groupProficiencies } from '@/features/characters/proficiencies'
 import CharacterAvatar from '@/features/characters/CharacterAvatar.vue'
 
 const route = useRoute()
@@ -121,10 +118,7 @@ function getProficiencyCategoryLabel(category: ProficiencyCategory): string {
   return t(`proficiencies.categories.${category}`)
 }
 function getStatisticBreakdown(statistic: CharacterProficiencyStatistic): string {
-  return t(
-    'statistics.breakdown',
-    formatStatisticBreakdown(statistic, formatSignedModifier),
-  )
+  return t('statistics.breakdown', formatStatisticBreakdown(statistic, formatSignedModifier))
 }
 function getFeatSubtitle(feat: CharacterFeat): string {
   const deferred = feat.deferredDependencies.length
@@ -251,12 +245,7 @@ onMounted(load)
           <v-card-title>{{ t('characters.genderRequiredTitle') }}</v-card-title>
           <v-card-text>
             <p>{{ t('characters.genderRequiredText') }}</p>
-            <v-alert
-              v-for="error in errors"
-              :key="`gender-${error}`"
-              type="error"
-              variant="tonal"
-            >
+            <v-alert v-for="error in errors" :key="`gender-${error}`" type="error" variant="tonal">
               {{ error }}
             </v-alert>
             <v-radio-group v-model="selectedGender" :label="t('characters.gender')">
@@ -293,9 +282,24 @@ onMounted(load)
         <div class="header-actions">
           <v-chip
             :color="character.creationStatus === 'Completed' ? 'success' : 'warning'"
-            :prepend-icon="character.creationStatus === 'Completed' ? 'mdi-check-decagram' : 'mdi-pencil-outline'"
+            :prepend-icon="
+              character.creationStatus === 'Completed' ? 'mdi-check-decagram' : 'mdi-pencil-outline'
+            "
             variant="tonal"
-          >{{ t(`characters.creationStatuses.${character.creationStatus}`) }}</v-chip>
+            >{{ t(`characters.creationStatuses.${character.creationStatus}`) }}</v-chip
+          >
+          <v-btn
+            v-if="campaignId"
+            color="primary"
+            prepend-icon="mdi-bag-personal-outline"
+            :to="{
+              name: 'campaign-inventory',
+              params: { campaignId, characterId: character.id },
+            }"
+            variant="tonal"
+          >
+            {{ t('inventoryUi.open') }}
+          </v-btn>
           <v-btn
             v-if="campaignId === null && character.creationStatus === 'Draft'"
             color="success"
@@ -303,7 +307,8 @@ onMounted(load)
             :disabled="!character.completion.isComplete"
             :loading="isFinalizing"
             @click="finalize"
-          >{{ t('characters.finalize') }}</v-btn>
+            >{{ t('characters.finalize') }}</v-btn
+          >
           <v-btn
             v-if="campaignId === null"
             color="error"
@@ -339,8 +344,15 @@ onMounted(load)
                 })
               }}
             </strong>
-            <p v-if="character.derivedStatistics.hitPoints.temporary" class="hit-points-card__temporary">
-              {{ t('characters.temporaryHitPoints', { value: character.derivedStatistics.hitPoints.temporary }) }}
+            <p
+              v-if="character.derivedStatistics.hitPoints.temporary"
+              class="hit-points-card__temporary"
+            >
+              {{
+                t('characters.temporaryHitPoints', {
+                  value: character.derivedStatistics.hitPoints.temporary,
+                })
+              }}
             </p>
             <div
               v-if="character.creationStatus === 'Completed' && canPerformCampaignActions"
@@ -355,10 +367,36 @@ onMounted(load)
                 hide-details
               />
               <div>
-                <v-btn size="small" color="error" variant="tonal" :loading="isChangingHitPoints" @click="applyHitPointOperation('ApplyDamage')">{{ t('characters.applyDamage') }}</v-btn>
-                <v-btn size="small" color="success" variant="tonal" :loading="isChangingHitPoints" @click="applyHitPointOperation('Restore')">{{ t('characters.restoreHitPoints') }}</v-btn>
-                <v-btn size="small" variant="tonal" :loading="isChangingHitPoints" @click="applyHitPointOperation('GrantTemporary')">{{ t('characters.grantTemporaryHitPoints') }}</v-btn>
-                <v-btn size="small" variant="text" :loading="isChangingHitPoints" @click="applyHitPointOperation('ClearTemporary')">{{ t('characters.clearTemporaryHitPoints') }}</v-btn>
+                <v-btn
+                  size="small"
+                  color="error"
+                  variant="tonal"
+                  :loading="isChangingHitPoints"
+                  @click="applyHitPointOperation('ApplyDamage')"
+                  >{{ t('characters.applyDamage') }}</v-btn
+                >
+                <v-btn
+                  size="small"
+                  color="success"
+                  variant="tonal"
+                  :loading="isChangingHitPoints"
+                  @click="applyHitPointOperation('Restore')"
+                  >{{ t('characters.restoreHitPoints') }}</v-btn
+                >
+                <v-btn
+                  size="small"
+                  variant="tonal"
+                  :loading="isChangingHitPoints"
+                  @click="applyHitPointOperation('GrantTemporary')"
+                  >{{ t('characters.grantTemporaryHitPoints') }}</v-btn
+                >
+                <v-btn
+                  size="small"
+                  variant="text"
+                  :loading="isChangingHitPoints"
+                  @click="applyHitPointOperation('ClearTemporary')"
+                  >{{ t('characters.clearTemporaryHitPoints') }}</v-btn
+                >
               </div>
             </div>
             <dl class="hit-points-card__breakdown">
@@ -385,11 +423,13 @@ onMounted(load)
               <div>
                 <dt>{{ t('characters.hitPointsConstitution') }}</dt>
                 <dd>
-                  {{ t('characters.hitPointsValue', {
-                    value: formatSignedModifier(
-                      character.derivedStatistics.hitPoints.constitutionModifier,
-                    ),
-                  }) }}
+                  {{
+                    t('characters.hitPointsValue', {
+                      value: formatSignedModifier(
+                        character.derivedStatistics.hitPoints.constitutionModifier,
+                      ),
+                    })
+                  }}
                 </dd>
               </div>
             </dl>
@@ -405,22 +445,35 @@ onMounted(load)
                 <strong>{{ t('statistics.armorClass') }}</strong>
                 <small>
                   {{ getAbilityLabel(character.derivedStatistics.armorClass.ability) }} ·
-                  {{ getProficiencyRankLabel(character.derivedStatistics.armorClass.proficiencyRank) }}
+                  {{
+                    getProficiencyRankLabel(character.derivedStatistics.armorClass.proficiencyRank)
+                  }}
                   <template v-if="character.derivedStatistics.armorClass.abilityCap !== null">
-                    · {{ t('statistics.dexterityCap', {
-                      cap: formatSignedModifier(character.derivedStatistics.armorClass.abilityCap),
-                    }) }}
+                    ·
+                    {{
+                      t('statistics.dexterityCap', {
+                        cap: formatSignedModifier(
+                          character.derivedStatistics.armorClass.abilityCap,
+                        ),
+                      })
+                    }}
                   </template>
                 </small>
               </div>
               <div class="derived-statistics-card__value">
                 <strong>{{ character.derivedStatistics.armorClass.total }}</strong>
                 <small>
-                  {{ t('statistics.armorClassBreakdown', {
-                    base: character.derivedStatistics.armorClass.base,
-                    ability: formatSignedModifier(character.derivedStatistics.armorClass.appliedAbilityModifier),
-                    proficiency: formatSignedModifier(character.derivedStatistics.armorClass.proficiencyBonus),
-                  }) }}
+                  {{
+                    t('statistics.armorClassBreakdown', {
+                      base: character.derivedStatistics.armorClass.base,
+                      ability: formatSignedModifier(
+                        character.derivedStatistics.armorClass.appliedAbilityModifier,
+                      ),
+                      proficiency: formatSignedModifier(
+                        character.derivedStatistics.armorClass.proficiencyBonus,
+                      ),
+                    })
+                  }}
                 </small>
                 <small
                   v-for="(bonus, bonusIndex) in [
@@ -451,7 +504,11 @@ onMounted(load)
             </div>
           </v-card-text>
         </v-card>
-        <v-card v-if="character.derivedStatistics?.strikes.length" elevation="0" class="derived-statistics-card">
+        <v-card
+          v-if="character.derivedStatistics?.strikes.length"
+          elevation="0"
+          class="derived-statistics-card"
+        >
           <v-card-item :title="t('statistics.strikes')">
             <template #prepend><v-icon color="primary" icon="mdi-sword-cross" /></template>
           </v-card-item>
@@ -462,7 +519,9 @@ onMounted(load)
               class="derived-statistics-card__item"
             >
               <div>
-                <strong>{{ strike.name }} · {{ t(`statistics.strikeModes.${strike.mode}`) }}</strong>
+                <strong
+                  >{{ strike.name }} · {{ t(`statistics.strikeModes.${strike.mode}`) }}</strong
+                >
                 <small>
                   {{ getAbilityLabel(strike.attack.ability) }} ·
                   {{ getProficiencyRankLabel(strike.attack.proficiencyRank) }}
@@ -470,15 +529,19 @@ onMounted(load)
                 <small v-if="strike.traits.length">{{ strike.traits.join(', ') }}</small>
               </div>
               <div class="derived-statistics-card__value">
-                <strong>{{ t('statistics.strikeValues', {
-                  attack: formatSignedModifier(strike.attack.total),
-                  damage: strike.damage.formula,
-                }) }}</strong>
+                <strong>{{
+                  t('statistics.strikeValues', {
+                    attack: formatSignedModifier(strike.attack.total),
+                    damage: strike.damage.formula,
+                  })
+                }}</strong>
                 <small>
-                  {{ t('statistics.strikeAttackBreakdown', {
-                    ability: formatSignedModifier(strike.attack.abilityModifier),
-                    proficiency: formatSignedModifier(strike.attack.proficiencyBonus),
-                  }) }}
+                  {{
+                    t('statistics.strikeAttackBreakdown', {
+                      ability: formatSignedModifier(strike.attack.abilityModifier),
+                      proficiency: formatSignedModifier(strike.attack.proficiencyBonus),
+                    })
+                  }}
                 </small>
                 <small
                   v-for="(bonus, bonusIndex) in [
@@ -511,44 +574,99 @@ onMounted(load)
                 <strong>{{ t('statistics.classDifficultyClass') }}</strong>
                 <small>
                   {{ getAbilityLabel(character.derivedStatistics.classDifficultyClass.ability) }} ·
-                  {{ getProficiencyRankLabel(character.derivedStatistics.classDifficultyClass.proficiencyRank) }}
+                  {{
+                    getProficiencyRankLabel(
+                      character.derivedStatistics.classDifficultyClass.proficiencyRank,
+                    )
+                  }}
                 </small>
               </div>
               <div class="derived-statistics-card__value">
                 <strong>{{ character.derivedStatistics.classDifficultyClass.total }}</strong>
-                <small>{{ t('statistics.dcBreakdown', {
-                  base: character.derivedStatistics.classDifficultyClass.base,
-                  ability: formatSignedModifier(character.derivedStatistics.classDifficultyClass.abilityModifier),
-                  proficiency: formatSignedModifier(character.derivedStatistics.classDifficultyClass.proficiencyBonus),
-                }) }}</small>
+                <small>{{
+                  t('statistics.dcBreakdown', {
+                    base: character.derivedStatistics.classDifficultyClass.base,
+                    ability: formatSignedModifier(
+                      character.derivedStatistics.classDifficultyClass.abilityModifier,
+                    ),
+                    proficiency: formatSignedModifier(
+                      character.derivedStatistics.classDifficultyClass.proficiencyBonus,
+                    ),
+                  })
+                }}</small>
               </div>
             </div>
             <template v-if="character.derivedStatistics.spellcasting">
               <div class="derived-statistics-card__item">
                 <div>
-                  <strong>{{ t('statistics.spellAttack') }} · {{ t(`classUi.spellTraditions.${character.derivedStatistics.spellcasting.tradition}`) }}</strong>
-                  <small>{{ getAbilityLabel(character.derivedStatistics.spellcasting.attack.ability) }} · {{ getProficiencyRankLabel(character.derivedStatistics.spellcasting.attack.proficiencyRank) }}</small>
+                  <strong
+                    >{{ t('statistics.spellAttack') }} ·
+                    {{
+                      t(
+                        `classUi.spellTraditions.${character.derivedStatistics.spellcasting.tradition}`,
+                      )
+                    }}</strong
+                  >
+                  <small
+                    >{{
+                      getAbilityLabel(character.derivedStatistics.spellcasting.attack.ability)
+                    }}
+                    ·
+                    {{
+                      getProficiencyRankLabel(
+                        character.derivedStatistics.spellcasting.attack.proficiencyRank,
+                      )
+                    }}</small
+                  >
                 </div>
                 <div class="derived-statistics-card__value">
-                  <strong>{{ formatSignedModifier(character.derivedStatistics.spellcasting.attack.total) }}</strong>
-                  <small>{{ t('statistics.attackBreakdown', {
-                    ability: formatSignedModifier(character.derivedStatistics.spellcasting.attack.abilityModifier),
-                    proficiency: formatSignedModifier(character.derivedStatistics.spellcasting.attack.proficiencyBonus),
-                  }) }}</small>
+                  <strong>{{
+                    formatSignedModifier(character.derivedStatistics.spellcasting.attack.total)
+                  }}</strong>
+                  <small>{{
+                    t('statistics.attackBreakdown', {
+                      ability: formatSignedModifier(
+                        character.derivedStatistics.spellcasting.attack.abilityModifier,
+                      ),
+                      proficiency: formatSignedModifier(
+                        character.derivedStatistics.spellcasting.attack.proficiencyBonus,
+                      ),
+                    })
+                  }}</small>
                 </div>
               </div>
               <div class="derived-statistics-card__item">
                 <div>
                   <strong>{{ t('statistics.spellDifficultyClass') }}</strong>
-                  <small>{{ getAbilityLabel(character.derivedStatistics.spellcasting.difficultyClass.ability) }} · {{ getProficiencyRankLabel(character.derivedStatistics.spellcasting.difficultyClass.proficiencyRank) }}</small>
+                  <small
+                    >{{
+                      getAbilityLabel(
+                        character.derivedStatistics.spellcasting.difficultyClass.ability,
+                      )
+                    }}
+                    ·
+                    {{
+                      getProficiencyRankLabel(
+                        character.derivedStatistics.spellcasting.difficultyClass.proficiencyRank,
+                      )
+                    }}</small
+                  >
                 </div>
                 <div class="derived-statistics-card__value">
-                  <strong>{{ character.derivedStatistics.spellcasting.difficultyClass.total }}</strong>
-                  <small>{{ t('statistics.dcBreakdown', {
-                    base: character.derivedStatistics.spellcasting.difficultyClass.base,
-                    ability: formatSignedModifier(character.derivedStatistics.spellcasting.difficultyClass.abilityModifier),
-                    proficiency: formatSignedModifier(character.derivedStatistics.spellcasting.difficultyClass.proficiencyBonus),
-                  }) }}</small>
+                  <strong>{{
+                    character.derivedStatistics.spellcasting.difficultyClass.total
+                  }}</strong>
+                  <small>{{
+                    t('statistics.dcBreakdown', {
+                      base: character.derivedStatistics.spellcasting.difficultyClass.base,
+                      ability: formatSignedModifier(
+                        character.derivedStatistics.spellcasting.difficultyClass.abilityModifier,
+                      ),
+                      proficiency: formatSignedModifier(
+                        character.derivedStatistics.spellcasting.difficultyClass.proficiencyBonus,
+                      ),
+                    })
+                  }}</small>
                 </div>
               </div>
             </template>
@@ -564,19 +682,38 @@ onMounted(load)
           ></v-card
         ><v-card v-if="character.ancestryPackage" elevation="0"
           ><v-card-item :title="t('characters.ancestryPackage')" /><v-card-text
-            ><p>{{ t('characters.heritage') }}: {{ formatChoiceId(character.ancestryPackage.selectedHeritageId) }}</p>
-            <p>{{ t('characters.ancestryFeat') }}: {{ formatChoiceId(character.ancestryPackage.selectedAncestryFeatId) }}</p>
-            <p>{{ t('characters.vision') }}: {{ getVisionLabel(character.ancestryPackage.effectiveVision) }}</p>
-            <p>{{ t('characters.baseHitPoints') }}: {{ character.ancestryPackage.effectiveBaseHitPoints }}</p>
-            <p v-if="character.ancestryPackage.knownLanguageIds.length">
-              {{ t('characters.languages') }}: {{ character.ancestryPackage.knownLanguageIds.map(getLanguageLabel).join(', ') }}
+            ><p>
+              {{ t('characters.heritage') }}:
+              {{ formatChoiceId(character.ancestryPackage.selectedHeritageId) }}
             </p>
-            <p v-for="rule in character.ancestryPackage.grantedRules" :key="rule.ruleId">{{ rule.summary }}</p>
-          </v-card-text
-        ></v-card
+            <p>
+              {{ t('characters.ancestryFeat') }}:
+              {{ formatChoiceId(character.ancestryPackage.selectedAncestryFeatId) }}
+            </p>
+            <p>
+              {{ t('characters.vision') }}:
+              {{ getVisionLabel(character.ancestryPackage.effectiveVision) }}
+            </p>
+            <p>
+              {{ t('characters.baseHitPoints') }}:
+              {{ character.ancestryPackage.effectiveBaseHitPoints }}
+            </p>
+            <p v-if="character.ancestryPackage.knownLanguageIds.length">
+              {{ t('characters.languages') }}:
+              {{ character.ancestryPackage.knownLanguageIds.map(getLanguageLabel).join(', ') }}
+            </p>
+            <p v-for="rule in character.ancestryPackage.grantedRules" :key="rule.ruleId">
+              {{ rule.summary }}
+            </p>
+          </v-card-text></v-card
         ><v-card v-if="character.backgroundPackage" elevation="0"
           ><v-card-item
-            :title="getBackgroundLabel(character.backgroundPackage.backgroundId, character.backgroundPackage.name)"
+            :title="
+              getBackgroundLabel(
+                character.backgroundPackage.backgroundId,
+                character.backgroundPackage.name,
+              )
+            "
             :subtitle="t('characters.backgroundPackage')"
           /><v-card-text
             ><p>
@@ -584,14 +721,15 @@ onMounted(load)
               {{ getAbilityLabel(character.backgroundPackage.restrictedBoost) }},
               {{ getAbilityLabel(character.backgroundPackage.freeBoost) }}
             </p>
-            <p><strong>{{ t('characters.backgroundGrants') }}</strong></p>
+            <p>
+              <strong>{{ t('characters.backgroundGrants') }}</strong>
+            </p>
             <ul>
               <li v-for="grant in character.backgroundPackage.grants" :key="grant.id">
                 {{ grant.name }}
               </li>
             </ul>
-          </v-card-text
-        ></v-card
+          </v-card-text></v-card
         ><v-card v-if="character.feats.length" elevation="0"
           ><v-card-item :title="t('feats.title')" /><v-card-text>
             <v-list density="compact">
@@ -601,11 +739,14 @@ onMounted(load)
                 :title="feat.name"
                 :subtitle="getFeatSubtitle(feat)"
               >
-                <template #append><v-chip size="small">{{ t(`feats.categories.${feat.category}`) }}</v-chip></template>
+                <template #append
+                  ><v-chip size="small">{{
+                    t(`feats.categories.${feat.category}`)
+                  }}</v-chip></template
+                >
               </v-list-item>
             </v-list>
-          </v-card-text
-        ></v-card
+          </v-card-text></v-card
         ><v-card v-if="character.training.deferredFeatGrants.length" elevation="0"
           ><v-card-item :title="t('feats.deferredTrainingTitle')" /><v-card-text>
             <v-alert
@@ -614,17 +755,25 @@ onMounted(load)
               type="warning"
               variant="tonal"
             >
-              {{ t('feats.replacementRequired', { feat: formatChoiceId(grant.featId), target: formatChoiceId(grant.targetId) }) }}
+              {{
+                t('feats.replacementRequired', {
+                  feat: formatChoiceId(grant.featId),
+                  target: formatChoiceId(grant.targetId),
+                })
+              }}
             </v-alert>
-          </v-card-text
-        ></v-card
+          </v-card-text></v-card
         ><v-card v-if="skillModifierSections.length" elevation="0" class="skill-modifiers-card">
           <v-card-item :title="t('statistics.skillsAndLore')" />
           <v-card-text>
             <section v-for="section in skillModifierSections" :key="section.key">
               <h3>{{ section.label }}</h3>
               <div class="skill-modifiers-card__grid">
-                <div v-for="skill in section.items" :key="skill.targetId" class="skill-modifiers-card__item">
+                <div
+                  v-for="skill in section.items"
+                  :key="skill.targetId"
+                  class="skill-modifiers-card__item"
+                >
                   <div>
                     <strong>{{ skill.name }}</strong>
                     <small>
@@ -639,11 +788,12 @@ onMounted(load)
                 </div>
               </div>
             </section>
-          </v-card-text>
-        </v-card
+          </v-card-text> </v-card
         ><v-card v-if="character.classPackage" elevation="0"
           ><v-card-item
-            :title="getCharacterClassLabel(character.classPackage.classId, character.classPackage.name)"
+            :title="
+              getCharacterClassLabel(character.classPackage.classId, character.classPackage.name)
+            "
             :subtitle="t('classUi.package')"
           /><v-card-text
             ><p>{{ t('classUi.baseHitPoints') }}: {{ character.classPackage.baseHitPoints }}</p>
@@ -652,44 +802,42 @@ onMounted(load)
               {{ getAbilityLabel(character.classPackage.keyAbility) }}
             </p>
             <template v-if="character.classPackage.rogueRacket">
-              <p>
-                {{ t('classUi.rogueRacket') }}: {{ character.classPackage.rogueRacket.name }}
+              <p>{{ t('classUi.rogueRacket') }}: {{ character.classPackage.rogueRacket.name }}</p>
+              <p v-for="effect in character.classPackage.rogueRacket.effects" :key="effect.id">
+                {{ effect.name }}: {{ effect.summary }}
               </p>
-              <p
-                v-for="effect in character.classPackage.rogueRacket.effects"
-                :key="effect.id"
-              >{{ effect.name }}: {{ effect.summary }}</p>
             </template>
             <template v-if="character.classPackage.huntersEdge">
-              <p>
-                {{ t('classUi.huntersEdge') }}: {{ character.classPackage.huntersEdge.name }}
+              <p>{{ t('classUi.huntersEdge') }}: {{ character.classPackage.huntersEdge.name }}</p>
+              <p v-for="effect in character.classPackage.huntersEdge.effects" :key="effect.id">
+                {{ effect.name }}: {{ effect.summary }} {{ t('classUi.deferredEffect') }}
               </p>
-              <p
-                v-for="effect in character.classPackage.huntersEdge.effects"
-                :key="effect.id"
-              >{{ effect.name }}: {{ effect.summary }} {{ t('classUi.deferredEffect') }}</p>
             </template>
             <template v-if="character.classPackage.druidicOrder">
-              <p>
-                {{ t('classUi.druidicOrder') }}: {{ character.classPackage.druidicOrder.name }}
-              </p>
-              <p
-                v-for="benefit in character.classPackage.druidicOrder.benefits"
-                :key="benefit.id"
-              >
-                {{ t(`classUi.druidicOrderBenefitKinds.${benefit.kind}`) }}:
-                {{ benefit.name }}.
-                <template v-if="benefit.kind === 'ClassFeat'">{{ t('classUi.deferredEffect') }}</template>
+              <p>{{ t('classUi.druidicOrder') }}: {{ character.classPackage.druidicOrder.name }}</p>
+              <p v-for="benefit in character.classPackage.druidicOrder.benefits" :key="benefit.id">
+                {{ t(`classUi.druidicOrderBenefitKinds.${benefit.kind}`) }}: {{ benefit.name }}.
+                <template v-if="benefit.kind === 'ClassFeat'">{{
+                  t('classUi.deferredEffect')
+                }}</template>
               </p>
             </template>
             <template v-if="character.classPackage.druidSpellLoadout">
               <p>
                 {{ t('classUi.druidCantrips') }}:
-                {{ character.classPackage.druidSpellLoadout.cantrips.map((spell) => spell.name).join(', ') }}
+                {{
+                  character.classPackage.druidSpellLoadout.cantrips
+                    .map((spell) => spell.name)
+                    .join(', ')
+                }}
               </p>
               <p>
                 {{ t('classUi.druidPreparedSpells') }}:
-                {{ character.classPackage.druidSpellLoadout.preparedSpells.map((spell) => spell.name).join(', ') }}
+                {{
+                  character.classPackage.druidSpellLoadout.preparedSpells
+                    .map((spell) => spell.name)
+                    .join(', ')
+                }}
               </p>
             </template>
             <template v-if="character.classPackage.druidFocusPool">
@@ -703,26 +851,30 @@ onMounted(load)
               </p>
             </template>
             <template v-if="character.classPackage.bardMuse">
-              <p>
-                {{ t('classUi.bardMuse') }}: {{ character.classPackage.bardMuse.name }}
-              </p>
-              <p
-                v-for="benefit in character.classPackage.bardMuse.benefits"
-                :key="benefit.id"
-              >
-                {{ t(`classUi.bardMuseBenefitKinds.${benefit.kind}`) }}:
-                {{ benefit.name }}.
-                <template v-if="benefit.kind === 'ClassFeat'">{{ t('classUi.deferredEffect') }}</template>
+              <p>{{ t('classUi.bardMuse') }}: {{ character.classPackage.bardMuse.name }}</p>
+              <p v-for="benefit in character.classPackage.bardMuse.benefits" :key="benefit.id">
+                {{ t(`classUi.bardMuseBenefitKinds.${benefit.kind}`) }}: {{ benefit.name }}.
+                <template v-if="benefit.kind === 'ClassFeat'">{{
+                  t('classUi.deferredEffect')
+                }}</template>
               </p>
             </template>
             <template v-if="character.classPackage.bardSpellLoadout">
               <p>
                 {{ t('classUi.bardCantrips') }}:
-                {{ character.classPackage.bardSpellLoadout.cantrips.map((spell) => spell.name).join(', ') }}
+                {{
+                  character.classPackage.bardSpellLoadout.cantrips
+                    .map((spell) => spell.name)
+                    .join(', ')
+                }}
               </p>
               <p>
                 {{ t('classUi.bardRepertoireSpells') }}:
-                {{ character.classPackage.bardSpellLoadout.rankOneRepertoire.map((entry) => entry.spell.name).join(', ') }}
+                {{
+                  character.classPackage.bardSpellLoadout.rankOneRepertoire
+                    .map((entry) => entry.spell.name)
+                    .join(', ')
+                }}
               </p>
               <p>
                 {{ t('classUi.bardSpellSlots') }}:
@@ -741,19 +893,16 @@ onMounted(load)
               </p>
             </template>
             <template v-if="character.classPackage.witchPatron">
-              <p>
-                {{ t('classUi.witchPatron') }}: {{ character.classPackage.witchPatron.name }}
-              </p>
+              <p>{{ t('classUi.witchPatron') }}: {{ character.classPackage.witchPatron.name }}</p>
               <p>
                 {{ t('classUi.spellTradition') }}:
-                {{ t(`classUi.spellTraditions.${character.classPackage.witchPatron.spellTradition}`) }}
+                {{
+                  t(`classUi.spellTraditions.${character.classPackage.witchPatron.spellTradition}`)
+                }}
               </p>
-              <p
-                v-for="benefit in character.classPackage.witchPatron.benefits"
-                :key="benefit.id"
-              >
-                {{ t(`classUi.witchPatronBenefitKinds.${benefit.kind}`) }}:
-                {{ benefit.name }} — {{ benefit.summary }}
+              <p v-for="benefit in character.classPackage.witchPatron.benefits" :key="benefit.id">
+                {{ t(`classUi.witchPatronBenefitKinds.${benefit.kind}`) }}: {{ benefit.name }} —
+                {{ benefit.summary }}
               </p>
               <p>
                 {{ t('classUi.witchPatronFamiliarSpell') }}:
@@ -763,11 +912,19 @@ onMounted(load)
             <template v-if="character.classPackage.witchSpellLoadout">
               <p>
                 {{ t('classUi.witchFamiliarCantrips') }}:
-                {{ character.classPackage.witchSpellLoadout.familiarCantrips.map((spell) => spell.name).join(', ') }}
+                {{
+                  character.classPackage.witchSpellLoadout.familiarCantrips
+                    .map((spell) => spell.name)
+                    .join(', ')
+                }}
               </p>
               <p>
                 {{ t('classUi.witchFamiliarSpells') }}:
-                {{ character.classPackage.witchSpellLoadout.familiarRankOneSpells.map((spell) => spell.name).join(', ') }}
+                {{
+                  character.classPackage.witchSpellLoadout.familiarRankOneSpells
+                    .map((spell) => spell.name)
+                    .join(', ')
+                }}
               </p>
               <p>
                 {{ t('classUi.witchPatronGrantedSpell') }}:
@@ -775,11 +932,19 @@ onMounted(load)
               </p>
               <p>
                 {{ t('classUi.witchPreparedCantrips') }}:
-                {{ character.classPackage.witchSpellLoadout.preparedCantrips.map((spell) => spell.name).join(', ') }}
+                {{
+                  character.classPackage.witchSpellLoadout.preparedCantrips
+                    .map((spell) => spell.name)
+                    .join(', ')
+                }}
               </p>
               <p>
                 {{ t('classUi.witchPreparedSpells') }}:
-                {{ character.classPackage.witchSpellLoadout.preparedSpells.map((spell) => spell.name).join(', ') }}
+                {{
+                  character.classPackage.witchSpellLoadout.preparedSpells
+                    .map((spell) => spell.name)
+                    .join(', ')
+                }}
               </p>
             </template>
             <template v-if="character.classPackage.witchHexPackage">
@@ -797,25 +962,32 @@ onMounted(load)
               </p>
             </template>
             <template v-if="character.classPackage.arcaneSchool">
-              <p>
-                {{ t('classUi.arcaneSchool') }}: {{ character.classPackage.arcaneSchool.name }}
-              </p>
-              <p
-                v-for="benefit in character.classPackage.arcaneSchool.benefits"
-                :key="benefit.id"
-              >
-                {{ t(`classUi.arcaneSchoolBenefitKinds.${benefit.kind}`) }}:
-                {{ benefit.name }} — {{ benefit.summary }}
+              <p>{{ t('classUi.arcaneSchool') }}: {{ character.classPackage.arcaneSchool.name }}</p>
+              <p v-for="benefit in character.classPackage.arcaneSchool.benefits" :key="benefit.id">
+                {{ t(`classUi.arcaneSchoolBenefitKinds.${benefit.kind}`) }}: {{ benefit.name }} —
+                {{ benefit.summary }}
               </p>
             </template>
             <template v-if="character.classPackage.wizardSpellLoadout">
               <p>
                 {{ t('classUi.wizardSpellbookCantrips') }}:
-                {{ character.classPackage.wizardSpellLoadout.spellbookCantrips.map((spell) => spell.name).join(', ') }}
+                {{
+                  character.classPackage.wizardSpellLoadout.spellbookCantrips
+                    .map((spell) => spell.name)
+                    .join(', ')
+                }}
               </p>
               <p>
-                {{ t('classUi.wizardSpellbookSpells', { count: character.classPackage.wizardSpellLoadout.spellbookRankOneSpells.length }) }}:
-                {{ character.classPackage.wizardSpellLoadout.spellbookRankOneSpells.map((spell) => spell.name).join(', ') }}
+                {{
+                  t('classUi.wizardSpellbookSpells', {
+                    count: character.classPackage.wizardSpellLoadout.spellbookRankOneSpells.length,
+                  })
+                }}:
+                {{
+                  character.classPackage.wizardSpellLoadout.spellbookRankOneSpells
+                    .map((spell) => spell.name)
+                    .join(', ')
+                }}
               </p>
               <p v-if="character.classPackage.wizardSpellLoadout.curriculumCantrip">
                 {{ t('classUi.wizardCurriculumCantrip') }}:
@@ -823,15 +995,27 @@ onMounted(load)
               </p>
               <p v-if="character.classPackage.wizardSpellLoadout.curriculumRankOneSpells.length">
                 {{ t('classUi.wizardCurriculumSpells') }}:
-                {{ character.classPackage.wizardSpellLoadout.curriculumRankOneSpells.map((spell) => spell.name).join(', ') }}
+                {{
+                  character.classPackage.wizardSpellLoadout.curriculumRankOneSpells
+                    .map((spell) => spell.name)
+                    .join(', ')
+                }}
               </p>
               <p>
                 {{ t('classUi.wizardPreparedCantrips') }}:
-                {{ character.classPackage.wizardSpellLoadout.preparedCantrips.map((spell) => spell.name).join(', ') }}
+                {{
+                  character.classPackage.wizardSpellLoadout.preparedCantrips
+                    .map((spell) => spell.name)
+                    .join(', ')
+                }}
               </p>
               <p>
                 {{ t('classUi.wizardSpellSlot', { number: '1–2' }) }}:
-                {{ character.classPackage.wizardSpellLoadout.preparedRankOneSpells.map((spell) => spell.name).join(', ') }}
+                {{
+                  character.classPackage.wizardSpellLoadout.preparedRankOneSpells
+                    .map((spell) => spell.name)
+                    .join(', ')
+                }}
               </p>
               <p v-if="character.classPackage.wizardSpellLoadout.preparedCurriculumRankOneSpell">
                 {{ t('classUi.wizardCurriculumSpellSlot') }}:
@@ -841,32 +1025,33 @@ onMounted(load)
             <template v-if="character.classPackage.wizardSchoolMagic">
               <p>
                 {{ character.classPackage.wizardSchoolMagic.initialSchoolSpell?.name }} ·
-                {{ t('classUi.focusPoints') }}: {{ character.classPackage.wizardSchoolMagic.maximumFocusPoints }}
+                {{ t('classUi.focusPoints') }}:
+                {{ character.classPackage.wizardSchoolMagic.maximumFocusPoints }}
               </p>
-              <p>Drain Bonded Item: {{ character.classPackage.wizardSchoolMagic.drainBondedItemUsesPerDay }}</p>
+              <p>
+                Drain Bonded Item:
+                {{ character.classPackage.wizardSchoolMagic.drainBondedItemUsesPerDay }}
+              </p>
             </template>
             <template v-if="character.classPackage.arcaneThesis">
-              <p>
-                {{ t('classUi.arcaneThesis') }}: {{ character.classPackage.arcaneThesis.name }}
-              </p>
-              <p
-                v-for="effect in character.classPackage.arcaneThesis.effects"
-                :key="effect.id"
-              >
-                {{ t(`classUi.arcaneThesisEffectKinds.${effect.kind}`) }}:
-                {{ effect.name }} — {{ effect.summary }}
-                {{ t('classUi.arcaneThesisMilestones', { levels: effect.milestoneLevels.join(', ') }) }}
+              <p>{{ t('classUi.arcaneThesis') }}: {{ character.classPackage.arcaneThesis.name }}</p>
+              <p v-for="effect in character.classPackage.arcaneThesis.effects" :key="effect.id">
+                {{ t(`classUi.arcaneThesisEffectKinds.${effect.kind}`) }}: {{ effect.name }} —
+                {{ effect.summary }}
+                {{
+                  t('classUi.arcaneThesisMilestones', { levels: effect.milestoneLevels.join(', ') })
+                }}
               </p>
             </template>
             <template v-if="character.classPackage.clericDoctrine">
               <p>
                 {{ t('classUi.clericDoctrine') }}: {{ character.classPackage.clericDoctrine.name }}
               </p>
-              <p
-                v-for="effect in character.classPackage.clericDoctrine.effects"
-                :key="effect.id"
-              >{{ effect.name }}: {{ effect.summary }}
-                <template v-if="effect.deferredDependencies.length">{{ t('classUi.deferredEffect') }}</template>
+              <p v-for="effect in character.classPackage.clericDoctrine.effects" :key="effect.id">
+                {{ effect.name }}: {{ effect.summary }}
+                <template v-if="effect.deferredDependencies.length">{{
+                  t('classUi.deferredEffect')
+                }}</template>
               </p>
             </template>
             <template v-if="character.classPackage.deity">
@@ -881,7 +1066,11 @@ onMounted(load)
               </p>
               <p>
                 {{ t('classUi.favoredWeapon') }}:
-                {{ character.classPackage.deity.favoredWeapons.map((weapon) => weapon.name).join(', ') }}
+                {{
+                  character.classPackage.deity.favoredWeapons
+                    .map((weapon) => weapon.name)
+                    .join(', ')
+                }}
               </p>
               <p>
                 {{ t('classUi.domains') }}:
@@ -889,7 +1078,11 @@ onMounted(load)
               </p>
               <p>
                 {{ t('classUi.grantedSpells') }}:
-                {{ character.classPackage.deity.grantedSpells.map((spell) => `${spell.rank}: ${spell.name}`).join(', ') }}
+                {{
+                  character.classPackage.deity.grantedSpells
+                    .map((spell) => `${spell.rank}: ${spell.name}`)
+                    .join(', ')
+                }}
               </p>
             </template>
             <template v-if="character.classPackage.clericDomain">
@@ -905,15 +1098,27 @@ onMounted(load)
             <template v-if="character.classPackage.clericSpellLoadout">
               <p>
                 {{ t('classUi.clericCantrips') }}:
-                {{ character.classPackage.clericSpellLoadout.cantrips.map((spell) => spell.name).join(', ') || t('wizard.none') }}
+                {{
+                  character.classPackage.clericSpellLoadout.cantrips
+                    .map((spell) => spell.name)
+                    .join(', ') || t('wizard.none')
+                }}
               </p>
               <p>
                 {{ t('classUi.clericPreparedSpells') }}:
-                {{ character.classPackage.clericSpellLoadout.preparedSpells.map((slot) => slot.spell.name).join(', ') || t('wizard.none') }}
+                {{
+                  character.classPackage.clericSpellLoadout.preparedSpells
+                    .map((slot) => slot.spell.name)
+                    .join(', ') || t('wizard.none')
+                }}
               </p>
               <p>
                 {{ t('classUi.divineFontSpells') }}:
-                {{ character.classPackage.clericSpellLoadout.divineFontSpells.map((spell) => spell.name).join(', ') || t('wizard.none') }}
+                {{
+                  character.classPackage.clericSpellLoadout.divineFontSpells
+                    .map((spell) => spell.name)
+                    .join(', ') || t('wizard.none')
+                }}
               </p>
             </template>
             <template v-if="character.classPackage.clericFocusPool">
@@ -930,29 +1135,37 @@ onMounted(load)
                 {{ character.classPackage.clericFocusPool.sourceGrantId }}
               </p>
             </template>
-            <p><strong>{{ t('classUi.rules') }}</strong></p>
+            <p>
+              <strong>{{ t('classUi.rules') }}</strong>
+            </p>
             <ul>
               <li v-for="rule in character.classPackage.rules" :key="rule.id">
                 {{ rule.name }}
               </li>
             </ul>
-          </v-card-text
-        ></v-card
+          </v-card-text></v-card
         ><v-card v-if="character.startingEquipment" elevation="0"
           ><v-card-item :title="t('equipment.title')" /><v-card-text>
             <p>
-              {{ t('equipment.bulk', {
-                total: character.startingEquipment.totalBulkTenths / 10,
-                encumbered: character.startingEquipment.encumberedAtBulkTenths / 10,
-                maximum: character.startingEquipment.maximumBulkTenths / 10,
-              }) }}
+              {{
+                t('equipment.bulk', {
+                  total: character.startingEquipment.totalBulkTenths / 10,
+                  encumbered: character.startingEquipment.encumberedAtBulkTenths / 10,
+                  maximum: character.startingEquipment.maximumBulkTenths / 10,
+                })
+              }}
             </p>
             <ul>
               <li v-for="item in character.startingEquipment.items" :key="item.definition.id">
                 {{ item.definition.name }} × {{ item.unitQuantity }}
                 <strong v-if="item.equippedQuantity">({{ t('equipment.equipped') }})</strong>
                 <span v-if="item.proficiencyTargetId">
-                  — {{ t('equipment.proficiency', { rank: getProficiencyRankLabel(item.proficiencyRank) }) }}
+                  —
+                  {{
+                    t('equipment.proficiency', {
+                      rank: getProficiencyRankLabel(item.proficiencyRank),
+                    })
+                  }}
                 </span>
               </li>
             </ul>
@@ -996,10 +1209,12 @@ onMounted(load)
         ><v-card-title>{{ t('characters.deleteTitle') }}</v-card-title
         ><v-card-text>{{ t('characters.deleteText') }}</v-card-text
         ><v-card-actions
-          ><v-spacer /><v-btn variant="text" @click="confirmDelete = false">{{ t('common.cancel') }}</v-btn
-          ><v-btn color="error" :loading="isDeleting" @click="remove"
-            >{{ t('common.delete') }}</v-btn
-          ></v-card-actions
+          ><v-spacer /><v-btn variant="text" @click="confirmDelete = false">{{
+            t('common.cancel')
+          }}</v-btn
+          ><v-btn color="error" :loading="isDeleting" @click="remove">{{
+            t('common.delete')
+          }}</v-btn></v-card-actions
         ></v-card
       ></v-dialog
     >

@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/features/auth/store'
 import { setLocale, type SupportedLocale } from '@/i18n'
 import { useI18n } from 'vue-i18n'
+import AppSnackbarHost from '@/components/AppSnackbarHost.vue'
 
 const drawer = ref(true)
 const route = useRoute()
@@ -94,6 +95,7 @@ function changeLocale(value: SupportedLocale): void {
         <router-view />
       </v-container>
     </v-main>
+    <AppSnackbarHost />
   </v-app>
 </template>
 

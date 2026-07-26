@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { getApiErrorMessages } from '@/api/errors'
+import MoneyText from '@/components/MoneyText.vue'
 import {
   getAbilityLabel,
   getAncestryChoiceLabel,
@@ -16,10 +17,7 @@ import type {
   ProficiencyCategory,
   ProficiencyRank,
 } from '@/features/characters/api'
-import {
-  formatProficiency,
-  groupProficiencies,
-} from '@/features/characters/proficiencies'
+import { formatProficiency, groupProficiencies } from '@/features/characters/proficiencies'
 import {
   isSelectableCharacterGender,
   type SelectableCharacterGender,
@@ -267,7 +265,14 @@ const form = ref({
   deityFavoredWeaponEquipmentId: null as string | null,
   equippedEquipmentIds: [] as string[],
 })
-const abilityCodes: AbilityCode[] = ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma']
+const abilityCodes: AbilityCode[] = [
+  'Strength',
+  'Dexterity',
+  'Constitution',
+  'Intelligence',
+  'Wisdom',
+  'Charisma',
+]
 const selectedAncestry = computed(
   () => ancestries.value.find((item) => item.type === form.value.ancestryType) ?? null,
 )
@@ -285,7 +290,9 @@ const selectedHeritage = computed(
   () => selectedAncestry.value?.heritages.find((item) => item.id === form.value.heritageId) ?? null,
 )
 const selectedAncestryFeat = computed(
-  () => selectedAncestry.value?.ancestryFeats.find((item) => item.id === form.value.ancestryFeatId) ?? null,
+  () =>
+    selectedAncestry.value?.ancestryFeats.find((item) => item.id === form.value.ancestryFeatId) ??
+    null,
 )
 const selectedBackground = computed(
   () => backgrounds.value.find((item) => item.id === form.value.backgroundId) ?? null,
@@ -341,8 +348,9 @@ const selectedDruidSpells = computed(() =>
     .map((spellId) => druidSpellOptions.value.rankOneSpells.find((spell) => spell.id === spellId))
     .filter((spell) => spell !== undefined),
 )
-const selectedDruidFocusSpell = computed(() =>
-  selectedDruidicOrder.value?.benefits.find((benefit) => benefit.kind === 'FocusSpell') ?? null,
+const selectedDruidFocusSpell = computed(
+  () =>
+    selectedDruidicOrder.value?.benefits.find((benefit) => benefit.kind === 'FocusSpell') ?? null,
 )
 const selectedWitchPatron = computed(
   () => witchPatrons.value.find((item) => item.id === form.value.witchPatronId) ?? null,
@@ -358,8 +366,8 @@ const witchSpellOptions = computed<WitchSpellOptions>(() =>
 const selectedWitchPatronSpell = computed(() => {
   const options = witchPatronFamiliarSpellOptions.value
   return options.length === 1
-    ? options[0] ?? null
-    : options.find((spell) => spell.id === form.value.witchPatronFamiliarSpellId) ?? null
+    ? (options[0] ?? null)
+    : (options.find((spell) => spell.id === form.value.witchPatronFamiliarSpellId) ?? null)
 })
 const witchFamiliarRankOneOptions = computed(() =>
   witchSpellOptions.value.rankOneSpells.filter(
@@ -438,11 +446,11 @@ const selectedArcaneSchool = computed(
 const arcaneSchoolCurriculum = computed(() =>
   groupArcaneSchoolCurriculum(selectedArcaneSchool.value),
 )
-const wizardCurriculumCantripOptions = computed(() =>
-  selectedArcaneSchool.value?.curriculumSpells.filter((spell) => spell.rank === 0) ?? [],
+const wizardCurriculumCantripOptions = computed(
+  () => selectedArcaneSchool.value?.curriculumSpells.filter((spell) => spell.rank === 0) ?? [],
 )
-const wizardCurriculumRankOneOptions = computed(() =>
-  selectedArcaneSchool.value?.curriculumSpells.filter((spell) => spell.rank === 1) ?? [],
+const wizardCurriculumRankOneOptions = computed(
+  () => selectedArcaneSchool.value?.curriculumSpells.filter((spell) => spell.rank === 1) ?? [],
 )
 const selectedWizardSpellbookCantrips = computed(() =>
   form.value.wizardSpellbookCantripIds
@@ -463,7 +471,9 @@ const selectedClassKit = computed(
 const availableFavoredWeapons = computed(() => {
   if (!selectedDeity.value) return []
   const equipmentIds = new Set(
-    selectedDeity.value.favoredWeapons.map((weapon) => `equipment.${weapon.id.replace('weapon.', '')}`),
+    selectedDeity.value.favoredWeapons.map(
+      (weapon) => `equipment.${weapon.id.replace('weapon.', '')}`,
+    ),
   )
   return equipment.value.filter((item) => equipmentIds.has(item.id))
 })
@@ -471,10 +481,12 @@ const selectedKitItems = computed(() => {
   if (!selectedClassKit.value) return []
   const quantities = new Map<string, number>()
   const addItems = (items: { equipmentId: string; purchaseQuantity: number }[]) => {
-    items.forEach((item) => quantities.set(
-      item.equipmentId,
-      (quantities.get(item.equipmentId) ?? 0) + item.purchaseQuantity,
-    ))
+    items.forEach((item) =>
+      quantities.set(
+        item.equipmentId,
+        (quantities.get(item.equipmentId) ?? 0) + item.purchaseQuantity,
+      ),
+    )
   }
   addItems(selectedClassKit.value.items)
   selectedClassKit.value.optionGroups
@@ -489,28 +501,33 @@ const selectedKitItems = computed(() => {
     purchaseQuantity,
   }))
 })
-const startingEquipmentCostCopper = computed(() => selectedKitItems.value.reduce(
-  (total, item) => total + ((item.definition?.priceCopper ?? 0) * item.purchaseQuantity),
-  0,
-))
+const startingEquipmentCostCopper = computed(() =>
+  selectedKitItems.value.reduce(
+    (total, item) => total + (item.definition?.priceCopper ?? 0) * item.purchaseQuantity,
+    0,
+  ),
+)
 const isStartingEquipmentComplete = computed(() => {
-  if (!selectedClassKit.value || selectedKitItems.value.some((item) => !item.definition)) return false
+  if (!selectedClassKit.value || selectedKitItems.value.some((item) => !item.definition))
+    return false
   const selectedOptions = selectedClassKit.value.optionGroups
     .flatMap((group) => group.options)
     .filter((option) => form.value.classKitOptionIds.includes(option.id))
-  const requiresFavoredWeapon = selectedOptions.some(
-    (option) => option.dependency === 'DeityFavoredWeapon',
-  ) && !(selectedDeity.value?.favoredWeapons.some((weapon) => weapon.category === 'Unarmed') ?? false)
+  const requiresFavoredWeapon =
+    selectedOptions.some((option) => option.dependency === 'DeityFavoredWeapon') &&
+    !(selectedDeity.value?.favoredWeapons.some((weapon) => weapon.category === 'Unarmed') ?? false)
   return (
     (!requiresFavoredWeapon || Boolean(form.value.deityFavoredWeaponEquipmentId)) &&
     startingEquipmentCostCopper.value <= selectedClassKit.value.startingWealthCopper
   )
 })
-const classFeatChoiceSlots = computed(() => getRequiredClassFeatChoiceSlots(
-  selectedCharacterClass.value,
-  selectedArcaneSchool.value,
-  selectedArcaneThesis.value,
-))
+const classFeatChoiceSlots = computed(() =>
+  getRequiredClassFeatChoiceSlots(
+    selectedCharacterClass.value,
+    selectedArcaneSchool.value,
+    selectedArcaneThesis.value,
+  ),
+)
 const effectiveCharacterClass = computed(() =>
   withWitchPatron(
     withDruidicOrderSkillGrant(selectedCharacterClass.value, selectedDruidicOrder.value),
@@ -528,12 +545,18 @@ const selectedClericDomain = computed(
 )
 const selectedClericCantrips = computed(() =>
   form.value.clericCantripIds
-    .map((spellId) => clericSpellOptions.value.cantrips.find((option) => option.spell.id === spellId)?.spell)
+    .map(
+      (spellId) =>
+        clericSpellOptions.value.cantrips.find((option) => option.spell.id === spellId)?.spell,
+    )
     .filter((spell) => spell !== undefined),
 )
 const selectedClericPreparedSpells = computed(() =>
   form.value.clericPreparedSpellIds
-    .map((spellId) => clericSpellOptions.value.rankOneSpells.find((option) => option.spell.id === spellId)?.spell)
+    .map(
+      (spellId) =>
+        clericSpellOptions.value.rankOneSpells.find((option) => option.spell.id === spellId)?.spell,
+    )
     .filter((spell) => spell !== undefined),
 )
 const classKeyAbilityOptions = computed(() => {
@@ -547,19 +570,20 @@ const eligibleDeities = computed(() => deities.value.filter((deity) => deity.can
 const availableClericDomains = computed(() =>
   getAvailableClericDomains(selectedDeity.value, clericDomains.value),
 )
-const effectiveClassProficiencies = computed(() =>
-  [
-    ...getEffectiveClassProficiencies(selectedCharacterClass.value, selectedClericDoctrine.value),
-    ...getDeityProficiencies(selectedDeity.value),
-  ],
-)
+const effectiveClassProficiencies = computed(() => [
+  ...getEffectiveClassProficiencies(selectedCharacterClass.value, selectedClericDoctrine.value),
+  ...getDeityProficiencies(selectedDeity.value),
+])
 const backgroundSkillIds = computed(() => {
   if (!selectedBackground.value) return []
   return selectedBackground.value.grants
     .filter((grant) => grant.kind === 'SkillTraining')
     .map((grant) => {
       if (!grant.requiresChoice) return grant.targetId
-      return form.value.backgroundTrainingChoices.find((choice) => choice.grantId === grant.id)?.targetId ?? null
+      return (
+        form.value.backgroundTrainingChoices.find((choice) => choice.grantId === grant.id)
+          ?.targetId ?? null
+      )
     })
     .filter((id): id is string => id !== null)
 })
@@ -601,10 +625,7 @@ const selectedAdditionalLanguages = computed(() =>
 let languageOptionsRequestId = 0
 async function loadLanguageOptions(): Promise<void> {
   const requestId = ++languageOptionsRequestId
-  if (
-    !form.value.ancestryType ||
-    !isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts)
-  ) {
+  if (!form.value.ancestryType || !isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts)) {
     languageSelectionOptions.value = { requiredCount: 0, availableLanguages: [] }
     form.value.additionalLanguageIds = []
     isLoadingLanguageOptions.value = false
@@ -646,36 +667,43 @@ const existingClassTrainingSkillIds = computed(() => {
     .map((grant) => getResolvedRogueTarget(grant, form.value.rogueTrainingChoices))
     .filter((id): id is string => id !== null)
   const deitySkillId = selectedDeity.value?.divineSkillId ?? null
-  const effectiveDeitySkillId = deitySkillId && backgroundSkillIds.value.includes(deitySkillId)
-    ? form.value.deitySkillReplacementId
-    : deitySkillId
-  return Array.from(new Set([
-    ...backgroundSkillIds.value,
-    ...backgroundLoreIds.value,
-    ...rogueSkillIds,
-    ...(effectiveDeitySkillId ? [effectiveDeitySkillId] : []),
-  ]))
+  const effectiveDeitySkillId =
+    deitySkillId && backgroundSkillIds.value.includes(deitySkillId)
+      ? form.value.deitySkillReplacementId
+      : deitySkillId
+  return Array.from(
+    new Set([
+      ...backgroundSkillIds.value,
+      ...backgroundLoreIds.value,
+      ...rogueSkillIds,
+      ...(effectiveDeitySkillId ? [effectiveDeitySkillId] : []),
+    ]),
+  )
 })
-const additionalClassTrainingCount = computed(() => getAdditionalClassTrainingCount(
-  selectedCharacterClass.value,
-  abilityScoresAfterFinal.value.Intelligence,
-))
-const classTrainingLabels = computed(() => getClassTrainingLabels(
-  form.value.classSkillGrantChoices,
-  form.value.additionalClassTrainingChoices,
-  effectiveCharacterClass.value,
-  existingClassTrainingSkillIds.value,
-  skills.value,
-))
+const additionalClassTrainingCount = computed(() =>
+  getAdditionalClassTrainingCount(
+    selectedCharacterClass.value,
+    abilityScoresAfterFinal.value.Intelligence,
+  ),
+)
+const classTrainingLabels = computed(() =>
+  getClassTrainingLabels(
+    form.value.classSkillGrantChoices,
+    form.value.additionalClassTrainingChoices,
+    effectiveCharacterClass.value,
+    existingClassTrainingSkillIds.value,
+    skills.value,
+  ),
+)
 function isSelectedClassChoiceComplete(): boolean {
   return selectedCharacterClass.value?.id === 'class.rogue'
     ? isRogueRacketChoiceComplete(
-      selectedRogueRacket.value,
-      form.value.classKeyAbility,
-      form.value.rogueTrainingChoices,
-      backgroundSkillIds.value,
-      skills.value,
-    )
+        selectedRogueRacket.value,
+        form.value.classKeyAbility,
+        form.value.rogueTrainingChoices,
+        backgroundSkillIds.value,
+        skills.value,
+      )
     : isCharacterClassChoiceComplete(selectedCharacterClass.value, form.value.classKeyAbility)
 }
 function getClassFeatChoice(sourceId: string): string | null {
@@ -701,10 +729,7 @@ function getClassFeatOptions(sourceId: string, requiresSpellshape: boolean): Fea
   )
 }
 function isClassFeatChoiceComplete(): boolean {
-  return isRequiredClassFeatChoiceComplete(
-    classFeatChoiceSlots.value,
-    form.value.classFeatChoices,
-  )
+  return isRequiredClassFeatChoiceComplete(classFeatChoiceSlots.value, form.value.classFeatChoices)
 }
 const canContinue = computed(() => {
   if (step.value === 1)
@@ -712,18 +737,19 @@ const canContinue = computed(() => {
       Boolean(form.value.name.trim()) &&
       isSelectableCharacterGender(form.value.gender) &&
       (form.value.age === null || (Number.isInteger(form.value.age) && form.value.age > 0))
-  )
+    )
   if (step.value === 2) return selectedAncestry.value !== null
-  if (step.value === 3) return selectedHeritage.value !== null && selectedAncestryFeat.value !== null
+  if (step.value === 3)
+    return selectedHeritage.value !== null && selectedAncestryFeat.value !== null
   if (step.value === 4) return form.value.freeBoosts.length === freeBoostSlots.value
   if (step.value === 5)
-    return isBackgroundChoiceComplete(
-      selectedBackground.value,
-      form.value.backgroundRestrictedBoost,
-      form.value.backgroundFreeBoost,
-    ) && isBackgroundTrainingComplete(
-      selectedBackground.value,
-      form.value.backgroundTrainingChoices,
+    return (
+      isBackgroundChoiceComplete(
+        selectedBackground.value,
+        form.value.backgroundRestrictedBoost,
+        form.value.backgroundFreeBoost,
+      ) &&
+      isBackgroundTrainingComplete(selectedBackground.value, form.value.backgroundTrainingChoices)
     )
   if (step.value === 6)
     return (
@@ -796,10 +822,7 @@ const canContinue = computed(() => {
     return (
       isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts) &&
       !isLoadingLanguageOptions.value &&
-      isLanguageSelectionComplete(
-        form.value.additionalLanguageIds,
-        languageSelectionOptions.value,
-      )
+      isLanguageSelectionComplete(form.value.additionalLanguageIds, languageSelectionOptions.value)
     )
   if (step.value === 9)
     return isClassTrainingComplete(
@@ -826,20 +849,22 @@ function toggleClassKitOption(group: ClassKitOptionGroup, optionId: string): voi
   } else {
     form.value.classKitOptionIds.push(optionId)
   }
-  const favoredOptionSelected = selectedClassKit.value?.optionGroups
-    .flatMap((item) => item.options)
-    .some((option) => (
-      option.dependency === 'DeityFavoredWeapon' &&
-      form.value.classKitOptionIds.includes(option.id)
-    )) ?? false
+  const favoredOptionSelected =
+    selectedClassKit.value?.optionGroups
+      .flatMap((item) => item.options)
+      .some(
+        (option) =>
+          option.dependency === 'DeityFavoredWeapon' &&
+          form.value.classKitOptionIds.includes(option.id),
+      ) ?? false
   if (!favoredOptionSelected) form.value.deityFavoredWeaponEquipmentId = null
   reconcileEquippedEquipment()
 }
 
 function reconcileEquippedEquipment(): void {
   const availableIds = new Set(selectedKitItems.value.map((item) => item.definition?.id))
-  form.value.equippedEquipmentIds = form.value.equippedEquipmentIds.filter(
-    (id) => availableIds.has(id),
+  form.value.equippedEquipmentIds = form.value.equippedEquipmentIds.filter((id) =>
+    availableIds.has(id),
   )
 }
 
@@ -853,9 +878,9 @@ function toggleEquippedEquipment(equipmentId: string): void {
 
   const definition = equipment.value.find((item) => item.id === equipmentId)
   if (definition?.category === 'Armor') {
-    const armorIds = new Set(equipment.value
-      .filter((item) => item.category === 'Armor')
-      .map((item) => item.id))
+    const armorIds = new Set(
+      equipment.value.filter((item) => item.category === 'Armor').map((item) => item.id),
+    )
     form.value.equippedEquipmentIds = form.value.equippedEquipmentIds.filter(
       (id) => !armorIds.has(id),
     )
@@ -1024,9 +1049,10 @@ function selectBardMuse(bardMuseId: string | null): void {
 function selectWitchPatron(witchPatronId: string | null): void {
   const previousPatron = selectedWitchPatron.value
   const previousPatronSpellOptions = getWitchPatronFamiliarSpellOptions(previousPatron)
-  const previousPatronSpellId = previousPatronSpellOptions.length === 1
-    ? previousPatronSpellOptions[0]?.id
-    : form.value.witchPatronFamiliarSpellId
+  const previousPatronSpellId =
+    previousPatronSpellOptions.length === 1
+      ? previousPatronSpellOptions[0]?.id
+      : form.value.witchPatronFamiliarSpellId
   const nextPatron = witchPatrons.value.find((item) => item.id === witchPatronId) ?? null
   form.value.witchPatronId = witchPatronId
   form.value.witchPatronFamiliarSpellId = null
@@ -1114,7 +1140,9 @@ function resetAdditionalClassTraining(): void {
   )
 }
 function resetClassTrainingTargets(): void {
-  form.value.classSkillGrantChoices.forEach((choice) => { choice.replacementTarget = null })
+  form.value.classSkillGrantChoices.forEach((choice) => {
+    choice.replacementTarget = null
+  })
   resetAdditionalClassTraining()
 }
 function resetClassTraining(): void {
@@ -1364,9 +1392,9 @@ async function submit(): Promise<void> {
         ...choice,
         replacementTarget: choice.replacementTarget
           ? {
-            ...choice.replacementTarget,
-            customLoreTopic: choice.replacementTarget.customLoreTopic?.trim() || null,
-          }
+              ...choice.replacementTarget,
+              customLoreTopic: choice.replacementTarget.customLoreTopic?.trim() || null,
+            }
           : null,
       })),
       additionalClassTrainingChoices: form.value.additionalClassTrainingChoices.map((choice) => ({
@@ -1388,7 +1416,35 @@ async function loadCatalogs(): Promise<void> {
   isLoadingCatalogs.value = true
   errorMessages.value = []
   try {
-    const [ancestryCatalog, backgroundCatalog, classCatalog, equipmentCatalog, classKitCatalog, racketCatalog, huntersEdgeCatalog, druidicOrderCatalog, bardMuseCatalog, witchPatronCatalog, arcaneSchoolCatalog, arcaneThesisCatalog, doctrineCatalog, deityCatalog, clericDomainCatalog, skillCatalog, ancestryFeatCatalog, skillFeatCatalog, classFeatCatalog, arcaneCantripCatalog, arcaneRankOneSpellCatalog, divineCantripCatalog, divineRankOneSpellCatalog, occultCantripCatalog, occultRankOneSpellCatalog, primalCantripCatalog, primalRankOneSpellCatalog] = await Promise.all([
+    const [
+      ancestryCatalog,
+      backgroundCatalog,
+      classCatalog,
+      equipmentCatalog,
+      classKitCatalog,
+      racketCatalog,
+      huntersEdgeCatalog,
+      druidicOrderCatalog,
+      bardMuseCatalog,
+      witchPatronCatalog,
+      arcaneSchoolCatalog,
+      arcaneThesisCatalog,
+      doctrineCatalog,
+      deityCatalog,
+      clericDomainCatalog,
+      skillCatalog,
+      ancestryFeatCatalog,
+      skillFeatCatalog,
+      classFeatCatalog,
+      arcaneCantripCatalog,
+      arcaneRankOneSpellCatalog,
+      divineCantripCatalog,
+      divineRankOneSpellCatalog,
+      occultCantripCatalog,
+      occultRankOneSpellCatalog,
+      primalCantripCatalog,
+      primalRankOneSpellCatalog,
+    ] = await Promise.all([
       getAncestries(),
       getBackgrounds(),
       getCharacterClasses(),
@@ -1474,8 +1530,8 @@ watch(
   () => classFeatChoiceSlots.value.map((slot) => slot.sourceId).join('|'),
   () => {
     const sourceIds = new Set(classFeatChoiceSlots.value.map((slot) => slot.sourceId))
-    form.value.classFeatChoices = form.value.classFeatChoices.filter(
-      (choice) => sourceIds.has(choice.sourceId),
+    form.value.classFeatChoices = form.value.classFeatChoices.filter((choice) =>
+      sourceIds.has(choice.sourceId),
     )
   },
 )
@@ -1494,7 +1550,19 @@ watch(
     <v-progress-linear :model-value="(step / 11) * 100" color="accent" height="8" rounded />
     <ol class="steps">
       <li
-        v-for="(item, index) in [t('wizard.basic'), t('wizard.ancestry'), t('wizard.choices'), t('wizard.boosts'), t('wizard.background'), t('classUi.characterClass'), t('classUi.spells'), t('wizard.finalFreeBoosts'), t('classUi.classTraining'), t('equipment.title'), t('wizard.review')]"
+        v-for="(item, index) in [
+          t('wizard.basic'),
+          t('wizard.ancestry'),
+          t('wizard.choices'),
+          t('wizard.boosts'),
+          t('wizard.background'),
+          t('classUi.characterClass'),
+          t('classUi.spells'),
+          t('wizard.finalFreeBoosts'),
+          t('classUi.classTraining'),
+          t('equipment.title'),
+          t('wizard.review'),
+        ]"
         :key="item"
         :class="{ active: step === index + 1, complete: step > index + 1 }"
       >
@@ -1506,7 +1574,8 @@ watch(
     }}</v-alert
     ><v-card elevation="0" class="wizard-card"
       ><v-card-text v-if="isLoadingCatalogs"
-        ><v-progress-circular indeterminate color="accent" /> {{ t('wizard.loadingCatalogs') }}</v-card-text
+        ><v-progress-circular indeterminate color="accent" />
+        {{ t('wizard.loadingCatalogs') }}</v-card-text
       ><v-card-text v-else
         ><section v-if="step === 1">
           <h2>{{ t('wizard.basic') }}</h2>
@@ -1523,7 +1592,12 @@ watch(
             maxlength="1000"
             :hint="t('wizard.conceptHint')"
             persistent-hint
-          /><v-text-field v-model.number="form.age" :label="t('wizard.age')" type="number" min="1" />
+          /><v-text-field
+            v-model.number="form.age"
+            :label="t('wizard.age')"
+            type="number"
+            min="1"
+          />
           <v-radio-group
             v-model="form.gender"
             :label="t('wizard.gender')"
@@ -1543,8 +1617,13 @@ watch(
                 ><div>
                   <strong>{{ getAncestryLabel(ancestry.type) }}</strong>
                   <p class="radio-detail">
-                    {{ ancestry.baseHitPoints }} HP · {{ t('wizard.speed', { speed: ancestry.baseSpeed }) }} ·
-                    {{ t('wizard.fixedBoosts', { count: ancestry.abilityBoosts.filter((boost) => !boost.isFree).length }) }}
+                    {{ ancestry.baseHitPoints }} HP ·
+                    {{ t('wizard.speed', { speed: ancestry.baseSpeed }) }} ·
+                    {{
+                      t('wizard.fixedBoosts', {
+                        count: ancestry.abilityBoosts.filter((boost) => !boost.isFree).length,
+                      })
+                    }}
                   </p>
                 </div></template
               ></v-radio
@@ -1574,7 +1653,13 @@ watch(
         <section v-else-if="step === 4 && selectedAncestry">
           <h2>{{ t('wizard.selectedBoosts') }}</h2>
           <p class="hint">
-            {{ t('wizard.freeBoostsHint', { count: freeBoostSlots, kind: freeBoostSlots === 1 ? t('wizard.oneAbility') : t('wizard.severalAbilities'), boosts: formatAbilities(fixedBoosts) }) }}
+            {{
+              t('wizard.freeBoostsHint', {
+                count: freeBoostSlots,
+                kind: freeBoostSlots === 1 ? t('wizard.oneAbility') : t('wizard.severalAbilities'),
+                boosts: formatAbilities(fixedBoosts),
+              })
+            }}
           </p>
           <v-checkbox
             v-for="code in abilityCodes"
@@ -1645,7 +1730,11 @@ watch(
                 <v-list-item
                   v-else
                   :title="grant.name"
-                  :subtitle="grant.kind === 'SkillFeat' ? `${grant.summary} ${t('wizard.deferredFeat')}` : grant.summary"
+                  :subtitle="
+                    grant.kind === 'SkillFeat'
+                      ? `${grant.summary} ${t('wizard.deferredFeat')}`
+                      : grant.summary
+                  "
                 />
               </template>
             </div>
@@ -1657,15 +1746,15 @@ watch(
           <v-select
             :model-value="form.classId"
             :items="characterClasses"
-            :item-title="(characterClass) => getCharacterClassLabel(characterClass.id, characterClass.name)"
+            :item-title="
+              (characterClass) => getCharacterClassLabel(characterClass.id, characterClass.name)
+            "
             item-value="id"
             :label="t('classUi.characterClass')"
             @update:model-value="selectCharacterClass"
           />
           <template v-if="selectedCharacterClass">
-            <p>
-              {{ t('classUi.baseHitPoints') }}: {{ selectedCharacterClass.baseHitPoints }}
-            </p>
+            <p>{{ t('classUi.baseHitPoints') }}: {{ selectedCharacterClass.baseHitPoints }}</p>
             <v-select
               v-if="selectedCharacterClass.id === 'class.bard'"
               :model-value="form.bardMuseId"
@@ -1681,8 +1770,8 @@ watch(
               type="info"
               variant="tonal"
             >
-              {{ t(`classUi.bardMuseBenefitKinds.${benefit.kind}`) }}:
-              {{ benefit.name }}. {{ t('classUi.deferredEffect') }}
+              {{ t(`classUi.bardMuseBenefitKinds.${benefit.kind}`) }}: {{ benefit.name }}.
+              {{ t('classUi.deferredEffect') }}
             </v-alert>
             <v-select
               v-if="selectedCharacterClass.id === 'class.witch'"
@@ -1707,8 +1796,8 @@ watch(
               type="info"
               variant="tonal"
             >
-              {{ t(`classUi.witchPatronBenefitKinds.${benefit.kind}`) }}:
-              {{ benefit.name }} — {{ benefit.summary }}
+              {{ t(`classUi.witchPatronBenefitKinds.${benefit.kind}`) }}: {{ benefit.name }} —
+              {{ benefit.summary }}
             </v-alert>
             <v-select
               v-if="selectedCharacterClass.id === 'class.wizard'"
@@ -1733,8 +1822,8 @@ watch(
               type="info"
               variant="tonal"
             >
-              {{ t(`classUi.arcaneSchoolBenefitKinds.${benefit.kind}`) }}:
-              {{ benefit.name }} — {{ benefit.summary }}
+              {{ t(`classUi.arcaneSchoolBenefitKinds.${benefit.kind}`) }}: {{ benefit.name }} —
+              {{ benefit.summary }}
             </v-alert>
             <v-select
               v-if="selectedCharacterClass.id === 'class.wizard'"
@@ -1750,8 +1839,8 @@ watch(
               type="info"
               variant="tonal"
             >
-              {{ t(`classUi.arcaneThesisEffectKinds.${effect.kind}`) }}:
-              {{ effect.name }} — {{ effect.summary }}
+              {{ t(`classUi.arcaneThesisEffectKinds.${effect.kind}`) }}: {{ effect.name }} —
+              {{ effect.summary }}
               {{
                 t('classUi.arcaneThesisMilestones', {
                   levels: formatArcaneThesisMilestones(effect.milestoneLevels),
@@ -1783,8 +1872,8 @@ watch(
               type="info"
               variant="tonal"
             >
-              {{ t(`classUi.druidicOrderBenefitKinds.${benefit.kind}`) }}:
-              {{ benefit.name }}. {{ t('classUi.deferredEffect') }}
+              {{ t(`classUi.druidicOrderBenefitKinds.${benefit.kind}`) }}: {{ benefit.name }}.
+              {{ t('classUi.deferredEffect') }}
             </v-alert>
             <v-select
               v-if="selectedCharacterClass.id === 'class.ranger'"
@@ -1799,7 +1888,8 @@ watch(
               :key="effect.id"
               type="info"
               variant="tonal"
-            >{{ effect.name }}: {{ effect.summary }} {{ t('classUi.deferredEffect') }}</v-alert>
+              >{{ effect.name }}: {{ effect.summary }} {{ t('classUi.deferredEffect') }}</v-alert
+            >
             <v-select
               v-if="selectedCharacterClass.id === 'class.rogue'"
               :model-value="form.rogueRacketId"
@@ -1872,7 +1962,11 @@ watch(
                 item-title="name"
                 item-value="id"
                 :label="t('classUi.deitySkillReplacement')"
-                :hint="t('classUi.deitySkillConflict', { skill: getSkillName(selectedDeity?.divineSkillId ?? null) })"
+                :hint="
+                  t('classUi.deitySkillConflict', {
+                    skill: getSkillName(selectedDeity?.divineSkillId ?? null),
+                  })
+                "
                 persistent-hint
               />
               <v-alert v-if="selectedDeity" type="info" variant="tonal">
@@ -1881,7 +1975,11 @@ watch(
                 {{ selectedDeity.favoredWeapons.map((weapon) => weapon.name).join(', ') }}.
                 {{ t('classUi.domains') }}: {{ selectedDeity.primaryDomainIds.join(', ') }}.
                 {{ t('classUi.grantedSpells') }}:
-                {{ selectedDeity.grantedSpells.map((spell) => `${spell.rank}: ${spell.name}`).join(', ') }}.
+                {{
+                  selectedDeity.grantedSpells
+                    .map((spell) => `${spell.rank}: ${spell.name}`)
+                    .join(', ')
+                }}.
                 {{ t('classUi.deferredDeityBenefits') }}
               </v-alert>
             </template>
@@ -1909,17 +2007,37 @@ watch(
                   :items="grant.options"
                   :item-title="getSkillName"
                   :label="t('classUi.racketSkill')"
-                  @update:model-value="(value) => { const choice = getRogueChoice(grant.id); if (choice) { choice.selectedSkillId = value; choice.replacementSkillId = null } }"
+                  @update:model-value="
+                    (value) => {
+                      const choice = getRogueChoice(grant.id)
+                      if (choice) {
+                        choice.selectedSkillId = value
+                        choice.replacementSkillId = null
+                      }
+                    }
+                  "
                 />
                 <p v-else>{{ getSkillName(grant.targetId) }}</p>
                 <v-select
-                  v-if="requiresRogueReplacement(grant.id, selectedRogueRacket, form.rogueTrainingChoices, backgroundSkillIds)"
+                  v-if="
+                    requiresRogueReplacement(
+                      grant.id,
+                      selectedRogueRacket,
+                      form.rogueTrainingChoices,
+                      backgroundSkillIds,
+                    )
+                  "
                   :model-value="getRogueChoice(grant.id)?.replacementSkillId"
                   :items="getReplacementOptions(grant.id)"
                   item-title="name"
                   item-value="id"
                   :label="t('classUi.replacementSkill')"
-                  @update:model-value="(value) => { const choice = getRogueChoice(grant.id); if (choice) choice.replacementSkillId = value }"
+                  @update:model-value="
+                    (value) => {
+                      const choice = getRogueChoice(grant.id)
+                      if (choice) choice.replacementSkillId = value
+                    }
+                  "
                 />
               </template>
               <v-alert
@@ -1927,7 +2045,8 @@ watch(
                 :key="effect.id"
                 type="info"
                 variant="tonal"
-              >{{ effect.name }}: {{ effect.summary }}</v-alert>
+                >{{ effect.name }}: {{ effect.summary }}</v-alert
+              >
             </div>
             <div v-if="selectedClericDoctrine" class="rogue-training">
               <v-alert
@@ -1935,8 +2054,10 @@ watch(
                 :key="effect.id"
                 type="info"
                 variant="tonal"
-              >{{ effect.name }}: {{ effect.summary }}
-                <template v-if="effect.deferredDependencies.length">{{ t('classUi.deferredEffect') }}</template>
+                >{{ effect.name }}: {{ effect.summary }}
+                <template v-if="effect.deferredDependencies.length">{{
+                  t('classUi.deferredEffect')
+                }}</template>
               </v-alert>
             </div>
             <v-list density="compact" :subheader="t('classUi.initialProficiencies')">
@@ -1944,7 +2065,11 @@ watch(
                 v-for="group in groupProficiencies(effectiveClassProficiencies)"
                 :key="group.category"
                 :title="getProficiencyCategoryLabel(group.category)"
-                :subtitle="group.items.map((item) => formatProficiency(item, getProficiencyRankLabel)).join(', ')"
+                :subtitle="
+                  group.items
+                    .map((item) => formatProficiency(item, getProficiencyRankLabel))
+                    .join(', ')
+                "
               />
             </v-list>
             <v-list density="compact" :subheader="t('classUi.rules')">
@@ -1952,7 +2077,11 @@ watch(
                 v-for="rule in selectedCharacterClass.rules"
                 :key="rule.id"
                 :title="rule.name"
-                :subtitle="rule.deferredDependencies.length ? `${rule.summary} ${t('classUi.deferredChoice')}` : rule.summary"
+                :subtitle="
+                  rule.deferredDependencies.length
+                    ? `${rule.summary} ${t('classUi.deferredChoice')}`
+                    : rule.summary
+                "
               />
             </v-list>
           </template>
@@ -1984,7 +2113,8 @@ watch(
               :label="t('classUi.clericSpellSlot', { number: index + 1 })"
             />
             <v-alert v-if="form.divineFont" type="info" variant="tonal">
-              {{ t('classUi.divineFontSpells') }}: 4 × {{ t(`classUi.divineFonts.${form.divineFont}`) }}
+              {{ t('classUi.divineFontSpells') }}: 4 ×
+              {{ t(`classUi.divineFonts.${form.divineFont}`) }}
             </v-alert>
           </template>
           <template v-else-if="selectedCharacterClass?.id === 'class.bard'">
@@ -2015,7 +2145,10 @@ watch(
             />
             <v-alert v-if="selectedBardMuse" type="info" variant="tonal">
               {{ t('classUi.museGrantedSpell') }}:
-              {{ selectedBardMuse.benefits.find((benefit) => benefit.kind === 'RepertoireSpell')?.name }}
+              {{
+                selectedBardMuse.benefits.find((benefit) => benefit.kind === 'RepertoireSpell')
+                  ?.name
+              }}
             </v-alert>
             <v-alert type="info" variant="tonal">
               {{ t('classUi.bardCompositionSummary') }}
@@ -2150,59 +2283,82 @@ watch(
             <v-select
               v-model="form.wizardSpellbookCantripIds"
               :items="wizardSpellOptions.cantrips"
-              item-title="name" item-value="id"
+              item-title="name"
+              item-value="id"
               :label="t('classUi.wizardSpellbookCantrips')"
-              multiple chips closable-chips :counter="10"
+              multiple
+              chips
+              closable-chips
+              :counter="10"
             />
             <v-select
               v-model="form.wizardSpellbookSpellIds"
               :items="wizardSpellOptions.rankOneSpells"
-              item-title="name" item-value="id"
-              :label="t('classUi.wizardSpellbookSpells', { count: selectedArcaneSchool?.hasCurriculum ? 5 : 6 })"
-              multiple chips closable-chips
+              item-title="name"
+              item-value="id"
+              :label="
+                t('classUi.wizardSpellbookSpells', {
+                  count: selectedArcaneSchool?.hasCurriculum ? 5 : 6,
+                })
+              "
+              multiple
+              chips
+              closable-chips
               :counter="selectedArcaneSchool?.hasCurriculum ? 5 : 6"
             />
             <template v-if="selectedArcaneSchool?.hasCurriculum">
               <v-select
                 v-model="form.wizardCurriculumCantripId"
                 :items="wizardCurriculumCantripOptions"
-                item-title="name" item-value="id"
+                item-title="name"
+                item-value="id"
                 :label="t('classUi.wizardCurriculumCantrip')"
               />
               <v-select
                 v-model="form.wizardCurriculumSpellIds"
                 :items="wizardCurriculumRankOneOptions"
-                item-title="name" item-value="id"
+                item-title="name"
+                item-value="id"
                 :label="t('classUi.wizardCurriculumSpells')"
-                multiple chips closable-chips :counter="2"
+                multiple
+                chips
+                closable-chips
+                :counter="2"
               />
             </template>
             <v-select
               v-model="form.wizardPreparedCantripIds"
               :items="selectedWizardSpellbookCantrips"
-              item-title="name" item-value="id"
+              item-title="name"
+              item-value="id"
               :label="t('classUi.wizardPreparedCantrips')"
-              multiple chips closable-chips :counter="5"
+              multiple
+              chips
+              closable-chips
+              :counter="5"
             />
             <v-select
               v-for="(_, index) in form.wizardPreparedSpellIds"
               :key="`wizard-slot-${index}`"
               v-model="form.wizardPreparedSpellIds[index]"
               :items="selectedWizardSpellbookSpells"
-              item-title="name" item-value="id"
+              item-title="name"
+              item-value="id"
               :label="t('classUi.wizardSpellSlot', { number: index + 1 })"
             />
             <template v-if="selectedArcaneSchool?.hasCurriculum">
               <v-select
                 v-model="form.wizardPreparedCurriculumCantripId"
                 :items="wizardCurriculumCantripOptions"
-                item-title="name" item-value="id"
+                item-title="name"
+                item-value="id"
                 :label="t('classUi.wizardCurriculumCantripSlot')"
               />
               <v-select
                 v-model="form.wizardPreparedCurriculumSpellId"
                 :items="wizardCurriculumRankOneOptions"
-                item-title="name" item-value="id"
+                item-title="name"
+                item-value="id"
                 :label="t('classUi.wizardCurriculumSpellSlot')"
               />
             </template>
@@ -2229,10 +2385,12 @@ watch(
           <v-divider class="my-4" />
           <h3>{{ t('wizard.additionalLanguages') }}</h3>
           <p class="hint">
-            {{ t('wizard.additionalLanguagesHint', {
-              selected: form.additionalLanguageIds.length,
-              count: languageSelectionOptions.requiredCount,
-            }) }}
+            {{
+              t('wizard.additionalLanguagesHint', {
+                selected: form.additionalLanguageIds.length,
+                count: languageSelectionOptions.requiredCount,
+              })
+            }}
           </p>
           <v-select
             v-if="languageSelectionOptions.requiredCount > 0"
@@ -2269,7 +2427,15 @@ watch(
               item-title="name"
               item-value="id"
               :label="t('classUi.initialClassSkill')"
-              @update:model-value="(value) => { const choice = getClassGrantChoice(grant.id); if (choice) { choice.selectedSkillId = value; choice.replacementTarget = null } }"
+              @update:model-value="
+                (value) => {
+                  const choice = getClassGrantChoice(grant.id)
+                  if (choice) {
+                    choice.selectedSkillId = value
+                    choice.replacementTarget = null
+                  }
+                }
+              "
             />
             <v-alert v-else type="info" variant="tonal">
               {{ t('classUi.initialClassSkill') }}: {{ getSkillName(grant.skillOptions[0]) }}
@@ -2278,7 +2444,11 @@ watch(
               <p class="hint">{{ t('classUi.classSkillReplacementHint') }}</p>
               <v-select
                 :model-value="getClassGrantChoice(grant.id)?.replacementTarget?.skillId"
-                :items="getClassTrainingSkillOptions(getClassGrantChoice(grant.id)?.replacementTarget ?? null)"
+                :items="
+                  getClassTrainingSkillOptions(
+                    getClassGrantChoice(grant.id)?.replacementTarget ?? null,
+                  )
+                "
                 item-title="name"
                 item-value="id"
                 clearable
@@ -2325,12 +2495,17 @@ watch(
               v-for="item in selectedKitItems.filter((line) => line.definition)"
               :key="item.definition!.id"
               :title="`${item.definition!.name} × ${item.purchaseQuantity * item.definition!.unitsPerPurchase}`"
-              :subtitle="`${item.definition!.priceCopper * item.purchaseQuantity} cp`"
-            />
+            >
+              <template #subtitle>
+                <MoneyText :copper="item.definition!.priceCopper * item.purchaseQuantity" compact />
+              </template>
+            </v-list-item>
           </v-list>
           <h3>{{ t('equipment.equipped') }}</h3>
           <v-checkbox
-            v-for="item in selectedKitItems.filter((line) => ['Weapon', 'Armor', 'Shield'].includes(line.definition?.category ?? ''))"
+            v-for="item in selectedKitItems.filter((line) =>
+              ['Weapon', 'Armor', 'Shield'].includes(line.definition?.category ?? ''),
+            )"
             :key="`equipped-${item.definition!.id}`"
             :model-value="form.equippedEquipmentIds.includes(item.definition!.id)"
             :label="item.definition!.name"
@@ -2349,7 +2524,15 @@ watch(
             />
           </div>
           <v-select
-            v-if="selectedClassKit.optionGroups.flatMap((group) => group.options).some((option) => option.dependency === 'DeityFavoredWeapon' && form.classKitOptionIds.includes(option.id))"
+            v-if="
+              selectedClassKit.optionGroups
+                .flatMap((group) => group.options)
+                .some(
+                  (option) =>
+                    option.dependency === 'DeityFavoredWeapon' &&
+                    form.classKitOptionIds.includes(option.id),
+                )
+            "
             v-model="form.deityFavoredWeaponEquipmentId"
             :items="availableFavoredWeapons"
             item-title="name"
@@ -2357,13 +2540,20 @@ watch(
             :label="t('equipment.favoredWeapon')"
           />
           <v-alert
-            :type="startingEquipmentCostCopper <= selectedClassKit.startingWealthCopper ? 'info' : 'error'"
+            :type="
+              startingEquipmentCostCopper <= selectedClassKit.startingWealthCopper
+                ? 'info'
+                : 'error'
+            "
             variant="tonal"
           >
-            {{ t('equipment.budget', {
-              spent: startingEquipmentCostCopper,
-              remaining: selectedClassKit.startingWealthCopper - startingEquipmentCostCopper,
-            }) }}
+            {{ t('equipment.budgetSpent') }}
+            <MoneyText :copper="startingEquipmentCostCopper" compact />
+            · {{ t('equipment.budgetRemaining') }}
+            <MoneyText
+              :copper="selectedClassKit.startingWealthCopper - startingEquipmentCostCopper"
+              compact
+            />
           </v-alert>
         </section>
         <section v-else-if="step === 11 && selectedAncestry">
@@ -2376,31 +2566,68 @@ watch(
               :title="t('wizard.selectedAncestry')"
               :subtitle="getAncestryLabel(selectedAncestry.type)" /><v-list-item
               :title="t('wizard.heritage')"
-              :subtitle="selectedHeritage ? getAncestryChoiceLabel(selectedHeritage.id, selectedHeritage.name) : ''" /><v-list-item
+              :subtitle="
+                selectedHeritage
+                  ? getAncestryChoiceLabel(selectedHeritage.id, selectedHeritage.name)
+                  : ''
+              " /><v-list-item
               :title="t('wizard.ancestryFeat')"
-              :subtitle="selectedAncestryFeatDefinition ? formatFeatReview(selectedAncestryFeatDefinition, 'Selected', getAncestryLabel(selectedAncestry.type)) : (selectedAncestryFeat ? getAncestryChoiceLabel(selectedAncestryFeat.id, selectedAncestryFeat.name) : '')" /><v-list-item
+              :subtitle="
+                selectedAncestryFeatDefinition
+                  ? formatFeatReview(
+                      selectedAncestryFeatDefinition,
+                      'Selected',
+                      getAncestryLabel(selectedAncestry.type),
+                    )
+                  : selectedAncestryFeat
+                    ? getAncestryChoiceLabel(selectedAncestryFeat.id, selectedAncestryFeat.name)
+                    : ''
+              " /><v-list-item
               :title="t('wizard.selectedBoosts')"
               :subtitle="formatAbilities(form.freeBoosts)" /><v-list-item
               v-if="selectedBackground"
               :title="t('wizard.background')"
-              :subtitle="getBackgroundLabel(selectedBackground.id, selectedBackground.name)" /><v-list-item
+              :subtitle="
+                getBackgroundLabel(selectedBackground.id, selectedBackground.name)
+              " /><v-list-item
               v-if="form.backgroundRestrictedBoost && form.backgroundFreeBoost"
               :title="t('wizard.backgroundBoosts')"
-              :subtitle="formatAbilities([form.backgroundRestrictedBoost, form.backgroundFreeBoost])" /><v-list-item
+              :subtitle="
+                formatAbilities([form.backgroundRestrictedBoost, form.backgroundFreeBoost])
+              " /><v-list-item
               v-if="selectedBackground"
               :title="t('wizard.backgroundTraining')"
-              :subtitle="getBackgroundTrainingLabels(selectedBackground, form.backgroundTrainingChoices).join(', ')" /><v-list-item
+              :subtitle="
+                getBackgroundTrainingLabels(
+                  selectedBackground,
+                  form.backgroundTrainingChoices,
+                ).join(', ')
+              " /><v-list-item
               v-if="selectedBackground && selectedBackgroundFeatDefinition"
               :title="t('feats.backgroundFeat')"
-              :subtitle="formatFeatReview(selectedBackgroundFeatDefinition, 'Granted', getBackgroundLabel(selectedBackground.id, selectedBackground.name))" /><v-list-item
+              :subtitle="
+                formatFeatReview(
+                  selectedBackgroundFeatDefinition,
+                  'Granted',
+                  getBackgroundLabel(selectedBackground.id, selectedBackground.name),
+                )
+              " /><v-list-item
               v-if="selectedCharacterClass"
               :title="t('classUi.characterClass')"
-              :subtitle="getCharacterClassLabel(selectedCharacterClass.id, selectedCharacterClass.name)" />
+              :subtitle="
+                getCharacterClassLabel(selectedCharacterClass.id, selectedCharacterClass.name)
+              " />
             <template v-for="choice in form.classFeatChoices" :key="choice.sourceId">
               <v-list-item
                 v-if="getClassFeatDefinition(choice.featId)"
                 :title="t('feats.classFeat')"
-                :subtitle="formatFeatReview(getClassFeatDefinition(choice.featId)!, 'Selected', choice.sourceId)"
+                :subtitle="
+                  formatFeatReview(
+                    getClassFeatDefinition(choice.featId)!,
+                    'Selected',
+                    choice.sourceId,
+                  )
+                "
               />
             </template>
             <v-list-item
@@ -2433,22 +2660,42 @@ watch(
               :subtitle="selectedWitchPatron.name" /><v-list-item
               v-if="form.witchFamiliarCantripIds.length"
               :title="t('classUi.witchFamiliarCantrips')"
-              :subtitle="selectedWitchFamiliarCantrips.map((spell) => spell.name).join(', ')" /><v-list-item
+              :subtitle="
+                selectedWitchFamiliarCantrips.map((spell) => spell.name).join(', ')
+              " /><v-list-item
               v-if="selectedWitchFamiliarSpells.length"
               :title="t('classUi.witchFamiliarSpells')"
-              :subtitle="selectedWitchFamiliarSpells.map((spell) => spell.name).join(', ')" /><v-list-item
+              :subtitle="
+                selectedWitchFamiliarSpells.map((spell) => spell.name).join(', ')
+              " /><v-list-item
               v-if="form.witchPreparedCantripIds.length"
               :title="t('classUi.witchPreparedCantrips')"
-              :subtitle="form.witchPreparedCantripIds.map((id) => selectedWitchFamiliarCantrips.find((spell) => spell.id === id)?.name).filter(Boolean).join(', ')" /><v-list-item
+              :subtitle="
+                form.witchPreparedCantripIds
+                  .map((id) => selectedWitchFamiliarCantrips.find((spell) => spell.id === id)?.name)
+                  .filter(Boolean)
+                  .join(', ')
+              " /><v-list-item
               v-if="form.witchPreparedSpellIds.some(Boolean)"
               :title="t('classUi.witchPreparedSpells')"
-              :subtitle="form.witchPreparedSpellIds.map((id) => witchKnownRankOneOptions.find((spell) => spell.id === id)?.name).filter(Boolean).join(', ')" /><v-list-item
+              :subtitle="
+                form.witchPreparedSpellIds
+                  .map((id) => witchKnownRankOneOptions.find((spell) => spell.id === id)?.name)
+                  .filter(Boolean)
+                  .join(', ')
+              " /><v-list-item
               v-if="form.witchFocusHexId"
               :title="t('classUi.witchFocusHex')"
-              :subtitle="selectedWitchPatron?.initialFocusHexOptions.find((spell) => spell.id === form.witchFocusHexId)?.name" /><v-list-item
+              :subtitle="
+                selectedWitchPatron?.initialFocusHexOptions.find(
+                  (spell) => spell.id === form.witchFocusHexId,
+                )?.name
+              " /><v-list-item
               v-if="selectedWitchPatron"
               :title="t('classUi.spellTradition')"
-              :subtitle="t(`classUi.spellTraditions.${selectedWitchPatron.spellTradition}`)" /><v-list-item
+              :subtitle="
+                t(`classUi.spellTraditions.${selectedWitchPatron.spellTradition}`)
+              " /><v-list-item
               v-for="benefit in selectedWitchPatron?.benefits ?? []"
               :key="`review-${benefit.id}`"
               :title="t(`classUi.witchPatronBenefitKinds.${benefit.kind}`)"
@@ -2458,22 +2705,51 @@ watch(
               :subtitle="selectedArcaneSchool.name" /><v-list-item
               v-if="form.wizardSpellbookCantripIds.length"
               :title="t('classUi.wizardSpellbookCantrips')"
-              :subtitle="selectedWizardSpellbookCantrips.map((spell) => spell.name).join(', ')" /><v-list-item
+              :subtitle="
+                selectedWizardSpellbookCantrips.map((spell) => spell.name).join(', ')
+              " /><v-list-item
               v-if="form.wizardSpellbookSpellIds.length"
-              :title="t('classUi.wizardSpellbookSpells', { count: form.wizardSpellbookSpellIds.length })"
-              :subtitle="selectedWizardSpellbookSpells.map((spell) => spell.name).join(', ')" /><v-list-item
+              :title="
+                t('classUi.wizardSpellbookSpells', { count: form.wizardSpellbookSpellIds.length })
+              "
+              :subtitle="
+                selectedWizardSpellbookSpells.map((spell) => spell.name).join(', ')
+              " /><v-list-item
               v-if="form.wizardCurriculumCantripId"
               :title="t('classUi.wizardCurriculumCantrip')"
-              :subtitle="wizardCurriculumCantripOptions.find((spell) => spell.id === form.wizardCurriculumCantripId)?.name" /><v-list-item
+              :subtitle="
+                wizardCurriculumCantripOptions.find(
+                  (spell) => spell.id === form.wizardCurriculumCantripId,
+                )?.name
+              " /><v-list-item
               v-if="form.wizardCurriculumSpellIds.length"
               :title="t('classUi.wizardCurriculumSpells')"
-              :subtitle="form.wizardCurriculumSpellIds.map((id) => wizardCurriculumRankOneOptions.find((spell) => spell.id === id)?.name).filter(Boolean).join(', ')" /><v-list-item
+              :subtitle="
+                form.wizardCurriculumSpellIds
+                  .map(
+                    (id) => wizardCurriculumRankOneOptions.find((spell) => spell.id === id)?.name,
+                  )
+                  .filter(Boolean)
+                  .join(', ')
+              " /><v-list-item
               v-if="form.wizardPreparedCantripIds.length"
               :title="t('classUi.wizardPreparedCantrips')"
-              :subtitle="form.wizardPreparedCantripIds.map((id) => selectedWizardSpellbookCantrips.find((spell) => spell.id === id)?.name).filter(Boolean).join(', ')" /><v-list-item
+              :subtitle="
+                form.wizardPreparedCantripIds
+                  .map(
+                    (id) => selectedWizardSpellbookCantrips.find((spell) => spell.id === id)?.name,
+                  )
+                  .filter(Boolean)
+                  .join(', ')
+              " /><v-list-item
               v-if="form.wizardPreparedSpellIds.some(Boolean)"
               :title="t('classUi.wizardSpellSlot', { number: '1–2' })"
-              :subtitle="form.wizardPreparedSpellIds.map((id) => selectedWizardSpellbookSpells.find((spell) => spell.id === id)?.name).filter(Boolean).join(', ')" /><v-list-item
+              :subtitle="
+                form.wizardPreparedSpellIds
+                  .map((id) => selectedWizardSpellbookSpells.find((spell) => spell.id === id)?.name)
+                  .filter(Boolean)
+                  .join(', ')
+              " /><v-list-item
               v-for="benefit in selectedArcaneSchool?.benefits ?? []"
               :key="`review-school-${benefit.id}`"
               :title="t(`classUi.arcaneSchoolBenefitKinds.${benefit.kind}`)"
@@ -2488,7 +2764,11 @@ watch(
               v-for="benefit in selectedBardMuse?.benefits ?? []"
               :key="`review-${benefit.id}`"
               :title="t(`classUi.bardMuseBenefitKinds.${benefit.kind}`)"
-              :subtitle="benefit.kind === 'RepertoireSpell' ? benefit.name : `${benefit.name}. ${t('classUi.deferredEffect')}`" /><v-list-item
+              :subtitle="
+                benefit.kind === 'RepertoireSpell'
+                  ? benefit.name
+                  : `${benefit.name}. ${t('classUi.deferredEffect')}`
+              " /><v-list-item
               v-if="selectedBardCantrips.length"
               :title="t('classUi.bardCantrips')"
               :subtitle="selectedBardCantrips.map((spell) => spell.name).join(', ')" /><v-list-item
@@ -2515,10 +2795,14 @@ watch(
               :subtitle="t(`classUi.divineFonts.${form.divineFont}`)" /><v-list-item
               v-if="selectedClericCantrips.length"
               :title="t('classUi.clericCantrips')"
-              :subtitle="selectedClericCantrips.map((spell) => spell.name).join(', ')" /><v-list-item
+              :subtitle="
+                selectedClericCantrips.map((spell) => spell.name).join(', ')
+              " /><v-list-item
               v-if="selectedClericPreparedSpells.length"
               :title="t('classUi.clericPreparedSpells')"
-              :subtitle="selectedClericPreparedSpells.map((spell) => spell.name).join(', ')" /><v-list-item
+              :subtitle="
+                selectedClericPreparedSpells.map((spell) => spell.name).join(', ')
+              " /><v-list-item
               v-if="form.divineFont"
               :title="t('classUi.divineFontSpells')"
               :subtitle="`4 × ${t(`classUi.divineFonts.${form.divineFont}`)}`" /><v-list-item
@@ -2527,22 +2811,39 @@ watch(
               :subtitle="selectedDeity.primaryDomainIds.join(', ')" /><v-list-item
               v-if="selectedCharacterClass"
               :title="t('classUi.initialProficiencies')"
-              :subtitle="groupProficiencies(effectiveClassProficiencies).map((group) => getProficiencyCategoryLabel(group.category)).join(', ')" /><v-list-item
+              :subtitle="
+                groupProficiencies(effectiveClassProficiencies)
+                  .map((group) => getProficiencyCategoryLabel(group.category))
+                  .join(', ')
+              " /><v-list-item
               :title="t('wizard.finalFreeBoosts')"
               :subtitle="formatAbilities(form.finalFreeBoosts)" /><v-list-item
               :title="t('wizard.additionalLanguages')"
-              :subtitle="selectedAdditionalLanguages.map((language) => language.name).join(', ') || t('wizard.none')" /><v-list-item
+              :subtitle="
+                selectedAdditionalLanguages.map((language) => language.name).join(', ') ||
+                t('wizard.none')
+              " /><v-list-item
               :title="t('classUi.classTraining')"
               :subtitle="classTrainingLabels.join(', ')" /><v-list-item
               v-if="selectedClassKit"
               :title="t('equipment.title')"
-              :subtitle="`${selectedKitItems.map((item) => `${item.definition?.name} × ${item.purchaseQuantity * (item.definition?.unitsPerPurchase ?? 1)}`).join(', ')} · ${startingEquipmentCostCopper} cp`" /><v-list-item
+            >
+              <template #subtitle>
+                {{
+                  selectedKitItems
+                    .map(
+                      (item) =>
+                        `${item.definition?.name} × ${item.purchaseQuantity * (item.definition?.unitsPerPurchase ?? 1)}`,
+                    )
+                    .join(', ')
+                }}
+                · <MoneyText :copper="startingEquipmentCostCopper" compact />
+              </template> </v-list-item
+            ><v-list-item
               v-if="form.concept"
               :title="t('wizard.selectedConcept')"
               :subtitle="form.concept" /></v-list
-          ><v-alert type="info" variant="tonal"
-            >{{ t('wizard.resultHint') }}</v-alert
-          >
+          ><v-alert type="info" variant="tonal">{{ t('wizard.resultHint') }}</v-alert>
           <div class="ability-preview">
             <div v-for="code in abilityCodes" :key="code">
               <span>{{ getAbilityLabel(code) }}</span>
@@ -2553,7 +2854,9 @@ watch(
       ></v-card
     >
     <footer>
-      <v-btn variant="text" :disabled="step === 1 || isSubmitting" @click="previous">{{ t('common.back') }}</v-btn
+      <v-btn variant="text" :disabled="step === 1 || isSubmitting" @click="previous">{{
+        t('common.back')
+      }}</v-btn
       ><v-spacer /><v-btn
         v-if="step < 11"
         color="primary"
@@ -2567,9 +2870,9 @@ watch(
         "
         @click="next"
         >{{ t('common.next') }}</v-btn
-      ><v-btn v-else color="accent" :loading="isSubmitting" @click="submit"
-        >{{ t('wizard.create') }}</v-btn
-      >
+      ><v-btn v-else color="accent" :loading="isSubmitting" @click="submit">{{
+        t('wizard.create')
+      }}</v-btn>
     </footer>
   </section>
 </template>
