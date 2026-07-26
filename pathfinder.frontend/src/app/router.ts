@@ -5,7 +5,6 @@ import LoginView from '@/views/LoginView.vue'
 import RegisterView from '@/views/RegisterView.vue'
 import CharacterDetailsView from '@/views/CharacterDetailsView.vue'
 import CharacterCreateView from '@/views/CharacterCreateView.vue'
-import CampaignsView from '@/views/CampaignsView.vue'
 import { useAuthStore } from '@/features/auth/store'
 
 const routes: RouteRecordRaw[] = [
@@ -46,8 +45,14 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/campaigns',
     name: 'campaigns',
-    component: CampaignsView,
+    component: () => import('@/views/CampaignsView.vue'),
     meta: { title: 'routes.campaigns', requiresAuth: true },
+  },
+  {
+    path: '/campaigns/:campaignId(\\d+)',
+    name: 'campaign-details',
+    component: () => import('@/views/CampaignDetailsView.vue'),
+    meta: { title: 'routes.campaignDetails', requiresAuth: true },
   },
   {
     path: '/:pathMatch(.*)*',

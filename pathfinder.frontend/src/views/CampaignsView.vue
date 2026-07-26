@@ -1,161 +1,48 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
 import { getApiErrorMessages } from '@/api/errors'
 import {
-  archiveCampaign,
-  assignCampaignPartyCharacter,
-  changeCampaignRole,
   createCampaign,
-  createCampaignParty,
-  getCampaignCharacters,
   getCampaignInvitations,
   getCampaigns,
-  inviteCampaignMember,
-  leaveCampaign,
   respondToCampaignInvitation,
   type Campaign,
-  type CampaignCharacterReference,
   type CampaignInvitation,
 } from '@/features/campaigns/api'
 import {
   campaignNameMaxLength,
   isCampaignNameValid,
-  isCampaignUserNameValid,
   normalizeCampaignName,
 } from '@/features/campaigns/validation'
 
 const { t } = useI18n()
+const route = useRoute()
 const campaigns = ref<Campaign[]>([])
 const invitations = ref<CampaignInvitation[]>([])
-const characters = ref<CampaignCharacterReference[]>([])
 const campaignName = ref('')
-const invitedUserNames = ref<Record<number, string>>({})
-const partyNames = ref<Record<number, string>>({})
-const partyCharacterIds = ref<Record<number, number | null>>({})
-const partyControllerIds = ref<Record<number, number | null>>({})
 const errorMessages = ref<string[]>([])
 const isLoading = ref(true)
 const isSaving = ref(false)
-const archivingCampaignId = ref<number | null>(null)
-const invitingCampaignId = ref<number | null>(null)
 const respondingInvitationId = ref<number | null>(null)
-const leavingCampaignId = ref<number | null>(null)
-const changingRoleKey = ref<string | null>(null)
-const changingPartyCampaignId = ref<number | null>(null)
+const showAccessNotice = ref(route.query.error === 'campaign-access')
 const canCreate = computed(() => isCampaignNameValid(campaignName.value) && !isSaving.value)
 
 async function loadCampaigns(): Promise<void> {
   isLoading.value = true
   errorMessages.value = []
   try {
-    const [campaignItems, invitationItems, characterItems] = await Promise.all([
+    const [campaignItems, invitationItems] = await Promise.all([
       getCampaigns(),
       getCampaignInvitations(),
-      getCampaignCharacters(),
     ])
     campaigns.value = campaignItems
     invitations.value = invitationItems
-    characters.value = characterItems
   } catch (error) {
     errorMessages.value = getApiErrorMessages(error)
   } finally {
     isLoading.value = false
-  }
-}
-
-function isGameMaster(campaign: Campaign): boolean {
-  return campaign.roles.includes('GameMaster')
-}
-
-function canInvite(campaignId: number): boolean {
-  return isCampaignUserNameValid(invitedUserNames.value[campaignId] ?? '')
-}
-
-function activeParty(campaign: Campaign) {
-  return campaign.parties.find((party) => party.status === 'Active')
-}
-
-function playerMembers(campaign: Campaign) {
-  return campaign.members.filter((member) => member.roles.includes('Player'))
-}
-
-function characterName(characterId: number): string {
-  return characters.value.find((character) => character.id === characterId)?.name ?? `#${characterId}`
-}
-
-function replaceCampaign(updatedCampaign: Campaign): void {
-  const existingIndex = campaigns.value.findIndex((campaign) => campaign.id === updatedCampaign.id)
-  if (existingIndex < 0) {
-    campaigns.value = [updatedCampaign, ...campaigns.value]
-    return
-  }
-
-  campaigns.value = campaigns.value.map((campaign) =>
-    campaign.id === updatedCampaign.id ? updatedCampaign : campaign,
-  )
-}
-
-async function invite(campaign: Campaign): Promise<void> {
-  const userName = invitedUserNames.value[campaign.id] ?? ''
-  if (!isCampaignUserNameValid(userName)) {
-    return
-  }
-
-  invitingCampaignId.value = campaign.id
-  errorMessages.value = []
-  try {
-    await inviteCampaignMember(campaign.id, userName.trim())
-    invitedUserNames.value[campaign.id] = ''
-  } catch (error) {
-    errorMessages.value = getApiErrorMessages(error)
-  } finally {
-    invitingCampaignId.value = null
-  }
-}
-
-async function respond(invitation: CampaignInvitation, accept: boolean): Promise<void> {
-  respondingInvitationId.value = invitation.id
-  errorMessages.value = []
-  try {
-    const campaign = await respondToCampaignInvitation(invitation.id, accept)
-    invitations.value = invitations.value.filter((item) => item.id !== invitation.id)
-    if (campaign) {
-      replaceCampaign(campaign)
-    }
-  } catch (error) {
-    errorMessages.value = getApiErrorMessages(error)
-  } finally {
-    respondingInvitationId.value = null
-  }
-}
-
-async function leave(campaign: Campaign): Promise<void> {
-  leavingCampaignId.value = campaign.id
-  errorMessages.value = []
-  try {
-    await leaveCampaign(campaign.id)
-    campaigns.value = campaigns.value.filter((item) => item.id !== campaign.id)
-  } catch (error) {
-    errorMessages.value = getApiErrorMessages(error)
-  } finally {
-    leavingCampaignId.value = null
-  }
-}
-
-async function toggleGameMaster(
-  campaign: Campaign,
-  memberUserId: number,
-  assign: boolean,
-): Promise<void> {
-  changingRoleKey.value = `${campaign.id}:${memberUserId}`
-  errorMessages.value = []
-  try {
-    replaceCampaign(await changeCampaignRole(campaign.id, memberUserId, 'GameMaster', assign))
-  } catch (error) {
-    errorMessages.value = getApiErrorMessages(error)
-  } finally {
-    changingRoleKey.value = null
   }
 }
 
@@ -177,55 +64,19 @@ async function submitCampaign(): Promise<void> {
   }
 }
 
-async function createParty(campaign: Campaign): Promise<void> {
-  const name = partyNames.value[campaign.id]?.trim() ?? ''
-  if (!name) {
-    return
-  }
-
-  changingPartyCampaignId.value = campaign.id
+async function respond(invitation: CampaignInvitation, accept: boolean): Promise<void> {
+  respondingInvitationId.value = invitation.id
   errorMessages.value = []
   try {
-    replaceCampaign(await createCampaignParty(campaign.id, name))
-    partyNames.value[campaign.id] = ''
+    const campaign = await respondToCampaignInvitation(invitation.id, accept)
+    invitations.value = invitations.value.filter((item) => item.id !== invitation.id)
+    if (campaign) {
+      campaigns.value = [campaign, ...campaigns.value.filter((item) => item.id !== campaign.id)]
+    }
   } catch (error) {
     errorMessages.value = getApiErrorMessages(error)
   } finally {
-    changingPartyCampaignId.value = null
-  }
-}
-
-async function assignCharacter(campaign: Campaign): Promise<void> {
-  const characterId = partyCharacterIds.value[campaign.id]
-  if (!characterId) {
-    return
-  }
-
-  const controllerId = partyControllerIds.value[campaign.id] ?? undefined
-  changingPartyCampaignId.value = campaign.id
-  errorMessages.value = []
-  try {
-    replaceCampaign(await assignCampaignPartyCharacter(campaign.id, characterId, controllerId))
-    partyCharacterIds.value[campaign.id] = null
-  } catch (error) {
-    errorMessages.value = getApiErrorMessages(error)
-  } finally {
-    changingPartyCampaignId.value = null
-  }
-}
-
-async function archive(campaign: Campaign): Promise<void> {
-  archivingCampaignId.value = campaign.id
-  errorMessages.value = []
-  try {
-    const updatedCampaign = await archiveCampaign(campaign.id)
-    campaigns.value = campaigns.value.map((item) =>
-      item.id === updatedCampaign.id ? updatedCampaign : item,
-    )
-  } catch (error) {
-    errorMessages.value = getApiErrorMessages(error)
-  } finally {
-    archivingCampaignId.value = null
+    respondingInvitationId.value = null
   }
 }
 
@@ -240,28 +91,26 @@ onMounted(loadCampaigns)
       <p class="lead">{{ t('campaigns.lead') }}</p>
     </header>
 
-    <v-card class="create-card" elevation="0">
+    <v-card class="outlined-card" elevation="0">
       <v-card-title>{{ t('campaigns.createTitle') }}</v-card-title>
       <v-card-text>
-        <v-form @submit.prevent="submitCampaign">
-          <div class="create-form">
-            <v-text-field
-              v-model="campaignName"
-              :counter="campaignNameMaxLength"
-              :label="t('campaigns.name')"
-              :maxlength="campaignNameMaxLength"
-              hide-details="auto"
-            />
-            <v-btn
-              color="accent"
-              :disabled="!canCreate"
-              :loading="isSaving"
-              prepend-icon="mdi-map-plus"
-              size="large"
-              type="submit"
-              >{{ t('campaigns.create') }}</v-btn
-            >
-          </div>
+        <v-form class="create-form" @submit.prevent="submitCampaign">
+          <v-text-field
+            v-model="campaignName"
+            :counter="campaignNameMaxLength"
+            :label="t('campaigns.name')"
+            :maxlength="campaignNameMaxLength"
+            hide-details="auto"
+          />
+          <v-btn
+            color="accent"
+            :disabled="!canCreate"
+            :loading="isSaving"
+            prepend-icon="mdi-map-plus"
+            size="large"
+            type="submit"
+            >{{ t('campaigns.create') }}</v-btn
+          >
         </v-form>
       </v-card-text>
     </v-card>
@@ -274,7 +123,7 @@ onMounted(loadCampaigns)
       </template>
     </v-alert>
 
-    <v-card v-if="invitations.length" class="invitations-card" elevation="0">
+    <v-card v-if="invitations.length" class="outlined-card" elevation="0">
       <v-card-title>{{ t('campaigns.invitationsTitle') }}</v-card-title>
       <v-list>
         <v-list-item v-for="invitation in invitations" :key="invitation.id">
@@ -283,7 +132,7 @@ onMounted(loadCampaigns)
             {{ t('campaigns.invitedBy', { userId: invitation.invitedByUserId }) }}
           </v-list-item-subtitle>
           <template #append>
-            <div class="invitation-actions">
+            <div class="actions">
               <v-btn
                 color="primary"
                 :loading="respondingInvitationId === invitation.id"
@@ -306,7 +155,7 @@ onMounted(loadCampaigns)
 
     <v-card
       v-if="!isLoading && !errorMessages.length && !campaigns.length"
-      class="empty-state"
+      class="outlined-card"
       elevation="0"
     >
       <v-card-item prepend-icon="mdi-map-outline">
@@ -316,170 +165,33 @@ onMounted(loadCampaigns)
     </v-card>
 
     <div v-if="!isLoading" class="campaign-grid">
-      <v-card v-for="campaign in campaigns" :key="campaign.id" elevation="0">
+      <v-card
+        v-for="campaign in campaigns"
+        :key="campaign.id"
+        class="campaign-card"
+        elevation="0"
+        :to="{
+          name: 'campaign-details',
+          params: { campaignId: campaign.id },
+          query: { tab: 'overview' },
+        }"
+      >
         <v-card-item prepend-icon="mdi-map-marker-path">
           <v-card-title>{{ campaign.name }}</v-card-title>
           <v-card-subtitle>{{ t(`campaigns.statuses.${campaign.status}`) }}</v-card-subtitle>
         </v-card-item>
-        <v-card-text class="campaign-details">
-          <v-chip
-            v-for="role in campaign.roles"
-            :key="role"
-            color="secondary"
-            size="small"
-            variant="tonal"
-            >{{ t(`campaigns.roles.${role}`) }}</v-chip
-          >
-          <div class="member-list">
-            <p class="member-list__title">{{ t('campaigns.members') }}</p>
-            <div v-for="member in campaign.members" :key="member.userId" class="member-row">
-              <span>{{ t('campaigns.userId', { userId: member.userId }) }}</span>
-              <v-chip v-for="role in member.roles" :key="role" size="x-small" variant="outlined">{{
-                t(`campaigns.roles.${role}`)
-              }}</v-chip>
-              <v-btn
-                v-if="isGameMaster(campaign)"
-                :loading="changingRoleKey === `${campaign.id}:${member.userId}`"
-                size="x-small"
-                variant="text"
-                @click="
-                  toggleGameMaster(campaign, member.userId, !member.roles.includes('GameMaster'))
-                "
-                >{{
-                  member.roles.includes('GameMaster')
-                    ? t('campaigns.revokeGameMaster')
-                    : t('campaigns.assignGameMaster')
-                }}</v-btn
-              >
-            </div>
-          </div>
-          <v-form
-            v-if="campaign.status === 'Active' && isGameMaster(campaign)"
-            class="invite-form"
-            @submit.prevent="invite(campaign)"
-          >
-            <v-text-field
-              v-model="invitedUserNames[campaign.id]"
-              density="compact"
-              hide-details="auto"
-              :label="t('campaigns.invitedUserName')"
-            />
-            <v-btn
-              :disabled="!canInvite(campaign.id)"
-              :loading="invitingCampaignId === campaign.id"
-              size="small"
-              type="submit"
-              >{{ t('campaigns.invite') }}</v-btn
-            >
-          </v-form>
-          <v-form
-            v-if="campaign.status === 'Active' && isGameMaster(campaign) && !activeParty(campaign)"
-            class="party-form"
-            @submit.prevent="createParty(campaign)"
-          >
-            <v-text-field
-              v-model="partyNames[campaign.id]"
-              density="compact"
-              hide-details="auto"
-              :label="t('campaigns.partyName')"
-            />
-            <v-btn
-              :disabled="!partyNames[campaign.id]?.trim()"
-              :loading="changingPartyCampaignId === campaign.id"
-              size="small"
-              type="submit"
-              >{{ t('campaigns.createParty') }}</v-btn
-            >
-          </v-form>
-          <section v-if="activeParty(campaign)" class="party-panel">
-            <p class="member-list__title">
-              {{ t('campaigns.activeParty', { name: activeParty(campaign)?.name }) }}
-            </p>
-            <v-alert density="compact" type="info" variant="tonal">
-              {{
-                t('campaigns.sharedStorageEmpty', {
-                  storageId: activeParty(campaign)?.storage.id,
-                })
-              }}
-            </v-alert>
-            <div
-              v-for="character in activeParty(campaign)?.characters"
-              :key="character.id"
-              class="member-row"
-            >
-              <v-btn
-                :to="`/characters/${character.characterId}?campaignId=${campaign.id}`"
-                size="small"
-                variant="text"
-              >{{ characterName(character.characterId) }}</v-btn>
-              <v-chip size="x-small" variant="outlined">
-                {{ t('campaigns.controlledBy', { userId: character.controlledByUserId }) }}
-              </v-chip>
-            </div>
-            <v-form class="party-form" @submit.prevent="assignCharacter(campaign)">
-              <v-select
-                v-if="
-                  !partyControllerIds[campaign.id] ||
-                  partyControllerIds[campaign.id] === campaign.currentUserId
-                "
-                v-model="partyCharacterIds[campaign.id]"
-                density="compact"
-                hide-details="auto"
-                item-title="name"
-                item-value="id"
-                :items="characters"
-                :label="t('campaigns.character')"
-              />
-              <v-text-field
-                v-else
-                v-model.number="partyCharacterIds[campaign.id]"
-                density="compact"
-                hide-details="auto"
-                min="1"
-                :label="t('campaigns.characterId')"
-                type="number"
-              />
-              <v-select
-                v-if="isGameMaster(campaign)"
-                v-model="partyControllerIds[campaign.id]"
-                clearable
-                density="compact"
-                hide-details="auto"
-                item-title="userId"
-                item-value="userId"
-                :items="playerMembers(campaign)"
-                :label="t('campaigns.controller')"
-              />
-              <v-btn
-                :disabled="!partyCharacterIds[campaign.id]"
-                :loading="changingPartyCampaignId === campaign.id"
-                size="small"
-                type="submit"
-                >{{ t('campaigns.assignCharacter') }}</v-btn
-              >
-            </v-form>
-          </section>
+        <v-card-text class="campaign-summary">
+          <v-chip v-for="role in campaign.roles" :key="role" size="small" variant="tonal">
+            {{ t(`campaigns.roles.${role}`) }}
+          </v-chip>
+          <span>{{ t('campaigns.memberCount', { count: campaign.members.length }) }}</span>
         </v-card-text>
-        <v-card-actions v-if="campaign.status === 'Active'">
-          <v-btn
-            color="warning"
-            :loading="leavingCampaignId === campaign.id"
-            variant="text"
-            @click="leave(campaign)"
-            >{{ t('campaigns.leave') }}</v-btn
-          >
-          <v-spacer />
-          <v-btn
-            v-if="isGameMaster(campaign)"
-            color="warning"
-            :loading="archivingCampaignId === campaign.id"
-            variant="text"
-            @click="archive(campaign)"
-            >{{ t('campaigns.archive') }}</v-btn
-          >
-        </v-card-actions>
       </v-card>
     </div>
+
+    <v-snackbar v-model="showAccessNotice" color="error">
+      {{ t('campaigns.accessDenied') }}
+    </v-snackbar>
   </section>
 </template>
 
@@ -511,10 +223,8 @@ h1 {
   color: #52606d;
 }
 
-.create-card,
-.invitations-card,
-.empty-state,
-.campaign-grid > * {
+.outlined-card,
+.campaign-card {
   border: 1px solid rgb(var(--v-theme-surface-variant));
 }
 
@@ -531,62 +241,16 @@ h1 {
   gap: 16px;
 }
 
-.campaign-details {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.member-list {
-  display: grid;
-  flex-basis: 100%;
-  gap: 8px;
-}
-
-.member-list__title {
-  margin: 8px 0 0;
-  font-weight: 700;
-}
-
-.member-row,
-.invitation-actions {
+.campaign-summary,
+.actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
 
-.invite-form {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  flex-basis: 100%;
-  gap: 8px;
-  align-items: start;
-}
-
-.party-panel,
-.party-form {
-  display: grid;
-  flex-basis: 100%;
-  gap: 8px;
-}
-
-.party-panel {
-  padding-top: 8px;
-  border-top: 1px solid rgb(var(--v-theme-surface-variant));
-}
-
-.party-form {
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  align-items: start;
-}
-
 @media (max-width: 600px) {
   .create-form {
-    grid-template-columns: 1fr;
-  }
-
-  .invite-form {
     grid-template-columns: 1fr;
   }
 }
