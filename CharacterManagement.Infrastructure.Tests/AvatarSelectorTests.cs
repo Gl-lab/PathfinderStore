@@ -131,6 +131,11 @@ public sealed class AvatarSelectorTests
     [InlineData( "class.fighter", CharacterGender.Male, 2 )]
     [InlineData( "class.fighter", CharacterGender.Female, 2 )]
     [InlineData( "class.ranger", CharacterGender.Male, 2 )]
+    [InlineData( "class.ranger", CharacterGender.Female, 2 )]
+    [InlineData( "class.rogue", CharacterGender.Male, 2 )]
+    [InlineData( "class.rogue", CharacterGender.Female, 2 )]
+    [InlineData( "class.witch", CharacterGender.Male, 2 )]
+    [InlineData( "class.witch", CharacterGender.Female, 2 )]
     public void RuntimeCatalogReturnsOnlyAcceptedElfAssets(
         string characterClassId,
         CharacterGender gender,
@@ -156,8 +161,8 @@ public sealed class AvatarSelectorTests
 
         IReadOnlyList<AvatarDefinition> result = catalog.FindMatches( new AvatarSelectionCriteria(
             AncestryType.Elf,
-            "class.ranger",
-            CharacterGender.Female ) );
+            "class.wizard",
+            CharacterGender.Male ) );
 
         Assert.Empty( result );
     }
