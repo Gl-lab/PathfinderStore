@@ -1,24 +1,7 @@
-# ??????? ??????? (PowerShell, ?? ????? ???????????)
-
-## Backend
-- Restore: `dotnet restore Pathfinder.sln`
-- Build solution: `dotnet build Pathfinder.sln --no-restore`
-- Run API: `dotnet run --project Pathfinder.Web/Pathfinder.Web.csproj --launch-profile Pathfinder.Web`
-- Domain tests: `dotnet test CharacterManagement.Domain.Tests/CharacterManagement.Domain.Tests.csproj`
-- Integration tests: `dotnet test CharacterManagement.Infrastructure.Tests/CharacterManagement.Infrastructure.Tests.csproj`
-
-## Frontend
-- Install: `npm install --prefix pathfinder.frontend`
-- Dev: `npm run dev --prefix pathfinder.frontend`
-- Test: `npm run test --prefix pathfinder.frontend`
-- Lint: `npm run lint --prefix pathfinder.frontend`
-- Build: `npm run build --prefix pathfinder.frontend`
-- Format (writes broadly): `npm run format --prefix pathfinder.frontend`
-
-## Windows navigation/search
-- Files: `Get-ChildItem`; content: `Get-Content`; text search: `Select-String`.
-- Per project workflow prefer PowerShell cmdlets; use `rg` only when available and error-free.
-- Git root: `git rev-parse --show-toplevel`; status: `git status --short`.
-
-## EF
-- Exact CharacterManagement migration commands and failure handling: `MemoryBank/10_workflow/ef.md`.
+# Suggested commands (PowerShell, project root)
+- Backend targeted build: `dotnet build CharacterManagement.Infrastructure\CharacterManagement.Infrastructure.csproj --no-restore`.
+- Backend tests: `dotnet test CharacterManagement.Domain.Tests\CharacterManagement.Domain.Tests.csproj`; `dotnet test CharacterManagement.Infrastructure.Tests\CharacterManagement.Infrastructure.Tests.csproj`.
+- EF migration: build infrastructure first, then `dotnet ef migrations add <Name> --project CharacterManagement.Infrastructure\CharacterManagement.Infrastructure.csproj --context CharacterManagementDbContext --no-build`.
+- Frontend (pathfinder.frontend): `npm run build`, `npm run lint`, `npm test`, `npm run dev`.
+- PowerShell discovery: `Get-ChildItem`, `Select-String`, `Get-Content`; project workflow prefers these before rg.
+- Git root: `git rev-parse --show-toplevel`; inspect with `git status --short`.
