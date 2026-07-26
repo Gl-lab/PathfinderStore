@@ -17,6 +17,7 @@ import {
 } from '@/features/campaigns/api'
 import { isCampaignUserNameValid } from '@/features/campaigns/validation'
 import PartyStorageTab from '@/features/inventory/PartyStorageTab.vue'
+import { usePendingOperations } from '@/features/inventory/usePendingOperations'
 
 type CampaignTab = 'overview' | 'members' | 'party' | 'storage' | 'commerce'
 
@@ -51,6 +52,13 @@ const isGameMaster = computed(() => campaign.value?.roles.includes('GameMaster')
 const playerMembers = computed(
   () => campaign.value?.members.filter((member) => member.roles.includes('Player')) ?? [],
 )
+const pendingCharacterIds = computed(
+  () =>
+    activeParty.value?.characters
+      .filter((character) => character.controlledByUserId === campaign.value?.currentUserId)
+      .map((character) => character.characterId) ?? [],
+)
+const pendingOperations = usePendingOperations(campaignId, pendingCharacterIds)
 
 async function load(): Promise<void> {
   isLoading.value = true
@@ -183,7 +191,16 @@ onMounted(load)
       </header>
 
       <v-tabs v-model="activeTab" color="primary" show-arrows>
-        <v-tab value="overview">{{ t('campaigns.tabs.overview') }}</v-tab>
+        <v-tab value="overview">
+          <v-badge
+            v-if="pendingOperations.count.value"
+            color="secondary"
+            :content="pendingOperations.count.value"
+          >
+            {{ t('campaigns.tabs.overview') }}
+          </v-badge>
+          <template v-else>{{ t('campaigns.tabs.overview') }}</template>
+        </v-tab>
         <v-tab value="members">{{ t('campaigns.tabs.members') }}</v-tab>
         <v-tab value="party">{{ t('campaigns.tabs.party') }}</v-tab>
         <v-tab value="storage">{{ t('campaigns.tabs.storage') }}</v-tab>
@@ -198,6 +215,31 @@ onMounted(load)
               <p>{{ t(`campaigns.statuses.${campaign.status}`) }}</p>
               <p v-if="activeParty">{{ t('campaigns.activeParty', { name: activeParty.name }) }}</p>
               <p v-else>{{ t('campaigns.noActiveParty') }}</p>
+              <div v-if="pendingCharacterIds.length" class="row">
+                <span>
+                  {{
+                    t('campaigns.pendingOperations', {
+                      count: pendingOperations.count.value,
+                    })
+                  }}
+                </span>
+                <v-btn
+                  :loading="pendingOperations.isLoading.value"
+                  size="small"
+                  variant="text"
+                  @click="pendingOperations.refresh"
+                >
+                  {{ t('common.refresh') }}
+                </v-btn>
+              </div>
+              <v-alert
+                v-for="message in pendingOperations.errors.value"
+                :key="message"
+                type="error"
+                variant="tonal"
+              >
+                {{ message }}
+              </v-alert>
             </v-card-text>
           </v-card>
         </v-window-item>

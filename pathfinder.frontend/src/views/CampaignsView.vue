@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { getApiErrorMessages } from '@/api/errors'
+import { useSnackbar } from '@/composables/useSnackbar'
 import {
   createCampaign,
   getCampaignInvitations,
@@ -19,6 +20,7 @@ import {
 
 const { t } = useI18n()
 const route = useRoute()
+const snackbar = useSnackbar()
 const campaigns = ref<Campaign[]>([])
 const invitations = ref<CampaignInvitation[]>([])
 const campaignName = ref('')
@@ -26,7 +28,6 @@ const errorMessages = ref<string[]>([])
 const isLoading = ref(true)
 const isSaving = ref(false)
 const respondingInvitationId = ref<number | null>(null)
-const showAccessNotice = ref(route.query.error === 'campaign-access')
 const canCreate = computed(() => isCampaignNameValid(campaignName.value) && !isSaving.value)
 
 async function loadCampaigns(): Promise<void> {
@@ -80,7 +81,12 @@ async function respond(invitation: CampaignInvitation, accept: boolean): Promise
   }
 }
 
-onMounted(loadCampaigns)
+onMounted(() => {
+  if (route.query.error === 'campaign-access') {
+    snackbar.error(t('campaigns.accessDenied'))
+  }
+  void loadCampaigns()
+})
 </script>
 
 <template>
@@ -188,10 +194,6 @@ onMounted(loadCampaigns)
         </v-card-text>
       </v-card>
     </div>
-
-    <v-snackbar v-model="showAccessNotice" color="error">
-      {{ t('campaigns.accessDenied') }}
-    </v-snackbar>
   </section>
 </template>
 

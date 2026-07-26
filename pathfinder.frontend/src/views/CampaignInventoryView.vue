@@ -15,17 +15,16 @@ import { getWallet, type Wallet } from '@/features/commerce/api'
 import {
   acceptPartyGift,
   getCharacterInventory,
-  getPartyExchanges,
   getPartyGifts,
   type CharacterInventory,
   type CharacterInventoryItem,
   type ItemCategory,
-  type PartyExchange,
   type PartyGift,
 } from '@/features/inventory/api'
 import { formatBulk } from '@/features/inventory/bulk'
 import GiftDialog from '@/features/inventory/GiftDialog.vue'
 import type { GiftRecipient } from '@/features/inventory/gift'
+import { usePendingOperations } from '@/features/inventory/usePendingOperations'
 import { getCampaignCharacter, type Character } from '@/features/characters/api'
 
 interface ItemCategoryGroup {
@@ -41,26 +40,34 @@ const characterId = Number(route.params.characterId)
 const campaign = ref<Campaign | null>(null)
 const character = ref<Character | null>(null)
 const inventory = ref<CharacterInventory | null>(null)
+const pendingCharacterIds = computed(() =>
+  inventory.value && !inventory.value.isReadOnly ? [characterId] : [],
+)
+const pendingOperations = usePendingOperations(campaignId, pendingCharacterIds)
 const wallet = ref<Wallet | null>(null)
-const incomingGifts = ref<PartyGift[]>([])
 const outgoingGifts = ref<PartyGift[]>([])
-const pendingExchanges = ref<PartyExchange[]>([])
 const giftRecipients = ref<GiftRecipient[]>([])
 const selectedItemKey = ref<string | null>(null)
 const contextErrors = ref<string[]>([])
 const inventoryErrors = ref<string[]>([])
 const walletErrors = ref<string[]>([])
-const pendingErrors = ref<string[]>([])
+const pendingActionErrors = ref<string[]>([])
 const isContextLoading = ref(true)
 const isInventoryLoading = ref(true)
 const isWalletLoading = ref(false)
-const isPendingLoading = ref(false)
 const inventoryNotMigrated = ref(false)
 const walletDialog = ref(false)
 const incomingExpanded = ref(false)
 const giftDialog = ref(false)
 const acceptingGiftKey = ref<string | null>(null)
 const acceptanceOperationIds = new Map<string, string>()
+const incomingGifts = pendingOperations.gifts
+const pendingExchanges = pendingOperations.exchanges
+const isPendingLoading = pendingOperations.isLoading
+const pendingErrors = computed(() => [
+  ...pendingOperations.errors.value,
+  ...pendingActionErrors.value,
+])
 
 const selectedItem = computed(
   () =>
@@ -168,7 +175,7 @@ async function loadInventory(): Promise<void> {
     if (selectedItemKey.value && !selectedItem.value) selectedItemKey.value = null
 
     if (!inventory.value.isReadOnly) {
-      void Promise.all([loadWallet(), loadPending()])
+      void Promise.all([loadWallet(), loadOutgoingGifts()])
     }
   } catch (error) {
     inventory.value = null
@@ -195,26 +202,20 @@ async function loadWallet(): Promise<void> {
 }
 
 async function loadPending(): Promise<void> {
-  isPendingLoading.value = true
-  pendingErrors.value = []
-  try {
-    const [gifts, outgoing, exchanges] = await Promise.all([
-      getPartyGifts(campaignId, characterId, 'Incoming'),
-      getPartyGifts(campaignId, characterId, 'Outgoing'),
-      getPartyExchanges(campaignId, characterId),
-    ])
-    incomingGifts.value = gifts
-    outgoingGifts.value = outgoing
-    pendingExchanges.value = exchanges
-    for (const gift of gifts) {
-      if (!acceptanceOperationIds.has(gift.gift.giftKey)) {
-        acceptanceOperationIds.set(gift.gift.giftKey, globalThis.crypto.randomUUID())
-      }
+  pendingActionErrors.value = []
+  await Promise.all([pendingOperations.refresh(), loadOutgoingGifts()])
+  for (const gift of incomingGifts.value) {
+    if (!acceptanceOperationIds.has(gift.gift.giftKey)) {
+      acceptanceOperationIds.set(gift.gift.giftKey, globalThis.crypto.randomUUID())
     }
+  }
+}
+
+async function loadOutgoingGifts(): Promise<void> {
+  try {
+    outgoingGifts.value = await getPartyGifts(campaignId, characterId, 'Outgoing')
   } catch (error) {
-    pendingErrors.value = getApiErrorMessages(error)
-  } finally {
-    isPendingLoading.value = false
+    pendingActionErrors.value = getApiErrorMessages(error)
   }
 }
 
@@ -243,7 +244,7 @@ async function acceptGift(gift: PartyGift): Promise<void> {
     acceptanceOperationIds.get(gift.gift.giftKey) ?? globalThis.crypto.randomUUID()
   acceptanceOperationIds.set(gift.gift.giftKey, operationId)
   acceptingGiftKey.value = gift.gift.giftKey
-  pendingErrors.value = []
+  pendingActionErrors.value = []
   try {
     await acceptPartyGift(campaignId, gift.gift.giftKey, operationId)
     snackbar.success(t('tradeUi.gift.received', { name: gift.item.name }))
@@ -251,7 +252,7 @@ async function acceptGift(gift: PartyGift): Promise<void> {
   } catch (error) {
     const messages = getApiErrorMessages(error)
     await loadPending()
-    pendingErrors.value = messages
+    pendingActionErrors.value = messages
   } finally {
     acceptingGiftKey.value = null
   }
