@@ -212,13 +212,19 @@ Seed users:
   - `POST /api/item-catalog-admin/definitions/{id}/revisions/{revision}/publish`;
   - `POST /api/item-catalog-admin/definitions/{id}/revisions/{revision}/retire`;
   - inventory gift/exchange/storage/force-move endpoints под `/api/campaigns/{campaignId}/inventory`;
+  - `GET /api/campaigns/{campaignId}/inventory/characters/{characterId}`;
+  - `GET /api/campaigns/{campaignId}/inventory/gifts`;
+  - `GET /api/campaigns/{campaignId}/inventory/exchanges`;
+  - `GET /api/campaigns/{campaignId}/inventory/party-storage`;
   - commerce admin endpoints под `/api/commerce-admin/campaigns/{campaignId}`;
   - commerce purchase/sale endpoints под `/api/commerce/campaigns/{campaignId}`;
+  - `GET /api/commerce/campaigns/{campaignId}/wallets/{characterId}`;
+  - `GET /api/commerce/campaigns/{campaignId}/settlements`;
   - domain/application/infrastructure тесты для ключевых сценариев.
 
 ### Текущий character creation focus
 
-Frontend MVP создания персонажа реализован на Vue 3. Текущий flow включает пол и постоянный аватар, полный Ancestry/Background/Class package, обязательные классовые выборы восьми классов Player Core baseline, четыре финальных свободных boosts, стартовое снаряжение и полный spell loadout Cleric, Bard, Druid, Witch и Wizard. Общий Player Core spell catalog фильтруется сервером по tradition, rank и kind; class flows сохраняют repertoire/preparation/spellbook, granted spells, отдельные slots и focus resources. Единый Player Core feat catalog покрывает ancestry, background skill и class feats первого уровня; starting inventory различает selected/granted provenance, обязательные class/skill feat slots валидируются, а поддерживаемые постоянные feat training effects участвуют в Skills/Lore и modifiers. Боевая карточка серверно вычисляет maximum/current/temporary HP, AC, Strikes, class DC, spell attack/DC, Perception, saves и modifiers Skills/Lore с объяснимыми breakdown. Кампании поддерживают приглашения, контекстные роли, одну активную партию, назначение персонажей и campaign-scoped карточку. Версионируемый `ItemCatalog` является источником описаний и точных конфигураций. Completed-character loadout однозначно назначенной кампании мигрирует в runtime `Inventory`, а production combat adapter читает экипированные экземпляры через точную revision; не назначенные персонажи сохраняют переходный starting fallback. Backend Inventory поддерживает подтверждаемое дарение, атомарный обмен, партийное хранилище и отдельную аудируемую команду ведущего. Backend Commerce поддерживает ручные campaign-scoped магазины, кошельки, резервы, покупку и продажу физических экземпляров через Inventory. Encounter actions/conditions, Raise a Shield, runtime spell/feat effects, progression, transfer/trade UI и read projections остаются отдельными подсистемами.
+Frontend MVP создания персонажа реализован на Vue 3. Текущий flow включает пол и постоянный аватар, полный Ancestry/Background/Class package, обязательные классовые выборы восьми классов Player Core baseline, четыре финальных свободных boosts, стартовое снаряжение и полный spell loadout Cleric, Bard, Druid, Witch и Wizard. Общий Player Core spell catalog фильтруется сервером по tradition, rank и kind; class flows сохраняют repertoire/preparation/spellbook, granted spells, отдельные slots и focus resources. Единый Player Core feat catalog покрывает ancestry, background skill и class feats первого уровня; starting inventory различает selected/granted provenance, обязательные class/skill feat slots валидируются, а поддерживаемые постоянные feat training effects участвуют в Skills/Lore и modifiers. Боевая карточка серверно вычисляет maximum/current/temporary HP, AC, Strikes, class DC, spell attack/DC, Perception, saves и modifiers Skills/Lore с объяснимыми breakdown. Кампании поддерживают отдельный URL с вкладками, приглашения, контекстные роли, одну активную партию, назначение персонажей и campaign-scoped карточку. Версионируемый `ItemCatalog` является источником описаний и точных конфигураций. Completed-character loadout однозначно назначенной кампании мигрирует в runtime `Inventory`, а production combat adapter читает экипированные экземпляры через точную revision; не назначенные персонажи сохраняют переходный starting fallback. Campaign inventory UI показывает серверные экземпляры, Bulk, кошелёк и ожидающие операции, поддерживает подтверждаемое дарение и партийное хранилище с optimistic concurrency и идемпотентными ключами. Backend Commerce поддерживает ручные campaign-scoped магазины, кошельки, резервы, покупку и продажу физических экземпляров через Inventory. Encounter actions/conditions, Raise a Shield, runtime spell/feat effects, progression, магазин игрока, стол обмена и административный торговый UI остаются отдельными подсистемами.
 
 Смотреть:
 
@@ -231,6 +237,7 @@ Frontend MVP создания персонажа реализован на Vue 3
 - [`../30_task_notes/priority_11_final_review.md`](../30_task_notes/priority_11_final_review.md)
 - [`../30_task_notes/priority_12_final_review.md`](../30_task_notes/priority_12_final_review.md)
 - [`../30_task_notes/priority_13_final_review.md`](../30_task_notes/priority_13_final_review.md)
+- [`../30_task_notes/priority_15_final_review.md`](../30_task_notes/priority_15_final_review.md)
 
 ## Как работать с этим обзором
 
