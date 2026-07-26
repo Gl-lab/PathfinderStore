@@ -294,6 +294,43 @@ public sealed class PartyInventoryController : AuthorizedController
         }
     }
 
+    [HttpPost( "correct-transfer-restriction" )]
+    public async Task<ActionResult<CorrectedItemTransferRestrictionDto>>
+        CorrectTransferRestriction(
+            int campaignId,
+            [FromBody] CorrectItemTransferRestrictionRequest request )
+    {
+        try
+        {
+            CorrectedItemTransferRestrictionDto result = await _mediator.Send(
+                new CorrectItemTransferRestrictionCommand(
+                    CurrentUserId(),
+                    campaignId,
+                    request.ItemInstanceKey,
+                    request.IsTransferRestricted,
+                    request.ExpectedItemVersion,
+                    request.OperationId,
+                    request.Reason ) );
+            return Ok( result );
+        }
+        catch ( InvalidOperationException )
+        {
+            return Unauthorized();
+        }
+        catch ( InventoryException exception )
+        {
+            return BadRequest( MapError( exception.Message ) );
+        }
+        catch ( DbUpdateException exception )
+        {
+            return DatabaseUnavailable( exception );
+        }
+        catch ( PostgresException exception )
+        {
+            return DatabaseUnavailable( exception );
+        }
+    }
+
     private ObjectResult DatabaseUnavailable( Exception exception )
     {
         _logger.LogError( exception, "Failed to update party inventory." );
@@ -335,6 +372,13 @@ public sealed record PartyStorageTransferRequest(
 public sealed record ForceMoveInventoryItemRequest(
     Guid ItemInstanceKey,
     Guid DestinationContainerKey,
+    int ExpectedItemVersion,
+    Guid OperationId,
+    string Reason );
+
+public sealed record CorrectItemTransferRestrictionRequest(
+    Guid ItemInstanceKey,
+    bool IsTransferRestricted,
     int ExpectedItemVersion,
     Guid OperationId,
     string Reason );

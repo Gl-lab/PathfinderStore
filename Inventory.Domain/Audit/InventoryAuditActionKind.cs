@@ -10,4 +10,6 @@ public enum InventoryAuditActionKind
     PartyStorageDeposited = 5,
     PartyStorageWithdrawn = 6,
     ForcedMove = 7,
+    ForcedIssuance = 8,
+    ForcedCorrection = 9,
 }

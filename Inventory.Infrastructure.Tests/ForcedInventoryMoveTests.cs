@@ -64,6 +64,59 @@ public sealed class ForcedInventoryMoveTests
     }
 
     [Fact]
+    public async Task GameMasterCorrectionWritesDistinctForcedAudit()
+    {
+        DbContextOptions<InventoryDbContext> options =
+            new DbContextOptionsBuilder<InventoryDbContext>()
+                .UseInMemoryDatabase( Guid.NewGuid().ToString() )
+                .Options;
+        await using InventoryDbContext context = new( options );
+        InventoryContainer container = CreateContainer( 31 );
+        ItemInstance item = ItemInstance.Create(
+            Guid.NewGuid(),
+            17,
+            23,
+            container,
+            null,
+            _createdAtUtc );
+        context.AddRange( container, item );
+        await context.SaveChangesAsync();
+        CorrectItemTransferRestrictionHandler handler = new(
+            new InventoryTransferRepository( context ),
+            new StubGameMasterAccessPolicy( true ),
+            new StubTimeProvider() );
+        Guid operationId = Guid.NewGuid();
+
+        CorrectedItemTransferRestrictionDto result = await handler.Handle(
+            new CorrectItemTransferRestrictionCommand(
+                101,
+                17,
+                item.InstanceKey,
+                true,
+                0,
+                operationId,
+                "Correct imported curse state" ),
+            CancellationToken.None );
+        CorrectedItemTransferRestrictionDto replay = await handler.Handle(
+            new CorrectItemTransferRestrictionCommand(
+                101,
+                17,
+                item.InstanceKey,
+                true,
+                0,
+                operationId,
+                "Correct imported curse state" ),
+            CancellationToken.None );
+
+        Assert.Equal( result, replay );
+        Assert.True( item.IsTransferRestricted );
+        InventoryAuditEntry audit = await context.AuditEntries.SingleAsync();
+        Assert.True( audit.IsForced );
+        Assert.Equal( InventoryAuditActionKind.ForcedCorrection, audit.ActionKind );
+        Assert.Equal( "Correct imported curse state", audit.Reason );
+    }
+
+    [Fact]
     public async Task OrdinaryMemberCannotForceMove()
     {
         DbContextOptions<InventoryDbContext> options =

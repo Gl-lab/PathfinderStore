@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Pathfinder.Inventory.Domain.Containers;
+using Pathfinder.Inventory.Domain.Audit;
 using Pathfinder.Inventory.Domain.Exceptions;
 using Pathfinder.Inventory.Domain.Items;
 using Pathfinder.Inventory.Infrastructure.Data;
@@ -130,7 +131,6 @@ public sealed class UniqueItemAdministrationService
         {
             instance = expected;
             _inventoryDbContext.ItemInstances.Add( instance );
-            await _inventoryDbContext.SaveChangesAsync( cancellationToken );
         }
         else if ( instance.CampaignId != expected.CampaignId ||
                   instance.ItemConfigurationId != expected.ItemConfigurationId ||
@@ -145,6 +145,42 @@ public sealed class UniqueItemAdministrationService
                 "Item instance key was already used for different unique item parameters." );
         }
 
+        InventoryAuditEntry? audit = await _inventoryDbContext.AuditEntries
+            .SingleOrDefaultAsync(
+                item =>
+                    item.CampaignId == request.CampaignId &&
+                    item.OperationId == request.OperationId &&
+                    item.ActionKind == InventoryAuditActionKind.ForcedIssuance,
+                cancellationToken );
+        if ( audit is null )
+        {
+            audit = InventoryAuditEntry.Create(
+                request.OperationId,
+                request.CampaignId,
+                request.OperationId,
+                InventoryAuditActionKind.ForcedIssuance,
+                request.ActingUserId,
+                true,
+                request.Reason,
+                request.InstanceKey,
+                request.ContainerKey,
+                _timeProvider.GetUtcNow() );
+            _inventoryDbContext.AuditEntries.Add( audit );
+            await _inventoryDbContext.SaveChangesAsync( cancellationToken );
+        }
+        else
+        {
+            audit.EnsureMatches(
+                request.CampaignId,
+                request.OperationId,
+                InventoryAuditActionKind.ForcedIssuance,
+                request.ActingUserId,
+                true,
+                request.Reason,
+                request.InstanceKey,
+                request.ContainerKey );
+        }
+
         return new UniqueItemDto(
             instance.InstanceKey,
             instance.CampaignId,
@@ -152,7 +188,8 @@ public sealed class UniqueItemAdministrationService
             configuration.ConfigurationKey,
             instance.CurrentContainerKey,
             instance.CustomName,
-            instance.Version );
+            instance.Version,
+            audit.AuditKey );
     }
 }
 
@@ -167,7 +204,9 @@ public sealed record CreateUniqueItemRequest(
     Guid InstanceKey,
     Guid ContainerKey,
     string? CustomName,
-    int ActingUserId );
+    int ActingUserId,
+    Guid OperationId,
+    string Reason );
 
 public sealed record UniqueItemDto(
     Guid InstanceKey,
@@ -176,4 +215,5 @@ public sealed record UniqueItemDto(
     string ConfigurationKey,
     Guid ContainerKey,
     string? CustomName,
-    int Version );
+    int Version,
+    Guid AuditKey );

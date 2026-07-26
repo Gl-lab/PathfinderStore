@@ -47,7 +47,9 @@ public sealed class UniqueItemsAdminController : AuthorizedController
                     request.InstanceKey,
                     request.ContainerKey,
                     request.CustomName,
-                    CurrentUserId() ),
+                    CurrentUserId(),
+                    request.OperationId,
+                    request.Reason ),
                 cancellationToken );
             return Ok( result );
         }
@@ -74,7 +76,9 @@ public sealed record CreateUniqueItemApiRequest(
     IReadOnlyCollection<PermanentUpgradeApiRequest> PermanentUpgrades,
     Guid InstanceKey,
     Guid ContainerKey,
-    string? CustomName );
+    string? CustomName,
+    Guid OperationId,
+    string Reason );
 
 public sealed record PermanentUpgradeApiRequest(
     string Code,

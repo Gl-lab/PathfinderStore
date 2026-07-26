@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Pathfinder.Inventory.Domain.Audit;
 using Pathfinder.Inventory.Domain.Containers;
 using Pathfinder.Inventory.Domain.Exceptions;
 using Pathfinder.Inventory.Domain.Items;
@@ -57,7 +58,9 @@ public sealed class UniqueItemAdministrationServiceTests
             instanceKey,
             container.ContainerKey,
             "Bound blade",
-            7 );
+            7,
+            Guid.NewGuid(),
+            "story reward" );
 
         UniqueItemDto first = await service.CreateAsync(
             request,
@@ -70,6 +73,10 @@ public sealed class UniqueItemAdministrationServiceTests
         Assert.Equal( 42, Assert.Single( itemCatalogDbContext.ItemConfigurations ).CampaignId );
         ItemInstance instance = Assert.Single( inventoryDbContext.ItemInstances );
         Assert.True( instance.IsTransferRestricted );
+        InventoryAuditEntry audit = Assert.Single( inventoryDbContext.AuditEntries );
+        Assert.True( audit.IsForced );
+        Assert.Equal( InventoryAuditActionKind.ForcedIssuance, audit.ActionKind );
+        Assert.Equal( "story reward", audit.Reason );
         InventoryContainer destination = InventoryContainer.CreateRoot(
             Guid.NewGuid(),
             42,
@@ -121,7 +128,9 @@ public sealed class UniqueItemAdministrationServiceTests
                     Guid.NewGuid(),
                     container.ContainerKey,
                     null,
-                    7 ),
+                    7,
+                    Guid.NewGuid(),
+                    "test" ),
                 CancellationToken.None ) );
 
         Assert.Empty( itemCatalogDbContext.ItemConfigurations );
