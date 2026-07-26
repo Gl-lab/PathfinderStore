@@ -109,6 +109,38 @@ export interface PartyExchange {
   }[]
 }
 
+export type PartyStorageAccessPolicy = 'Unconfigured' | 'FreeForMembers' | 'GameMasterOnly'
+
+export interface PartyStorage {
+  partyId: number
+  accessPolicy: PartyStorageAccessPolicy
+  items: PartyStorageItem[]
+  recentOperations: PartyStorageOperation[]
+}
+
+export interface PartyStorageItem {
+  item: InventoryOperationItem
+  depositedBy: InventoryCharacterReference | null
+  depositedAtUtc: string | null
+}
+
+export interface PartyStorageOperation {
+  kind:
+    | 'GiftProposed'
+    | 'GiftAccepted'
+    | 'ExchangeProposed'
+    | 'ExchangeCompleted'
+    | 'ExchangeCancelled'
+    | 'PartyStorageDeposited'
+    | 'PartyStorageWithdrawn'
+    | 'ForcedMove'
+    | 'ForcedIssuance'
+    | 'ForcedCorrection'
+  character: InventoryCharacterReference | null
+  item: InventoryOperationItem
+  occurredAtUtc: string
+}
+
 export async function getCharacterInventory(
   campaignId: number,
   characterId: number,
@@ -141,6 +173,52 @@ export async function getPartyExchanges(
       params: { participantCharacterId: characterId, status: 'Pending' },
     })
   ).data
+}
+
+export async function getPartyStorage(campaignId: number): Promise<PartyStorage> {
+  return (await http.get<PartyStorage>(`/api/campaigns/${campaignId}/inventory/party-storage`)).data
+}
+
+async function transferPartyStorage(
+  campaignId: number,
+  action: 'deposit' | 'withdraw',
+  request: {
+    characterId: number
+    itemInstanceKey: string
+    expectedItemVersion: number
+    operationId: string
+  },
+): Promise<{ itemInstanceKey: string; containerKey: string; version: number }> {
+  return (
+    await http.post<{ itemInstanceKey: string; containerKey: string; version: number }>(
+      `/api/campaigns/${campaignId}/inventory/party-storage/${action}`,
+      request,
+    )
+  ).data
+}
+
+export async function depositPartyStorage(
+  campaignId: number,
+  request: {
+    characterId: number
+    itemInstanceKey: string
+    expectedItemVersion: number
+    operationId: string
+  },
+): Promise<{ itemInstanceKey: string; containerKey: string; version: number }> {
+  return transferPartyStorage(campaignId, 'deposit', request)
+}
+
+export async function withdrawPartyStorage(
+  campaignId: number,
+  request: {
+    characterId: number
+    itemInstanceKey: string
+    expectedItemVersion: number
+    operationId: string
+  },
+): Promise<{ itemInstanceKey: string; containerKey: string; version: number }> {
+  return transferPartyStorage(campaignId, 'withdraw', request)
 }
 
 export async function createPartyGift(

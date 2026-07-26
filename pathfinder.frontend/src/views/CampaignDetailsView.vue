@@ -16,6 +16,7 @@ import {
   type CampaignCharacterReference,
 } from '@/features/campaigns/api'
 import { isCampaignUserNameValid } from '@/features/campaigns/validation'
+import PartyStorageTab from '@/features/inventory/PartyStorageTab.vue'
 
 type CampaignTab = 'overview' | 'members' | 'party' | 'storage' | 'commerce'
 
@@ -335,7 +336,7 @@ onMounted(load)
         </v-window-item>
 
         <v-window-item value="storage">
-          <v-alert type="info" variant="tonal">{{ t('campaigns.storagePlaceholder') }}</v-alert>
+          <PartyStorageTab :campaign="campaign" :characters="characters" />
         </v-window-item>
         <v-window-item value="commerce">
           <v-alert type="info" variant="tonal">{{ t('campaigns.commercePlaceholder') }}</v-alert>
