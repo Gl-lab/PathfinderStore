@@ -31,6 +31,7 @@ public sealed class ItemConfigurationRepositoryTests
                 1,
                 PermanentUpgradeVisibility.Public );
             ItemConfiguration configuration = ItemConfiguration.Create(
+                42,
                 revision.Id,
                 ItemSize.Medium,
                 ItemMaterialType.ColdIron,

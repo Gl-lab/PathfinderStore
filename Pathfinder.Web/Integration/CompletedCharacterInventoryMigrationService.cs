@@ -272,6 +272,7 @@ public sealed class CompletedCharacterInventoryMigrationService
         }
 
         configuration = ItemConfiguration.Create(
+            campaignId,
             revision.Id,
             ItemSize.Medium,
             ItemMaterialType.Standard,

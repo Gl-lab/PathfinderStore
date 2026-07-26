@@ -52,6 +52,7 @@ public class Startup( IConfiguration configuration )
         services.AddCommerceInfrastructureServices();
         services.AddScoped<IItemTransferRestrictionPolicy, ItemTransferRestrictionPolicy>();
         services.AddScoped<CompletedCharacterInventoryMigrationService>();
+        services.AddScoped<UniqueItemAdministrationService>();
         services.AddHostedService<CompletedCharacterInventoryMigrationHostedService>();
         services.AddScoped<ItemCatalogAllowedEquipmentReader>();
         services.AddScoped<IAllowedEquipmentReader, RuntimeInventoryAllowedEquipmentReader>();

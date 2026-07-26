@@ -156,7 +156,10 @@ public sealed class ItemCatalogDbContext : DbContext
 
         modelBuilder.Entity<ItemConfiguration>( builder =>
         {
-            builder.ToTable( "ItemConfiguration" );
+            builder.ToTable( "ItemConfiguration", tableBuilder =>
+                tableBuilder.HasCheckConstraint(
+                    "CK_ItemConfiguration_Campaign",
+                    "\"CampaignId\" IS NULL OR \"CampaignId\" > 0" ) );
             builder.Property( configuration => configuration.ConfigurationKey )
                 .HasMaxLength( ItemConfiguration.ConfigurationKeyLength )
                 .IsFixedLength()
@@ -169,6 +172,11 @@ public sealed class ItemCatalogDbContext : DbContext
                 .HasConversion<int>();
             builder.HasIndex( configuration => configuration.ConfigurationKey )
                 .IsUnique();
+            builder.HasIndex( configuration => new
+            {
+                configuration.CampaignId,
+                configuration.ItemRevisionId,
+            } );
             builder.HasOne<ItemRevision>()
                 .WithMany()
                 .HasForeignKey( configuration => configuration.ItemRevisionId )

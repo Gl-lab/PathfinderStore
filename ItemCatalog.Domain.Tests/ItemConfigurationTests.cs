@@ -23,6 +23,7 @@ public sealed class ItemConfigurationTests
             PermanentUpgradeVisibility.Hidden );
 
         ItemConfiguration configuration = ItemConfiguration.Create(
+            42,
             17,
             ItemSize.Large,
             ItemMaterialType.ColdIron,
@@ -42,6 +43,7 @@ public sealed class ItemConfigurationTests
     public void ConfigurationKeyIsIndependentOfUpgradeInputOrder()
     {
         ItemConfiguration first = ItemConfiguration.Create(
+            42,
             17,
             ItemSize.Medium,
             ItemMaterialType.Standard,
@@ -49,6 +51,7 @@ public sealed class ItemConfigurationTests
             CreateUpgradePair( false ),
             _createdAtUtc );
         ItemConfiguration second = ItemConfiguration.Create(
+            42,
             17,
             ItemSize.Medium,
             ItemMaterialType.Standard,
@@ -74,6 +77,7 @@ public sealed class ItemConfigurationTests
             PermanentUpgradeVisibility.Public );
 
         Assert.Throws<ItemCatalogException>( () => ItemConfiguration.Create(
+            42,
             17,
             ItemSize.Medium,
             ItemMaterialType.Standard,
@@ -91,6 +95,7 @@ public sealed class ItemConfigurationTests
             1,
             PermanentUpgradeVisibility.Public );
         ItemConfiguration.Create(
+            42,
             17,
             ItemSize.Medium,
             ItemMaterialType.Standard,
@@ -99,6 +104,7 @@ public sealed class ItemConfigurationTests
             _createdAtUtc );
 
         Assert.Throws<ItemCatalogException>( () => ItemConfiguration.Create(
+            42,
             18,
             ItemSize.Medium,
             ItemMaterialType.Standard,
@@ -121,6 +127,7 @@ public sealed class ItemConfigurationTests
             1,
             PermanentUpgradeVisibility.Public );
         ItemConfiguration.Create(
+            42,
             17,
             ItemSize.Medium,
             ItemMaterialType.Standard,
@@ -129,6 +136,7 @@ public sealed class ItemConfigurationTests
             _createdAtUtc );
 
         Assert.Throws<ItemCatalogException>( () => ItemConfiguration.Create(
+            42,
             18,
             ItemSize.Medium,
             ItemMaterialType.Standard,
@@ -137,6 +145,7 @@ public sealed class ItemConfigurationTests
             _createdAtUtc ) );
 
         ItemConfiguration recovered = ItemConfiguration.Create(
+            42,
             18,
             ItemSize.Medium,
             ItemMaterialType.Standard,

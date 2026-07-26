@@ -16,6 +16,7 @@ public sealed class ItemConfiguration : Entity, IAggregateRoot
     {
     }
 
+    public int? CampaignId { get; private set; }
     public int ItemRevisionId { get; private set; }
     public string ConfigurationKey { get; private set; } = String.Empty;
     public ItemSize Size { get; private set; }
@@ -25,6 +26,7 @@ public sealed class ItemConfiguration : Entity, IAggregateRoot
     public IReadOnlyList<PermanentUpgrade> PermanentUpgrades { get => _permanentUpgrades.AsReadOnly(); }
 
     public static ItemConfiguration Create(
+        int campaignId,
         int itemRevisionId,
         ItemSize size,
         ItemMaterialType materialType,
@@ -32,9 +34,10 @@ public sealed class ItemConfiguration : Entity, IAggregateRoot
         IReadOnlyCollection<PermanentUpgrade>? permanentUpgrades,
         DateTimeOffset createdAtUtc )
     {
-        if ( itemRevisionId <= 0 )
+        if ( campaignId <= 0 || itemRevisionId <= 0 )
         {
-            throw new ItemCatalogException( "Item revision id must be greater than zero." );
+            throw new ItemCatalogException(
+                "Campaign id and item revision id must be greater than zero." );
         }
 
         if ( !Enum.IsDefined( size ) ||
@@ -64,6 +67,7 @@ public sealed class ItemConfiguration : Entity, IAggregateRoot
         }
 
         string configurationKey = CreateConfigurationKey(
+            campaignId,
             itemRevisionId,
             size,
             materialType,
@@ -71,6 +75,7 @@ public sealed class ItemConfiguration : Entity, IAggregateRoot
             upgrades );
         ItemConfiguration configuration = new ItemConfiguration
         {
+            CampaignId = campaignId,
             ItemRevisionId = itemRevisionId,
             ConfigurationKey = configurationKey,
             Size = size,
@@ -93,6 +98,7 @@ public sealed class ItemConfiguration : Entity, IAggregateRoot
     }
 
     private static string CreateConfigurationKey(
+        int campaignId,
         int itemRevisionId,
         ItemSize size,
         ItemMaterialType materialType,
@@ -105,6 +111,7 @@ public sealed class ItemConfiguration : Entity, IAggregateRoot
                 $"{upgrade.Code}:{( int )upgrade.Kind}:{upgrade.Rank}:{( int )upgrade.Visibility}" );
         string canonicalValue = String.Join(
             '|',
+            campaignId,
             itemRevisionId,
             ( int )size,
             ( int )materialType,

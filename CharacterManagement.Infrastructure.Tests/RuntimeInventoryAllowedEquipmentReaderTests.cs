@@ -49,6 +49,7 @@ public sealed class RuntimeInventoryAllowedEquipmentReaderTests
         catalogContext.ItemDefinitions.Add( definition );
         await catalogContext.SaveChangesAsync();
         ItemConfiguration configuration = ItemConfiguration.Create(
+            42,
             original.Id,
             ItemSize.Medium,
             ItemMaterialType.Standard,
@@ -130,6 +131,7 @@ public sealed class RuntimeInventoryAllowedEquipmentReaderTests
         catalogContext.ItemDefinitions.Add( definition );
         await catalogContext.SaveChangesAsync();
         ItemConfiguration configuration = ItemConfiguration.Create(
+            42,
             revision.Id,
             ItemSize.Medium,
             ItemMaterialType.Standard,
