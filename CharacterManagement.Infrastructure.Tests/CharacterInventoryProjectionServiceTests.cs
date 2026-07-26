@@ -76,7 +76,7 @@ public sealed class CharacterInventoryProjectionServiceTests
         CharacterInventoryProjectionService service = new CharacterInventoryProjectionService(
             characterDbContext,
             inventoryDbContext,
-            itemCatalogDbContext,
+            new InventoryItemCatalogProjectionReader( itemCatalogDbContext ),
             new FakeCharacterCampaignAccessPolicy(
                 new CharacterCampaignAccess( true, true ) ) );
 
@@ -167,7 +167,7 @@ public sealed class CharacterInventoryProjectionServiceTests
         CharacterInventoryProjectionService service = new CharacterInventoryProjectionService(
             characterDbContext,
             inventoryDbContext,
-            itemCatalogDbContext,
+            new InventoryItemCatalogProjectionReader( itemCatalogDbContext ),
             new FakeCharacterCampaignAccessPolicy(
                 new CharacterCampaignAccess( true, false ) ) );
 
@@ -193,7 +193,7 @@ public sealed class CharacterInventoryProjectionServiceTests
         CharacterInventoryProjectionService service = new CharacterInventoryProjectionService(
             characterDbContext,
             inventoryDbContext,
-            itemCatalogDbContext,
+            new InventoryItemCatalogProjectionReader( itemCatalogDbContext ),
             new FakeCharacterCampaignAccessPolicy( CharacterCampaignAccess.Denied ) );
 
         await Assert.ThrowsAsync<CharacterInventoryAccessDeniedException>(

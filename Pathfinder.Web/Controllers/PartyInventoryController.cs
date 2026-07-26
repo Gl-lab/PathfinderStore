@@ -13,6 +13,7 @@ using Pathfinder.Inventory.Application.Transfers;
 using Pathfinder.Inventory.Application.Storage;
 using Pathfinder.Inventory.Application.Administration;
 using Pathfinder.Inventory.Domain.Exceptions;
+using Pathfinder.Inventory.Domain.Transfers;
 using Pathfinder.Web.Controllers.Base;
 using Pathfinder.Web.Integration;
 
@@ -23,16 +24,89 @@ public sealed class PartyInventoryController : AuthorizedController
 {
     private readonly IMediator _mediator;
     private readonly CharacterInventoryProjectionService _projectionService;
+    private readonly InventoryOperationsProjectionService _operationsProjectionService;
     private readonly ILogger<PartyInventoryController> _logger;
 
     public PartyInventoryController(
         IMediator mediator,
         CharacterInventoryProjectionService projectionService,
+        InventoryOperationsProjectionService operationsProjectionService,
         ILogger<PartyInventoryController> logger )
     {
         _mediator = mediator;
         _projectionService = projectionService;
+        _operationsProjectionService = operationsProjectionService;
         _logger = logger;
+    }
+
+    [HttpGet( "gifts" )]
+    public async Task<ActionResult<IReadOnlyCollection<PartyGiftProjectionDto>>> GetGifts(
+        int campaignId,
+        [FromQuery] int characterId,
+        [FromQuery] PartyGiftRole role,
+        [FromQuery] PartyGiftStatus status = PartyGiftStatus.Pending,
+        CancellationToken cancellationToken = default )
+    {
+        try
+        {
+            IReadOnlyCollection<PartyGiftProjectionDto> gifts =
+                await _operationsProjectionService.GetGiftsAsync(
+                    campaignId,
+                    characterId,
+                    role,
+                    status,
+                    CurrentUserId(),
+                    cancellationToken );
+            return Ok( gifts );
+        }
+        catch ( InventoryOperationsAccessDeniedException )
+        {
+            return Forbid();
+        }
+    }
+
+    [HttpGet( "exchanges" )]
+    public async Task<ActionResult<IReadOnlyCollection<PartyExchangeProjectionDto>>> GetExchanges(
+        int campaignId,
+        [FromQuery] int participantCharacterId,
+        [FromQuery] PartyExchangeStatus status = PartyExchangeStatus.Pending,
+        CancellationToken cancellationToken = default )
+    {
+        try
+        {
+            IReadOnlyCollection<PartyExchangeProjectionDto> exchanges =
+                await _operationsProjectionService.GetExchangesAsync(
+                    campaignId,
+                    participantCharacterId,
+                    status,
+                    CurrentUserId(),
+                    cancellationToken );
+            return Ok( exchanges );
+        }
+        catch ( InventoryOperationsAccessDeniedException )
+        {
+            return Forbid();
+        }
+    }
+
+    [HttpGet( "party-storage" )]
+    public async Task<ActionResult<PartyStorageProjectionDto>> GetPartyStorage(
+        int campaignId,
+        CancellationToken cancellationToken )
+    {
+        try
+        {
+            PartyStorageProjectionDto storage =
+                await _operationsProjectionService.GetPartyStorageAsync(
+                    campaignId,
+                    CurrentUserId(),
+                    cancellationToken );
+            return Ok( storage );
+        }
+        catch ( InventoryOperationsAccessDeniedException )
+        {
+            return Forbid();
+        }
     }
 
     [HttpGet( "characters/{characterId:int}" )]

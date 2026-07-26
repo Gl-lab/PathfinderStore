@@ -56,7 +56,9 @@ public class Startup( IConfiguration configuration )
         services.AddScoped<ItemEffectRestrictionPolicy>();
         services.AddScoped<ItemObservationService>();
         services.AddScoped<IItemObservationAccess, CampaignItemObservationAccess>();
+        services.AddScoped<InventoryItemCatalogProjectionReader>();
         services.AddScoped<CharacterInventoryProjectionService>();
+        services.AddScoped<InventoryOperationsProjectionService>();
         services.AddScoped<ItemKnowledgeAdministrationService>();
         services.AddHostedService<CompletedCharacterInventoryMigrationHostedService>();
         services.AddScoped<ItemCatalogAllowedEquipmentReader>();

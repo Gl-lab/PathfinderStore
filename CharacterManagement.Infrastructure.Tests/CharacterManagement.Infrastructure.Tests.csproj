@@ -31,6 +31,7 @@
     <ProjectReference Include="..\CampaignManagement.Infrastructure\CampaignManagement.Infrastructure.csproj" />
     <ProjectReference Include="..\CampaignManagement.Domain\CampaignManagement.Domain.csproj" />
     <ProjectReference Include="..\Inventory.Domain\Inventory.Domain.csproj" />
+    <ProjectReference Include="..\Inventory.Application\Inventory.Application.csproj" />
     <ProjectReference Include="..\Inventory.Infrastructure\Inventory.Infrastructure.csproj" />
     <ProjectReference Include="..\Pathfinder.Web\Pathfinder.Web.csproj" />
     <ProjectReference Include="..\Pathfinder.Utils\Pathfinder.Utils.csproj" />

@@ -11,10 +11,7 @@ using Pathfinder.Inventory.Domain.Containers;
 using Pathfinder.Inventory.Domain.Items;
 using Pathfinder.Inventory.Domain.Movements;
 using Pathfinder.Inventory.Infrastructure.Data;
-using Pathfinder.ItemCatalog.Domain.Configurations;
-using Pathfinder.ItemCatalog.Domain.Items;
 using Pathfinder.ItemCatalog.Domain.Rules;
-using Pathfinder.ItemCatalog.Infrastructure.Data;
 
 namespace Pathfinder.Web.Integration;
 
@@ -22,18 +19,18 @@ public sealed class CharacterInventoryProjectionService
 {
     private readonly CharacterManagementDbContext _characterDbContext;
     private readonly InventoryDbContext _inventoryDbContext;
-    private readonly ItemCatalogDbContext _itemCatalogDbContext;
+    private readonly InventoryItemCatalogProjectionReader _catalogReader;
     private readonly ICharacterCampaignAccessPolicy _accessPolicy;
 
     public CharacterInventoryProjectionService(
         CharacterManagementDbContext characterDbContext,
         InventoryDbContext inventoryDbContext,
-        ItemCatalogDbContext itemCatalogDbContext,
+        InventoryItemCatalogProjectionReader catalogReader,
         ICharacterCampaignAccessPolicy accessPolicy )
     {
         _characterDbContext = characterDbContext;
         _inventoryDbContext = inventoryDbContext;
-        _itemCatalogDbContext = itemCatalogDbContext;
+        _catalogReader = catalogReader;
         _accessPolicy = accessPolicy;
     }
 
@@ -81,8 +78,8 @@ public sealed class CharacterInventoryProjectionService
             .OrderBy( instance => instance.CreatedAtUtc )
             .ThenBy( instance => instance.InstanceKey )
             .ToArrayAsync( cancellationToken );
-        Dictionary<int, ItemProjectionCatalogLine> catalog =
-            await ReadCatalogAsync( campaignId, instances, cancellationToken );
+        Dictionary<int, InventoryItemCatalogProjection> catalog =
+            await _catalogReader.ReadAsync( campaignId, instances, cancellationToken );
         HashSet<Guid> equippedInstanceKeys = character.RuntimeEquipmentItems
             .Where( item => item.IsEquipped )
             .Select( item => item.ItemInstanceKey )
@@ -118,88 +115,9 @@ public sealed class CharacterInventoryProjectionService
             bulk );
     }
 
-    private async Task<Dictionary<int, ItemProjectionCatalogLine>> ReadCatalogAsync(
-        int campaignId,
-        IReadOnlyCollection<ItemInstance> instances,
-        CancellationToken cancellationToken )
-    {
-        int[] configurationIds = instances
-            .Select( instance => instance.ItemConfigurationId )
-            .Distinct()
-            .ToArray();
-        if ( configurationIds.Length == 0 )
-        {
-            return [];
-        }
-
-        ItemConfiguration[] configurations = await _itemCatalogDbContext.ItemConfigurations
-            .AsNoTracking()
-            .Where( configuration =>
-                configurationIds.Contains( configuration.Id ) &&
-                ( configuration.CampaignId == null ||
-                  configuration.CampaignId == campaignId ) )
-            .ToArrayAsync( cancellationToken );
-        if ( configurations.Length != configurationIds.Length )
-        {
-            throw new InvalidOperationException(
-                "Character inventory contains a missing or cross-campaign item configuration." );
-        }
-
-        int[] revisionIds = configurations
-            .Select( configuration => configuration.ItemRevisionId )
-            .Distinct()
-            .ToArray();
-        ItemRevision[] revisions = await _itemCatalogDbContext.ItemRevisions
-            .AsNoTracking()
-            .Where( revision => revisionIds.Contains( revision.Id ) )
-            .ToArrayAsync( cancellationToken );
-        if ( revisions.Length != revisionIds.Length )
-        {
-            throw new InvalidOperationException(
-                "Character inventory contains a missing item revision." );
-        }
-
-        int[] definitionIds = revisions
-            .Select( revision => revision.ItemDefinitionId )
-            .Distinct()
-            .ToArray();
-        ItemDefinition[] definitions = await _itemCatalogDbContext.ItemDefinitions
-            .AsNoTracking()
-            .Where( definition => definitionIds.Contains( definition.Id ) )
-            .ToArrayAsync( cancellationToken );
-        bool definitionsAreVisible =
-            definitions.Length == definitionIds.Length &&
-            definitions.All( definition =>
-                definition.Scope == ItemCatalogScope.Global ||
-                ( definition.Scope == ItemCatalogScope.Campaign &&
-                  definition.CampaignId == campaignId ) );
-        if ( !definitionsAreVisible )
-        {
-            throw new InvalidOperationException(
-                "Character inventory contains a missing or cross-campaign item definition." );
-        }
-
-        Dictionary<int, ItemRevision> revisionsById = revisions
-            .ToDictionary( revision => revision.Id );
-        return configurations.ToDictionary(
-            configuration => configuration.Id,
-            configuration =>
-            {
-                ItemRevision revision = revisionsById[ configuration.ItemRevisionId ];
-                return new ItemProjectionCatalogLine(
-                    revision.RevisionNumber,
-                    revision.Name,
-                    revision.Description,
-                    revision.Level,
-                    revision.PrimaryCategory,
-                    revision.PriceInCopperPieces,
-                    ToBulkTenths( revision.Bulk ) );
-            } );
-    }
-
     private static CharacterInventoryItemDto ToDto(
         ItemInstance instance,
-        ItemProjectionCatalogLine catalog,
+        InventoryItemCatalogProjection catalog,
         bool isEquipped,
         bool isMigratedStartingEquipment )
     {
@@ -232,26 +150,6 @@ public sealed class CharacterInventoryProjectionService
             provenance );
     }
 
-    private static int ToBulkTenths( decimal bulk )
-    {
-        decimal tenths = bulk * 10;
-        if ( tenths != Decimal.Truncate( tenths ) )
-        {
-            throw new InvalidOperationException(
-                "Published item Bulk must use tenths for inventory projection." );
-        }
-
-        return Decimal.ToInt32( tenths );
-    }
-
-    private sealed record ItemProjectionCatalogLine(
-        int RevisionNumber,
-        string Name,
-        string Description,
-        int Level,
-        ItemCategory PrimaryCategory,
-        int PriceInCopperPieces,
-        int BulkTenths );
 }
 
 public sealed record CharacterInventoryDto(
