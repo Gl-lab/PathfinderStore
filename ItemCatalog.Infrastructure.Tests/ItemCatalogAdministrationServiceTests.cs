@@ -51,6 +51,77 @@ public sealed class ItemCatalogAdministrationServiceTests
     }
 
     [Fact]
+    public async Task EquivalentKeysRemainIsolatedBetweenCampaigns()
+    {
+        await using ItemCatalogDbContext dbContext = CreateContext();
+        FakeAdministrativeAccess firstCampaignAccess = new FakeAdministrativeAccess
+        {
+            AllowedCampaignId = 42,
+            AllowedUserId = 7
+        };
+        FakeAdministrativeAccess secondCampaignAccess = new FakeAdministrativeAccess
+        {
+            AllowedCampaignId = 43,
+            AllowedUserId = 7
+        };
+
+        ItemRevisionDto first = await CreateService( dbContext, firstCampaignAccess )
+            .CreateDraftAsync(
+                CreateRequest( ItemCatalogScope.Campaign, 42, 7, "gm" ),
+                CancellationToken.None );
+        ItemRevisionDto second = await CreateService( dbContext, secondCampaignAccess )
+            .CreateDraftAsync(
+                CreateRequest( ItemCatalogScope.Campaign, 43, 7, "gm" ),
+                CancellationToken.None );
+
+        Assert.NotEqual( first.ItemDefinitionId, second.ItemDefinitionId );
+        Assert.Equal( 2, dbContext.ItemDefinitions.Count() );
+        Assert.Contains(
+            dbContext.ItemDefinitions,
+            definition => definition.CampaignId == 42 );
+        Assert.Contains(
+            dbContext.ItemDefinitions,
+            definition => definition.CampaignId == 43 );
+    }
+
+    [Fact]
+    public async Task GameMasterCannotPublishAnotherCampaignDraft()
+    {
+        await using ItemCatalogDbContext dbContext = CreateContext();
+        FakeAdministrativeAccess ownerAccess = new FakeAdministrativeAccess
+        {
+            AllowedCampaignId = 42,
+            AllowedUserId = 7
+        };
+        ItemRevisionDto draft = await CreateService( dbContext, ownerAccess )
+            .CreateDraftAsync(
+                CreateRequest( ItemCatalogScope.Campaign, 42, 7, "owner-gm" ),
+                CancellationToken.None );
+        FakeAdministrativeAccess otherCampaignAccess = new FakeAdministrativeAccess
+        {
+            AllowedCampaignId = 43,
+            AllowedUserId = 8
+        };
+
+        await Assert.ThrowsAsync<ItemCatalogAccessDeniedException>( () =>
+            CreateService( dbContext, otherCampaignAccess )
+                .PublishAsync(
+                    draft.ItemDefinitionId,
+                    draft.RevisionNumber,
+                    8,
+                    "other-gm",
+                    CancellationToken.None ) );
+
+        Assert.Equal( (8, 42), otherCampaignAccess.LastCampaignCheck );
+        Assert.Equal(
+            ItemRevisionStatus.Draft,
+            Assert.Single( dbContext.ItemDefinitions )
+                .Revisions
+                .Single()
+                .Status );
+    }
+
+    [Fact]
     public async Task DraftCanBePublishedAndLifecycleIsPersisted()
     {
         await using ItemCatalogDbContext dbContext = CreateContext();
