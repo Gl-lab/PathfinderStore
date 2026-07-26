@@ -30,6 +30,9 @@
     <ProjectReference Include="..\ItemCatalog.Infrastructure\ItemCatalog.Infrastructure.csproj" />
     <ProjectReference Include="..\CampaignManagement.Infrastructure\CampaignManagement.Infrastructure.csproj" />
     <ProjectReference Include="..\CampaignManagement.Domain\CampaignManagement.Domain.csproj" />
+    <ProjectReference Include="..\Commerce.Application\Commerce.Application.csproj" />
+    <ProjectReference Include="..\Commerce.Domain\Commerce.Domain.csproj" />
+    <ProjectReference Include="..\Commerce.Infrastructure\Commerce.Infrastructure.csproj" />
     <ProjectReference Include="..\Inventory.Domain\Inventory.Domain.csproj" />
     <ProjectReference Include="..\Inventory.Application\Inventory.Application.csproj" />
     <ProjectReference Include="..\Inventory.Infrastructure\Inventory.Infrastructure.csproj" />

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -6,6 +7,9 @@ using Pathfinder.Commerce.Application.Transactions;
 using Pathfinder.Commerce.Domain.Exceptions;
 using Pathfinder.Inventory.Domain.Exceptions;
 using Pathfinder.Web.Controllers.Base;
+using Pathfinder.Web.Integration;
+using Pathfinder.Commerce.Application.Money;
+using Pathfinder.Commerce.Application.Shops;
 
 namespace Pathfinder.Web.Controllers;
 
@@ -13,10 +17,55 @@ namespace Pathfinder.Web.Controllers;
 public sealed class CommerceController : AuthorizedController
 {
     private readonly PurchaseReservationService _reservationService;
+    private readonly CommerceReadProjectionService _readProjectionService;
 
-    public CommerceController( PurchaseReservationService reservationService )
+    public CommerceController(
+        PurchaseReservationService reservationService,
+        CommerceReadProjectionService readProjectionService )
     {
         _reservationService = reservationService;
+        _readProjectionService = readProjectionService;
+    }
+
+    [HttpGet( "wallets/{characterId:int}" )]
+    public async Task<ActionResult<WalletDto>> GetWallet(
+        int campaignId,
+        int characterId,
+        CancellationToken cancellationToken )
+    {
+        try
+        {
+            WalletDto wallet = await _readProjectionService.GetWalletAsync(
+                campaignId,
+                characterId,
+                CurrentUserId(),
+                cancellationToken );
+            return Ok( wallet );
+        }
+        catch ( CommerceReadAccessDeniedException )
+        {
+            return Forbid();
+        }
+    }
+
+    [HttpGet( "settlements" )]
+    public async Task<ActionResult<IReadOnlyCollection<SettlementDto>>> GetSettlements(
+        int campaignId,
+        CancellationToken cancellationToken )
+    {
+        try
+        {
+            IReadOnlyCollection<SettlementDto> settlements =
+                await _readProjectionService.GetSettlementsAsync(
+                    campaignId,
+                    CurrentUserId(),
+                    cancellationToken );
+            return Ok( settlements );
+        }
+        catch ( CommerceReadAccessDeniedException )
+        {
+            return Forbid();
+        }
     }
 
     [HttpPost( "purchase-reservations" )]
