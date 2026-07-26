@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -13,6 +14,7 @@ using Pathfinder.Inventory.Application.Storage;
 using Pathfinder.Inventory.Application.Administration;
 using Pathfinder.Inventory.Domain.Exceptions;
 using Pathfinder.Web.Controllers.Base;
+using Pathfinder.Web.Integration;
 
 namespace Pathfinder.Web.Controllers;
 
@@ -20,14 +22,53 @@ namespace Pathfinder.Web.Controllers;
 public sealed class PartyInventoryController : AuthorizedController
 {
     private readonly IMediator _mediator;
+    private readonly CharacterInventoryProjectionService _projectionService;
     private readonly ILogger<PartyInventoryController> _logger;
 
     public PartyInventoryController(
         IMediator mediator,
+        CharacterInventoryProjectionService projectionService,
         ILogger<PartyInventoryController> logger )
     {
         _mediator = mediator;
+        _projectionService = projectionService;
         _logger = logger;
+    }
+
+    [HttpGet( "characters/{characterId:int}" )]
+    [ProducesResponseType( typeof( CharacterInventoryDto ), StatusCodes.Status200OK )]
+    [ProducesResponseType( StatusCodes.Status403Forbidden )]
+    [ProducesResponseType( StatusCodes.Status404NotFound )]
+    public async Task<ActionResult<CharacterInventoryDto>> GetCharacterInventory(
+        int campaignId,
+        int characterId,
+        CancellationToken cancellationToken )
+    {
+        try
+        {
+            CharacterInventoryDto inventory = await _projectionService.GetAsync(
+                campaignId,
+                characterId,
+                CurrentUserId(),
+                cancellationToken );
+            return Ok( inventory );
+        }
+        catch ( CharacterInventoryAccessDeniedException )
+        {
+            return Forbid();
+        }
+        catch ( CharacterInventoryNotFoundException )
+        {
+            return NotFound();
+        }
+        catch ( DbUpdateException exception )
+        {
+            return DatabaseUnavailable( exception );
+        }
+        catch ( PostgresException exception )
+        {
+            return DatabaseUnavailable( exception );
+        }
     }
 
     [HttpPost( "gifts" )]
