@@ -136,6 +136,8 @@ public sealed class AvatarSelectorTests
     [InlineData( "class.rogue", CharacterGender.Female, 2 )]
     [InlineData( "class.witch", CharacterGender.Male, 2 )]
     [InlineData( "class.witch", CharacterGender.Female, 2 )]
+    [InlineData( "class.wizard", CharacterGender.Male, 2 )]
+    [InlineData( "class.wizard", CharacterGender.Female, 2 )]
     public void RuntimeCatalogReturnsOnlyAcceptedElfAssets(
         string characterClassId,
         CharacterGender gender,
@@ -154,15 +156,37 @@ public sealed class AvatarSelectorTests
         Assert.All( result, avatar => Assert.EndsWith( ".webp", avatar.Path ) );
     }
 
+    [Theory]
+    [InlineData( "class.bard", CharacterGender.Male, 2 )]
+    [InlineData( "class.bard", CharacterGender.Female, 2 )]
+    [InlineData( "class.cleric", CharacterGender.Male, 2 )]
+    public void RuntimeCatalogReturnsOnlyAcceptedGnomeAssets(
+        string characterClassId,
+        CharacterGender gender,
+        int expectedCount )
+    {
+        AvatarCatalog catalog = new AvatarCatalog();
+
+        IReadOnlyList<AvatarDefinition> result = catalog.FindMatches( new AvatarSelectionCriteria(
+            AncestryType.Gnome,
+            characterClassId,
+            gender ) );
+
+        Assert.Equal( expectedCount, result.Count );
+        Assert.All( result, avatar => Assert.NotNull( avatar.Variant ) );
+        Assert.All( result, avatar => Assert.StartsWith( "/avatars/pc/", avatar.Path ) );
+        Assert.All( result, avatar => Assert.EndsWith( ".webp", avatar.Path ) );
+    }
+
     [Fact]
     public void RuntimeCatalogLeavesUncoveredCombinationEmpty()
     {
         AvatarCatalog catalog = new AvatarCatalog();
 
         IReadOnlyList<AvatarDefinition> result = catalog.FindMatches( new AvatarSelectionCriteria(
-            AncestryType.Elf,
-            "class.wizard",
-            CharacterGender.Male ) );
+            AncestryType.Gnome,
+            "class.cleric",
+            CharacterGender.Female ) );
 
         Assert.Empty( result );
     }
