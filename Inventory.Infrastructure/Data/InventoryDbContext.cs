@@ -85,6 +85,13 @@ public sealed class InventoryDbContext : DbContext
                     "\"BrokenThreshold\" <= \"MaximumHitPoints\" AND " +
                     "((\"CurrentHitPoints\" = 0 AND \"Quantity\" = 0) OR " +
                     "(\"CurrentHitPoints\" > 0 AND \"Quantity\" = 1)))" );
+                tableBuilder.HasCheckConstraint(
+                    "CK_ItemInstance_Rune",
+                    "(\"RuneTargetKind\" IS NULL AND \"AttachableRuneCode\" IS NULL AND " +
+                    "\"AttachedToInstanceKey\" IS NULL) OR " +
+                    "(\"RuneTargetKind\" IN (1, 2) AND " +
+                    "((\"AttachableRuneCode\" IS NULL AND \"AttachedToInstanceKey\" IS NULL) OR " +
+                    "(\"AttachableRuneCode\" IS NOT NULL)))" );
             } );
             builder.Property( instance => instance.CustomName )
                 .HasMaxLength( ItemInstance.CustomNameMaxLength );
@@ -92,11 +99,16 @@ public sealed class InventoryDbContext : DbContext
                 .HasConversion<int?>();
             builder.Property( instance => instance.ConsumptionMode )
                 .HasConversion<int?>();
+            builder.Property( instance => instance.RuneTargetKind )
+                .HasConversion<int?>();
+            builder.Property( instance => instance.AttachableRuneCode )
+                .HasMaxLength( ItemInstance.CustomNameMaxLength );
             builder.Property( instance => instance.Version )
                 .IsConcurrencyToken();
             builder.HasIndex( instance => instance.InstanceKey )
                 .IsUnique();
             builder.HasIndex( instance => instance.ItemConfigurationId );
+            builder.HasIndex( instance => instance.AttachedToInstanceKey );
             builder.HasOne<InventoryContainer>()
                 .WithMany()
                 .HasForeignKey( instance => new

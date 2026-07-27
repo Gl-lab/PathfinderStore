@@ -205,6 +205,62 @@ public sealed class InventoryPersistenceTests
         }
     }
 
+    [Fact]
+    public async Task ContextPersistsAttachedRune()
+    {
+        DbContextOptions<InventoryDbContext> options =
+            new DbContextOptionsBuilder<InventoryDbContext>()
+                .UseInMemoryDatabase( Guid.NewGuid().ToString() )
+                .Options;
+        Guid runeKey = Guid.NewGuid();
+        Guid targetKey = Guid.NewGuid();
+        await using ( InventoryDbContext writeContext = new InventoryDbContext( options ) )
+        {
+            InventoryContainer container = CreateContainer( 31 );
+            ItemInstance rune = ItemInstance.CreateAttachableRune(
+                runeKey,
+                17,
+                23,
+                "rune.potency",
+                ItemRuneTargetKind.Weapon,
+                container,
+                null,
+                _createdAtUtc );
+            ItemInstance target = ItemInstance.CreateRuneCompatible(
+                targetKey,
+                17,
+                24,
+                ItemRuneTargetKind.Weapon,
+                container,
+                null,
+                _createdAtUtc );
+            writeContext.Containers.Add( container );
+            writeContext.ItemInstances.AddRange( rune, target );
+            rune.AttachRuneTo(
+                target,
+                0,
+                0,
+                Guid.NewGuid(),
+                _createdAtUtc.AddMinutes( 1 ) );
+            await writeContext.SaveChangesAsync();
+        }
+
+        await using ( InventoryDbContext readContext = new InventoryDbContext( options ) )
+        {
+            ItemInstance rune = await readContext.ItemInstances
+                .Include( item => item.Operations )
+                .SingleAsync( item => item.InstanceKey == runeKey );
+            ItemInstance target = await readContext.ItemInstances
+                .Include( item => item.Operations )
+                .SingleAsync( item => item.InstanceKey == targetKey );
+
+            Assert.Equal( targetKey, rune.AttachedToInstanceKey );
+            Assert.Equal( "rune.potency", rune.AttachableRuneCode );
+            Assert.Single( rune.Operations );
+            Assert.Single( target.Operations );
+        }
+    }
+
     private static InventoryContainer CreateContainer( int ownerId )
     {
         return InventoryContainer.CreateRoot(

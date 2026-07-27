@@ -14,4 +14,6 @@ public enum InventoryOperationKind
     ConsumeItem = 9,
     DamageItem = 10,
     RepairItem = 11,
+    AttachRune = 12,
+    TransferRune = 13,
 }

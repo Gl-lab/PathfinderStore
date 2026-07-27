@@ -40,6 +40,9 @@ public sealed class ItemInstance : Entity, IAggregateRoot
     public int? MaximumHitPoints { get; private set; }
     public int? CurrentHitPoints { get; private set; }
     public int? BrokenThreshold { get; private set; }
+    public ItemRuneTargetKind? RuneTargetKind { get; private set; }
+    public string? AttachableRuneCode { get; private set; }
+    public Guid? AttachedToInstanceKey { get; private set; }
     public bool IsBroken =>
         CurrentHitPoints > 0 && CurrentHitPoints <= BrokenThreshold;
     public bool IsDestroyed =>
@@ -199,6 +202,58 @@ public sealed class ItemInstance : Entity, IAggregateRoot
         instance.MaximumHitPoints = maximumHitPoints;
         instance.CurrentHitPoints = maximumHitPoints;
         instance.BrokenThreshold = brokenThreshold;
+        return instance;
+    }
+
+    public static ItemInstance CreateRuneCompatible(
+        Guid instanceKey,
+        int campaignId,
+        int itemConfigurationId,
+        ItemRuneTargetKind runeTargetKind,
+        InventoryContainer initialContainer,
+        string? customName,
+        DateTimeOffset createdAtUtc )
+    {
+        EnsureRuneTargetKind( runeTargetKind );
+        ItemInstance instance = CreateCore(
+            instanceKey,
+            campaignId,
+            itemConfigurationId,
+            initialContainer,
+            customName,
+            false,
+            1,
+            createdAtUtc );
+        instance.RuneTargetKind = runeTargetKind;
+        return instance;
+    }
+
+    public static ItemInstance CreateAttachableRune(
+        Guid instanceKey,
+        int campaignId,
+        int itemConfigurationId,
+        string runeCode,
+        ItemRuneTargetKind runeTargetKind,
+        InventoryContainer initialContainer,
+        string? customName,
+        DateTimeOffset createdAtUtc )
+    {
+        EnsureRuneTargetKind( runeTargetKind );
+        string normalizedRuneCode = NormalizeRequiredText(
+            runeCode,
+            CustomNameMaxLength,
+            "Attachable rune code" );
+        ItemInstance instance = CreateCore(
+            instanceKey,
+            campaignId,
+            itemConfigurationId,
+            initialContainer,
+            customName,
+            false,
+            1,
+            createdAtUtc );
+        instance.AttachableRuneCode = normalizedRuneCode;
+        instance.RuneTargetKind = runeTargetKind;
         return instance;
     }
 
@@ -457,6 +512,118 @@ public sealed class ItemInstance : Entity, IAggregateRoot
             hitPoints,
             Version,
             repairedAtUtc ) );
+        return true;
+    }
+
+    public bool AttachRuneTo(
+        ItemInstance target,
+        int expectedVersion,
+        int targetExpectedVersion,
+        Guid operationId,
+        DateTimeOffset attachedAtUtc )
+    {
+        ArgumentNullException.ThrowIfNull( target );
+        EnsureOperationId( operationId );
+        InventoryOperation? replay = FindOperation( operationId );
+        InventoryOperation? targetReplay = target.FindOperation( operationId );
+        if ( replay is not null || targetReplay is not null )
+        {
+            EnsurePairedRuneReplay(
+                replay,
+                targetReplay,
+                InventoryOperationKind.AttachRune,
+                target );
+            return false;
+        }
+
+        EnsureExpectedVersion( expectedVersion );
+        target.EnsureExpectedVersion( targetExpectedVersion );
+        EnsureOperationTimestamp( attachedAtUtc );
+        target.EnsureOperationTimestamp( attachedAtUtc );
+        EnsureRuneCanAttachTo( target );
+        ApplyRuneAttachment(
+            target,
+            InventoryOperationKind.AttachRune,
+            operationId,
+            attachedAtUtc );
+        return true;
+    }
+
+    public bool TransferRuneTo(
+        ItemInstance sourceTarget,
+        ItemInstance destinationTarget,
+        int expectedVersion,
+        int sourceExpectedVersion,
+        int destinationExpectedVersion,
+        Guid operationId,
+        DateTimeOffset transferredAtUtc )
+    {
+        ArgumentNullException.ThrowIfNull( sourceTarget );
+        ArgumentNullException.ThrowIfNull( destinationTarget );
+        EnsureOperationId( operationId );
+        InventoryOperation? replay = FindOperation( operationId );
+        InventoryOperation? sourceReplay = sourceTarget.FindOperation( operationId );
+        InventoryOperation? destinationReplay = destinationTarget.FindOperation( operationId );
+        if ( replay is not null || sourceReplay is not null || destinationReplay is not null )
+        {
+            if ( replay is null || sourceReplay is null || destinationReplay is null )
+            {
+                throw new InventoryException(
+                    "Rune transfer operation history is inconsistent." );
+            }
+
+            replay.EnsureMatches(
+                InventoryOperationKind.TransferRune,
+                destinationTarget.InstanceKey,
+                1 );
+            sourceReplay.EnsureMatches(
+                InventoryOperationKind.TransferRune,
+                InstanceKey,
+                1 );
+            destinationReplay.EnsureMatches(
+                InventoryOperationKind.TransferRune,
+                InstanceKey,
+                1 );
+            return false;
+        }
+
+        EnsureExpectedVersion( expectedVersion );
+        sourceTarget.EnsureExpectedVersion( sourceExpectedVersion );
+        destinationTarget.EnsureExpectedVersion( destinationExpectedVersion );
+        EnsureOperationTimestamp( transferredAtUtc );
+        sourceTarget.EnsureOperationTimestamp( transferredAtUtc );
+        destinationTarget.EnsureOperationTimestamp( transferredAtUtc );
+        if ( AttachedToInstanceKey != sourceTarget.InstanceKey )
+        {
+            throw new InventoryException( "Rune is not attached to the source item instance." );
+        }
+
+        EnsureRuneCanAttachTo( destinationTarget, true );
+        AttachedToInstanceKey = destinationTarget.InstanceKey;
+        Version++;
+        sourceTarget.Version++;
+        destinationTarget.Version++;
+        _operations.Add( InventoryOperation.Create(
+            operationId,
+            InventoryOperationKind.TransferRune,
+            destinationTarget.InstanceKey,
+            1,
+            Version,
+            transferredAtUtc ) );
+        sourceTarget._operations.Add( InventoryOperation.Create(
+            operationId,
+            InventoryOperationKind.TransferRune,
+            InstanceKey,
+            1,
+            sourceTarget.Version,
+            transferredAtUtc ) );
+        destinationTarget._operations.Add( InventoryOperation.Create(
+            operationId,
+            InventoryOperationKind.TransferRune,
+            InstanceKey,
+            1,
+            destinationTarget.Version,
+            transferredAtUtc ) );
         return true;
     }
 
@@ -1089,6 +1256,14 @@ public sealed class ItemInstance : Entity, IAggregateRoot
         }
     }
 
+    private static void EnsureRuneTargetKind( ItemRuneTargetKind runeTargetKind )
+    {
+        if ( !Enum.IsDefined( runeTargetKind ) )
+        {
+            throw new InventoryException( "Rune target kind is invalid." );
+        }
+    }
+
     private void EnsureExpectedVersion( int expectedVersion )
     {
         if ( expectedVersion != Version )
@@ -1231,6 +1406,76 @@ public sealed class ItemInstance : Entity, IAggregateRoot
         {
             throw new InventoryException( "Item instance does not have durability." );
         }
+    }
+
+    private void EnsureRuneCanAttachTo(
+        ItemInstance target,
+        bool allowExistingAttachment = false )
+    {
+        if ( AttachableRuneCode is null || RuneTargetKind is null )
+        {
+            throw new InventoryException( "Item instance is not an attachable rune." );
+        }
+
+        if ( !allowExistingAttachment && AttachedToInstanceKey is not null )
+        {
+            throw new InventoryException( "Rune is already attached to an item instance." );
+        }
+
+        EnsureNotReserved();
+        target.EnsureNotReserved();
+        if ( IsDepleted || target.IsDepleted ||
+             CampaignId != target.CampaignId ||
+             target.InstanceKey == InstanceKey )
+        {
+            throw new InventoryException( "Rune cannot attach to the requested item instance." );
+        }
+
+        if ( target.AttachableRuneCode is not null ||
+             target.RuneTargetKind != RuneTargetKind )
+        {
+            throw new InventoryException( "Rune is incompatible with the target item instance." );
+        }
+    }
+
+    private void ApplyRuneAttachment(
+        ItemInstance target,
+        InventoryOperationKind kind,
+        Guid operationId,
+        DateTimeOffset appliedAtUtc )
+    {
+        AttachedToInstanceKey = target.InstanceKey;
+        Version++;
+        target.Version++;
+        _operations.Add( InventoryOperation.Create(
+            operationId,
+            kind,
+            target.InstanceKey,
+            1,
+            Version,
+            appliedAtUtc ) );
+        target._operations.Add( InventoryOperation.Create(
+            operationId,
+            kind,
+            InstanceKey,
+            1,
+            target.Version,
+            appliedAtUtc ) );
+    }
+
+    private void EnsurePairedRuneReplay(
+        InventoryOperation? runeReplay,
+        InventoryOperation? targetReplay,
+        InventoryOperationKind kind,
+        ItemInstance target )
+    {
+        if ( runeReplay is null || targetReplay is null )
+        {
+            throw new InventoryException( "Rune operation history is inconsistent." );
+        }
+
+        runeReplay.EnsureMatches( kind, target.InstanceKey, 1 );
+        targetReplay.EnsureMatches( kind, InstanceKey, 1 );
     }
 
     private static string? NormalizeCustomName( string? customName )
