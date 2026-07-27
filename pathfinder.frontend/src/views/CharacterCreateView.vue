@@ -9,15 +9,18 @@ import {
   getAncestryChoiceLabel,
   getAncestryLabel,
   getBackgroundLabel,
+  getCatalogLabel,
   getCharacterClassLabel,
+  getLanguageLabel,
 } from '@/i18n/domain'
 import type {
   AbilityCode,
   AncestryCode,
+  Proficiency,
   ProficiencyCategory,
   ProficiencyRank,
 } from '@/features/characters/api'
-import { formatProficiency, groupProficiencies } from '@/features/characters/proficiencies'
+import { groupProficiencies } from '@/features/characters/proficiencies'
 import {
   isSelectableCharacterGender,
   type SelectableCharacterGender,
@@ -46,6 +49,7 @@ import {
   getClassKits,
   type Ancestry,
   type Background,
+  type BackgroundGrant,
   type BackgroundTrainingChoice,
   type CharacterClass,
   type ClassSkillGrantChoice,
@@ -79,7 +83,6 @@ import {
 import {
   getBackgroundFreeBoostOptions,
   createBackgroundTrainingChoices,
-  getBackgroundTrainingLabels,
   isBackgroundChoiceComplete,
   isBackgroundTrainingComplete,
 } from '@/features/character-creation/background'
@@ -1224,7 +1227,43 @@ function getRogueChoice(grantId: string): RogueTrainingChoice | undefined {
   return form.value.rogueTrainingChoices.find((choice) => choice.grantId === grantId)
 }
 function getSkillName(skillId: string | null): string {
-  return skills.value.find((skill) => skill.id === skillId)?.name ?? skillId ?? ''
+  if (!skillId) {
+    return ''
+  }
+  const skill = skills.value.find((item) => item.id === skillId)
+  return getCatalogLabel(skillId, skill?.name ?? skillId)
+}
+function getCatalogItemTitle(item: { id: string; name: string }): string {
+  return getCatalogLabel(item.id, item.name)
+}
+function formatCatalogNames(items: { id: string; name: string }[]): string {
+  return items.map(getCatalogItemTitle).join(', ')
+}
+function getBackgroundGrantLabel(grant: BackgroundGrant): string {
+  if (grant.targetId) {
+    return getCatalogLabel(grant.targetId, grant.name)
+  }
+  return t(`wizard.backgroundGrantKinds.${grant.kind}`)
+}
+function getLocalizedBackgroundTrainingLabels(background: Background): string[] {
+  return background.grants
+    .filter((grant) => ['SkillTraining', 'LoreTraining', 'SkillFeat'].includes(grant.kind))
+    .map((grant) => {
+      if (!grant.requiresChoice) {
+        return grant.targetId
+          ? getCatalogLabel(grant.targetId, grant.name)
+          : getBackgroundGrantLabel(grant)
+      }
+
+      const choice = form.value.backgroundTrainingChoices.find((item) => item.grantId === grant.id)
+      if (grant.allowsCustomLore) {
+        const topic = choice?.customLoreTopic?.trim()
+        return topic ? t('wizard.customLoreLabel', { topic }) : getBackgroundGrantLabel(grant)
+      }
+
+      const option = grant.options.find((item) => item.id === choice?.targetId)
+      return option ? getCatalogLabel(option.id, option.name) : getBackgroundGrantLabel(grant)
+    })
 }
 function getReplacementOptions(grantId: string): Skill[] {
   const used = new Set([
@@ -1313,6 +1352,11 @@ function getProficiencyRankLabel(rank: ProficiencyRank): string {
 }
 function getProficiencyCategoryLabel(category: ProficiencyCategory): string {
   return t(`proficiencies.categories.${category}`)
+}
+function formatLocalizedProficiency(proficiency: Proficiency): string {
+  return `${getCatalogLabel(proficiency.targetId, proficiency.name)} — ${getProficiencyRankLabel(
+    proficiency.rank,
+  )}`
 }
 function formatAbilities(types: AbilityCode[]): string {
   return types.map(getAbilityLabel).join(', ') || t('wizard.none')
@@ -1861,28 +1905,24 @@ watch(
                   v-if="grant.requiresChoice && !grant.allowsCustomLore"
                   :model-value="getBackgroundTrainingChoice(grant.id)?.targetId"
                   :items="grant.options"
-                  item-title="name"
+                  :item-title="getCatalogItemTitle"
                   item-value="id"
-                  :label="grant.name"
+                  :label="getBackgroundGrantLabel(grant)"
                   @update:model-value="selectBackgroundTrainingTarget(grant.id, $event)"
                 />
                 <v-text-field
                   v-else-if="grant.allowsCustomLore && grant.kind === 'LoreTraining'"
                   :model-value="getBackgroundTrainingChoice(grant.id)?.customLoreTopic"
-                  :label="grant.name"
-                  :hint="grant.summary"
+                  :label="getBackgroundGrantLabel(grant)"
+                  :hint="t('wizard.backgroundGrantDescriptions.LoreTraining')"
                   maxlength="100"
                   persistent-hint
                   @update:model-value="setBackgroundLoreTopic(grant.id, $event)"
                 />
                 <v-list-item
                   v-else
-                  :title="grant.name"
-                  :subtitle="
-                    grant.kind === 'SkillFeat'
-                      ? `${grant.summary} ${t('wizard.deferredFeat')}`
-                      : grant.summary
-                  "
+                  :title="getBackgroundGrantLabel(grant)"
+                  :subtitle="t(`wizard.backgroundGrantDescriptions.${grant.kind}`)"
                 />
               </template>
             </div>
@@ -1907,7 +1947,7 @@ watch(
               v-if="selectedCharacterClass.id === 'class.bard'"
               :model-value="form.bardMuseId"
               :items="bardMuses"
-              item-title="name"
+              :item-title="getCatalogItemTitle"
               item-value="id"
               :label="t('classUi.bardMuse')"
               @update:model-value="selectBardMuse"
@@ -1925,7 +1965,7 @@ watch(
               v-if="selectedCharacterClass.id === 'class.witch'"
               :model-value="form.witchPatronId"
               :items="witchPatrons"
-              item-title="name"
+              :item-title="getCatalogItemTitle"
               item-value="id"
               :label="t('classUi.witchPatron')"
               @update:model-value="selectWitchPatron"
@@ -1934,7 +1974,7 @@ watch(
               v-if="witchPatronFamiliarSpellOptions.length > 1"
               v-model="form.witchPatronFamiliarSpellId"
               :items="witchPatronFamiliarSpellOptions"
-              item-title="name"
+              :item-title="getCatalogItemTitle"
               item-value="id"
               :label="t('classUi.witchPatronFamiliarSpell')"
             />
@@ -1944,14 +1984,14 @@ watch(
               type="info"
               variant="tonal"
             >
-              {{ t(`classUi.witchPatronBenefitKinds.${benefit.kind}`) }}: {{ benefit.name }} —
-              {{ benefit.summary }}
+              {{ t(`classUi.witchPatronBenefitKinds.${benefit.kind}`) }}:
+              {{ getCatalogLabel(benefit.id, benefit.name) }}
             </v-alert>
             <v-select
               v-if="selectedCharacterClass.id === 'class.wizard'"
               :model-value="form.arcaneSchoolId"
               :items="arcaneSchools"
-              item-title="name"
+              :item-title="getCatalogItemTitle"
               item-value="id"
               :label="t('classUi.arcaneSchool')"
               @update:model-value="selectArcaneSchool"
@@ -1961,7 +2001,9 @@ watch(
                 v-for="group in arcaneSchoolCurriculum"
                 :key="`curriculum-${group.rank}`"
                 :title="t('classUi.curriculumRank', { rank: group.rank })"
-                :subtitle="group.spells.map((spell) => spell.name).join(', ')"
+                :subtitle="
+                  group.spells.map((spell) => getCatalogLabel(spell.id, spell.name)).join(', ')
+                "
               />
             </v-list>
             <v-alert
@@ -1970,14 +2012,14 @@ watch(
               type="info"
               variant="tonal"
             >
-              {{ t(`classUi.arcaneSchoolBenefitKinds.${benefit.kind}`) }}: {{ benefit.name }} —
-              {{ benefit.summary }}
+              {{ t(`classUi.arcaneSchoolBenefitKinds.${benefit.kind}`) }}:
+              {{ getCatalogLabel(benefit.id, benefit.name) }}
             </v-alert>
             <v-select
               v-if="selectedCharacterClass.id === 'class.wizard'"
               v-model="form.arcaneThesisId"
               :items="arcaneTheses"
-              item-title="name"
+              :item-title="getCatalogItemTitle"
               item-value="id"
               :label="t('classUi.arcaneThesis')"
             />
@@ -1987,8 +2029,7 @@ watch(
               type="info"
               variant="tonal"
             >
-              {{ t(`classUi.arcaneThesisEffectKinds.${effect.kind}`) }}: {{ effect.name }} —
-              {{ effect.summary }}
+              {{ t(`classUi.arcaneThesisEffectKinds.${effect.kind}`) }}
               {{
                 t('classUi.arcaneThesisMilestones', {
                   levels: formatArcaneThesisMilestones(effect.milestoneLevels),
@@ -2000,7 +2041,7 @@ watch(
               :key="slot.sourceId"
               :model-value="getClassFeatChoice(slot.sourceId)"
               :items="getClassFeatOptions(slot.sourceId, slot.requiresSpellshape)"
-              item-title="name"
+              :item-title="getCatalogItemTitle"
               item-value="id"
               :label="slot.name"
               @update:model-value="setClassFeatChoice(slot.sourceId, $event)"
@@ -2009,7 +2050,7 @@ watch(
               v-if="selectedCharacterClass.id === 'class.druid'"
               :model-value="form.druidicOrderId"
               :items="druidicOrders"
-              item-title="name"
+              :item-title="getCatalogItemTitle"
               item-value="id"
               :label="t('classUi.druidicOrder')"
               @update:model-value="selectDruidicOrder"
@@ -2027,7 +2068,7 @@ watch(
               v-if="selectedCharacterClass.id === 'class.ranger'"
               v-model="form.huntersEdgeId"
               :items="huntersEdges"
-              item-title="name"
+              :item-title="getCatalogItemTitle"
               item-value="id"
               :label="t('classUi.huntersEdge')"
             />
@@ -2042,7 +2083,7 @@ watch(
               v-if="selectedCharacterClass.id === 'class.rogue'"
               :model-value="form.rogueRacketId"
               :items="rogueRackets"
-              item-title="name"
+              :item-title="getCatalogItemTitle"
               item-value="id"
               :label="t('classUi.rogueRacket')"
               @update:model-value="selectRogueRacket"
@@ -2051,7 +2092,7 @@ watch(
               v-if="selectedCharacterClass.id === 'class.cleric'"
               :model-value="form.clericDoctrineId"
               :items="clericDoctrines"
-              item-title="name"
+              :item-title="getCatalogItemTitle"
               item-value="id"
               :label="t('classUi.clericDoctrine')"
               @update:model-value="selectClericDoctrine"
@@ -2060,7 +2101,7 @@ watch(
               <v-select
                 :model-value="form.deityId"
                 :items="eligibleDeities"
-                item-title="name"
+                :item-title="getCatalogItemTitle"
                 item-value="id"
                 :label="t('classUi.deity')"
                 @update:model-value="selectDeity"
@@ -2081,13 +2122,18 @@ watch(
                 v-if="selectedClericDoctrine?.id === 'cleric_doctrine.cloistered' && selectedDeity"
                 v-model="form.clericDomainId"
                 :items="availableClericDomains"
-                item-title="name"
+                :item-title="getCatalogItemTitle"
                 item-value="id"
                 :label="t('classUi.clericDomain')"
               />
               <v-alert v-if="selectedClericDomain" type="info" variant="tonal">
                 {{ t('classUi.initialDomainSpell') }}:
-                {{ selectedClericDomain.initialFocusPool.focusSpell.name }}.
+                {{
+                  getCatalogLabel(
+                    selectedClericDomain.initialFocusPool.focusSpell.id,
+                    selectedClericDomain.initialFocusPool.focusSpell.name,
+                  )
+                }}.
                 {{ t('classUi.focusPoints') }}:
                 {{ selectedClericDomain.initialFocusPool.maximumFocusPoints }}.
               </v-alert>
@@ -2107,7 +2153,7 @@ watch(
                 v-if="requiresDeitySkillReplacement(selectedDeity, backgroundSkillIds)"
                 v-model="form.deitySkillReplacementId"
                 :items="getDeityReplacementOptions()"
-                item-title="name"
+                :item-title="getCatalogItemTitle"
                 item-value="id"
                 :label="t('classUi.deitySkillReplacement')"
                 :hint="
@@ -2120,12 +2166,21 @@ watch(
               <v-alert v-if="selectedDeity" type="info" variant="tonal">
                 {{ t('classUi.divineSkill') }}: {{ getSkillName(selectedDeity.divineSkillId) }}.
                 {{ t('classUi.favoredWeapon') }}:
-                {{ selectedDeity.favoredWeapons.map((weapon) => weapon.name).join(', ') }}.
-                {{ t('classUi.domains') }}: {{ selectedDeity.primaryDomainIds.join(', ') }}.
+                {{
+                  selectedDeity.favoredWeapons
+                    .map((weapon) => getCatalogLabel(weapon.id, weapon.name))
+                    .join(', ')
+                }}.
+                {{ t('classUi.domains') }}:
+                {{
+                  selectedDeity.primaryDomainIds
+                    .map((domainId) => getCatalogLabel(domainId, domainId))
+                    .join(', ')
+                }}.
                 {{ t('classUi.grantedSpells') }}:
                 {{
                   selectedDeity.grantedSpells
-                    .map((spell) => `${spell.rank}: ${spell.name}`)
+                    .map((spell) => `${spell.rank}: ${getCatalogLabel(spell.id, spell.name)}`)
                     .join(', ')
                 }}.
                 {{ t('classUi.deferredDeityBenefits') }}
@@ -2177,7 +2232,7 @@ watch(
                   "
                   :model-value="getRogueChoice(grant.id)?.replacementSkillId"
                   :items="getReplacementOptions(grant.id)"
-                  item-title="name"
+                  :item-title="getCatalogItemTitle"
                   item-value="id"
                   :label="t('classUi.replacementSkill')"
                   @update:model-value="
@@ -2215,7 +2270,7 @@ watch(
                 :title="getProficiencyCategoryLabel(group.category)"
                 :subtitle="
                   group.items
-                    .map((item) => formatProficiency(item, getProficiencyRankLabel))
+                    .map(formatLocalizedProficiency)
                     .join(', ')
                 "
               />
@@ -2224,11 +2279,9 @@ watch(
               <v-list-item
                 v-for="rule in selectedCharacterClass.rules"
                 :key="rule.id"
-                :title="rule.name"
+                :title="t(`classUi.ruleKinds.${rule.kind}`)"
                 :subtitle="
-                  rule.deferredDependencies.length
-                    ? `${rule.summary} ${t('classUi.deferredChoice')}`
-                    : rule.summary
+                  rule.requiresChoice ? t('classUi.ruleChoiceRequired') : t('classUi.ruleGranted')
                 "
               />
             </v-list>
@@ -2241,7 +2294,7 @@ watch(
             <v-select
               :model-value="form.clericCantripIds"
               :items="clericSpellOptions.cantrips.map((option) => option.spell)"
-              item-title="name"
+              :item-title="getCatalogItemTitle"
               item-value="id"
               :label="
                 formatSelectionProgress(t('classUi.clericCantrips'), form.clericCantripIds.length, 5)
@@ -2266,7 +2319,7 @@ watch(
               :key="index"
               v-model="form.clericPreparedSpellIds[index]"
               :items="clericSpellOptions.rankOneSpells.map((option) => option.spell)"
-              item-title="name"
+              :item-title="getCatalogItemTitle"
               item-value="id"
               :label="t('classUi.clericSpellSlot', { number: index + 1 })"
             />
@@ -2280,7 +2333,7 @@ watch(
             <v-select
               :model-value="form.bardCantripIds"
               :items="bardSpellOptions.cantrips"
-              item-title="name"
+              :item-title="getCatalogItemTitle"
               item-value="id"
               :label="
                 formatSelectionProgress(t('classUi.bardCantrips'), form.bardCantripIds.length, 5)
@@ -2294,7 +2347,7 @@ watch(
             <v-select
               :model-value="form.bardSpellIds"
               :items="bardRankOneSpellOptions"
-              item-title="name"
+              :item-title="getCatalogItemTitle"
               item-value="id"
               :label="
                 formatSelectionProgress(
@@ -2325,7 +2378,7 @@ watch(
             <v-select
               :model-value="form.druidCantripIds"
               :items="druidSpellOptions.cantrips"
-              item-title="name"
+              :item-title="getCatalogItemTitle"
               item-value="id"
               :label="
                 formatSelectionProgress(t('classUi.druidCantrips'), form.druidCantripIds.length, 5)
@@ -2350,7 +2403,7 @@ watch(
               :key="index"
               v-model="form.druidPreparedSpellIds[index]"
               :items="druidSpellOptions.rankOneSpells"
-              item-title="name"
+              :item-title="getCatalogItemTitle"
               item-value="id"
               :label="t('classUi.druidSpellSlot', { number: index + 1 })"
             />
@@ -2364,7 +2417,7 @@ watch(
             <v-select
               :model-value="form.witchFamiliarCantripIds"
               :items="witchSpellOptions.cantrips"
-              item-title="name"
+              :item-title="getCatalogItemTitle"
               item-value="id"
               :label="
                 t('classUi.witchSelectionProgress', {
@@ -2381,7 +2434,7 @@ watch(
             <v-select
               :model-value="form.witchFamiliarSpellIds"
               :items="witchFamiliarRankOneOptions"
-              item-title="name"
+              :item-title="getCatalogItemTitle"
               item-value="id"
               :label="
                 t('classUi.witchSelectionProgress', {
@@ -2401,7 +2454,7 @@ watch(
             <v-select
               :model-value="form.witchPreparedCantripIds"
               :items="selectedWitchFamiliarCantrips"
-              item-title="name"
+              :item-title="getCatalogItemTitle"
               item-value="id"
               :label="
                 t('classUi.witchSelectionProgress', {
@@ -2429,14 +2482,14 @@ watch(
               :key="index"
               v-model="form.witchPreparedSpellIds[index]"
               :items="witchKnownRankOneOptions"
-              item-title="name"
+              :item-title="getCatalogItemTitle"
               item-value="id"
               :label="t('classUi.witchSpellSlot', { number: index + 1 })"
             />
             <v-select
               v-model="form.witchFocusHexId"
               :items="selectedWitchPatron?.initialFocusHexOptions ?? []"
-              item-title="name"
+              :item-title="getCatalogItemTitle"
               item-value="id"
               :label="t('classUi.witchFocusHex')"
             />
@@ -2446,7 +2499,7 @@ watch(
             <v-select
               v-model="form.wizardSpellbookCantripIds"
               :items="wizardSpellOptions.cantrips"
-              item-title="name"
+              :item-title="getCatalogItemTitle"
               item-value="id"
               :label="
                 formatSelectionProgress(
@@ -2463,7 +2516,7 @@ watch(
             <v-select
               v-model="form.wizardSpellbookSpellIds"
               :items="wizardSpellOptions.rankOneSpells"
-              item-title="name"
+              :item-title="getCatalogItemTitle"
               item-value="id"
               :label="
                 formatSelectionProgress(
@@ -2483,7 +2536,7 @@ watch(
               <v-select
                 v-model="form.wizardCurriculumCantripId"
                 :items="wizardCurriculumCantripOptions"
-                item-title="name"
+                :item-title="getCatalogItemTitle"
                 item-value="id"
                 :label="
                   formatSelectionProgress(
@@ -2496,7 +2549,7 @@ watch(
               <v-select
                 v-model="form.wizardCurriculumSpellIds"
                 :items="wizardCurriculumRankOneOptions"
-                item-title="name"
+                :item-title="getCatalogItemTitle"
                 item-value="id"
                 :label="
                   formatSelectionProgress(
@@ -2514,7 +2567,7 @@ watch(
             <v-select
               v-model="form.wizardPreparedCantripIds"
               :items="selectedWizardSpellbookCantrips"
-              item-title="name"
+              :item-title="getCatalogItemTitle"
               item-value="id"
               :label="
                 formatSelectionProgress(
@@ -2542,7 +2595,7 @@ watch(
               :key="`wizard-slot-${index}`"
               v-model="form.wizardPreparedSpellIds[index]"
               :items="selectedWizardSpellbookSpells"
-              item-title="name"
+              :item-title="getCatalogItemTitle"
               item-value="id"
               :label="t('classUi.wizardSpellSlot', { number: index + 1 })"
             />
@@ -2550,7 +2603,7 @@ watch(
               <v-select
                 v-model="form.wizardPreparedCurriculumCantripId"
                 :items="wizardCurriculumCantripOptions"
-                item-title="name"
+                :item-title="getCatalogItemTitle"
                 item-value="id"
                 :label="
                   formatSelectionProgress(
@@ -2563,7 +2616,7 @@ watch(
               <v-select
                 v-model="form.wizardPreparedCurriculumSpellId"
                 :items="wizardCurriculumRankOneOptions"
-                item-title="name"
+                :item-title="getCatalogItemTitle"
                 item-value="id"
                 :label="
                   formatSelectionProgress(
@@ -2608,7 +2661,7 @@ watch(
             v-if="languageSelectionOptions.requiredCount > 0"
             :model-value="form.additionalLanguageIds"
             :items="languageSelectionOptions.availableLanguages"
-            item-title="name"
+            :item-title="(language) => getLanguageLabel(language.id)"
             item-value="id"
             multiple
             chips
@@ -2636,7 +2689,7 @@ watch(
               v-if="grant.skillOptions.length > 1"
               :model-value="getClassGrantChoice(grant.id)?.selectedSkillId"
               :items="skills.filter((skill) => grant.skillOptions.includes(skill.id))"
-              item-title="name"
+              :item-title="getCatalogItemTitle"
               item-value="id"
               :label="t('classUi.initialClassSkill')"
               @update:model-value="
@@ -2661,7 +2714,7 @@ watch(
                     getClassGrantChoice(grant.id)?.replacementTarget ?? null,
                   )
                 "
-                item-title="name"
+                :item-title="getCatalogItemTitle"
                 item-value="id"
                 clearable
                 :label="t('classUi.replacementSkill')"
@@ -2684,7 +2737,7 @@ watch(
             <v-select
               :model-value="choice.skillId"
               :items="getClassTrainingSkillOptions(choice)"
-              item-title="name"
+              :item-title="getCatalogItemTitle"
               item-value="id"
               clearable
               :label="t('classUi.additionalSkill', { number: index + 1 })"
@@ -2747,7 +2800,7 @@ watch(
             "
             v-model="form.deityFavoredWeaponEquipmentId"
             :items="availableFavoredWeapons"
-            item-title="name"
+            :item-title="getCatalogItemTitle"
             item-value="id"
             :label="t('equipment.favoredWeapon')"
           />
@@ -2809,12 +2862,7 @@ watch(
               " /><v-list-item
               v-if="selectedBackground"
               :title="t('wizard.backgroundTraining')"
-              :subtitle="
-                getBackgroundTrainingLabels(
-                  selectedBackground,
-                  form.backgroundTrainingChoices,
-                ).join(', ')
-              " /><v-list-item
+              :subtitle="getLocalizedBackgroundTrainingLabels(selectedBackground).join(', ')" /><v-list-item
               v-if="selectedBackground && selectedBackgroundFeatDefinition"
               :title="t('feats.backgroundFeat')"
               :subtitle="
@@ -2869,16 +2917,16 @@ watch(
               :subtitle="selectedBardMuse.name" /><v-list-item
               v-if="selectedWitchPatron"
               :title="t('classUi.witchPatron')"
-              :subtitle="selectedWitchPatron.name" /><v-list-item
+              :subtitle="getCatalogLabel(selectedWitchPatron.id, selectedWitchPatron.name)" /><v-list-item
               v-if="form.witchFamiliarCantripIds.length"
               :title="t('classUi.witchFamiliarCantrips')"
               :subtitle="
-                selectedWitchFamiliarCantrips.map((spell) => spell.name).join(', ')
+                formatCatalogNames(selectedWitchFamiliarCantrips)
               " /><v-list-item
               v-if="selectedWitchFamiliarSpells.length"
               :title="t('classUi.witchFamiliarSpells')"
               :subtitle="
-                selectedWitchFamiliarSpells.map((spell) => spell.name).join(', ')
+                formatCatalogNames(selectedWitchFamiliarSpells)
               " /><v-list-item
               v-if="form.witchPreparedCantripIds.length"
               :title="t('classUi.witchPreparedCantrips')"
@@ -2911,21 +2959,21 @@ watch(
               v-for="benefit in selectedWitchPatron?.benefits ?? []"
               :key="`review-${benefit.id}`"
               :title="t(`classUi.witchPatronBenefitKinds.${benefit.kind}`)"
-              :subtitle="`${benefit.name} — ${benefit.summary}`" /><v-list-item
+              :subtitle="getCatalogLabel(benefit.id, benefit.name)" /><v-list-item
               v-if="selectedArcaneSchool"
               :title="t('classUi.arcaneSchool')"
-              :subtitle="selectedArcaneSchool.name" /><v-list-item
+              :subtitle="getCatalogLabel(selectedArcaneSchool.id, selectedArcaneSchool.name)" /><v-list-item
               v-if="form.wizardSpellbookCantripIds.length"
               :title="t('classUi.wizardSpellbookCantrips')"
               :subtitle="
-                selectedWizardSpellbookCantrips.map((spell) => spell.name).join(', ')
+                formatCatalogNames(selectedWizardSpellbookCantrips)
               " /><v-list-item
               v-if="form.wizardSpellbookSpellIds.length"
               :title="
                 t('classUi.wizardSpellbookSpells', { count: form.wizardSpellbookSpellIds.length })
               "
               :subtitle="
-                selectedWizardSpellbookSpells.map((spell) => spell.name).join(', ')
+                formatCatalogNames(selectedWizardSpellbookSpells)
               " /><v-list-item
               v-if="form.wizardCurriculumCantripId"
               :title="t('classUi.wizardCurriculumCantrip')"
@@ -2965,14 +3013,16 @@ watch(
               v-for="benefit in selectedArcaneSchool?.benefits ?? []"
               :key="`review-school-${benefit.id}`"
               :title="t(`classUi.arcaneSchoolBenefitKinds.${benefit.kind}`)"
-              :subtitle="`${benefit.name} — ${benefit.summary}`" /><v-list-item
+              :subtitle="getCatalogLabel(benefit.id, benefit.name)" /><v-list-item
               v-if="selectedArcaneThesis"
               :title="t('classUi.arcaneThesis')"
-              :subtitle="selectedArcaneThesis.name" /><v-list-item
+              :subtitle="
+                getCatalogLabel(selectedArcaneThesis.id, selectedArcaneThesis.name)
+              " /><v-list-item
               v-for="effect in selectedArcaneThesis?.effects ?? []"
               :key="`review-thesis-${effect.id}`"
               :title="t(`classUi.arcaneThesisEffectKinds.${effect.kind}`)"
-              :subtitle="`${effect.name} — ${effect.summary} (${formatArcaneThesisMilestones(effect.milestoneLevels)})`" /><v-list-item
+              :subtitle="formatArcaneThesisMilestones(effect.milestoneLevels)" /><v-list-item
               v-for="benefit in selectedBardMuse?.benefits ?? []"
               :key="`review-${benefit.id}`"
               :title="t(`classUi.bardMuseBenefitKinds.${benefit.kind}`)"
@@ -2992,13 +3042,20 @@ watch(
               :subtitle="t('classUi.bardCompositionSummary')" /><v-list-item
               v-if="selectedClericDoctrine"
               :title="t('classUi.clericDoctrine')"
-              :subtitle="selectedClericDoctrine.name" /><v-list-item
+              :subtitle="
+                getCatalogLabel(selectedClericDoctrine.id, selectedClericDoctrine.name)
+              " /><v-list-item
               v-if="selectedDeity"
               :title="t('classUi.deity')"
-              :subtitle="selectedDeity.name" /><v-list-item
+              :subtitle="getCatalogLabel(selectedDeity.id, selectedDeity.name)" /><v-list-item
               v-if="selectedClericDomain"
               :title="t('classUi.clericDomain')"
-              :subtitle="`${selectedClericDomain.name} — ${selectedClericDomain.initialFocusSpell.name}`" /><v-list-item
+              :subtitle="
+                `${getCatalogLabel(selectedClericDomain.id, selectedClericDomain.name)} — ${getCatalogLabel(
+                  selectedClericDomain.initialFocusSpell.id,
+                  selectedClericDomain.initialFocusSpell.name,
+                )}`
+              " /><v-list-item
               v-if="selectedClericDomain"
               :title="t('classUi.focusPool')"
               :subtitle="`${selectedClericDomain.initialFocusPool.focusSpell.name}: ${selectedClericDomain.initialFocusPool.maximumFocusPoints}`" /><v-list-item
@@ -3020,7 +3077,11 @@ watch(
               :subtitle="`4 × ${t(`classUi.divineFonts.${form.divineFont}`)}`" /><v-list-item
               v-if="selectedDeity"
               :title="t('classUi.domains')"
-              :subtitle="selectedDeity.primaryDomainIds.join(', ')" /><v-list-item
+              :subtitle="
+                selectedDeity.primaryDomainIds
+                  .map((domainId) => getCatalogLabel(domainId, domainId))
+                  .join(', ')
+              " /><v-list-item
               v-if="selectedCharacterClass"
               :title="t('classUi.initialProficiencies')"
               :subtitle="

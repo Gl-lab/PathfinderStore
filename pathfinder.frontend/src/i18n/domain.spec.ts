@@ -3,6 +3,7 @@ import {
   getAbilityLabel,
   getAncestryLabel,
   getBackgroundLabel,
+  getCatalogLabel,
   getCharacterClassLabel,
 } from '@/i18n/domain'
 import { setLocale } from '@/i18n'
@@ -38,5 +39,12 @@ describe('domain localization helpers', () => {
 
     setLocale('en')
     expect(getCharacterClassLabel('class.fighter', 'Fighter')).toBe('Fighter')
+  })
+
+  it('localizes stable catalog ids and never exposes an unknown raw id', () => {
+    setLocale('ru')
+    expect(getCatalogLabel('skill.religion', 'Religion')).toBe('Религия')
+    expect(getCatalogLabel('domain.cities', 'Cities')).toBe('Города')
+    expect(getCatalogLabel('unknown.future_choice', 'unknown.future_choice')).toBe('Future Choice')
   })
 })

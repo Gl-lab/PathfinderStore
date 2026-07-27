@@ -28,6 +28,22 @@ export function getCharacterClassLabel(id: string, fallback: string): string {
   return i18n.global.te(key) ? i18n.global.t(key) : fallback
 }
 
+export function getCatalogLabel(id: string, fallback: string): string {
+  const key = `domain.catalog.${id.replaceAll('.', '_')}`
+  if (i18n.global.te(key)) {
+    return i18n.global.t(key)
+  }
+
+  if (fallback && fallback !== id) {
+    return fallback
+  }
+
+  const name = id.split('.').at(-1) ?? id
+  return name
+    .replaceAll('_', ' ')
+    .replace(/\b\p{L}/gu, (character) => character.toLocaleUpperCase())
+}
+
 export function getVisionLabel(vision: string): string {
   const key = `domain.vision.${vision}`
 
@@ -37,7 +53,7 @@ export function getVisionLabel(vision: string): string {
 export function getLanguageLabel(id: string): string {
   const key = `domain.language.${id}`
 
-  return i18n.global.te(key) ? i18n.global.t(key) : id
+  return i18n.global.te(key) ? i18n.global.t(key) : getCatalogLabel(id, id)
 }
 
 export function getOperationStatusLabel(status: string): string {
