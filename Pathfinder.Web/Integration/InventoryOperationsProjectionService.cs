@@ -149,6 +149,63 @@ public sealed class InventoryOperationsProjectionService
             .ToArray();
     }
 
+    public async Task<PartyExchangeProjectionDto> GetExchangeAsync(
+        int campaignId,
+        Guid exchangeKey,
+        int actingUserId,
+        CancellationToken cancellationToken )
+    {
+        PartyExchange exchange = await _inventoryDbContext.PartyExchanges
+            .AsNoTracking()
+            .Include( item => item.Lines )
+            .SingleOrDefaultAsync(
+                item =>
+                    item.CampaignId == campaignId &&
+                    item.ExchangeKey == exchangeKey,
+                cancellationToken )
+            ?? throw new InventoryOperationsNotFoundException();
+        CharacterCampaignAccess initiatorAccess =
+            await _characterAccessPolicy.GetAccessAsync(
+                campaignId,
+                actingUserId,
+                exchange.InitiatorCharacterId,
+                cancellationToken );
+        CharacterCampaignAccess counterpartyAccess =
+            await _characterAccessPolicy.GetAccessAsync(
+                campaignId,
+                actingUserId,
+                exchange.CounterpartyCharacterId,
+                cancellationToken );
+        if ( !initiatorAccess.CanView && !counterpartyAccess.CanView )
+        {
+            throw new InventoryOperationsAccessDeniedException();
+        }
+
+        Dictionary<Guid, InventoryOperationItemDto> items = await ReadItemsAsync(
+            campaignId,
+            exchange.Lines.Select( line => line.ItemInstanceKey ),
+            cancellationToken );
+        Dictionary<int, string> characterNames = await ReadCharacterNamesAsync(
+            [
+                exchange.InitiatorCharacterId,
+                exchange.CounterpartyCharacterId,
+            ],
+            cancellationToken );
+        return new PartyExchangeProjectionDto(
+            ToDto( exchange ),
+            new InventoryCharacterReferenceDto(
+                exchange.InitiatorCharacterId,
+                characterNames[ exchange.InitiatorCharacterId ] ),
+            new InventoryCharacterReferenceDto(
+                exchange.CounterpartyCharacterId,
+                characterNames[ exchange.CounterpartyCharacterId ] ),
+            exchange.Lines
+                .Select( line => new PartyExchangeItemProjectionDto(
+                    line.FromCharacterId,
+                    items[ line.ItemInstanceKey ] ) )
+                .ToArray() );
+    }
+
     public async Task<PartyStorageProjectionDto> GetPartyStorageAsync(
         int campaignId,
         int actingUserId,
@@ -563,6 +620,14 @@ public sealed class InventoryOperationsAccessDeniedException : Exception
 {
     public InventoryOperationsAccessDeniedException()
         : base( "Inventory operations access is denied." )
+    {
+    }
+}
+
+public sealed class InventoryOperationsNotFoundException : Exception
+{
+    public InventoryOperationsNotFoundException()
+        : base( "Inventory operation was not found." )
     {
     }
 }

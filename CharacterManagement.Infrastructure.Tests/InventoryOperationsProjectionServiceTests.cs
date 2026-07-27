@@ -149,6 +149,56 @@ public sealed class InventoryOperationsProjectionServiceTests
         Assert.Contains(
             exchangeDto.Items,
             item => item.Item.Name == "Ezren's blade" );
+        PartyExchangeProjectionDto detail = await service.GetExchangeAsync(
+            42,
+            exchange.ExchangeKey,
+            7,
+            CancellationToken.None );
+        Assert.Equal( exchange.ExchangeKey, detail.Exchange.ExchangeKey );
+        Assert.Equal( PartyExchangeStatus.Pending, detail.Exchange.Status );
+        Assert.Equal( "Valeros", detail.InitiatorCharacter.Name );
+        Assert.Equal( "Ezren", detail.CounterpartyCharacter.Name );
+        Assert.Equal( 2, detail.Items.Count );
+        InventoryOperationsProjectionService counterpartyService =
+            CreateService(
+                campaignDbContext,
+                characterDbContext,
+                inventoryDbContext,
+                catalogDbContext,
+                new SelectiveCharacterAccessPolicy( destinationCharacter.Id ) );
+        PartyExchangeProjectionDto counterpartyDetail =
+            await counterpartyService.GetExchangeAsync(
+                42,
+                exchange.ExchangeKey,
+                8,
+                CancellationToken.None );
+        Assert.Equal( exchange.ExchangeKey, counterpartyDetail.Exchange.ExchangeKey );
+        exchange.Cancel( Guid.NewGuid(), _now.AddMinutes( 2 ) );
+        await inventoryDbContext.SaveChangesAsync();
+        PartyExchangeProjectionDto cancelledDetail = await service.GetExchangeAsync(
+            42,
+            exchange.ExchangeKey,
+            7,
+            CancellationToken.None );
+        Assert.Equal( PartyExchangeStatus.Cancelled, cancelledDetail.Exchange.Status );
+        InventoryOperationsProjectionService deniedService = CreateService(
+            campaignDbContext,
+            characterDbContext,
+            inventoryDbContext,
+            catalogDbContext,
+            CharacterCampaignAccess.Denied );
+        await Assert.ThrowsAsync<InventoryOperationsAccessDeniedException>(
+            () => deniedService.GetExchangeAsync(
+                42,
+                exchange.ExchangeKey,
+                9,
+                CancellationToken.None ) );
+        await Assert.ThrowsAsync<InventoryOperationsNotFoundException>(
+            () => service.GetExchangeAsync(
+                43,
+                exchange.ExchangeKey,
+                7,
+                CancellationToken.None ) );
     }
 
     [Fact]
@@ -291,6 +341,21 @@ public sealed class InventoryOperationsProjectionServiceTests
             new StubCharacterAccessPolicy( access ) );
     }
 
+    private static InventoryOperationsProjectionService CreateService(
+        CampaignManagementDbContext campaignDbContext,
+        CharacterManagementDbContext characterDbContext,
+        InventoryDbContext inventoryDbContext,
+        ItemCatalogDbContext catalogDbContext,
+        ICharacterCampaignAccessPolicy accessPolicy )
+    {
+        return new InventoryOperationsProjectionService(
+            campaignDbContext,
+            characterDbContext,
+            inventoryDbContext,
+            new InventoryItemCatalogProjectionReader( catalogDbContext ),
+            accessPolicy );
+    }
+
     private static async Task<ItemConfiguration> AddCatalogItemAsync(
         ItemCatalogDbContext dbContext,
         int campaignId )
@@ -374,5 +439,24 @@ public sealed class InventoryOperationsProjectionServiceTests
             int userId,
             int characterId,
             CancellationToken cancellationToken ) => Task.FromResult( _access );
+    }
+
+    private sealed class SelectiveCharacterAccessPolicy : ICharacterCampaignAccessPolicy
+    {
+        private readonly int _characterId;
+
+        public SelectiveCharacterAccessPolicy( int characterId )
+        {
+            _characterId = characterId;
+        }
+
+        public Task<CharacterCampaignAccess> GetAccessAsync(
+            int campaignId,
+            int userId,
+            int characterId,
+            CancellationToken cancellationToken ) => Task.FromResult(
+            characterId == _characterId
+                ? new CharacterCampaignAccess( true, true )
+                : CharacterCampaignAccess.Denied );
     }
 }
