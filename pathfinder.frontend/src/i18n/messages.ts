@@ -138,6 +138,9 @@ export const messages = {
       archiveConfirmText: 'Кампания станет недоступна для новых игровых операций.',
       archive: 'Архивировать',
       leave: 'Выйти',
+      leaveConfirmTitle: 'Выйти из кампании?',
+      leaveConfirmText:
+        'Вы потеряете доступ к кампании и её персонажам. Вернуться можно будет только по новому приглашению.',
       invitationsTitle: 'Приглашения в кампании',
       invitedBy: 'Пригласил пользователь #{userId}',
       accept: 'Принять',
@@ -148,6 +151,13 @@ export const messages = {
       userId: 'Пользователь #{userId}',
       assignGameMaster: 'Назначить ведущим',
       revokeGameMaster: 'Снять роль ведущего',
+      revokeGameMasterConfirmTitle: 'Снять роль ведущего?',
+      revokeGameMasterConfirmText:
+        'Пользователь #{userId} потеряет доступ к управлению кампанией, участниками и игровыми операциями.',
+      lastGameMasterHint:
+        'Нельзя снять роль у единственного ведущего. Сначала назначьте другого ведущего.',
+      lastGameMasterLeaveHint:
+        'Единственный ведущий не может выйти. Сначала назначьте другого ведущего.',
       partyName: 'Название группы',
       createParty: 'Создать группу',
       activeParty: 'Группа: {name}',
@@ -1245,6 +1255,9 @@ export const messages = {
       archiveConfirmText: 'The campaign will no longer accept new gameplay operations.',
       archive: 'Archive',
       leave: 'Leave',
+      leaveConfirmTitle: 'Leave campaign?',
+      leaveConfirmText:
+        'You will lose access to this campaign and its characters. Returning will require a new invitation.',
       invitationsTitle: 'Campaign invitations',
       invitedBy: 'Invited by user #{userId}',
       accept: 'Accept',
@@ -1255,6 +1268,13 @@ export const messages = {
       userId: 'User #{userId}',
       assignGameMaster: 'Assign Game Master',
       revokeGameMaster: 'Revoke Game Master',
+      revokeGameMasterConfirmTitle: 'Revoke Game Master role?',
+      revokeGameMasterConfirmText:
+        'User #{userId} will lose access to campaign, membership, and gameplay administration.',
+      lastGameMasterHint:
+        'The only Game Master cannot be revoked. Assign another Game Master first.',
+      lastGameMasterLeaveHint:
+        'The only Game Master cannot leave. Assign another Game Master first.',
       partyName: 'Party name',
       createParty: 'Create party',
       activeParty: 'Party: {name}',

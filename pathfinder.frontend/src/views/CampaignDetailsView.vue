@@ -25,6 +25,7 @@ import {
 import PartyStorageTab from '@/features/inventory/PartyStorageTab.vue'
 import CommerceCampaignTab from '@/features/commerce/CommerceCampaignTab.vue'
 import { usePendingOperations } from '@/features/inventory/usePendingOperations'
+import { isOnlyCampaignGameMaster } from '@/features/campaigns/roles'
 
 type CampaignTab = 'overview' | 'members' | 'party' | 'storage' | 'commerce'
 
@@ -42,6 +43,16 @@ const errorMessages = ref<string[]>([])
 const isLoading = ref(true)
 const actionKey = ref<string | null>(null)
 const archiveDialog = ref(false)
+const leaveDialog = ref(false)
+const revokeGameMasterUserId = ref<number | null>(null)
+const revokeGameMasterDialog = computed({
+  get: () => revokeGameMasterUserId.value !== null,
+  set: (isOpen: boolean) => {
+    if (!isOpen) {
+      revokeGameMasterUserId.value = null
+    }
+  },
+})
 const campaignId = computed(() => Number(route.params.campaignId))
 const activeTab = computed<CampaignTab>({
   get: () => {
@@ -56,6 +67,11 @@ const activeParty = computed(() =>
   campaign.value?.parties.find((party) => party.status === 'Active'),
 )
 const isGameMaster = computed(() => campaign.value?.roles.includes('GameMaster') ?? false)
+const isCurrentUserOnlyGameMaster = computed(
+  () =>
+    campaign.value !== null &&
+    isOnlyCampaignGameMaster(campaign.value.members, campaign.value.currentUserId),
+)
 const canInvite = computed(() => isCampaignUserNameValid(invitedUserName.value))
 const canCreateParty = computed(() => isCampaignPartyNameValid(partyName.value))
 const canAssignCharacter = computed(() => isCampaignCharacterIdValid(partyCharacterId.value))
@@ -125,6 +141,25 @@ async function toggleGameMaster(userId: number, assign: boolean): Promise<void> 
     changeCampaignRole(campaign.value!.id, userId, 'GameMaster', assign),
   )
 }
+function requestGameMasterChange(userId: number, isGameMasterMember: boolean): void {
+  if (!campaign.value) {
+    return
+  }
+  if (!isGameMasterMember) {
+    void toggleGameMaster(userId, true)
+    return
+  }
+  if (!isOnlyCampaignGameMaster(campaign.value.members, userId)) {
+    revokeGameMasterUserId.value = userId
+  }
+}
+async function confirmGameMasterRevocation(): Promise<void> {
+  const userId = revokeGameMasterUserId.value
+  revokeGameMasterUserId.value = null
+  if (userId !== null) {
+    await toggleGameMaster(userId, false)
+  }
+}
 
 async function createParty(): Promise<void> {
   if (!campaign.value || !canCreateParty.value) return
@@ -154,6 +189,7 @@ async function archive(): Promise<void> {
 
 async function leave(): Promise<void> {
   if (!campaign.value) return
+  leaveDialog.value = false
   actionKey.value = 'leave'
   errorMessages.value = []
   try {
@@ -265,16 +301,31 @@ onMounted(load)
                 </v-chip>
                 <v-btn
                   v-if="isGameMaster"
+                  :aria-describedby="
+                    isOnlyCampaignGameMaster(campaign.members, member.userId)
+                      ? `last-game-master-${member.userId}`
+                      : undefined
+                  "
+                  :disabled="isOnlyCampaignGameMaster(campaign.members, member.userId)"
                   :loading="actionKey === `role:${member.userId}`"
                   size="x-small"
                   variant="text"
-                  @click="toggleGameMaster(member.userId, !member.roles.includes('GameMaster'))"
+                  @click="
+                    requestGameMasterChange(member.userId, member.roles.includes('GameMaster'))
+                  "
                   >{{
                     member.roles.includes('GameMaster')
                       ? t('campaigns.revokeGameMaster')
                       : t('campaigns.assignGameMaster')
                   }}</v-btn
                 >
+                <span
+                  v-if="isOnlyCampaignGameMaster(campaign.members, member.userId)"
+                  :id="`last-game-master-${member.userId}`"
+                  class="role-hint"
+                >
+                  {{ t('campaigns.lastGameMasterHint') }}
+                </span>
               </div>
               <v-form
                 v-if="isGameMaster && campaign.status === 'Active'"
@@ -315,12 +366,23 @@ onMounted(load)
               </v-form>
               <v-btn
                 v-if="campaign.status === 'Active'"
+                :aria-describedby="
+                  isCurrentUserOnlyGameMaster ? 'leave-campaign-hint' : undefined
+                "
                 color="warning"
+                :disabled="isCurrentUserOnlyGameMaster"
                 :loading="actionKey === 'leave'"
                 variant="text"
-                @click="leave"
+                @click="leaveDialog = true"
                 >{{ t('campaigns.leave') }}</v-btn
               >
+              <span
+                v-if="isCurrentUserOnlyGameMaster"
+                id="leave-campaign-hint"
+                class="role-hint"
+              >
+                {{ t('campaigns.lastGameMasterLeaveHint') }}
+              </span>
             </v-card-text>
           </v-card>
         </v-window-item>
@@ -460,7 +522,43 @@ onMounted(load)
         <v-card-actions>
           <v-spacer />
           <v-btn variant="text" @click="archiveDialog = false">{{ t('common.cancel') }}</v-btn>
-          <v-btn color="warning" @click="archive">{{ t('campaigns.archive') }}</v-btn>
+          <v-btn :loading="actionKey === 'archive'" color="warning" @click="archive">{{
+            t('campaigns.archive')
+          }}</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog v-model="revokeGameMasterDialog" max-width="460">
+      <v-card>
+        <v-card-title>{{ t('campaigns.revokeGameMasterConfirmTitle') }}</v-card-title>
+        <v-card-text>
+          {{
+            t('campaigns.revokeGameMasterConfirmText', {
+              userId: revokeGameMasterUserId,
+            })
+          }}
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="revokeGameMasterUserId = null">{{
+            t('common.cancel')
+          }}</v-btn>
+          <v-btn color="warning" @click="confirmGameMasterRevocation">{{
+            t('campaigns.revokeGameMaster')
+          }}</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog v-model="leaveDialog" max-width="460">
+      <v-card>
+        <v-card-title>{{ t('campaigns.leaveConfirmTitle') }}</v-card-title>
+        <v-card-text>{{ t('campaigns.leaveConfirmText') }}</v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="leaveDialog = false">{{ t('common.cancel') }}</v-btn>
+          <v-btn :loading="actionKey === 'leave'" color="warning" @click="leave">{{
+            t('campaigns.leave')
+          }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -505,6 +603,11 @@ h1 {
 .panel {
   margin-top: 16px;
   border: 1px solid rgb(var(--v-theme-surface-variant));
+}
+
+.role-hint {
+  color: rgb(var(--v-theme-warning));
+  font-size: 0.75rem;
 }
 
 .inline-form,
