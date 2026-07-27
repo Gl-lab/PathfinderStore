@@ -5,6 +5,7 @@ using Pathfinder.Commerce.Domain.Exceptions;
 using Pathfinder.Commerce.Domain.Shops;
 using Pathfinder.Commerce.Infrastructure.Data;
 using Pathfinder.Commerce.Infrastructure.Offers;
+using Pathfinder.Commerce.Infrastructure.Administration;
 
 namespace Pathfinder.Commerce.Infrastructure.Tests.Offers;
 
@@ -18,17 +19,29 @@ public sealed class ShopOfferAdministrationServiceTests
             new StubCatalogReader( true ),
             new StubInventoryReader( null ) );
 
+        Guid operationId = Guid.NewGuid();
         ShopOfferDto offer = await service.CreateCatalogOfferAsync(
             7,
             test.Shop.Id,
+            operationId,
+            19,
+            3,
+            11,
+            CancellationToken.None );
+        ShopOfferDto replayed = await service.CreateCatalogOfferAsync(
+            7,
+            test.Shop.Id,
+            operationId,
             19,
             3,
             11,
             CancellationToken.None );
 
         Assert.Equal( 19, offer.ItemConfigurationId );
+        Assert.Equal( offer.OfferKey, replayed.OfferKey );
         Assert.Equal( 250, offer.UnitPriceCopper );
         Assert.True( test.Inventory.EnsureCalled );
+        Assert.Single( test.DbContext.ShopOffers );
     }
 
     [Fact]
@@ -45,6 +58,7 @@ public sealed class ShopOfferAdministrationServiceTests
             () => service.CreateStockInstanceOfferAsync(
                 7,
                 test.Shop.Id,
+                Guid.NewGuid(),
                 itemKey,
                 1,
                 250,
@@ -97,6 +111,7 @@ public sealed class ShopOfferAdministrationServiceTests
             Inventory = inventory;
             return new ShopOfferAdministrationService(
                 new ShopOfferRepository( DbContext ),
+                new CommerceAdminOperationRepository( DbContext ),
                 new StubAccessPolicy(),
                 catalog,
                 inventory,

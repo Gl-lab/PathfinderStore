@@ -72,24 +72,29 @@ const settlementName = ref('')
 const settlementLevel = ref(1)
 const settlementRegion = ref('')
 const settlementTraits = ref('')
+const settlementOperationId = ref('')
 
 const shopDialog = ref(false)
 const shopSettlementId = ref<number | null>(null)
 const shopName = ref('')
 const shopSpecialization = ref('')
 const shopLevel = ref(1)
+const shopOperationId = ref('')
 
 const catalogOfferDialog = ref(false)
 const catalogSearch = ref('')
 const catalogConfigurationId = ref<number | null>(null)
 const catalogQuantity = ref(1)
+const catalogOfferOperationId = ref('')
 const isCatalogSearching = ref(false)
 
 const stockOfferDialog = ref(false)
 const stockItemKey = ref<string | null>(null)
 const stockQuantity = ref(1)
 const stockPriceCopper = ref(0)
+const stockOfferOperationId = ref('')
 const pricingConfirmDialog = ref(false)
+const pricingOperationId = ref('')
 
 const catalogPricePercent = ref(100)
 const buybackPricePercent = ref(50)
@@ -291,6 +296,7 @@ function openSettlementDialog(): void {
   settlementLevel.value = 1
   settlementRegion.value = ''
   settlementTraits.value = ''
+  settlementOperationId.value = globalThis.crypto.randomUUID()
   actionErrors.value = []
   settlementDialog.value = true
 }
@@ -301,6 +307,7 @@ async function saveSettlement(): Promise<void> {
   actionErrors.value = []
   try {
     await createSettlement(campaignId, {
+      operationId: settlementOperationId.value,
       name: settlementName.value,
       level: settlementLevel.value,
       region: settlementRegion.value,
@@ -311,6 +318,9 @@ async function saveSettlement(): Promise<void> {
     await load()
   } catch (error) {
     actionErrors.value = getApiErrorMessages(error)
+    if (isBusinessRejection(error)) {
+      settlementOperationId.value = globalThis.crypto.randomUUID()
+    }
   } finally {
     isSaving.value = false
   }
@@ -321,6 +331,7 @@ function openShopDialog(settlementId: number): void {
   shopName.value = ''
   shopSpecialization.value = ''
   shopLevel.value = 1
+  shopOperationId.value = globalThis.crypto.randomUUID()
   actionErrors.value = []
   shopDialog.value = true
 }
@@ -331,6 +342,7 @@ async function saveShop(): Promise<void> {
   actionErrors.value = []
   try {
     const shop = await createShop(campaignId, shopSettlementId.value, {
+      operationId: shopOperationId.value,
       name: shopName.value,
       specialization: shopSpecialization.value,
       shopLevel: shopLevel.value,
@@ -342,6 +354,9 @@ async function saveShop(): Promise<void> {
     await load()
   } catch (error) {
     actionErrors.value = getApiErrorMessages(error)
+    if (isBusinessRejection(error)) {
+      shopOperationId.value = globalThis.crypto.randomUUID()
+    }
   } finally {
     isSaving.value = false
   }
@@ -353,6 +368,7 @@ async function savePricingPolicy(): Promise<void> {
   actionErrors.value = []
   try {
     await updateShopPricingPolicy(campaignId, selectedShopId.value, {
+      operationId: pricingOperationId.value,
       catalogPricePercent: catalogPricePercent.value,
       buybackPricePercent: buybackPricePercent.value,
     })
@@ -361,15 +377,25 @@ async function savePricingPolicy(): Promise<void> {
     await load()
   } catch (error) {
     actionErrors.value = getApiErrorMessages(error)
+    if (isBusinessRejection(error)) {
+      pricingOperationId.value = globalThis.crypto.randomUUID()
+    }
   } finally {
     isSaving.value = false
   }
+}
+
+function openPricingConfirmDialog(): void {
+  pricingOperationId.value = globalThis.crypto.randomUUID()
+  actionErrors.value = []
+  pricingConfirmDialog.value = true
 }
 
 function openCatalogOfferDialog(): void {
   catalogSearch.value = ''
   catalogConfigurationId.value = null
   catalogQuantity.value = 1
+  catalogOfferOperationId.value = globalThis.crypto.randomUUID()
   revisions.value = []
   actionErrors.value = []
   catalogOfferDialog.value = true
@@ -401,6 +427,7 @@ async function saveCatalogOffer(): Promise<void> {
   actionErrors.value = []
   try {
     await createCatalogOffer(campaignId, selectedShopId.value, {
+      operationId: catalogOfferOperationId.value,
       itemConfigurationId: catalogConfigurationId.value,
       quantity: catalogQuantity.value,
     })
@@ -409,6 +436,9 @@ async function saveCatalogOffer(): Promise<void> {
     await loadOffers()
   } catch (error) {
     actionErrors.value = getApiErrorMessages(error)
+    if (isBusinessRejection(error)) {
+      catalogOfferOperationId.value = globalThis.crypto.randomUUID()
+    }
   } finally {
     isSaving.value = false
   }
@@ -418,6 +448,7 @@ function openStockOfferDialog(): void {
   stockItemKey.value = null
   stockQuantity.value = 1
   stockPriceCopper.value = 0
+  stockOfferOperationId.value = globalThis.crypto.randomUUID()
   actionErrors.value = []
   stockOfferDialog.value = true
 }
@@ -436,6 +467,7 @@ async function saveStockOffer(): Promise<void> {
   actionErrors.value = []
   try {
     await createStockOffer(campaignId, selectedShopId.value, {
+      operationId: stockOfferOperationId.value,
       itemInstanceKey: stockItemKey.value,
       quantity: stockQuantity.value,
       unitPriceCopper: stockPriceCopper.value,
@@ -445,6 +477,9 @@ async function saveStockOffer(): Promise<void> {
     await Promise.all([loadOffers(), refreshContainers()])
   } catch (error) {
     actionErrors.value = getApiErrorMessages(error)
+    if (isBusinessRejection(error)) {
+      stockOfferOperationId.value = globalThis.crypto.randomUUID()
+    }
   } finally {
     isSaving.value = false
   }
@@ -749,7 +784,7 @@ onMounted(() => {
                       buybackPricePercent > 100
                     "
                     :loading="isSaving"
-                    @click="pricingConfirmDialog = true"
+                    @click="openPricingConfirmDialog"
                   >
                     {{ t('common.save') }}
                   </v-btn>

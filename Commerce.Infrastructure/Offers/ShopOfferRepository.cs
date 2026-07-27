@@ -15,6 +15,11 @@ public sealed class ShopOfferRepository : IShopOfferRepository
         _dbContext = dbContext;
     }
 
+    public Task<ShopOffer?> GetAsync(
+        int offerId,
+        CancellationToken cancellationToken ) => _dbContext.ShopOffers
+        .SingleOrDefaultAsync( offer => offer.Id == offerId, cancellationToken );
+
     public Task<Shop?> GetShopAsync(
         int shopId,
         CancellationToken cancellationToken ) => _dbContext.Shops

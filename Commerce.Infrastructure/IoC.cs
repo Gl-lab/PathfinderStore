@@ -9,6 +9,8 @@ using Pathfinder.Commerce.Application.Transactions;
 using Pathfinder.Commerce.Infrastructure.Transactions;
 using Pathfinder.Commerce.Application.Restocking;
 using Pathfinder.Commerce.Infrastructure.Restocking;
+using Pathfinder.Commerce.Application.Administration;
+using Pathfinder.Commerce.Infrastructure.Administration;
 
 namespace Pathfinder.Commerce.Infrastructure;
 
@@ -22,5 +24,6 @@ public static class DependencyInjection
         services.AddScoped<IPurchaseReservationRepository, PurchaseReservationRepository>();
         services.AddScoped<IRestockPolicyRepository, RestockPolicyRepository>();
         services.AddScoped<IRestockRunRepository, RestockRunRepository>();
+        services.AddScoped<ICommerceAdminOperationRepository, CommerceAdminOperationRepository>();
     }
 }

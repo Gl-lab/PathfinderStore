@@ -236,6 +236,7 @@ public sealed class CommerceAdminController : AuthorizedController
             ShopOfferDto result = await _offerService.CreateCatalogOfferAsync(
                 campaignId,
                 shopId,
+                request.OperationId,
                 request.ItemConfigurationId,
                 request.Quantity,
                 CurrentUserId(),
@@ -266,6 +267,7 @@ public sealed class CommerceAdminController : AuthorizedController
             ShopOfferDto result = await _offerService.CreateStockInstanceOfferAsync(
                 campaignId,
                 shopId,
+                request.OperationId,
                 request.ItemInstanceKey,
                 request.Quantity,
                 request.UnitPriceCopper,
@@ -296,6 +298,7 @@ public sealed class CommerceAdminController : AuthorizedController
             SettlementDto result = await _service.CreateSettlementAsync(
                 new CreateSettlementRequest(
                     campaignId,
+                    request.OperationId,
                     request.Name,
                     request.Level,
                     request.Region,
@@ -327,6 +330,7 @@ public sealed class CommerceAdminController : AuthorizedController
                 new CreateShopRequest(
                     campaignId,
                     settlementId,
+                    request.OperationId,
                     request.Name,
                     request.Specialization,
                     request.ShopLevel,
@@ -359,6 +363,7 @@ public sealed class CommerceAdminController : AuthorizedController
                 new UpdateShopPricingPolicyRequest(
                     campaignId,
                     shopId,
+                    request.OperationId,
                     request.CatalogPricePercent,
                     request.BuybackPricePercent,
                     CurrentUserId() ),
@@ -377,25 +382,30 @@ public sealed class CommerceAdminController : AuthorizedController
 }
 
 public sealed record CreateSettlementApiRequest(
+    Guid OperationId,
     string Name,
     int Level,
     string Region,
     string Traits );
 
 public sealed record CreateShopApiRequest(
+    Guid OperationId,
     string Name,
     string Specialization,
     int ShopLevel );
 
 public sealed record UpdateShopPricingPolicyApiRequest(
+    Guid OperationId,
     int CatalogPricePercent,
     int BuybackPricePercent );
 
 public sealed record CreateCatalogOfferApiRequest(
+    Guid OperationId,
     int ItemConfigurationId,
     int Quantity );
 
 public sealed record CreateStockOfferApiRequest(
+    Guid OperationId,
     Guid ItemInstanceKey,
     int Quantity,
     long UnitPriceCopper );

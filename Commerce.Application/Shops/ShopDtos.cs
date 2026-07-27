@@ -14,6 +14,7 @@ public sealed record ShopDto(
 public sealed record UpdateShopPricingPolicyRequest(
     int CampaignId,
     int ShopId,
+    Guid OperationId,
     int CatalogPricePercent,
     int BuybackPricePercent,
     int ActingUserId );
@@ -29,6 +30,7 @@ public sealed record SettlementDto(
 
 public sealed record CreateSettlementRequest(
     int CampaignId,
+    Guid OperationId,
     string Name,
     int Level,
     string Region,
@@ -38,6 +40,7 @@ public sealed record CreateSettlementRequest(
 public sealed record CreateShopRequest(
     int CampaignId,
     int SettlementId,
+    Guid OperationId,
     string Name,
     string Specialization,
     int ShopLevel,

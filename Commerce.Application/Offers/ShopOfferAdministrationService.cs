@@ -1,4 +1,6 @@
+using Pathfinder.Commerce.Application.Administration;
 using Pathfinder.Commerce.Application.Shops;
+using Pathfinder.Commerce.Domain.Administration;
 using Pathfinder.Commerce.Domain.Exceptions;
 using Pathfinder.Commerce.Domain.Offers;
 using Pathfinder.Commerce.Domain.Shops;
@@ -8,6 +10,7 @@ namespace Pathfinder.Commerce.Application.Offers;
 public sealed class ShopOfferAdministrationService
 {
     private readonly IShopOfferRepository _repository;
+    private readonly ICommerceAdminOperationRepository _operationRepository;
     private readonly ICommerceCampaignAccessPolicy _accessPolicy;
     private readonly ICommerceCatalogReader _catalogReader;
     private readonly ICommerceInventoryReader _inventoryReader;
@@ -15,12 +18,14 @@ public sealed class ShopOfferAdministrationService
 
     public ShopOfferAdministrationService(
         IShopOfferRepository repository,
+        ICommerceAdminOperationRepository operationRepository,
         ICommerceCampaignAccessPolicy accessPolicy,
         ICommerceCatalogReader catalogReader,
         ICommerceInventoryReader inventoryReader,
         TimeProvider timeProvider )
     {
         _repository = repository;
+        _operationRepository = operationRepository;
         _accessPolicy = accessPolicy;
         _catalogReader = catalogReader;
         _inventoryReader = inventoryReader;
@@ -30,6 +35,7 @@ public sealed class ShopOfferAdministrationService
     public async Task<ShopOfferDto> CreateCatalogOfferAsync(
         int campaignId,
         int shopId,
+        Guid operationId,
         int itemConfigurationId,
         int quantity,
         int actingUserId,
@@ -40,6 +46,25 @@ public sealed class ShopOfferAdministrationService
             shopId,
             actingUserId,
             cancellationToken );
+        CommerceAdminOperationSupport.EnsureOperationId( operationId );
+        const string actionKind = "CreateCatalogOffer";
+        string payloadHash = CommerceAdminOperationSupport.HashPayload( new
+        {
+            shopId,
+            itemConfigurationId,
+            quantity,
+        } );
+        ShopOfferDto? replay = await TryReplayAsync(
+            campaignId,
+            operationId,
+            actionKind,
+            payloadHash,
+            cancellationToken );
+        if ( replay != null )
+        {
+            return replay;
+        }
+
         bool isPublished = await _catalogReader.IsPublishedConfigurationAsync(
             itemConfigurationId,
             campaignId,
@@ -69,6 +94,15 @@ public sealed class ShopOfferAdministrationService
             unitPriceCopper,
             _timeProvider.GetUtcNow() );
         _repository.Add( offer );
+        _operationRepository.Add( CommerceAdminOperationSupport.Create(
+            campaignId,
+            operationId,
+            actionKind,
+            payloadHash,
+            actingUserId,
+            _timeProvider.GetUtcNow(),
+            shop: shop,
+            offer: offer ) );
         await _repository.SaveChangesAsync( cancellationToken );
         return ToDto( offer );
     }
@@ -76,6 +110,7 @@ public sealed class ShopOfferAdministrationService
     public async Task<ShopOfferDto> CreateStockInstanceOfferAsync(
         int campaignId,
         int shopId,
+        Guid operationId,
         Guid itemInstanceKey,
         int quantity,
         long unitPriceCopper,
@@ -87,6 +122,26 @@ public sealed class ShopOfferAdministrationService
             shopId,
             actingUserId,
             cancellationToken );
+        CommerceAdminOperationSupport.EnsureOperationId( operationId );
+        const string actionKind = "CreateStockOffer";
+        string payloadHash = CommerceAdminOperationSupport.HashPayload( new
+        {
+            shopId,
+            itemInstanceKey,
+            quantity,
+            unitPriceCopper,
+        } );
+        ShopOfferDto? replay = await TryReplayAsync(
+            campaignId,
+            operationId,
+            actionKind,
+            payloadHash,
+            cancellationToken );
+        if ( replay != null )
+        {
+            return replay;
+        }
+
         CommerceStockItem item = await _inventoryReader.GetShopStockAsync(
             itemInstanceKey,
             cancellationToken ) ?? throw new CommerceException( "Stock item was not found." );
@@ -115,7 +170,40 @@ public sealed class ShopOfferAdministrationService
             unitPriceCopper,
             _timeProvider.GetUtcNow() );
         _repository.Add( offer );
+        _operationRepository.Add( CommerceAdminOperationSupport.Create(
+            campaignId,
+            operationId,
+            actionKind,
+            payloadHash,
+            actingUserId,
+            _timeProvider.GetUtcNow(),
+            shop: shop,
+            offer: offer ) );
         await _repository.SaveChangesAsync( cancellationToken );
+        return ToDto( offer );
+    }
+
+    private async Task<ShopOfferDto?> TryReplayAsync(
+        int campaignId,
+        Guid operationId,
+        string actionKind,
+        string payloadHash,
+        CancellationToken cancellationToken )
+    {
+        CommerceAdminOperation? replay = await _operationRepository.GetAsync(
+            campaignId,
+            operationId,
+            cancellationToken );
+        if ( replay == null )
+        {
+            return null;
+        }
+
+        replay.EnsureReplayMatches( actionKind, payloadHash );
+        ShopOffer offer = await _repository.GetAsync(
+            replay.OfferId!.Value,
+            cancellationToken ) ?? throw new CommerceException(
+            "Replayed shop offer was not found." );
         return ToDto( offer );
     }
 

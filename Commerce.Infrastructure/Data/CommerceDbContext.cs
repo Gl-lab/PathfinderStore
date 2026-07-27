@@ -4,6 +4,7 @@ using Pathfinder.Commerce.Domain.Offers;
 using Pathfinder.Commerce.Domain.Money;
 using Pathfinder.Commerce.Domain.Transactions;
 using Pathfinder.Commerce.Domain.Restocking;
+using Pathfinder.Commerce.Domain.Administration;
 
 namespace Pathfinder.Commerce.Infrastructure.Data;
 
@@ -25,10 +26,44 @@ public sealed class CommerceDbContext : DbContext
     public DbSet<RestockPolicyRevision> RestockPolicyRevisions => Set<RestockPolicyRevision>();
     public DbSet<RestockRun> RestockRuns => Set<RestockRun>();
     public DbSet<RestockRunLine> RestockRunLines => Set<RestockRunLine>();
+    public DbSet<CommerceAdminOperation> CommerceAdminOperations => Set<CommerceAdminOperation>();
 
     protected override void OnModelCreating( ModelBuilder modelBuilder )
     {
         modelBuilder.HasDefaultSchema( "commerce" );
+        modelBuilder.Entity<CommerceAdminOperation>( builder =>
+        {
+            builder.ToTable( "CommerceAdminOperation", tableBuilder =>
+            {
+                tableBuilder.HasCheckConstraint(
+                    "CK_CommerceAdminOperation_Identity",
+                    "\"CampaignId\" > 0 AND \"PerformedByUserId\" > 0" );
+            } );
+            builder.Property( operation => operation.ActionKind )
+                .HasMaxLength( CommerceAdminOperation.ActionKindMaxLength )
+                .IsRequired();
+            builder.Property( operation => operation.PayloadHash )
+                .HasMaxLength( CommerceAdminOperation.PayloadHashMaxLength )
+                .IsRequired();
+            builder.HasIndex( operation => new
+            {
+                operation.CampaignId,
+                operation.OperationId,
+            } )
+                .IsUnique();
+            builder.HasOne( operation => operation.Settlement )
+                .WithMany()
+                .HasForeignKey( operation => operation.SettlementId )
+                .OnDelete( DeleteBehavior.Restrict );
+            builder.HasOne( operation => operation.Shop )
+                .WithMany()
+                .HasForeignKey( operation => operation.ShopId )
+                .OnDelete( DeleteBehavior.Restrict );
+            builder.HasOne( operation => operation.Offer )
+                .WithMany()
+                .HasForeignKey( operation => operation.OfferId )
+                .OnDelete( DeleteBehavior.Restrict );
+        } );
         modelBuilder.Entity<Settlement>( builder =>
         {
             builder.ToTable( "Settlement", tableBuilder =>

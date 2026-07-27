@@ -5,6 +5,7 @@ namespace Pathfinder.Commerce.Application.Offers;
 
 public interface IShopOfferRepository
 {
+    Task<ShopOffer?> GetAsync( int offerId, CancellationToken cancellationToken );
     Task<Shop?> GetShopAsync( int shopId, CancellationToken cancellationToken );
     Task<bool> HasActiveInstanceOfferAsync(
         Guid itemInstanceKey,

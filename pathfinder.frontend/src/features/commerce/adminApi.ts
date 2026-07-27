@@ -74,7 +74,7 @@ export async function searchPublishedItemRevisions(
 
 export async function createSettlement(
   campaignId: number,
-  request: { name: string; level: number; region: string; traits: string },
+  request: { operationId: string; name: string; level: number; region: string; traits: string },
 ): Promise<Settlement> {
   return (
     await http.post<Settlement>(`/api/commerce-admin/campaigns/${campaignId}/settlements`, request)
@@ -84,7 +84,7 @@ export async function createSettlement(
 export async function createShop(
   campaignId: number,
   settlementId: number,
-  request: { name: string; specialization: string; shopLevel: number },
+  request: { operationId: string; name: string; specialization: string; shopLevel: number },
 ): Promise<Shop> {
   return (
     await http.post<Shop>(
@@ -97,7 +97,11 @@ export async function createShop(
 export async function updateShopPricingPolicy(
   campaignId: number,
   shopId: number,
-  request: { catalogPricePercent: number; buybackPricePercent: number },
+  request: {
+    operationId: string
+    catalogPricePercent: number
+    buybackPricePercent: number
+  },
 ): Promise<Shop> {
   return (
     await http.post<Shop>(
@@ -110,7 +114,7 @@ export async function updateShopPricingPolicy(
 export async function createCatalogOffer(
   campaignId: number,
   shopId: number,
-  request: { itemConfigurationId: number; quantity: number },
+  request: { operationId: string; itemConfigurationId: number; quantity: number },
 ): Promise<ShopOffer> {
   return (
     await http.post<ShopOffer>(
@@ -124,6 +128,7 @@ export async function createStockOffer(
   campaignId: number,
   shopId: number,
   request: {
+    operationId: string
     itemInstanceKey: string
     quantity: number
     unitPriceCopper: number
