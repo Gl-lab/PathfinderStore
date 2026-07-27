@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { getApiErrorMessages } from '@/api/errors'
@@ -170,6 +170,12 @@ import {
   reconcileLanguageSelection,
 } from '@/features/character-creation/languageSelection'
 import { getIncompleteWizardRequirements } from '@/features/character-creation/wizardRequirements'
+import {
+  CharacterCreationDraftStorageKey,
+  hasCharacterCreationProgress,
+  parseCharacterCreationDraft,
+  serializeCharacterCreationDraft,
+} from '@/features/character-creation/draft'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -269,6 +275,9 @@ const form = ref({
   deityFavoredWeaponEquipmentId: null as string | null,
   equippedEquipmentIds: [] as string[],
 })
+const initialForm = JSON.parse(JSON.stringify(form.value)) as typeof form.value
+const isDraftReady = ref(false)
+const isRestoringDraft = ref(false)
 const abilityCodes: AbilityCode[] = [
   'Strength',
   'Dexterity',
@@ -1414,6 +1423,67 @@ function next(): void {
 function previous(): void {
   if (step.value > 1) step.value -= 1
 }
+function hasDraftProgress(): boolean {
+  return hasCharacterCreationProgress(form.value, initialForm)
+}
+function persistDraft(): void {
+  if (!isDraftReady.value) {
+    return
+  }
+
+  try {
+    if (hasDraftProgress()) {
+      globalThis.sessionStorage.setItem(
+        CharacterCreationDraftStorageKey,
+        serializeCharacterCreationDraft(step.value, form.value),
+      )
+    } else {
+      globalThis.sessionStorage.removeItem(CharacterCreationDraftStorageKey)
+    }
+  } catch {
+    // Storage can be unavailable in restricted browser contexts; the unload warning remains active.
+  }
+}
+function clearDraft(): void {
+  isDraftReady.value = false
+  try {
+    globalThis.sessionStorage.removeItem(CharacterCreationDraftStorageKey)
+  } catch {
+    // The character was created successfully even when browser storage is unavailable.
+  }
+}
+function warnAboutUnsavedDraft(event: globalThis.Event): void {
+  if (!isSubmitting.value && hasDraftProgress()) {
+    event.preventDefault()
+    event.returnValue = true
+  }
+}
+async function restoreDraft(): Promise<void> {
+  let serializedDraft: string | null
+  try {
+    serializedDraft = globalThis.sessionStorage.getItem(CharacterCreationDraftStorageKey)
+  } catch {
+    return
+  }
+
+  const draft = parseCharacterCreationDraft<Partial<typeof form.value>>(serializedDraft)
+  if (!draft) {
+    return
+  }
+
+  isRestoringDraft.value = true
+  form.value = { ...form.value, ...draft.form }
+  step.value = draft.step
+  await nextTick()
+  isRestoringDraft.value = false
+  if (form.value.deityId) {
+    try {
+      clericSpellOptions.value = await getClericSpellOptions(form.value.deityId)
+    } catch (error) {
+      errorMessages.value = getApiErrorMessages(error)
+    }
+  }
+}
 async function submit(): Promise<void> {
   if (
     !selectedAncestry.value ||
@@ -1591,12 +1661,20 @@ async function submit(): Promise<void> {
       deityFavoredWeaponEquipmentId: form.value.deityFavoredWeaponEquipmentId,
       equippedEquipmentIds: form.value.equippedEquipmentIds,
     })
+    clearDraft()
     await router.replace('/')
   } catch (error) {
     errorMessages.value = getApiErrorMessages(error)
   } finally {
     isSubmitting.value = false
   }
+}
+async function initialize(): Promise<void> {
+  globalThis.addEventListener('beforeunload', warnAboutUnsavedDraft)
+  await loadCatalogs()
+  await restoreDraft()
+  isDraftReady.value = true
+  persistDraft()
 }
 async function loadCatalogs(): Promise<void> {
   isLoadingCatalogs.value = true
@@ -1702,7 +1780,9 @@ async function loadCatalogs(): Promise<void> {
     isLoadingCatalogs.value = false
   }
 }
-onMounted(loadCatalogs)
+onMounted(initialize)
+onBeforeUnmount(() => globalThis.removeEventListener('beforeunload', warnAboutUnsavedDraft))
+watch([step, form], persistDraft, { deep: true })
 watch(additionalClassTrainingCount, (count) => {
   if (form.value.additionalClassTrainingChoices.length !== count) {
     form.value.additionalClassTrainingChoices = createAdditionalClassTrainingChoices(count)
@@ -1710,7 +1790,11 @@ watch(additionalClassTrainingCount, (count) => {
 })
 watch(
   () => existingClassTrainingSkillIds.value.join('|'),
-  () => resetClassTrainingTargets(),
+  () => {
+    if (!isRestoringDraft.value) {
+      resetClassTrainingTargets()
+    }
+  },
 )
 watch(
   () => classFeatChoiceSlots.value.map((slot) => slot.sourceId).join('|'),
