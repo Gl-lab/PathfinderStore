@@ -30,6 +30,10 @@ public sealed class ItemInstance : Entity, IAggregateRoot
     public int Version { get; private set; }
     public Guid? ReservationKey { get; private set; }
     public bool IsTransferRestricted { get; private set; }
+    public int? MaximumCharges { get; private set; }
+    public int? CurrentCharges { get; private set; }
+    public int? DefaultActivationCost { get; private set; }
+    public ItemChargeRecoveryRule? ChargeRecoveryRule { get; private set; }
     public DateTimeOffset CreatedAtUtc { get; private set; }
     public IReadOnlyList<InventoryMovement> Movements { get => _movements.AsReadOnly(); }
     public IReadOnlyList<InventoryOperation> Operations { get => _operations.AsReadOnly(); }
@@ -76,6 +80,139 @@ public sealed class ItemInstance : Entity, IAggregateRoot
             true,
             quantity,
             createdAtUtc );
+    }
+
+    public static ItemInstance CreateCharged(
+        Guid instanceKey,
+        int campaignId,
+        int itemConfigurationId,
+        int maximumCharges,
+        int defaultActivationCost,
+        ItemChargeRecoveryRule recoveryRule,
+        InventoryContainer initialContainer,
+        string? customName,
+        DateTimeOffset createdAtUtc )
+    {
+        EnsureChargeProfile( maximumCharges, defaultActivationCost, recoveryRule );
+        ItemInstance instance = CreateCore(
+            instanceKey,
+            campaignId,
+            itemConfigurationId,
+            initialContainer,
+            customName,
+            false,
+            1,
+            createdAtUtc );
+        instance.MaximumCharges = maximumCharges;
+        instance.CurrentCharges = maximumCharges;
+        instance.DefaultActivationCost = defaultActivationCost;
+        instance.ChargeRecoveryRule = recoveryRule;
+        return instance;
+    }
+
+    public bool ConsumeCharges(
+        int chargeCost,
+        int expectedVersion,
+        Guid operationId,
+        DateTimeOffset consumedAtUtc )
+    {
+        EnsureOperationId( operationId );
+        InventoryOperation? replay = FindOperation( operationId );
+        if ( replay is not null )
+        {
+            replay.EnsureMatches(
+                InventoryOperationKind.ConsumeCharges,
+                InstanceKey,
+                chargeCost );
+            return false;
+        }
+
+        EnsureExpectedVersion( expectedVersion );
+        EnsureOperationTimestamp( consumedAtUtc );
+        EnsureNotReserved();
+        EnsureCharged();
+        if ( chargeCost <= 0 )
+        {
+            throw new InventoryException( "Charge cost must be greater than zero." );
+        }
+
+        if ( chargeCost > CurrentCharges!.Value )
+        {
+            throw new InventoryException( "Item instance does not have enough charges." );
+        }
+
+        CurrentCharges -= chargeCost;
+        Version++;
+        _operations.Add( InventoryOperation.Create(
+            operationId,
+            InventoryOperationKind.ConsumeCharges,
+            InstanceKey,
+            chargeCost,
+            Version,
+            consumedAtUtc ) );
+        return true;
+    }
+
+    public bool ConsumeDefaultCharges(
+        int expectedVersion,
+        Guid operationId,
+        DateTimeOffset consumedAtUtc )
+    {
+        EnsureCharged();
+        return ConsumeCharges(
+            DefaultActivationCost!.Value,
+            expectedVersion,
+            operationId,
+            consumedAtUtc );
+    }
+
+    public bool RecoverCharges(
+        int quantity,
+        int expectedVersion,
+        Guid operationId,
+        DateTimeOffset recoveredAtUtc )
+    {
+        EnsureOperationId( operationId );
+        InventoryOperation? replay = FindOperation( operationId );
+        if ( replay is not null )
+        {
+            replay.EnsureMatches(
+                InventoryOperationKind.RecoverCharges,
+                InstanceKey,
+                quantity );
+            return false;
+        }
+
+        EnsureExpectedVersion( expectedVersion );
+        EnsureOperationTimestamp( recoveredAtUtc );
+        EnsureNotReserved();
+        EnsureCharged();
+        if ( ChargeRecoveryRule == ItemChargeRecoveryRule.None )
+        {
+            throw new InventoryException( "Item instance charges cannot be recovered." );
+        }
+
+        if ( quantity <= 0 )
+        {
+            throw new InventoryException( "Recovered charge quantity must be greater than zero." );
+        }
+
+        if ( quantity > MaximumCharges!.Value - CurrentCharges!.Value )
+        {
+            throw new InventoryException(
+                "Recovered charges cannot exceed the item instance maximum." );
+        }
+
+        CurrentCharges += quantity;
+        Version++;
+        _operations.Add( InventoryOperation.Create(
+            operationId,
+            InventoryOperationKind.RecoverCharges,
+            InstanceKey,
+            quantity,
+            Version,
+            recoveredAtUtc ) );
+        return true;
     }
 
     public ItemSplitResult Split(
@@ -622,6 +759,28 @@ public sealed class ItemInstance : Entity, IAggregateRoot
         };
     }
 
+    private static void EnsureChargeProfile(
+        int maximumCharges,
+        int defaultActivationCost,
+        ItemChargeRecoveryRule recoveryRule )
+    {
+        if ( maximumCharges <= 0 )
+        {
+            throw new InventoryException( "Maximum charges must be greater than zero." );
+        }
+
+        if ( defaultActivationCost <= 0 || defaultActivationCost > maximumCharges )
+        {
+            throw new InventoryException(
+                "Default activation cost must be positive and cannot exceed maximum charges." );
+        }
+
+        if ( !Enum.IsDefined( recoveryRule ) )
+        {
+            throw new InventoryException( "Charge recovery rule is invalid." );
+        }
+    }
+
     private void EnsureExpectedVersion( int expectedVersion )
     {
         if ( expectedVersion != Version )
@@ -725,6 +884,17 @@ public sealed class ItemInstance : Entity, IAggregateRoot
         if ( IsTransferRestricted )
         {
             throw new InventoryException( "Item instance is prohibited from transfer." );
+        }
+    }
+
+    private void EnsureCharged()
+    {
+        if ( MaximumCharges is null ||
+             CurrentCharges is null ||
+             DefaultActivationCost is null ||
+             ChargeRecoveryRule is null )
+        {
+            throw new InventoryException( "Item instance does not have charges." );
         }
     }
 

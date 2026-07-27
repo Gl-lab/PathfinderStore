@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Pathfinder.Inventory.Domain.Containers;
 using Pathfinder.Inventory.Domain.Items;
+using Pathfinder.Inventory.Domain.Operations;
 using Pathfinder.Inventory.Infrastructure.Data;
 
 namespace Pathfinder.Inventory.Infrastructure.Tests;
@@ -56,6 +57,55 @@ public sealed class InventoryPersistenceTests
             Assert.Equal( 1, instance.Version );
             Assert.Single( instance.Movements );
             Assert.Single( instance.Operations );
+        }
+    }
+
+    [Fact]
+    public async Task ContextPersistsChargeStateAndOperationHistory()
+    {
+        DbContextOptions<InventoryDbContext> options =
+            new DbContextOptionsBuilder<InventoryDbContext>()
+                .UseInMemoryDatabase( Guid.NewGuid().ToString() )
+                .Options;
+        Guid instanceKey = Guid.NewGuid();
+        await using ( InventoryDbContext writeContext = new InventoryDbContext( options ) )
+        {
+            InventoryContainer container = CreateContainer( 31 );
+            ItemInstance instance = ItemInstance.CreateCharged(
+                instanceKey,
+                17,
+                23,
+                3,
+                1,
+                ItemChargeRecoveryRule.DailyPreparations,
+                container,
+                null,
+                _createdAtUtc );
+            writeContext.Containers.Add( container );
+            writeContext.ItemInstances.Add( instance );
+            await writeContext.SaveChangesAsync();
+
+            instance.ConsumeDefaultCharges(
+                0,
+                Guid.NewGuid(),
+                _createdAtUtc.AddMinutes( 1 ) );
+            await writeContext.SaveChangesAsync();
+        }
+
+        await using ( InventoryDbContext readContext = new InventoryDbContext( options ) )
+        {
+            ItemInstance instance = await readContext.ItemInstances
+                .Include( item => item.Operations )
+                .SingleAsync( item => item.InstanceKey == instanceKey );
+
+            Assert.Equal( 3, instance.MaximumCharges );
+            Assert.Equal( 2, instance.CurrentCharges );
+            Assert.Equal( 1, instance.DefaultActivationCost );
+            Assert.Equal(
+                ItemChargeRecoveryRule.DailyPreparations,
+                instance.ChargeRecoveryRule );
+            InventoryOperation operation = Assert.Single( instance.Operations );
+            Assert.Equal( InventoryOperationKind.ConsumeCharges, operation.Kind );
         }
     }
 

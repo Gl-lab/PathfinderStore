@@ -122,6 +122,157 @@ public sealed class ItemInstanceTests
             _createdAtUtc ) );
     }
 
+    [Fact]
+    public void ChargedInstanceConsumesAndRecoversWithinConfiguredBounds()
+    {
+        ItemInstance instance = CreateChargedInstance( ItemChargeRecoveryRule.Manual );
+        Guid consumeOperationId = Guid.NewGuid();
+
+        Assert.True( instance.ConsumeDefaultCharges(
+            0,
+            consumeOperationId,
+            _createdAtUtc.AddMinutes( 1 ) ) );
+        Assert.Equal( 2, instance.CurrentCharges );
+        Assert.Equal( 1, instance.Version );
+        Assert.False( instance.ConsumeDefaultCharges(
+            0,
+            consumeOperationId,
+            _createdAtUtc.AddMinutes( 1 ) ) );
+        Assert.True( instance.RecoverCharges(
+            1,
+            1,
+            Guid.NewGuid(),
+            _createdAtUtc.AddMinutes( 2 ) ) );
+        Assert.Equal( 3, instance.CurrentCharges );
+        Assert.Equal( 2, instance.Version );
+    }
+
+    [Fact]
+    public void ChargedInstanceRejectsConsumptionBeyondRemainingCharges()
+    {
+        ItemInstance instance = CreateChargedInstance( ItemChargeRecoveryRule.Manual );
+        instance.ConsumeCharges(
+            3,
+            0,
+            Guid.NewGuid(),
+            _createdAtUtc.AddMinutes( 1 ) );
+
+        Assert.Throws<InventoryException>( () => instance.ConsumeCharges(
+            1,
+            1,
+            Guid.NewGuid(),
+            _createdAtUtc.AddMinutes( 2 ) ) );
+        Assert.Equal( 0, instance.CurrentCharges );
+        Assert.Equal( 1, instance.Version );
+    }
+
+    [Fact]
+    public void ConcurrentConsumptionOfLastChargeOnlySucceedsOnce()
+    {
+        ItemInstance instance = CreateChargedInstance( ItemChargeRecoveryRule.Manual );
+        instance.ConsumeCharges(
+            2,
+            0,
+            Guid.NewGuid(),
+            _createdAtUtc.AddMinutes( 1 ) );
+
+        Assert.True( instance.ConsumeCharges(
+            1,
+            1,
+            Guid.NewGuid(),
+            _createdAtUtc.AddMinutes( 2 ) ) );
+        Assert.Throws<InventoryException>( () => instance.ConsumeCharges(
+            1,
+            1,
+            Guid.NewGuid(),
+            _createdAtUtc.AddMinutes( 2 ) ) );
+        Assert.Equal( 0, instance.CurrentCharges );
+    }
+
+    [Fact]
+    public void NonRecoverableChargedInstanceRejectsRecovery()
+    {
+        ItemInstance instance = CreateChargedInstance( ItemChargeRecoveryRule.None );
+        instance.ConsumeDefaultCharges(
+            0,
+            Guid.NewGuid(),
+            _createdAtUtc.AddMinutes( 1 ) );
+
+        Assert.Throws<InventoryException>( () => instance.RecoverCharges(
+            1,
+            1,
+            Guid.NewGuid(),
+            _createdAtUtc.AddMinutes( 2 ) ) );
+    }
+
+    [Fact]
+    public void ChargedInstanceRejectsRecoveryBeyondMaximum()
+    {
+        ItemInstance instance = CreateChargedInstance( ItemChargeRecoveryRule.Manual );
+        instance.ConsumeDefaultCharges(
+            0,
+            Guid.NewGuid(),
+            _createdAtUtc.AddMinutes( 1 ) );
+
+        Assert.Throws<InventoryException>( () => instance.RecoverCharges(
+            2,
+            1,
+            Guid.NewGuid(),
+            _createdAtUtc.AddMinutes( 2 ) ) );
+        Assert.Equal( 2, instance.CurrentCharges );
+        Assert.Equal( 1, instance.Version );
+    }
+
+    [Fact]
+    public void ChargeOperationIdCannotBeReusedForDifferentQuantity()
+    {
+        ItemInstance instance = CreateChargedInstance( ItemChargeRecoveryRule.Manual );
+        Guid operationId = Guid.NewGuid();
+        instance.ConsumeCharges(
+            1,
+            0,
+            operationId,
+            _createdAtUtc.AddMinutes( 1 ) );
+
+        Assert.Throws<InventoryException>( () => instance.ConsumeCharges(
+            2,
+            0,
+            operationId,
+            _createdAtUtc.AddMinutes( 1 ) ) );
+    }
+
+    [Fact]
+    public void RegularInstanceRejectsChargeChanges()
+    {
+        ItemInstance instance = ItemInstance.Create(
+            _instanceKey,
+            17,
+            23,
+            CreateContainer( 17 ),
+            null,
+            _createdAtUtc );
+
+        Assert.Throws<InventoryException>( () => instance.ConsumeCharges(
+            1,
+            0,
+            Guid.NewGuid(),
+            _createdAtUtc.AddMinutes( 1 ) ) );
+    }
+
+    private static ItemInstance CreateChargedInstance( ItemChargeRecoveryRule recoveryRule )
+    {
+        return ItemInstance.CreateCharged(
+            _instanceKey,
+            17,
+            23,
+            3,
+            1,
+            recoveryRule,
+            CreateContainer( 17 ),
+            null,
+            _createdAtUtc );
+    }
+
     private static InventoryContainer CreateContainer( int campaignId )
     {
         return InventoryContainer.CreateRoot(

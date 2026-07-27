@@ -55,11 +55,23 @@ public sealed class InventoryDbContext : DbContext
         modelBuilder.Entity<ItemInstance>( builder =>
         {
             builder.ToTable( "ItemInstance", tableBuilder =>
+            {
                 tableBuilder.HasCheckConstraint(
                     "CK_ItemInstance_State",
-                    "\"CampaignId\" > 0 AND \"ItemConfigurationId\" > 0 AND \"Quantity\" >= 0" ) );
+                    "\"CampaignId\" > 0 AND \"ItemConfigurationId\" > 0 AND \"Quantity\" >= 0" );
+                tableBuilder.HasCheckConstraint(
+                    "CK_ItemInstance_Charges",
+                    "(\"MaximumCharges\" IS NULL AND \"CurrentCharges\" IS NULL AND " +
+                    "\"DefaultActivationCost\" IS NULL AND \"ChargeRecoveryRule\" IS NULL) OR " +
+                    "(\"MaximumCharges\" > 0 AND \"CurrentCharges\" >= 0 AND " +
+                    "\"CurrentCharges\" <= \"MaximumCharges\" AND \"DefaultActivationCost\" > 0 AND " +
+                    "\"DefaultActivationCost\" <= \"MaximumCharges\" AND " +
+                    "\"ChargeRecoveryRule\" IN (1, 2, 3))" );
+            } );
             builder.Property( instance => instance.CustomName )
                 .HasMaxLength( ItemInstance.CustomNameMaxLength );
+            builder.Property( instance => instance.ChargeRecoveryRule )
+                .HasConversion<int?>();
             builder.Property( instance => instance.Version )
                 .IsConcurrencyToken();
             builder.HasIndex( instance => instance.InstanceKey )

@@ -9,4 +9,6 @@ public enum InventoryOperationKind
     ReleaseReservation = 4,
     RestrictTransfer = 5,
     AllowTransfer = 6,
+    ConsumeCharges = 7,
+    RecoverCharges = 8,
 }
