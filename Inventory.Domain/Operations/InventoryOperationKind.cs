@@ -11,4 +11,5 @@ public enum InventoryOperationKind
     AllowTransfer = 6,
     ConsumeCharges = 7,
     RecoverCharges = 8,
+    ConsumeItem = 9,
 }

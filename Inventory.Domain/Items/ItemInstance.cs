@@ -34,6 +34,8 @@ public sealed class ItemInstance : Entity, IAggregateRoot
     public int? CurrentCharges { get; private set; }
     public int? DefaultActivationCost { get; private set; }
     public ItemChargeRecoveryRule? ChargeRecoveryRule { get; private set; }
+    public ItemConsumptionMode? ConsumptionMode { get; private set; }
+    public int? ConsumptionQuantity { get; private set; }
     public DateTimeOffset CreatedAtUtc { get; private set; }
     public IReadOnlyList<InventoryMovement> Movements { get => _movements.AsReadOnly(); }
     public IReadOnlyList<InventoryOperation> Operations { get => _operations.AsReadOnly(); }
@@ -80,6 +82,60 @@ public sealed class ItemInstance : Entity, IAggregateRoot
             true,
             quantity,
             createdAtUtc );
+    }
+
+    public static ItemInstance CreateConsumable(
+        Guid instanceKey,
+        int campaignId,
+        int itemConfigurationId,
+        ItemConsumptionMode consumptionMode,
+        int consumptionQuantity,
+        InventoryContainer initialContainer,
+        string? customName,
+        DateTimeOffset createdAtUtc )
+    {
+        EnsureConsumptionProfile( consumptionMode, consumptionQuantity, false );
+        ItemInstance instance = CreateCore(
+            instanceKey,
+            campaignId,
+            itemConfigurationId,
+            initialContainer,
+            customName,
+            false,
+            1,
+            createdAtUtc );
+        instance.ConfigureConsumption( consumptionMode, consumptionQuantity );
+        return instance;
+    }
+
+    public static ItemInstance CreateConsumableStack(
+        Guid instanceKey,
+        int campaignId,
+        int itemConfigurationId,
+        int initialQuantity,
+        ItemConsumptionMode consumptionMode,
+        int consumptionQuantity,
+        InventoryContainer initialContainer,
+        string? customName,
+        DateTimeOffset createdAtUtc )
+    {
+        EnsureConsumptionProfile( consumptionMode, consumptionQuantity, true );
+        if ( initialQuantity <= 0 )
+        {
+            throw new InventoryException( "Item stack quantity must be greater than zero." );
+        }
+
+        ItemInstance instance = CreateCore(
+            instanceKey,
+            campaignId,
+            itemConfigurationId,
+            initialContainer,
+            customName,
+            true,
+            initialQuantity,
+            createdAtUtc );
+        instance.ConfigureConsumption( consumptionMode, consumptionQuantity );
+        return instance;
     }
 
     public static ItemInstance CreateCharged(
@@ -215,6 +271,61 @@ public sealed class ItemInstance : Entity, IAggregateRoot
         return true;
     }
 
+    public bool Consume(
+        int useCount,
+        int expectedVersion,
+        Guid operationId,
+        DateTimeOffset consumedAtUtc )
+    {
+        EnsureOperationId( operationId );
+        EnsureConsumable();
+        if ( useCount <= 0 )
+        {
+            throw new InventoryException( "Consumption use count must be greater than zero." );
+        }
+
+        if ( useCount > Int32.MaxValue / ConsumptionQuantity!.Value )
+        {
+            throw new InventoryException( "Consumed item quantity is too large." );
+        }
+
+        int consumedQuantity = useCount * ConsumptionQuantity.Value;
+        InventoryOperation? replay = FindOperation( operationId );
+        if ( replay is not null )
+        {
+            replay.EnsureMatches(
+                InventoryOperationKind.ConsumeItem,
+                InstanceKey,
+                consumedQuantity );
+            return false;
+        }
+
+        EnsureExpectedVersion( expectedVersion );
+        EnsureOperationTimestamp( consumedAtUtc );
+        EnsureNotReserved();
+        if ( IsDepleted )
+        {
+            throw new InventoryException( "A depleted item instance cannot be consumed." );
+        }
+
+        if ( consumedQuantity > Quantity )
+        {
+            throw new InventoryException(
+                "Consumption cannot exceed the item instance quantity." );
+        }
+
+        Quantity -= consumedQuantity;
+        Version++;
+        _operations.Add( InventoryOperation.Create(
+            operationId,
+            InventoryOperationKind.ConsumeItem,
+            InstanceKey,
+            consumedQuantity,
+            Version,
+            consumedAtUtc ) );
+        return true;
+    }
+
     public ItemSplitResult Split(
         Guid newInstanceKey,
         int splitQuantity,
@@ -269,6 +380,13 @@ public sealed class ItemInstance : Entity, IAggregateRoot
             true,
             splitQuantity,
             createdAtUtc );
+        if ( ConsumptionMode is not null && ConsumptionQuantity is not null )
+        {
+            split.ConfigureConsumption(
+                ConsumptionMode.Value,
+                ConsumptionQuantity.Value );
+        }
+
         Quantity -= splitQuantity;
         Version++;
         _operations.Add( InventoryOperation.Create(
@@ -328,7 +446,9 @@ public sealed class ItemInstance : Entity, IAggregateRoot
         if ( CampaignId != source.CampaignId ||
              ItemConfigurationId != source.ItemConfigurationId ||
              CurrentContainerKey != source.CurrentContainerKey ||
-             !String.Equals( CustomName, source.CustomName, StringComparison.Ordinal ) )
+             !String.Equals( CustomName, source.CustomName, StringComparison.Ordinal ) ||
+             ConsumptionMode != source.ConsumptionMode ||
+             ConsumptionQuantity != source.ConsumptionQuantity )
         {
             throw new InventoryException(
                 "Item stacks must have the same campaign, configuration, location, and custom name." );
@@ -781,6 +901,37 @@ public sealed class ItemInstance : Entity, IAggregateRoot
         }
     }
 
+    private static void EnsureConsumptionProfile(
+        ItemConsumptionMode consumptionMode,
+        int consumptionQuantity,
+        bool isStackable )
+    {
+        if ( !Enum.IsDefined( consumptionMode ) )
+        {
+            throw new InventoryException( "Item consumption mode is invalid." );
+        }
+
+        if ( consumptionQuantity <= 0 )
+        {
+            throw new InventoryException(
+                "Item consumption quantity must be greater than zero." );
+        }
+
+        if ( isStackable && consumptionMode == ItemConsumptionMode.DestroyInstance )
+        {
+            throw new InventoryException(
+                "A stackable item cannot use destroy-instance consumption." );
+        }
+
+        if ( !isStackable &&
+             (consumptionMode != ItemConsumptionMode.DestroyInstance ||
+              consumptionQuantity != 1) )
+        {
+            throw new InventoryException(
+                "A non-stackable consumable must destroy exactly one instance." );
+        }
+    }
+
     private void EnsureExpectedVersion( int expectedVersion )
     {
         if ( expectedVersion != Version )
@@ -895,6 +1046,22 @@ public sealed class ItemInstance : Entity, IAggregateRoot
              ChargeRecoveryRule is null )
         {
             throw new InventoryException( "Item instance does not have charges." );
+        }
+    }
+
+    private void ConfigureConsumption(
+        ItemConsumptionMode consumptionMode,
+        int consumptionQuantity )
+    {
+        ConsumptionMode = consumptionMode;
+        ConsumptionQuantity = consumptionQuantity;
+    }
+
+    private void EnsureConsumable()
+    {
+        if ( ConsumptionMode is null || ConsumptionQuantity is null )
+        {
+            throw new InventoryException( "Item instance is not consumable." );
         }
     }
 

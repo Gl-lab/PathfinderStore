@@ -109,6 +109,53 @@ public sealed class InventoryPersistenceTests
         }
     }
 
+    [Fact]
+    public async Task ContextPersistsConsumableStackState()
+    {
+        DbContextOptions<InventoryDbContext> options =
+            new DbContextOptionsBuilder<InventoryDbContext>()
+                .UseInMemoryDatabase( Guid.NewGuid().ToString() )
+                .Options;
+        Guid instanceKey = Guid.NewGuid();
+        await using ( InventoryDbContext writeContext = new InventoryDbContext( options ) )
+        {
+            InventoryContainer container = CreateContainer( 31 );
+            ItemInstance instance = ItemInstance.CreateConsumableStack(
+                instanceKey,
+                17,
+                23,
+                10,
+                ItemConsumptionMode.ConsumeAmmunition,
+                1,
+                container,
+                null,
+                _createdAtUtc );
+            writeContext.Containers.Add( container );
+            writeContext.ItemInstances.Add( instance );
+            await writeContext.SaveChangesAsync();
+
+            instance.Consume(
+                2,
+                0,
+                Guid.NewGuid(),
+                _createdAtUtc.AddMinutes( 1 ) );
+            await writeContext.SaveChangesAsync();
+        }
+
+        await using ( InventoryDbContext readContext = new InventoryDbContext( options ) )
+        {
+            ItemInstance instance = await readContext.ItemInstances
+                .Include( item => item.Operations )
+                .SingleAsync( item => item.InstanceKey == instanceKey );
+
+            Assert.Equal( ItemConsumptionMode.ConsumeAmmunition, instance.ConsumptionMode );
+            Assert.Equal( 1, instance.ConsumptionQuantity );
+            Assert.Equal( 8, instance.Quantity );
+            InventoryOperation operation = Assert.Single( instance.Operations );
+            Assert.Equal( InventoryOperationKind.ConsumeItem, operation.Kind );
+        }
+    }
+
     private static InventoryContainer CreateContainer( int ownerId )
     {
         return InventoryContainer.CreateRoot(

@@ -67,10 +67,19 @@ public sealed class InventoryDbContext : DbContext
                     "\"CurrentCharges\" <= \"MaximumCharges\" AND \"DefaultActivationCost\" > 0 AND " +
                     "\"DefaultActivationCost\" <= \"MaximumCharges\" AND " +
                     "\"ChargeRecoveryRule\" IN (1, 2, 3))" );
+                tableBuilder.HasCheckConstraint(
+                    "CK_ItemInstance_Consumption",
+                    "(\"ConsumptionMode\" IS NULL AND \"ConsumptionQuantity\" IS NULL) OR " +
+                    "(\"ConsumptionMode\" IN (1, 2, 3) AND \"ConsumptionQuantity\" > 0 AND " +
+                    "((\"IsStackable\" AND \"ConsumptionMode\" IN (2, 3)) OR " +
+                    "(NOT \"IsStackable\" AND \"ConsumptionMode\" = 1 AND " +
+                    "\"ConsumptionQuantity\" = 1)))" );
             } );
             builder.Property( instance => instance.CustomName )
                 .HasMaxLength( ItemInstance.CustomNameMaxLength );
             builder.Property( instance => instance.ChargeRecoveryRule )
+                .HasConversion<int?>();
+            builder.Property( instance => instance.ConsumptionMode )
                 .HasConversion<int?>();
             builder.Property( instance => instance.Version )
                 .IsConcurrencyToken();
