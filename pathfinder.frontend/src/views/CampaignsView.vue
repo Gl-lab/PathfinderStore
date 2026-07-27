@@ -105,9 +105,10 @@ onMounted(() => {
             v-model="campaignName"
             :counter="campaignNameMaxLength"
             :hint="t('campaigns.validation.campaignName', { max: campaignNameMaxLength })"
-            :label="t('campaigns.name')"
+            :label="t('common.requiredField', { field: t('campaigns.name') })"
             :maxlength="campaignNameMaxLength"
             persistent-hint
+            required
             :rules="[
               (value) =>
                 isCampaignNameValid(String(value ?? '')) ||

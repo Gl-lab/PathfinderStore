@@ -63,6 +63,8 @@ export const messages = {
       character: 'Персонаж',
       characterId: 'ID персонажа игрока',
       name: 'Имя',
+      requiredField: '{field} (обязательно)',
+      optionalField: '{field} (необязательно)',
     },
     errors: {
       connection: 'Не удалось подключиться к серверу. Повторите попытку позже.',
@@ -1007,6 +1009,8 @@ export const messages = {
       character: 'Character',
       characterId: "Player's character ID",
       name: 'Name',
+      requiredField: '{field} (required)',
+      optionalField: '{field} (optional)',
     },
     errors: {
       connection: 'Unable to connect to the server. Please try again later.',

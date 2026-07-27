@@ -288,9 +288,12 @@ onMounted(load)
                   :hint="
                     t('campaigns.validation.invitedUserName', { max: campaignUserNameMaxLength })
                   "
-                  :label="t('campaigns.invitedUserName')"
+                  :label="
+                    t('common.requiredField', { field: t('campaigns.invitedUserName') })
+                  "
                   :maxlength="campaignUserNameMaxLength"
                   persistent-hint
+                  required
                   :rules="[
                     (value) =>
                       isCampaignUserNameValid(String(value ?? '')) ||
@@ -335,9 +338,10 @@ onMounted(load)
                   v-model="partyName"
                   :counter="campaignPartyNameMaxLength"
                   :hint="t('campaigns.validation.partyName', { max: campaignPartyNameMaxLength })"
-                  :label="t('campaigns.partyName')"
+                  :label="t('common.requiredField', { field: t('campaigns.partyName') })"
                   :maxlength="campaignPartyNameMaxLength"
                   persistent-hint
+                  required
                   :rules="[
                     (value) =>
                       isCampaignPartyNameValid(String(value ?? '')) ||
@@ -390,8 +394,9 @@ onMounted(load)
                     item-value="id"
                     :items="characters"
                     :hint="t('campaigns.validation.character')"
-                    :label="t('campaigns.character')"
+                    :label="t('common.requiredField', { field: t('campaigns.character') })"
                     persistent-hint
+                    required
                     :rules="[
                       (value) =>
                         isCampaignCharacterIdValid(Number(value)) ||
@@ -403,8 +408,9 @@ onMounted(load)
                     v-model.number="partyCharacterId"
                     min="1"
                     :hint="t('campaigns.validation.character')"
-                    :label="t('campaigns.characterId')"
+                    :label="t('common.requiredField', { field: t('campaigns.characterId') })"
                     persistent-hint
+                    required
                     :rules="[
                       (value) =>
                         isCampaignCharacterIdValid(Number(value)) ||
@@ -419,7 +425,7 @@ onMounted(load)
                     item-title="userId"
                     item-value="userId"
                     :items="playerMembers"
-                    :label="t('campaigns.controller')"
+                    :label="t('common.optionalField', { field: t('campaigns.controller') })"
                   />
                   <v-btn
                     aria-describedby="campaign-character-requirement"

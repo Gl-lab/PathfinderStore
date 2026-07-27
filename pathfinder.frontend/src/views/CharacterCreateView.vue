@@ -1729,25 +1729,25 @@ watch(
           <p class="hint">{{ t('wizard.lead') }}</p>
           <v-text-field
             v-model="form.name"
-            :label="t('wizard.name')"
+            :label="t('common.requiredField', { field: t('wizard.name') })"
             :rules="[(value) => Boolean(value?.trim()) || t('wizard.nameRequired')]"
             required
           /><v-textarea
             v-model="form.concept"
-            :label="t('wizard.concept')"
+            :label="t('common.optionalField', { field: t('wizard.concept') })"
             counter="1000"
             maxlength="1000"
             :hint="t('wizard.conceptHint')"
             persistent-hint
           /><v-text-field
             v-model.number="form.age"
-            :label="t('wizard.age')"
+            :label="t('common.optionalField', { field: t('wizard.age') })"
             type="number"
             min="1"
           />
           <v-radio-group
             v-model="form.gender"
-            :label="t('wizard.gender')"
+            :label="t('common.requiredField', { field: t('wizard.gender') })"
             :rules="[(value) => Boolean(value) || t('wizard.genderRequired')]"
             required
           >

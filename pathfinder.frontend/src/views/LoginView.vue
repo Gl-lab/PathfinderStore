@@ -50,13 +50,13 @@ async function submit(): Promise<void> {
         <v-form @submit.prevent="submit">
           <v-text-field
             v-model="userNameOrEmail"
-            :label="t('auth.userNameOrEmail')"
+            :label="t('common.requiredField', { field: t('auth.userNameOrEmail') })"
             autocomplete="username"
             required
           />
           <v-text-field
             v-model="password"
-            :label="t('auth.password')"
+            :label="t('common.requiredField', { field: t('auth.password') })"
             type="password"
             autocomplete="current-password"
             required

@@ -58,22 +58,32 @@ async function submit(): Promise<void> {
           class="mb-3"
           >{{ message }}</v-alert
         ><v-form @submit.prevent="submit"
-          ><v-text-field v-model="form.userName" :label="t('auth.userName')" required /><v-text-field
+          ><v-text-field
+            v-model="form.userName"
+            :label="t('common.requiredField', { field: t('auth.userName') })"
+            required
+          /><v-text-field
             v-model="form.email"
-            :label="t('auth.email')"
+            :label="t('common.requiredField', { field: t('auth.email') })"
             type="email"
             required
           /><v-row
-            ><v-col><v-text-field v-model="form.name" :label="t('auth.firstName')" /></v-col
-            ><v-col><v-text-field v-model="form.surname" :label="t('auth.surname')" /></v-col></v-row
+            ><v-col
+              ><v-text-field
+                v-model="form.name"
+                :label="t('common.optionalField', { field: t('auth.firstName') })" /></v-col
+            ><v-col
+              ><v-text-field
+                v-model="form.surname"
+                :label="t('common.optionalField', { field: t('auth.surname') })" /></v-col></v-row
           ><v-text-field
             v-model="form.password"
-            :label="t('auth.password')"
+            :label="t('common.requiredField', { field: t('auth.password') })"
             type="password"
             required
           /><v-text-field
             v-model="form.passwordRepeat"
-            :label="t('auth.passwordRepeat')"
+            :label="t('common.requiredField', { field: t('auth.passwordRepeat') })"
             type="password"
             required
           /><v-btn type="submit" color="primary" block size="large" :loading="isSubmitting"
