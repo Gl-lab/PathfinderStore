@@ -7,6 +7,7 @@ import {
   getAncestryChoiceLabel,
   getAncestryLabel,
   getBackgroundLabel,
+  getCatalogLabel,
   getCharacterClassLabel,
   getLanguageLabel,
   getVisionLabel,
@@ -121,17 +122,12 @@ function getStatisticBreakdown(statistic: CharacterProficiencyStatistic): string
   return t('statistics.breakdown', formatStatisticBreakdown(statistic, formatSignedModifier))
 }
 function getFeatSubtitle(feat: CharacterFeat): string {
-  const deferred = feat.deferredDependencies.length
-    ? t('feats.deferred', { dependencies: feat.deferredDependencies.join(', ') })
-    : t('feats.resolved')
-
   return [
     t(`feats.categories.${feat.category}`),
     t(`feats.acquisition.${feat.acquisitionType}`),
     t(`feats.sources.${feat.sourceType}`),
     formatChoiceId(feat.sourceId),
     `${feat.source.book}, ${t('feats.page', { page: feat.source.page })}`,
-    deferred,
   ].join(' · ')
 }
 async function load(): Promise<void> {
@@ -810,16 +806,13 @@ onMounted(load)
             <template v-if="character.classPackage.huntersEdge">
               <p>{{ t('classUi.huntersEdge') }}: {{ character.classPackage.huntersEdge.name }}</p>
               <p v-for="effect in character.classPackage.huntersEdge.effects" :key="effect.id">
-                {{ effect.name }}: {{ effect.summary }} {{ t('classUi.deferredEffect') }}
+                {{ effect.name }}: {{ effect.summary }}
               </p>
             </template>
             <template v-if="character.classPackage.druidicOrder">
               <p>{{ t('classUi.druidicOrder') }}: {{ character.classPackage.druidicOrder.name }}</p>
               <p v-for="benefit in character.classPackage.druidicOrder.benefits" :key="benefit.id">
                 {{ t(`classUi.druidicOrderBenefitKinds.${benefit.kind}`) }}: {{ benefit.name }}.
-                <template v-if="benefit.kind === 'ClassFeat'">{{
-                  t('classUi.deferredEffect')
-                }}</template>
               </p>
             </template>
             <template v-if="character.classPackage.druidSpellLoadout">
@@ -854,9 +847,6 @@ onMounted(load)
               <p>{{ t('classUi.bardMuse') }}: {{ character.classPackage.bardMuse.name }}</p>
               <p v-for="benefit in character.classPackage.bardMuse.benefits" :key="benefit.id">
                 {{ t(`classUi.bardMuseBenefitKinds.${benefit.kind}`) }}: {{ benefit.name }}.
-                <template v-if="benefit.kind === 'ClassFeat'">{{
-                  t('classUi.deferredEffect')
-                }}</template>
               </p>
             </template>
             <template v-if="character.classPackage.bardSpellLoadout">
@@ -1048,10 +1038,7 @@ onMounted(load)
                 {{ t('classUi.clericDoctrine') }}: {{ character.classPackage.clericDoctrine.name }}
               </p>
               <p v-for="effect in character.classPackage.clericDoctrine.effects" :key="effect.id">
-                {{ effect.name }}: {{ effect.summary }}
-                <template v-if="effect.deferredDependencies.length">{{
-                  t('classUi.deferredEffect')
-                }}</template>
+                {{ getCatalogLabel(effect.id, effect.name) }}
               </p>
             </template>
             <template v-if="character.classPackage.deity">

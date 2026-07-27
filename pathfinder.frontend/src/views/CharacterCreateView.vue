@@ -1369,17 +1369,12 @@ function formatFeatReview(
   acquisition: 'Selected' | 'Granted',
   sourceLabel: string,
 ): string {
-  const deferred = feat.deferredDependencies.length
-    ? t('feats.deferred', { dependencies: feat.deferredDependencies.join(', ') })
-    : t('feats.resolved')
-
   return [
     feat.name,
     t(`feats.categories.${feat.category}`),
     t(`feats.acquisition.${acquisition}`),
     sourceLabel,
     `${feat.source.book}, ${t('feats.page', { page: feat.source.page })}`,
-    deferred,
   ].join(' · ')
 }
 function selectClericCantrips(spellIds: string[]): void {
@@ -1959,7 +1954,6 @@ watch(
               variant="tonal"
             >
               {{ t(`classUi.bardMuseBenefitKinds.${benefit.kind}`) }}: {{ benefit.name }}.
-              {{ t('classUi.deferredEffect') }}
             </v-alert>
             <v-select
               v-if="selectedCharacterClass.id === 'class.witch'"
@@ -2062,7 +2056,6 @@ watch(
               variant="tonal"
             >
               {{ t(`classUi.druidicOrderBenefitKinds.${benefit.kind}`) }}: {{ benefit.name }}.
-              {{ t('classUi.deferredEffect') }}
             </v-alert>
             <v-select
               v-if="selectedCharacterClass.id === 'class.ranger'"
@@ -2077,7 +2070,7 @@ watch(
               :key="effect.id"
               type="info"
               variant="tonal"
-              >{{ effect.name }}: {{ effect.summary }} {{ t('classUi.deferredEffect') }}</v-alert
+              >{{ effect.name }}: {{ effect.summary }}</v-alert
             >
             <v-select
               v-if="selectedCharacterClass.id === 'class.rogue'"
@@ -2183,7 +2176,6 @@ watch(
                     .map((spell) => `${spell.rank}: ${getCatalogLabel(spell.id, spell.name)}`)
                     .join(', ')
                 }}.
-                {{ t('classUi.deferredDeityBenefits') }}
               </v-alert>
             </template>
             <v-radio-group
@@ -2257,10 +2249,7 @@ watch(
                 :key="effect.id"
                 type="info"
                 variant="tonal"
-                >{{ effect.name }}: {{ effect.summary }}
-                <template v-if="effect.deferredDependencies.length">{{
-                  t('classUi.deferredEffect')
-                }}</template>
+                >{{ getCatalogLabel(effect.id, effect.name) }}
               </v-alert>
             </div>
             <v-list density="compact" :subheader="t('classUi.initialProficiencies')">
@@ -3026,11 +3015,7 @@ watch(
               v-for="benefit in selectedBardMuse?.benefits ?? []"
               :key="`review-${benefit.id}`"
               :title="t(`classUi.bardMuseBenefitKinds.${benefit.kind}`)"
-              :subtitle="
-                benefit.kind === 'RepertoireSpell'
-                  ? benefit.name
-                  : `${benefit.name}. ${t('classUi.deferredEffect')}`
-              " /><v-list-item
+              :subtitle="benefit.name" /><v-list-item
               v-if="selectedBardCantrips.length"
               :title="t('classUi.bardCantrips')"
               :subtitle="selectedBardCantrips.map((spell) => spell.name).join(', ')" /><v-list-item

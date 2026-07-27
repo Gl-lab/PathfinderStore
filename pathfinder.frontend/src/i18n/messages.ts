@@ -33,8 +33,6 @@ export const messages = {
       deferredTrainingTitle: 'Отложенные замены обучения',
       replacementRequired: '{feat}: обучение {target} уже получено; требуется выбрать замену',
       page: 'стр. {page}',
-      resolved: 'эффект подключён',
-      deferred: 'отложенные эффекты: {dependencies}',
       categories: {
         Ancestry: 'Талант родословной',
         Skill: 'Талант навыка',
@@ -566,8 +564,6 @@ export const messages = {
         SkillFeat: 'Предыстория даёт этот талант навыка.',
       },
       customLoreLabel: 'Знания: {topic}',
-      deferredFeat: 'Талант будет применён после добавления подсистемы талантов.',
-      deferredChoice: 'Выбор будет доступен после добавления системы навыков.',
       heritage: 'Наследие',
       ancestryFeat: 'Талант родословной',
       speed: 'скорость {speed}',
@@ -733,7 +729,6 @@ export const messages = {
       clericDoctrine: 'Доктрина жреца',
       clericDomain: 'Основной домен',
       initialDomainSpell: 'Начальное заклинание домена',
-      deferredEffect: 'Эффект будет применён после добавления зависимой подсистемы.',
       initialProficiencies: 'Стартовые владения',
       rules: 'Правила класса',
       ruleKinds: {
@@ -746,8 +741,6 @@ export const messages = {
       },
       ruleChoiceRequired: 'Выбор выполняется в мастере создания персонажа.',
       ruleGranted: 'Эта возможность предоставляется классом.',
-      deferredChoice:
-        'Фактический выбор будет доступен после добавления соответствующей подсистемы.',
       classTraining: 'Навыки класса',
       classTrainingHint:
         'Выберите базовые навыки класса и ещё {count} навыков или видов знаний с учётом итогового Интеллекта.',
@@ -767,7 +760,6 @@ export const messages = {
       grantedSpells: 'Дарованные заклинания',
       deitySkillReplacement: 'Замена божественного навыка',
       deitySkillConflict: 'Предыстория уже обучает навыку {skill}. Выберите другой навык.',
-      deferredDeityBenefits: 'Домены и дарованные заклинания пока отображаются декларативно.',
       names: {
         bard: 'Бард',
         cleric: 'Жрец',
@@ -841,7 +833,10 @@ export const messages = {
         skill_survival: 'Выживание',
         skill_thievery: 'Воровство',
         cleric_doctrine_cloistered: 'Жрец-затворник',
+        cleric_doctrine_cloistered_effect_domain_initiate: 'Посвящение домена',
         cleric_doctrine_warpriest: 'Боевой жрец',
+        cleric_doctrine_warpriest_effect_deadly_simplicity: 'Смертельная простота',
+        cleric_doctrine_warpriest_effect_shield_block: 'Блок щитом',
         deity_abadar: 'Абадар',
         deity_asmodeus: 'Асмодей',
         deity_calistria: 'Калистрия',
@@ -1146,8 +1141,6 @@ export const messages = {
       deferredTrainingTitle: 'Deferred training replacements',
       replacementRequired: '{feat}: {target} training already exists; choose a replacement',
       page: 'p. {page}',
-      resolved: 'effect resolved',
-      deferred: 'deferred effects: {dependencies}',
       categories: { Ancestry: 'Ancestry feat', Skill: 'Skill feat', Class: 'Class feat' },
       acquisition: { Selected: 'selected', Granted: 'granted automatically' },
       sources: {
@@ -1679,8 +1672,6 @@ export const messages = {
         SkillFeat: 'The background grants this skill feat.',
       },
       customLoreLabel: '{topic} Lore',
-      deferredFeat: 'The feat will be applied after the feat subsystem is added.',
-      deferredChoice: 'This choice will become available with the skill system.',
       heritage: 'Heritage',
       ancestryFeat: 'Ancestry feat',
       speed: 'speed {speed}',
@@ -1835,7 +1826,6 @@ export const messages = {
       clericDoctrine: 'Cleric Doctrine',
       clericDomain: 'Primary domain',
       initialDomainSpell: 'Initial domain spell',
-      deferredEffect: 'This effect will be applied after its dependent subsystem is added.',
       initialProficiencies: 'Initial proficiencies',
       rules: 'Class rules',
       ruleKinds: {
@@ -1848,7 +1838,6 @@ export const messages = {
       },
       ruleChoiceRequired: 'Complete this choice in the character creation wizard.',
       ruleGranted: 'The class grants this feature.',
-      deferredChoice: 'The actual choice will become available with the corresponding subsystem.',
       classTraining: 'Class skills',
       classTrainingHint:
         'Choose the class skills and {count} additional skills or Lore topics based on final Intelligence.',
@@ -1869,8 +1858,6 @@ export const messages = {
       grantedSpells: 'Granted spells',
       deitySkillReplacement: 'Divine skill replacement',
       deitySkillConflict: 'Your background already trains {skill}. Choose another skill.',
-      deferredDeityBenefits:
-        'Domains and granted spells are currently shown as declarative benefits.',
       names: {
         bard: 'Bard',
         cleric: 'Cleric',
