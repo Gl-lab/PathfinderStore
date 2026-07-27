@@ -73,6 +73,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: 'routes.campaignExchange', requiresAuth: true },
   },
   {
+    path: '/campaigns/:campaignId(\\d+)/commerce-admin',
+    name: 'commerce-admin',
+    component: () => import('@/views/CampaignCommerceAdminView.vue'),
+    meta: { title: 'routes.commerceAdmin', requiresAuth: true },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
     component: NotFoundView,

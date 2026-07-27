@@ -2,8 +2,11 @@
 import { computed } from 'vue'
 import { getOperationStatusLabel } from '@/i18n/domain'
 import type { OperationStatus } from '@/features/inventory/api'
+import type { ShopOfferStatus } from '@/features/commerce/api'
 
-const props = defineProps<{ status: OperationStatus }>()
+type DisplayStatus = OperationStatus | ShopOfferStatus
+
+const props = defineProps<{ status: DisplayStatus }>()
 const color = computed(
   () =>
     ({
@@ -12,6 +15,9 @@ const color = computed(
       Completed: 'success',
       Cancelled: 'default',
       Expired: 'error',
+      Active: 'success',
+      Withdrawn: 'default',
+      SoldOut: 'error',
     })[props.status],
 )
 </script>

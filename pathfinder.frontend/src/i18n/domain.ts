@@ -1,6 +1,5 @@
 import { i18n } from '@/i18n'
 import type { AbilityCode, AncestryCode } from '@/features/characters/api'
-import type { OperationStatus } from '@/features/inventory/api'
 
 export function getAncestryLabel(code: AncestryCode): string {
   return i18n.global.t(`domain.ancestry.${code}`)
@@ -40,6 +39,6 @@ export function getLanguageLabel(id: string): string {
   return i18n.global.te(key) ? i18n.global.t(key) : id
 }
 
-export function getOperationStatusLabel(status: OperationStatus): string {
+export function getOperationStatusLabel(status: string): string {
   return i18n.global.t(`inventoryUi.operationStatuses.${status}`)
 }

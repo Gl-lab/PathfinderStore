@@ -95,10 +95,14 @@ export async function getSettlements(campaignId: number): Promise<Settlement[]> 
   return (await http.get<Settlement[]>(`/api/commerce/campaigns/${campaignId}/settlements`)).data
 }
 
-export async function getShopOffers(campaignId: number, shopId: number): Promise<ShopOffer[]> {
+export async function getShopOffers(
+  campaignId: number,
+  shopId: number,
+  status: 'Active' | 'All' = 'Active',
+): Promise<ShopOffer[]> {
   return (
     await http.get<ShopOffer[]>(`/api/commerce/campaigns/${campaignId}/shops/${shopId}/offers`, {
-      params: { status: 'Active' },
+      params: { status },
     })
   ).data
 }
@@ -166,10 +170,9 @@ export async function getSellQuote(
   itemInstanceKey: string,
 ): Promise<SellQuote> {
   return (
-    await http.get<SellQuote>(
-      `/api/commerce/campaigns/${campaignId}/shops/${shopId}/sell-quote`,
-      { params: { sellerCharacterId, itemInstanceKey } },
-    )
+    await http.get<SellQuote>(`/api/commerce/campaigns/${campaignId}/shops/${shopId}/sell-quote`, {
+      params: { sellerCharacterId, itemInstanceKey },
+    })
   ).data
 }
 

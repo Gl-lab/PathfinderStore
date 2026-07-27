@@ -47,15 +47,15 @@ onMounted(load)
       {{ t('commerceUi.campaign.empty') }}
     </v-alert>
 
-    <v-card
-      v-for="settlement in settlements"
-      :key="settlement.id"
-      class="settlement"
-      elevation="0"
-    >
+    <v-card v-for="settlement in settlements" :key="settlement.id" class="settlement" elevation="0">
       <v-card-title>{{ settlement.name }}</v-card-title>
       <v-card-subtitle>
-        {{ t('commerceUi.campaign.settlementMeta', { level: settlement.level, region: settlement.region }) }}
+        {{
+          t('commerceUi.campaign.settlementMeta', {
+            level: settlement.level,
+            region: settlement.region,
+          })
+        }}
       </v-card-subtitle>
       <v-card-text class="shops">
         <v-alert v-if="!settlement.shops.length" type="info" variant="tonal">
@@ -90,11 +90,11 @@ onMounted(load)
     <v-btn
       v-if="isGameMaster"
       color="secondary"
-      disabled
       prepend-icon="mdi-store-cog"
+      :to="{ name: 'commerce-admin', params: { campaignId } }"
       variant="tonal"
     >
-      {{ t('commerceUi.campaign.adminComingSoon') }}
+      {{ t('commerceUi.campaign.openAdmin') }}
     </v-btn>
   </section>
 </template>
