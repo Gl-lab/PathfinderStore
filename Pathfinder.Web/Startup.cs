@@ -60,6 +60,7 @@ public class Startup( IConfiguration configuration )
         services.AddScoped<CharacterInventoryProjectionService>();
         services.AddScoped<InventoryOperationsProjectionService>();
         services.AddScoped<CommerceReadProjectionService>();
+        services.AddScoped<CommerceAdministrationProjectionService>();
         services.AddScoped<ItemKnowledgeAdministrationService>();
         services.AddHostedService<CompletedCharacterInventoryMigrationHostedService>();
         services.AddScoped<ItemCatalogAllowedEquipmentReader>();
