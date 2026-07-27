@@ -6,6 +6,7 @@ using Pathfinder.Commerce.Application.Shops;
 using Pathfinder.Commerce.Domain.Exceptions;
 using Pathfinder.Commerce.Application.Offers;
 using Pathfinder.Commerce.Application.Money;
+using Pathfinder.Commerce.Application.Restocking;
 using Pathfinder.Web.Controllers.Base;
 
 namespace Pathfinder.Web.Controllers;
@@ -16,15 +17,78 @@ public sealed class CommerceAdminController : AuthorizedController
     private readonly ShopAdministrationService _service;
     private readonly ShopOfferAdministrationService _offerService;
     private readonly WalletAdministrationService _walletService;
+    private readonly RestockPolicyAdministrationService _restockPolicyService;
 
     public CommerceAdminController(
         ShopAdministrationService service,
         ShopOfferAdministrationService offerService,
-        WalletAdministrationService walletService )
+        WalletAdministrationService walletService,
+        RestockPolicyAdministrationService restockPolicyService )
     {
         _service = service;
         _offerService = offerService;
         _walletService = walletService;
+        _restockPolicyService = restockPolicyService;
+    }
+
+    [HttpPost( "shops/{shopId:int}/restock-policy" )]
+    public async Task<ActionResult<RestockPolicyDto>> CreateRestockPolicy(
+        int campaignId,
+        int shopId,
+        [FromBody] CreateRestockPolicyApiRequest request,
+        CancellationToken cancellationToken )
+    {
+        try
+        {
+            RestockPolicyDto result = await _restockPolicyService.CreateAsync(
+                new CreateRestockPolicyRequest(
+                    campaignId,
+                    shopId,
+                    request.Name,
+                    request.TargetOfferCount,
+                    CurrentUserId() ),
+                cancellationToken );
+            return Created(
+                $"api/commerce-admin/campaigns/{campaignId}/shops/{shopId}/restock-policy",
+                result );
+        }
+        catch ( UnauthorizedAccessException )
+        {
+            return Forbid();
+        }
+        catch ( CommerceException exception )
+        {
+            return BadRequest( MapError( exception.Message ) );
+        }
+    }
+
+    [HttpPost( "shops/{shopId:int}/restock-policy/revisions" )]
+    public async Task<ActionResult<RestockPolicyDto>> ReviseRestockPolicy(
+        int campaignId,
+        int shopId,
+        [FromBody] ReviseRestockPolicyApiRequest request,
+        CancellationToken cancellationToken )
+    {
+        try
+        {
+            RestockPolicyDto result = await _restockPolicyService.ReviseAsync(
+                new ReviseRestockPolicyRequest(
+                    campaignId,
+                    shopId,
+                    request.ExpectedVersion,
+                    request.TargetOfferCount,
+                    CurrentUserId() ),
+                cancellationToken );
+            return Ok( result );
+        }
+        catch ( UnauthorizedAccessException )
+        {
+            return Forbid();
+        }
+        catch ( CommerceException exception )
+        {
+            return BadRequest( MapError( exception.Message ) );
+        }
     }
 
     [HttpPost( "wallets/{characterId:int}/adjustments" )]
@@ -236,3 +300,11 @@ public sealed record AdjustWalletApiRequest(
     Guid OperationId,
     long AmountCopper,
     string Description );
+
+public sealed record CreateRestockPolicyApiRequest(
+    string Name,
+    int TargetOfferCount );
+
+public sealed record ReviseRestockPolicyApiRequest(
+    int ExpectedVersion,
+    int TargetOfferCount );

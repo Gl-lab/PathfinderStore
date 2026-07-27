@@ -3,6 +3,7 @@ using Pathfinder.Commerce.Domain.Shops;
 using Pathfinder.Commerce.Domain.Offers;
 using Pathfinder.Commerce.Domain.Money;
 using Pathfinder.Commerce.Domain.Transactions;
+using Pathfinder.Commerce.Domain.Restocking;
 
 namespace Pathfinder.Commerce.Infrastructure.Data;
 
@@ -20,6 +21,8 @@ public sealed class CommerceDbContext : DbContext
     public DbSet<WalletLedgerEntry> WalletLedgerEntries => Set<WalletLedgerEntry>();
     public DbSet<PurchaseReservation> PurchaseReservations => Set<PurchaseReservation>();
     public DbSet<ShopSale> ShopSales => Set<ShopSale>();
+    public DbSet<RestockPolicy> RestockPolicies => Set<RestockPolicy>();
+    public DbSet<RestockPolicyRevision> RestockPolicyRevisions => Set<RestockPolicyRevision>();
 
     protected override void OnModelCreating( ModelBuilder modelBuilder )
     {
@@ -219,6 +222,45 @@ public sealed class CommerceDbContext : DbContext
             {
                 sale.CampaignId,
                 sale.OperationId,
+            } )
+                .IsUnique();
+        } );
+        modelBuilder.Entity<RestockPolicy>( builder =>
+        {
+            builder.ToTable( "RestockPolicy", tableBuilder =>
+            {
+                tableBuilder.HasCheckConstraint(
+                    "CK_RestockPolicy_Identity",
+                    "\"CampaignId\" > 0 AND \"ShopId\" > 0 AND \"CurrentVersion\" > 0" );
+            } );
+            builder.Property( policy => policy.Name )
+                .HasMaxLength( RestockPolicy.NameMaxLength )
+                .IsRequired();
+            builder.Property( policy => policy.CurrentVersion )
+                .IsConcurrencyToken();
+            builder.HasIndex( policy => policy.ShopId )
+                .IsUnique();
+            builder.HasOne<Shop>()
+                .WithMany()
+                .HasForeignKey( policy => policy.ShopId )
+                .OnDelete( DeleteBehavior.Cascade );
+            builder.HasMany( policy => policy.Revisions )
+                .WithOne()
+                .HasForeignKey( revision => revision.RestockPolicyId )
+                .OnDelete( DeleteBehavior.Cascade );
+        } );
+        modelBuilder.Entity<RestockPolicyRevision>( builder =>
+        {
+            builder.ToTable( "RestockPolicyRevision", tableBuilder =>
+            {
+                tableBuilder.HasCheckConstraint(
+                    "CK_RestockPolicyRevision_Values",
+                    "\"Version\" > 0 AND \"TargetOfferCount\" > 0 AND \"CreatedByUserId\" > 0" );
+            } );
+            builder.HasIndex( revision => new
+            {
+                revision.RestockPolicyId,
+                revision.Version,
             } )
                 .IsUnique();
         } );
