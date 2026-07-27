@@ -104,11 +104,19 @@ onMounted(() => {
           <v-text-field
             v-model="campaignName"
             :counter="campaignNameMaxLength"
+            :hint="t('campaigns.validation.campaignName', { max: campaignNameMaxLength })"
             :label="t('campaigns.name')"
             :maxlength="campaignNameMaxLength"
+            persistent-hint
+            :rules="[
+              (value) =>
+                isCampaignNameValid(String(value ?? '')) ||
+                t('campaigns.validation.campaignName', { max: campaignNameMaxLength }),
+            ]"
             hide-details="auto"
           />
           <v-btn
+            aria-describedby="campaign-name-requirement"
             color="accent"
             :disabled="!canCreate"
             :loading="isSaving"
@@ -117,6 +125,9 @@ onMounted(() => {
             type="submit"
             >{{ t('campaigns.create') }}</v-btn
           >
+          <span id="campaign-name-requirement" class="d-sr-only">
+            {{ t('campaigns.validation.campaignName', { max: campaignNameMaxLength }) }}
+          </span>
         </v-form>
       </v-card-text>
     </v-card>

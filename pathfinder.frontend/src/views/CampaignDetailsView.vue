@@ -15,7 +15,13 @@ import {
   type Campaign,
   type CampaignCharacterReference,
 } from '@/features/campaigns/api'
-import { isCampaignUserNameValid } from '@/features/campaigns/validation'
+import {
+  campaignPartyNameMaxLength,
+  campaignUserNameMaxLength,
+  isCampaignCharacterIdValid,
+  isCampaignPartyNameValid,
+  isCampaignUserNameValid,
+} from '@/features/campaigns/validation'
 import PartyStorageTab from '@/features/inventory/PartyStorageTab.vue'
 import CommerceCampaignTab from '@/features/commerce/CommerceCampaignTab.vue'
 import { usePendingOperations } from '@/features/inventory/usePendingOperations'
@@ -50,6 +56,9 @@ const activeParty = computed(() =>
   campaign.value?.parties.find((party) => party.status === 'Active'),
 )
 const isGameMaster = computed(() => campaign.value?.roles.includes('GameMaster') ?? false)
+const canInvite = computed(() => isCampaignUserNameValid(invitedUserName.value))
+const canCreateParty = computed(() => isCampaignPartyNameValid(partyName.value))
+const canAssignCharacter = computed(() => isCampaignCharacterIdValid(partyCharacterId.value))
 const playerMembers = computed(
   () => campaign.value?.members.filter((member) => member.roles.includes('Player')) ?? [],
 )
@@ -95,7 +104,7 @@ async function runAction(key: string, action: () => Promise<Campaign>): Promise<
 }
 
 async function invite(): Promise<void> {
-  if (!campaign.value || !isCampaignUserNameValid(invitedUserName.value)) {
+  if (!campaign.value || !canInvite.value) {
     return
   }
   actionKey.value = 'invite'
@@ -118,7 +127,7 @@ async function toggleGameMaster(userId: number, assign: boolean): Promise<void> 
 }
 
 async function createParty(): Promise<void> {
-  if (!campaign.value || !partyName.value.trim()) return
+  if (!campaign.value || !canCreateParty.value) return
   await runAction('party:create', () =>
     createCampaignParty(campaign.value!.id, partyName.value.trim()),
   )
@@ -126,7 +135,7 @@ async function createParty(): Promise<void> {
 }
 
 async function assignCharacter(): Promise<void> {
-  if (!campaign.value || !partyCharacterId.value) return
+  if (!campaign.value || !canAssignCharacter.value) return
   await runAction('party:assign', () =>
     assignCampaignPartyCharacter(
       campaign.value!.id,
@@ -274,15 +283,32 @@ onMounted(load)
               >
                 <v-text-field
                   v-model="invitedUserName"
+                  :counter="campaignUserNameMaxLength"
                   density="compact"
+                  :hint="
+                    t('campaigns.validation.invitedUserName', { max: campaignUserNameMaxLength })
+                  "
                   :label="t('campaigns.invitedUserName')"
+                  :maxlength="campaignUserNameMaxLength"
+                  persistent-hint
+                  :rules="[
+                    (value) =>
+                      isCampaignUserNameValid(String(value ?? '')) ||
+                      t('campaigns.validation.invitedUserName', {
+                        max: campaignUserNameMaxLength,
+                      }),
+                  ]"
                 />
                 <v-btn
-                  :disabled="!isCampaignUserNameValid(invitedUserName)"
+                  aria-describedby="campaign-invite-requirement"
+                  :disabled="!canInvite"
                   :loading="actionKey === 'invite'"
                   type="submit"
                   >{{ t('campaigns.invite') }}</v-btn
                 >
+                <span id="campaign-invite-requirement" class="d-sr-only">
+                  {{ t('campaigns.validation.invitedUserName', { max: campaignUserNameMaxLength }) }}
+                </span>
               </v-form>
               <v-btn
                 v-if="campaign.status === 'Active'"
@@ -305,14 +331,30 @@ onMounted(load)
                 class="inline-form"
                 @submit.prevent="createParty"
               >
-                <v-text-field v-model="partyName" :label="t('campaigns.partyName')" />
+                <v-text-field
+                  v-model="partyName"
+                  :counter="campaignPartyNameMaxLength"
+                  :hint="t('campaigns.validation.partyName', { max: campaignPartyNameMaxLength })"
+                  :label="t('campaigns.partyName')"
+                  :maxlength="campaignPartyNameMaxLength"
+                  persistent-hint
+                  :rules="[
+                    (value) =>
+                      isCampaignPartyNameValid(String(value ?? '')) ||
+                      t('campaigns.validation.partyName', { max: campaignPartyNameMaxLength }),
+                  ]"
+                />
                 <v-btn
-                  :disabled="!partyName.trim()"
+                  aria-describedby="campaign-party-name-requirement"
+                  :disabled="!canCreateParty"
                   :loading="actionKey === 'party:create'"
                   type="submit"
                 >
                   {{ t('campaigns.createParty') }}
                 </v-btn>
+                <span id="campaign-party-name-requirement" class="d-sr-only">
+                  {{ t('campaigns.validation.partyName', { max: campaignPartyNameMaxLength }) }}
+                </span>
               </v-form>
               <template v-if="activeParty">
                 <p>{{ t('campaigns.activeParty', { name: activeParty.name }) }}</p>
@@ -347,13 +389,27 @@ onMounted(load)
                     item-title="name"
                     item-value="id"
                     :items="characters"
+                    :hint="t('campaigns.validation.character')"
                     :label="t('campaigns.character')"
+                    persistent-hint
+                    :rules="[
+                      (value) =>
+                        isCampaignCharacterIdValid(Number(value)) ||
+                        t('campaigns.validation.character'),
+                    ]"
                   />
                   <v-text-field
                     v-else
                     v-model.number="partyCharacterId"
                     min="1"
+                    :hint="t('campaigns.validation.character')"
                     :label="t('campaigns.characterId')"
+                    persistent-hint
+                    :rules="[
+                      (value) =>
+                        isCampaignCharacterIdValid(Number(value)) ||
+                        t('campaigns.validation.character'),
+                    ]"
                     type="number"
                   />
                   <v-select
@@ -366,12 +422,16 @@ onMounted(load)
                     :label="t('campaigns.controller')"
                   />
                   <v-btn
-                    :disabled="!partyCharacterId"
+                    aria-describedby="campaign-character-requirement"
+                    :disabled="!canAssignCharacter"
                     :loading="actionKey === 'party:assign'"
                     type="submit"
                   >
                     {{ t('campaigns.assignCharacter') }}
                   </v-btn>
+                  <span id="campaign-character-requirement" class="d-sr-only">
+                    {{ t('campaigns.validation.character') }}
+                  </span>
                 </v-form>
               </template>
             </v-card-text>
