@@ -1317,6 +1317,9 @@ function getProficiencyCategoryLabel(category: ProficiencyCategory): string {
 function formatAbilities(types: AbilityCode[]): string {
   return types.map(getAbilityLabel).join(', ') || t('wizard.none')
 }
+function formatSelectionProgress(label: string, selected: number, required: number): string {
+  return t('wizard.selectionProgress', { label, selected, required })
+}
 function formatFeatReview(
   feat: FeatDefinition,
   acquisition: 'Selected' | 'Granted',
@@ -1800,6 +1803,7 @@ watch(
             {{
               t('wizard.freeBoostsHint', {
                 count: freeBoostSlots,
+                selected: form.freeBoosts.length,
                 kind: freeBoostSlots === 1 ? t('wizard.oneAbility') : t('wizard.severalAbilities'),
                 boosts: formatAbilities(fixedBoosts),
               })
@@ -2239,14 +2243,24 @@ watch(
               :items="clericSpellOptions.cantrips.map((option) => option.spell)"
               item-title="name"
               item-value="id"
-              :label="t('classUi.clericCantrips')"
+              :label="
+                formatSelectionProgress(t('classUi.clericCantrips'), form.clericCantripIds.length, 5)
+              "
               multiple
               chips
               closable-chips
               :counter="5"
               @update:model-value="selectClericCantrips"
             />
-            <h3>{{ t('classUi.clericPreparedSpells') }}</h3>
+            <h3>
+              {{
+                formatSelectionProgress(
+                  t('classUi.clericPreparedSpells'),
+                  form.clericPreparedSpellIds.filter(Boolean).length,
+                  2,
+                )
+              }}
+            </h3>
             <v-select
               v-for="(_, index) in form.clericPreparedSpellIds"
               :key="index"
@@ -2268,7 +2282,9 @@ watch(
               :items="bardSpellOptions.cantrips"
               item-title="name"
               item-value="id"
-              :label="t('classUi.bardCantrips')"
+              :label="
+                formatSelectionProgress(t('classUi.bardCantrips'), form.bardCantripIds.length, 5)
+              "
               multiple
               chips
               closable-chips
@@ -2280,7 +2296,13 @@ watch(
               :items="bardRankOneSpellOptions"
               item-title="name"
               item-value="id"
-              :label="t('classUi.bardRepertoireSpells')"
+              :label="
+                formatSelectionProgress(
+                  t('classUi.bardRepertoireSpells'),
+                  form.bardSpellIds.length,
+                  2,
+                )
+              "
               multiple
               chips
               closable-chips
@@ -2305,14 +2327,24 @@ watch(
               :items="druidSpellOptions.cantrips"
               item-title="name"
               item-value="id"
-              :label="t('classUi.druidCantrips')"
+              :label="
+                formatSelectionProgress(t('classUi.druidCantrips'), form.druidCantripIds.length, 5)
+              "
               multiple
               chips
               closable-chips
               :counter="5"
               @update:model-value="selectDruidCantrips"
             />
-            <h3>{{ t('classUi.druidPreparedSpells') }}</h3>
+            <h3>
+              {{
+                formatSelectionProgress(
+                  t('classUi.druidPreparedSpells'),
+                  form.druidPreparedSpellIds.filter(Boolean).length,
+                  2,
+                )
+              }}
+            </h3>
             <v-select
               v-for="(_, index) in form.druidPreparedSpellIds"
               :key="index"
@@ -2416,7 +2448,13 @@ watch(
               :items="wizardSpellOptions.cantrips"
               item-title="name"
               item-value="id"
-              :label="t('classUi.wizardSpellbookCantrips')"
+              :label="
+                formatSelectionProgress(
+                  t('classUi.wizardSpellbookCantrips'),
+                  form.wizardSpellbookCantripIds.length,
+                  10,
+                )
+              "
               multiple
               chips
               closable-chips
@@ -2428,9 +2466,13 @@ watch(
               item-title="name"
               item-value="id"
               :label="
-                t('classUi.wizardSpellbookSpells', {
-                  count: selectedArcaneSchool?.hasCurriculum ? 5 : 6,
-                })
+                formatSelectionProgress(
+                  t('classUi.wizardSpellbookSpells', {
+                    count: selectedArcaneSchool?.hasCurriculum ? 5 : 6,
+                  }),
+                  form.wizardSpellbookSpellIds.length,
+                  selectedArcaneSchool?.hasCurriculum ? 5 : 6,
+                )
               "
               multiple
               chips
@@ -2443,14 +2485,26 @@ watch(
                 :items="wizardCurriculumCantripOptions"
                 item-title="name"
                 item-value="id"
-                :label="t('classUi.wizardCurriculumCantrip')"
+                :label="
+                  formatSelectionProgress(
+                    t('classUi.wizardCurriculumCantrip'),
+                    form.wizardCurriculumCantripId ? 1 : 0,
+                    1,
+                  )
+                "
               />
               <v-select
                 v-model="form.wizardCurriculumSpellIds"
                 :items="wizardCurriculumRankOneOptions"
                 item-title="name"
                 item-value="id"
-                :label="t('classUi.wizardCurriculumSpells')"
+                :label="
+                  formatSelectionProgress(
+                    t('classUi.wizardCurriculumSpells'),
+                    form.wizardCurriculumSpellIds.length,
+                    2,
+                  )
+                "
                 multiple
                 chips
                 closable-chips
@@ -2462,12 +2516,27 @@ watch(
               :items="selectedWizardSpellbookCantrips"
               item-title="name"
               item-value="id"
-              :label="t('classUi.wizardPreparedCantrips')"
+              :label="
+                formatSelectionProgress(
+                  t('classUi.wizardPreparedCantrips'),
+                  form.wizardPreparedCantripIds.length,
+                  5,
+                )
+              "
               multiple
               chips
               closable-chips
               :counter="5"
             />
+            <h3>
+              {{
+                formatSelectionProgress(
+                  t('classUi.wizardPreparedSpells'),
+                  form.wizardPreparedSpellIds.filter(Boolean).length,
+                  2,
+                )
+              }}
+            </h3>
             <v-select
               v-for="(_, index) in form.wizardPreparedSpellIds"
               :key="`wizard-slot-${index}`"
@@ -2483,14 +2552,26 @@ watch(
                 :items="wizardCurriculumCantripOptions"
                 item-title="name"
                 item-value="id"
-                :label="t('classUi.wizardCurriculumCantripSlot')"
+                :label="
+                  formatSelectionProgress(
+                    t('classUi.wizardCurriculumCantripSlot'),
+                    form.wizardPreparedCurriculumCantripId ? 1 : 0,
+                    1,
+                  )
+                "
               />
               <v-select
                 v-model="form.wizardPreparedCurriculumSpellId"
                 :items="wizardCurriculumRankOneOptions"
                 item-title="name"
                 item-value="id"
-                :label="t('classUi.wizardCurriculumSpellSlot')"
+                :label="
+                  formatSelectionProgress(
+                    t('classUi.wizardCurriculumSpellSlot'),
+                    form.wizardPreparedCurriculumSpellId ? 1 : 0,
+                    1,
+                  )
+                "
               />
             </template>
             <v-alert type="info" variant="tonal">
