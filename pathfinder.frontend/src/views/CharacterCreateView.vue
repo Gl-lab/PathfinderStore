@@ -166,6 +166,7 @@ import {
   isLanguageSelectionComplete,
   reconcileLanguageSelection,
 } from '@/features/character-creation/languageSelection'
+import { getIncompleteWizardRequirements } from '@/features/character-creation/wizardRequirements'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -731,111 +732,254 @@ function getClassFeatOptions(sourceId: string, requiresSpellshape: boolean): Fea
 function isClassFeatChoiceComplete(): boolean {
   return isRequiredClassFeatChoiceComplete(classFeatChoiceSlots.value, form.value.classFeatChoices)
 }
-const canContinue = computed(() => {
-  if (step.value === 1)
-    return (
-      Boolean(form.value.name.trim()) &&
-      isSelectableCharacterGender(form.value.gender) &&
-      (form.value.age === null || (Number.isInteger(form.value.age) && form.value.age > 0))
-    )
-  if (step.value === 2) return selectedAncestry.value !== null
-  if (step.value === 3)
-    return selectedHeritage.value !== null && selectedAncestryFeat.value !== null
-  if (step.value === 4) return form.value.freeBoosts.length === freeBoostSlots.value
-  if (step.value === 5)
-    return (
-      isBackgroundChoiceComplete(
-        selectedBackground.value,
-        form.value.backgroundRestrictedBoost,
-        form.value.backgroundFreeBoost,
-      ) &&
-      isBackgroundTrainingComplete(selectedBackground.value, form.value.backgroundTrainingChoices)
-    )
-  if (step.value === 6)
-    return (
-      isClericDoctrineChoiceComplete(selectedCharacterClass.value, selectedClericDoctrine.value) &&
-      isHuntersEdgeChoiceComplete(selectedCharacterClass.value, selectedHuntersEdge.value) &&
-      isDruidicOrderChoiceComplete(selectedCharacterClass.value, selectedDruidicOrder.value) &&
-      isBardMuseChoiceComplete(selectedCharacterClass.value, selectedBardMuse.value) &&
-      isWitchPatronChoiceComplete(
-        selectedCharacterClass.value,
-        selectedWitchPatron.value,
-        form.value.witchPatronFamiliarSpellId,
-      ) &&
-      isArcaneSchoolChoiceComplete(selectedCharacterClass.value, selectedArcaneSchool.value) &&
-      isArcaneThesisChoiceComplete(selectedCharacterClass.value, selectedArcaneThesis.value) &&
-      isDeityChoiceComplete(
-        selectedCharacterClass.value,
-        selectedDeity.value,
-        form.value.divineFont,
-        form.value.divineSanctification,
-        form.value.deitySkillReplacementId,
-        backgroundSkillIds.value,
-        skills.value,
-      ) &&
-      isClericDomainChoiceComplete(
-        selectedCharacterClass.value,
-        selectedClericDoctrine.value,
-        selectedDeity.value,
-        selectedClericDomain.value,
-      ) &&
-      isSelectedClassChoiceComplete() &&
-      isClassFeatChoiceComplete()
-    )
-  if (step.value === 7)
-    return (
-      isClericSpellLoadoutComplete(
-        selectedCharacterClass.value,
-        form.value.clericCantripIds,
-        form.value.clericPreparedSpellIds,
-        clericSpellOptions.value,
-      ) &&
-      isBardSpellLoadoutComplete(
-        selectedCharacterClass.value,
-        selectedBardMuse.value,
-        form.value.bardCantripIds,
-        form.value.bardSpellIds,
-        bardSpellOptions.value,
-      ) &&
-      isDruidSpellLoadoutComplete(
-        selectedCharacterClass.value,
-        form.value.druidCantripIds,
-        form.value.druidPreparedSpellIds,
-        druidSpellOptions.value,
-      ) &&
-      witchSpellLoadoutProgress.value.isComplete &&
-      isWizardSpellLoadoutComplete(
-        selectedCharacterClass.value,
-        selectedArcaneSchool.value,
-        form.value.wizardSpellbookCantripIds,
-        form.value.wizardSpellbookSpellIds,
-        form.value.wizardCurriculumCantripId,
-        form.value.wizardCurriculumSpellIds,
-        form.value.wizardPreparedCantripIds,
-        form.value.wizardPreparedSpellIds,
-        form.value.wizardPreparedCurriculumCantripId,
-        form.value.wizardPreparedCurriculumSpellId,
-        wizardSpellOptions.value,
-      )
-    )
-  if (step.value === 8)
-    return (
-      isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts) &&
-      !isLoadingLanguageOptions.value &&
-      isLanguageSelectionComplete(form.value.additionalLanguageIds, languageSelectionOptions.value)
-    )
-  if (step.value === 9)
-    return isClassTrainingComplete(
-      effectiveCharacterClass.value,
-      form.value.classSkillGrantChoices,
-      form.value.additionalClassTrainingChoices,
-      additionalClassTrainingCount.value,
-      existingClassTrainingSkillIds.value,
-      skills.value,
-    )
-  if (step.value === 10) return isStartingEquipmentComplete.value
-  return true
+const stepRequirements = computed(() => {
+  if (step.value === 1) {
+    return getIncompleteWizardRequirements([
+      { complete: Boolean(form.value.name.trim()), message: t('wizard.requirements.name') },
+      {
+        complete: isSelectableCharacterGender(form.value.gender),
+        message: t('wizard.requirements.gender'),
+      },
+      {
+        complete:
+          form.value.age === null || (Number.isInteger(form.value.age) && form.value.age > 0),
+        message: t('wizard.requirements.age'),
+      },
+    ])
+  }
+  if (step.value === 2) {
+    return getIncompleteWizardRequirements([
+      { complete: selectedAncestry.value !== null, message: t('wizard.requirements.ancestry') },
+    ])
+  }
+  if (step.value === 3) {
+    return getIncompleteWizardRequirements([
+      { complete: selectedHeritage.value !== null, message: t('wizard.requirements.heritage') },
+      {
+        complete: selectedAncestryFeat.value !== null,
+        message: t('wizard.requirements.ancestryFeat'),
+      },
+    ])
+  }
+  if (step.value === 4) {
+    return getIncompleteWizardRequirements([
+      {
+        complete: form.value.freeBoosts.length === freeBoostSlots.value,
+        message: t('wizard.requirements.freeBoosts', {
+          selected: form.value.freeBoosts.length,
+          required: freeBoostSlots.value,
+        }),
+      },
+    ])
+  }
+  if (step.value === 5) {
+    return getIncompleteWizardRequirements([
+      {
+        complete: selectedBackground.value !== null,
+        message: t('wizard.requirements.background'),
+      },
+      {
+        complete: isBackgroundChoiceComplete(
+          selectedBackground.value,
+          form.value.backgroundRestrictedBoost,
+          form.value.backgroundFreeBoost,
+        ),
+        message: t('wizard.requirements.backgroundBoosts'),
+      },
+      {
+        complete: isBackgroundTrainingComplete(
+          selectedBackground.value,
+          form.value.backgroundTrainingChoices,
+        ),
+        message: t('wizard.requirements.backgroundTraining'),
+      },
+    ])
+  }
+  if (step.value === 6) {
+    return getIncompleteWizardRequirements([
+      {
+        complete: selectedCharacterClass.value !== null,
+        message: t('wizard.requirements.characterClass'),
+      },
+      {
+        complete: isClericDoctrineChoiceComplete(
+          selectedCharacterClass.value,
+          selectedClericDoctrine.value,
+        ),
+        message: t('wizard.requirements.clericDoctrine'),
+      },
+      {
+        complete: isHuntersEdgeChoiceComplete(
+          selectedCharacterClass.value,
+          selectedHuntersEdge.value,
+        ),
+        message: t('wizard.requirements.huntersEdge'),
+      },
+      {
+        complete: isDruidicOrderChoiceComplete(
+          selectedCharacterClass.value,
+          selectedDruidicOrder.value,
+        ),
+        message: t('wizard.requirements.druidicOrder'),
+      },
+      {
+        complete: isBardMuseChoiceComplete(selectedCharacterClass.value, selectedBardMuse.value),
+        message: t('wizard.requirements.bardMuse'),
+      },
+      {
+        complete: isWitchPatronChoiceComplete(
+          selectedCharacterClass.value,
+          selectedWitchPatron.value,
+          form.value.witchPatronFamiliarSpellId,
+        ),
+        message: t('wizard.requirements.witchPatron'),
+      },
+      {
+        complete: isArcaneSchoolChoiceComplete(
+          selectedCharacterClass.value,
+          selectedArcaneSchool.value,
+        ),
+        message: t('wizard.requirements.arcaneSchool'),
+      },
+      {
+        complete: isArcaneThesisChoiceComplete(
+          selectedCharacterClass.value,
+          selectedArcaneThesis.value,
+        ),
+        message: t('wizard.requirements.arcaneThesis'),
+      },
+      {
+        complete: isDeityChoiceComplete(
+          selectedCharacterClass.value,
+          selectedDeity.value,
+          form.value.divineFont,
+          form.value.divineSanctification,
+          form.value.deitySkillReplacementId,
+          backgroundSkillIds.value,
+          skills.value,
+        ),
+        message: t('wizard.requirements.deity'),
+      },
+      {
+        complete: isClericDomainChoiceComplete(
+          selectedCharacterClass.value,
+          selectedClericDoctrine.value,
+          selectedDeity.value,
+          selectedClericDomain.value,
+        ),
+        message: t('wizard.requirements.clericDomain'),
+      },
+      {
+        complete: isSelectedClassChoiceComplete(),
+        message: t('wizard.requirements.classChoices'),
+      },
+      {
+        complete: isClassFeatChoiceComplete(),
+        message: t('wizard.requirements.classFeat'),
+      },
+    ])
+  }
+  if (step.value === 7) {
+    if (selectedCharacterClass.value?.id === 'class.witch') {
+      return witchSpellLoadoutRequirements.value
+    }
+    return getIncompleteWizardRequirements([
+      {
+        complete: isClericSpellLoadoutComplete(
+          selectedCharacterClass.value,
+          form.value.clericCantripIds,
+          form.value.clericPreparedSpellIds,
+          clericSpellOptions.value,
+        ),
+        message: t('wizard.requirements.clericSpells'),
+      },
+      {
+        complete: isBardSpellLoadoutComplete(
+          selectedCharacterClass.value,
+          selectedBardMuse.value,
+          form.value.bardCantripIds,
+          form.value.bardSpellIds,
+          bardSpellOptions.value,
+        ),
+        message: t('wizard.requirements.bardSpells'),
+      },
+      {
+        complete: isDruidSpellLoadoutComplete(
+          selectedCharacterClass.value,
+          form.value.druidCantripIds,
+          form.value.druidPreparedSpellIds,
+          druidSpellOptions.value,
+        ),
+        message: t('wizard.requirements.druidSpells'),
+      },
+      {
+        complete: isWizardSpellLoadoutComplete(
+          selectedCharacterClass.value,
+          selectedArcaneSchool.value,
+          form.value.wizardSpellbookCantripIds,
+          form.value.wizardSpellbookSpellIds,
+          form.value.wizardCurriculumCantripId,
+          form.value.wizardCurriculumSpellIds,
+          form.value.wizardPreparedCantripIds,
+          form.value.wizardPreparedSpellIds,
+          form.value.wizardPreparedCurriculumCantripId,
+          form.value.wizardPreparedCurriculumSpellId,
+          wizardSpellOptions.value,
+        ),
+        message: t('wizard.requirements.wizardSpells'),
+      },
+    ])
+  }
+  if (step.value === 8) {
+    return getIncompleteWizardRequirements([
+      {
+        complete: isFinalFreeBoostSelectionComplete(form.value.finalFreeBoosts),
+        message: t('wizard.requirements.finalBoosts', {
+          selected: form.value.finalFreeBoosts.length,
+        }),
+      },
+      {
+        complete:
+          !isLoadingLanguageOptions.value &&
+          isLanguageSelectionComplete(
+            form.value.additionalLanguageIds,
+            languageSelectionOptions.value,
+          ),
+        message: isLoadingLanguageOptions.value
+          ? t('wizard.requirements.languagesLoading')
+          : t('wizard.requirements.languages', {
+              selected: form.value.additionalLanguageIds.length,
+              required: languageSelectionOptions.value.requiredCount,
+            }),
+      },
+    ])
+  }
+  if (step.value === 9) {
+    return getIncompleteWizardRequirements([
+      {
+        complete: isClassTrainingComplete(
+          effectiveCharacterClass.value,
+          form.value.classSkillGrantChoices,
+          form.value.additionalClassTrainingChoices,
+          additionalClassTrainingCount.value,
+          existingClassTrainingSkillIds.value,
+          skills.value,
+        ),
+        message: t('wizard.requirements.classTraining'),
+      },
+    ])
+  }
+  if (step.value === 10) {
+    return getIncompleteWizardRequirements([
+      {
+        complete: isStartingEquipmentComplete.value,
+        message: t('wizard.requirements.startingEquipment'),
+      },
+    ])
+  }
+  return []
 })
+const canContinue = computed(() => stepRequirements.value.length === 0)
 
 function toggleClassKitOption(group: ClassKitOptionGroup, optionId: string): void {
   if (form.value.classKitOptionIds.includes(optionId)) {
@@ -2264,19 +2408,6 @@ watch(
               item-value="id"
               :label="t('classUi.witchFocusHex')"
             />
-            <v-alert
-              v-if="witchSpellLoadoutRequirements.length"
-              id="witch-spell-requirements"
-              type="warning"
-              variant="tonal"
-              :title="t('classUi.witchIncompleteTitle')"
-            >
-              <ul>
-                <li v-for="requirement in witchSpellLoadoutRequirements" :key="requirement">
-                  {{ requirement }}
-                </li>
-              </ul>
-            </v-alert>
           </template>
           <template v-else-if="selectedCharacterClass?.id === 'class.wizard'">
             <p class="hint">{{ t('classUi.wizardSpellsHint') }}</p>
@@ -2850,7 +2981,21 @@ watch(
               <strong>{{ abilityScoresAfterFinal[code] }}</strong>
             </div>
           </div>
-        </section></v-card-text
+        </section>
+        <v-alert
+          v-if="step < 11 && stepRequirements.length"
+          id="wizard-step-requirements"
+          class="step-requirements"
+          type="warning"
+          variant="tonal"
+          :title="t('wizard.requirements.title')"
+        >
+          <ul>
+            <li v-for="requirement in stepRequirements" :key="requirement">
+              {{ requirement }}
+            </li>
+          </ul>
+        </v-alert></v-card-text
       ></v-card
     >
     <footer>
@@ -2861,13 +3006,7 @@ watch(
         v-if="step < 11"
         color="primary"
         :disabled="!canContinue"
-        :aria-describedby="
-          step === 7 &&
-          selectedCharacterClass?.id === 'class.witch' &&
-          witchSpellLoadoutRequirements.length
-            ? 'witch-spell-requirements'
-            : undefined
-        "
+        :aria-describedby="stepRequirements.length ? 'wizard-step-requirements' : undefined"
         @click="next"
         >{{ t('common.next') }}</v-btn
       ><v-btn v-else color="accent" :loading="isSubmitting" @click="submit">{{
