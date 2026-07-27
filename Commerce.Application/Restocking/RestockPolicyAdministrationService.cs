@@ -47,6 +47,7 @@ public sealed class RestockPolicyAdministrationService
             request.Name,
             request.TargetOfferCount,
             request.Constraints,
+            request.Weights,
             request.ActingUserId,
             _timeProvider.GetUtcNow() );
         _repository.Add( policy );
@@ -75,6 +76,7 @@ public sealed class RestockPolicyAdministrationService
             request.ExpectedVersion,
             request.TargetOfferCount,
             request.Constraints,
+            request.Weights,
             request.ActingUserId,
             _timeProvider.GetUtcNow() );
         await _repository.SaveChangesAsync( cancellationToken );
@@ -124,6 +126,9 @@ public sealed class RestockPolicyAdministrationService
                 revision.AllowedRarities,
                 revision.AllowedAccess,
                 revision.AllowedCategories,
+                revision.ConsumableWeight,
+                revision.PermanentWeight,
+                revision.UniqueWeight,
                 revision.CreatedByUserId,
                 revision.CreatedAtUtc ) )
             .ToArray() );

@@ -38,6 +38,7 @@ public sealed class RestockPolicyAdministrationServiceTests
                 "Weekly",
                 8,
                 DefaultConstraints(),
+                DefaultWeights(),
                 11 ),
             CancellationToken.None );
         RestockPolicyDto revised = await service.ReviseAsync(
@@ -47,6 +48,7 @@ public sealed class RestockPolicyAdministrationServiceTests
                 created.CurrentVersion,
                 12,
                 DefaultConstraints(),
+                new RestockSelectionWeights( 3, 2, 1 ),
                 11 ),
             CancellationToken.None );
 
@@ -74,6 +76,7 @@ public sealed class RestockPolicyAdministrationServiceTests
                     "Weekly",
                     8,
                     DefaultConstraints(),
+                    DefaultWeights(),
                     12 ),
                 CancellationToken.None ) );
     }
@@ -94,6 +97,9 @@ public sealed class RestockPolicyAdministrationServiceTests
             RestockItemRarity.All,
             RestockItemAccess.All,
             RestockItemCategory.All );
+
+    private static RestockSelectionWeights DefaultWeights() =>
+        new RestockSelectionWeights( 1, 1, 0 );
 
     private sealed class StubAccessPolicy : ICommerceCampaignAccessPolicy
     {

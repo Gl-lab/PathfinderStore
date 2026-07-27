@@ -48,6 +48,7 @@ public sealed class CommerceAdminController : AuthorizedController
                     request.Name,
                     request.TargetOfferCount,
                     request.ToConstraints(),
+                    request.ToWeights(),
                     CurrentUserId() ),
                 cancellationToken );
             return Created(
@@ -80,6 +81,7 @@ public sealed class CommerceAdminController : AuthorizedController
                     request.ExpectedVersion,
                     request.TargetOfferCount,
                     request.ToConstraints(),
+                    request.ToWeights(),
                     CurrentUserId() ),
                 cancellationToken );
             return Ok( result );
@@ -312,7 +314,10 @@ public sealed record CreateRestockPolicyApiRequest(
     long BudgetCopper,
     RestockItemRarity AllowedRarities,
     RestockItemAccess AllowedAccess,
-    RestockItemCategory AllowedCategories )
+    RestockItemCategory AllowedCategories,
+    int ConsumableWeight,
+    int PermanentWeight,
+    int UniqueWeight )
 {
     public RestockPolicyConstraints ToConstraints() => new RestockPolicyConstraints(
         MinimumItemLevel,
@@ -321,6 +326,11 @@ public sealed record CreateRestockPolicyApiRequest(
         AllowedRarities,
         AllowedAccess,
         AllowedCategories );
+
+    public RestockSelectionWeights ToWeights() => new RestockSelectionWeights(
+        ConsumableWeight,
+        PermanentWeight,
+        UniqueWeight );
 }
 
 public sealed record ReviseRestockPolicyApiRequest(
@@ -331,7 +341,10 @@ public sealed record ReviseRestockPolicyApiRequest(
     long BudgetCopper,
     RestockItemRarity AllowedRarities,
     RestockItemAccess AllowedAccess,
-    RestockItemCategory AllowedCategories )
+    RestockItemCategory AllowedCategories,
+    int ConsumableWeight,
+    int PermanentWeight,
+    int UniqueWeight )
 {
     public RestockPolicyConstraints ToConstraints() => new RestockPolicyConstraints(
         MinimumItemLevel,
@@ -340,4 +353,9 @@ public sealed record ReviseRestockPolicyApiRequest(
         AllowedRarities,
         AllowedAccess,
         AllowedCategories );
+
+    public RestockSelectionWeights ToWeights() => new RestockSelectionWeights(
+        ConsumableWeight,
+        PermanentWeight,
+        UniqueWeight );
 }

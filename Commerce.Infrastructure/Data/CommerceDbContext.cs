@@ -261,6 +261,10 @@ public sealed class CommerceDbContext : DbContext
                     "\"MinimumItemLevel\" >= 0 AND \"MaximumItemLevel\" >= \"MinimumItemLevel\" AND " +
                     "\"MaximumItemLevel\" <= 30 AND \"BudgetCopper\" >= 0 AND " +
                     "\"AllowedRarities\" > 0 AND \"AllowedAccess\" > 0 AND \"AllowedCategories\" > 0" );
+                tableBuilder.HasCheckConstraint(
+                    "CK_RestockPolicyRevision_Weights",
+                    "\"ConsumableWeight\" >= 0 AND \"PermanentWeight\" >= 0 AND \"UniqueWeight\" >= 0 AND " +
+                    "(\"ConsumableWeight\" + \"PermanentWeight\" + \"UniqueWeight\") > 0" );
             } );
             builder.HasIndex( revision => new
             {
@@ -269,16 +273,11 @@ public sealed class CommerceDbContext : DbContext
             } )
                 .IsUnique();
             builder.Property( revision => revision.AllowedRarities )
-                .HasConversion<int>()
-                .HasDefaultValue( RestockItemRarity.All );
+                .HasConversion<int>();
             builder.Property( revision => revision.AllowedAccess )
-                .HasConversion<int>()
-                .HasDefaultValue( RestockItemAccess.All );
+                .HasConversion<int>();
             builder.Property( revision => revision.AllowedCategories )
-                .HasConversion<int>()
-                .HasDefaultValue( RestockItemCategory.All );
-            builder.Property( revision => revision.MaximumItemLevel )
-                .HasDefaultValue( 20 );
+                .HasConversion<int>();
         } );
     }
 }

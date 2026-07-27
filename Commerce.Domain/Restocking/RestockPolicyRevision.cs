@@ -18,6 +18,9 @@ public sealed class RestockPolicyRevision : Entity
     public RestockItemRarity AllowedRarities { get; private set; }
     public RestockItemAccess AllowedAccess { get; private set; }
     public RestockItemCategory AllowedCategories { get; private set; }
+    public int ConsumableWeight { get; private set; }
+    public int PermanentWeight { get; private set; }
+    public int UniqueWeight { get; private set; }
     public int CreatedByUserId { get; private set; }
     public DateTimeOffset CreatedAtUtc { get; private set; }
 
@@ -25,6 +28,7 @@ public sealed class RestockPolicyRevision : Entity
         int version,
         int targetOfferCount,
         RestockPolicyConstraints constraints,
+        RestockSelectionWeights weights,
         int createdByUserId,
         DateTimeOffset createdAtUtc )
     {
@@ -39,6 +43,7 @@ public sealed class RestockPolicyRevision : Entity
         }
 
         ArgumentNullException.ThrowIfNull( constraints );
+        ArgumentNullException.ThrowIfNull( weights );
 
         if ( createdByUserId <= 0 )
         {
@@ -60,6 +65,9 @@ public sealed class RestockPolicyRevision : Entity
             AllowedRarities = constraints.AllowedRarities,
             AllowedAccess = constraints.AllowedAccess,
             AllowedCategories = constraints.AllowedCategories,
+            ConsumableWeight = weights.Consumable,
+            PermanentWeight = weights.Permanent,
+            UniqueWeight = weights.Unique,
             CreatedByUserId = createdByUserId,
             CreatedAtUtc = createdAtUtc,
         };
@@ -72,6 +80,7 @@ public sealed class RestockPolicyRevision : Entity
                IsSingleFlag( ( long )candidate.Rarity ) &&
                IsSingleFlag( ( long )candidate.Access ) &&
                IsSingleFlag( ( long )candidate.Category ) &&
+               Enum.IsDefined( candidate.Kind ) &&
                candidate.Level >= MinimumItemLevel &&
                candidate.Level <= MaximumItemLevel &&
                candidate.UnitPriceCopper >= 0 &&
@@ -80,6 +89,18 @@ public sealed class RestockPolicyRevision : Entity
                AllowedRarities.HasFlag( candidate.Rarity ) &&
                AllowedAccess.HasFlag( candidate.Access ) &&
                AllowedCategories.HasFlag( candidate.Category );
+    }
+
+    public int GetSelectionWeight( RestockCandidate candidate )
+    {
+        ArgumentNullException.ThrowIfNull( candidate );
+        return candidate.Kind switch
+        {
+            RestockItemKind.Consumable => ConsumableWeight,
+            RestockItemKind.Permanent => PermanentWeight,
+            RestockItemKind.Unique => UniqueWeight,
+            _ => 0,
+        };
     }
 
     private static bool IsSingleFlag( long value ) =>

@@ -28,6 +28,7 @@ public sealed class RestockPolicy : Entity, IAggregateRoot
         string name,
         int targetOfferCount,
         RestockPolicyConstraints constraints,
+        RestockSelectionWeights weights,
         int createdByUserId,
         DateTimeOffset createdAtUtc )
     {
@@ -56,7 +57,7 @@ public sealed class RestockPolicy : Entity, IAggregateRoot
             CurrentVersion = 0,
             CreatedAtUtc = createdAtUtc,
         };
-        policy.AddRevision( targetOfferCount, constraints, createdByUserId, createdAtUtc );
+        policy.AddRevision( targetOfferCount, constraints, weights, createdByUserId, createdAtUtc );
         return policy;
     }
 
@@ -64,6 +65,7 @@ public sealed class RestockPolicy : Entity, IAggregateRoot
         int expectedVersion,
         int targetOfferCount,
         RestockPolicyConstraints constraints,
+        RestockSelectionWeights weights,
         int createdByUserId,
         DateTimeOffset createdAtUtc )
     {
@@ -72,12 +74,13 @@ public sealed class RestockPolicy : Entity, IAggregateRoot
             throw new CommerceException( "Restock policy version conflict." );
         }
 
-        return AddRevision( targetOfferCount, constraints, createdByUserId, createdAtUtc );
+        return AddRevision( targetOfferCount, constraints, weights, createdByUserId, createdAtUtc );
     }
 
     private RestockPolicyRevision AddRevision(
         int targetOfferCount,
         RestockPolicyConstraints constraints,
+        RestockSelectionWeights weights,
         int createdByUserId,
         DateTimeOffset createdAtUtc )
     {
@@ -85,6 +88,7 @@ public sealed class RestockPolicy : Entity, IAggregateRoot
             CurrentVersion + 1,
             targetOfferCount,
             constraints,
+            weights,
             createdByUserId,
             createdAtUtc );
         _revisions.Add( revision );

@@ -6,4 +6,5 @@ public sealed record RestockCandidate(
     long UnitPriceCopper,
     RestockItemRarity Rarity,
     RestockItemAccess Access,
-    RestockItemCategory Category );
+    RestockItemCategory Category,
+    RestockItemKind Kind );

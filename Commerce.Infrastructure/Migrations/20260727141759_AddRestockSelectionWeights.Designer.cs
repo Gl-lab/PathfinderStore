@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Pathfinder.Commerce.Infrastructure.Data;
@@ -11,9 +12,11 @@ using Pathfinder.Commerce.Infrastructure.Data;
 namespace Pathfinder.Commerce.Infrastructure.Migrations
 {
     [DbContext(typeof(CommerceDbContext))]
-    partial class CommerceDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260727141759_AddRestockSelectionWeights")]
+    partial class AddRestockSelectionWeights
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -224,19 +227,27 @@ namespace Pathfinder.Commerce.Infrastructure.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AllowedAccess")
-                        .HasColumnType("integer");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(3);
 
                     b.Property<int>("AllowedCategories")
-                        .HasColumnType("integer");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(511);
 
                     b.Property<int>("AllowedRarities")
-                        .HasColumnType("integer");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(15);
 
                     b.Property<long>("BudgetCopper")
                         .HasColumnType("bigint");
 
                     b.Property<int>("ConsumableWeight")
-                        .HasColumnType("integer");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
@@ -245,13 +256,17 @@ namespace Pathfinder.Commerce.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("MaximumItemLevel")
-                        .HasColumnType("integer");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(20);
 
                     b.Property<int>("MinimumItemLevel")
                         .HasColumnType("integer");
 
                     b.Property<int>("PermanentWeight")
-                        .HasColumnType("integer");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
 
                     b.Property<int>("RestockPolicyId")
                         .HasColumnType("integer");

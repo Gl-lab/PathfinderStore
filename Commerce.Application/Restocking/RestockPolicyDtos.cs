@@ -19,6 +19,9 @@ public sealed record RestockPolicyRevisionDto(
     RestockItemRarity AllowedRarities,
     RestockItemAccess AllowedAccess,
     RestockItemCategory AllowedCategories,
+    int ConsumableWeight,
+    int PermanentWeight,
+    int UniqueWeight,
     int CreatedByUserId,
     DateTimeOffset CreatedAtUtc );
 
@@ -28,6 +31,7 @@ public sealed record CreateRestockPolicyRequest(
     string Name,
     int TargetOfferCount,
     RestockPolicyConstraints Constraints,
+    RestockSelectionWeights Weights,
     int ActingUserId );
 
 public sealed record ReviseRestockPolicyRequest(
@@ -36,4 +40,5 @@ public sealed record ReviseRestockPolicyRequest(
     int ExpectedVersion,
     int TargetOfferCount,
     RestockPolicyConstraints Constraints,
+    RestockSelectionWeights Weights,
     int ActingUserId );
