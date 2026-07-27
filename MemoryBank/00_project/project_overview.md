@@ -144,7 +144,7 @@ Frontend:
 
 ### Inventory
 
-Отвечает за физические экземпляры в границе кампании, личные/партийные/магазинные/мировые root containers, стопки, текущее расположение, optimistic version и идемпотентный журнал операций. Реализованы подтверждаемое дарение, резервируемый атомарный обмен, общее хранилище по политике партии, запрет передачи, аудит действий и отдельные принудительные выдача, перемещение и исправление ведущим. Hidden binding effect применяет transfer restriction до раскрытия свойства. Completed-character starting equipment мигрирует в экземпляры после однозначного назначения кампании; точная configuration сохраняет применявшуюся catalog revision.
+Отвечает за физические экземпляры в границе кампании, личные/партийные/магазинные/мировые root containers, стопки, текущее расположение, optimistic version и идемпотентный журнал операций. Реализованы подтверждаемое дарение, резервируемый атомарный обмен, общее хранилище по политике партии, запрет передачи, аудит действий и отдельные принудительные выдача, перемещение и исправление ведущим. Runtime lifecycle включает заряды и восстановление, расходование и боеприпасы, твёрдость, прочность, поломку, уничтожение, ремонт и перенос прикрепляемых рун. Все lifecycle-команды используют expected version и operation id; для будущих `Gameplay`/`Encounter` опубликован отдельный trusted port. Hidden binding effect применяет transfer restriction до раскрытия свойства. Completed-character starting equipment мигрирует в экземпляры после однозначного назначения кампании; точная configuration сохраняет применявшуюся catalog revision.
 
 ### Commerce и legacy Store
 
@@ -238,6 +238,8 @@ Frontend MVP создания персонажа реализован на Vue 3
 - [`../30_task_notes/priority_12_final_review.md`](../30_task_notes/priority_12_final_review.md)
 - [`../30_task_notes/priority_13_final_review.md`](../30_task_notes/priority_13_final_review.md)
 - [`../30_task_notes/priority_15_final_review.md`](../30_task_notes/priority_15_final_review.md)
+- [`../30_task_notes/priority_16_final_review.md`](../30_task_notes/priority_16_final_review.md)
+- [`../30_task_notes/priority_17_final_review.md`](../30_task_notes/priority_17_final_review.md)
 
 ## Как работать с этим обзором
 
