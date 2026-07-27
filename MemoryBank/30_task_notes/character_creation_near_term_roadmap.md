@@ -657,6 +657,8 @@ AC, attacks, damage, current/temporary HP и equipment bonuses не входят
 - все экраны выполняют сквозные требования loading/empty/error/retry, ru/en и темы `characterLedger`;
 - backend integration tests и frontend Vitest/lint/build покрывают репрезентативные покупку, продажу, обмен и административный сценарий.
 
+**Статус приоритета 18:** завершён 27 июля 2026 года; выполнен [итоговый cross-review](priority_18_final_review.md). Реализованы пользовательские торговые read-проекции, магазин с двухфазной покупкой и продажей, атомарный обмен, административные проекции и панель ведущего. Cross-review дополнительно добавил персистентную идемпотентность всем административным mutation-командам.
+
 ## Сквозной quality gate
 
 `Character Creation E2E Golden Path` сохраняется и расширяется по мере появления новых возможностей.
