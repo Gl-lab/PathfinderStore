@@ -30,6 +30,20 @@ public sealed class InventoryItemCatalogProjectionReader
             .Select( instance => instance.ItemConfigurationId )
             .Distinct()
             .ToArray();
+        return await ReadAsync(
+            campaignId,
+            configurationIds,
+            cancellationToken );
+    }
+
+    public async Task<Dictionary<int, InventoryItemCatalogProjection>> ReadAsync(
+        int campaignId,
+        IReadOnlyCollection<int> itemConfigurationIds,
+        CancellationToken cancellationToken )
+    {
+        int[] configurationIds = itemConfigurationIds
+            .Distinct()
+            .ToArray();
         if ( configurationIds.Length == 0 )
         {
             return [];

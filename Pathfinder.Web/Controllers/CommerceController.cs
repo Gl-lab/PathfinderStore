@@ -10,6 +10,7 @@ using Pathfinder.Web.Controllers.Base;
 using Pathfinder.Web.Integration;
 using Pathfinder.Commerce.Application.Money;
 using Pathfinder.Commerce.Application.Shops;
+using Pathfinder.Commerce.Domain.Transactions;
 
 namespace Pathfinder.Web.Controllers;
 
@@ -65,6 +66,88 @@ public sealed class CommerceController : AuthorizedController
         catch ( CommerceReadAccessDeniedException )
         {
             return Forbid();
+        }
+    }
+
+    [HttpGet( "shops/{shopId:int}/offers" )]
+    public async Task<ActionResult<IReadOnlyCollection<CommerceShopOfferDto>>> GetOffers(
+        int campaignId,
+        int shopId,
+        [FromQuery] CommerceOfferStatusFilter status = CommerceOfferStatusFilter.Active,
+        CancellationToken cancellationToken = default )
+    {
+        try
+        {
+            IReadOnlyCollection<CommerceShopOfferDto> offers =
+                await _readProjectionService.GetOffersAsync(
+                    campaignId,
+                    shopId,
+                    CurrentUserId(),
+                    status,
+                    cancellationToken );
+            return Ok( offers );
+        }
+        catch ( CommerceReadAccessDeniedException )
+        {
+            return Forbid();
+        }
+        catch ( CommerceReadNotFoundException )
+        {
+            return NotFound();
+        }
+    }
+
+    [HttpGet( "purchase-reservations" )]
+    public async Task<ActionResult<IReadOnlyCollection<CommercePurchaseReservationDto>>>
+        GetPurchaseReservations(
+            int campaignId,
+            [FromQuery] int buyerCharacterId,
+            [FromQuery] PurchaseReservationStatus? status,
+            CancellationToken cancellationToken )
+    {
+        try
+        {
+            IReadOnlyCollection<CommercePurchaseReservationDto> reservations =
+                await _readProjectionService.GetPurchaseReservationsAsync(
+                    campaignId,
+                    buyerCharacterId,
+                    CurrentUserId(),
+                    status,
+                    cancellationToken );
+            return Ok( reservations );
+        }
+        catch ( CommerceReadAccessDeniedException )
+        {
+            return Forbid();
+        }
+    }
+
+    [HttpGet( "shops/{shopId:int}/sell-quote" )]
+    public async Task<ActionResult<CommerceSellQuoteDto>> GetSellQuote(
+        int campaignId,
+        int shopId,
+        [FromQuery] int sellerCharacterId,
+        [FromQuery] Guid itemInstanceKey,
+        CancellationToken cancellationToken )
+    {
+        try
+        {
+            CommerceSellQuoteDto quote = await _readProjectionService.GetSellQuoteAsync(
+                campaignId,
+                shopId,
+                sellerCharacterId,
+                itemInstanceKey,
+                CurrentUserId(),
+                cancellationToken );
+            return Ok( quote );
+        }
+        catch ( CommerceReadAccessDeniedException )
+        {
+            return Forbid();
+        }
+        catch ( CommerceReadNotFoundException )
+        {
+            return NotFound();
         }
     }
 
