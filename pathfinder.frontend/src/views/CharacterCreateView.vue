@@ -1926,6 +1926,7 @@ watch(
         <section v-else-if="step === 6">
           <h2>{{ t('classUi.characterClass') }}</h2>
           <p class="hint">{{ t('classUi.hint') }}</p>
+          <h3 class="class-choices-title">{{ t('classUi.yourChoices') }}</h3>
           <v-select
             :model-value="form.classId"
             :items="characterClasses"
@@ -1937,7 +1938,6 @@ watch(
             @update:model-value="selectCharacterClass"
           />
           <template v-if="selectedCharacterClass">
-            <p>{{ t('classUi.baseHitPoints') }}: {{ selectedCharacterClass.baseHitPoints }}</p>
             <v-select
               v-if="selectedCharacterClass.id === 'class.bard'"
               :model-value="form.bardMuseId"
@@ -1947,14 +1947,6 @@ watch(
               :label="t('classUi.bardMuse')"
               @update:model-value="selectBardMuse"
             />
-            <v-alert
-              v-for="benefit in selectedBardMuse?.benefits ?? []"
-              :key="benefit.id"
-              type="info"
-              variant="tonal"
-            >
-              {{ t(`classUi.bardMuseBenefitKinds.${benefit.kind}`) }}: {{ benefit.name }}.
-            </v-alert>
             <v-select
               v-if="selectedCharacterClass.id === 'class.witch'"
               :model-value="form.witchPatronId"
@@ -1972,15 +1964,6 @@ watch(
               item-value="id"
               :label="t('classUi.witchPatronFamiliarSpell')"
             />
-            <v-alert
-              v-for="benefit in selectedWitchPatron?.benefits ?? []"
-              :key="benefit.id"
-              type="info"
-              variant="tonal"
-            >
-              {{ t(`classUi.witchPatronBenefitKinds.${benefit.kind}`) }}:
-              {{ getCatalogLabel(benefit.id, benefit.name) }}
-            </v-alert>
             <v-select
               v-if="selectedCharacterClass.id === 'class.wizard'"
               :model-value="form.arcaneSchoolId"
@@ -1990,25 +1973,6 @@ watch(
               :label="t('classUi.arcaneSchool')"
               @update:model-value="selectArcaneSchool"
             />
-            <v-list v-if="selectedArcaneSchool" density="compact">
-              <v-list-item
-                v-for="group in arcaneSchoolCurriculum"
-                :key="`curriculum-${group.rank}`"
-                :title="t('classUi.curriculumRank', { rank: group.rank })"
-                :subtitle="
-                  group.spells.map((spell) => getCatalogLabel(spell.id, spell.name)).join(', ')
-                "
-              />
-            </v-list>
-            <v-alert
-              v-for="benefit in selectedArcaneSchool?.benefits ?? []"
-              :key="benefit.id"
-              type="info"
-              variant="tonal"
-            >
-              {{ t(`classUi.arcaneSchoolBenefitKinds.${benefit.kind}`) }}:
-              {{ getCatalogLabel(benefit.id, benefit.name) }}
-            </v-alert>
             <v-select
               v-if="selectedCharacterClass.id === 'class.wizard'"
               v-model="form.arcaneThesisId"
@@ -2017,19 +1981,6 @@ watch(
               item-value="id"
               :label="t('classUi.arcaneThesis')"
             />
-            <v-alert
-              v-for="effect in selectedArcaneThesis?.effects ?? []"
-              :key="effect.id"
-              type="info"
-              variant="tonal"
-            >
-              {{ t(`classUi.arcaneThesisEffectKinds.${effect.kind}`) }}
-              {{
-                t('classUi.arcaneThesisMilestones', {
-                  levels: formatArcaneThesisMilestones(effect.milestoneLevels),
-                })
-              }}
-            </v-alert>
             <v-select
               v-for="slot in classFeatChoiceSlots"
               :key="slot.sourceId"
@@ -2049,14 +2000,6 @@ watch(
               :label="t('classUi.druidicOrder')"
               @update:model-value="selectDruidicOrder"
             />
-            <v-alert
-              v-for="benefit in selectedDruidicOrder?.benefits ?? []"
-              :key="benefit.id"
-              type="info"
-              variant="tonal"
-            >
-              {{ t(`classUi.druidicOrderBenefitKinds.${benefit.kind}`) }}: {{ benefit.name }}.
-            </v-alert>
             <v-select
               v-if="selectedCharacterClass.id === 'class.ranger'"
               v-model="form.huntersEdgeId"
@@ -2065,13 +2008,6 @@ watch(
               item-value="id"
               :label="t('classUi.huntersEdge')"
             />
-            <v-alert
-              v-for="effect in selectedHuntersEdge?.effects ?? []"
-              :key="effect.id"
-              type="info"
-              variant="tonal"
-              >{{ effect.name }}: {{ effect.summary }}</v-alert
-            >
             <v-select
               v-if="selectedCharacterClass.id === 'class.rogue'"
               :model-value="form.rogueRacketId"
@@ -2119,17 +2055,6 @@ watch(
                 item-value="id"
                 :label="t('classUi.clericDomain')"
               />
-              <v-alert v-if="selectedClericDomain" type="info" variant="tonal">
-                {{ t('classUi.initialDomainSpell') }}:
-                {{
-                  getCatalogLabel(
-                    selectedClericDomain.initialFocusPool.focusSpell.id,
-                    selectedClericDomain.initialFocusPool.focusSpell.name,
-                  )
-                }}.
-                {{ t('classUi.focusPoints') }}:
-                {{ selectedClericDomain.initialFocusPool.maximumFocusPoints }}.
-              </v-alert>
               <v-radio-group
                 v-if="selectedDeity && selectedDeity.sanctificationOptions.length > 0"
                 v-model="form.divineSanctification"
@@ -2156,27 +2081,6 @@ watch(
                 "
                 persistent-hint
               />
-              <v-alert v-if="selectedDeity" type="info" variant="tonal">
-                {{ t('classUi.divineSkill') }}: {{ getSkillName(selectedDeity.divineSkillId) }}.
-                {{ t('classUi.favoredWeapon') }}:
-                {{
-                  selectedDeity.favoredWeapons
-                    .map((weapon) => getCatalogLabel(weapon.id, weapon.name))
-                    .join(', ')
-                }}.
-                {{ t('classUi.domains') }}:
-                {{
-                  selectedDeity.primaryDomainIds
-                    .map((domainId) => getCatalogLabel(domainId, domainId))
-                    .join(', ')
-                }}.
-                {{ t('classUi.grantedSpells') }}:
-                {{
-                  selectedDeity.grantedSpells
-                    .map((spell) => `${spell.rank}: ${getCatalogLabel(spell.id, spell.name)}`)
-                    .join(', ')
-                }}.
-              </v-alert>
             </template>
             <v-radio-group
               v-if="classKeyAbilityOptions.length > 1"
@@ -2190,9 +2094,6 @@ watch(
                 :label="getAbilityLabel(code)"
               />
             </v-radio-group>
-            <p v-else-if="form.classKeyAbility">
-              {{ t('classUi.keyAbility') }}: {{ getAbilityLabel(form.classKeyAbility) }}
-            </p>
             <div v-if="selectedRogueRacket" class="rogue-training">
               <h3>{{ t('classUi.rogueTraining') }}</h3>
               <template v-for="grant in getRogueGrants(selectedRogueRacket)" :key="grant.id">
@@ -2235,45 +2136,147 @@ watch(
                   "
                 />
               </template>
-              <v-alert
-                v-for="effect in selectedRogueRacket.effects"
-                :key="effect.id"
-                type="info"
-                variant="tonal"
-                >{{ effect.name }}: {{ effect.summary }}</v-alert
-              >
             </div>
-            <div v-if="selectedClericDoctrine" class="rogue-training">
-              <v-alert
-                v-for="effect in selectedClericDoctrine.effects"
-                :key="effect.id"
-                type="info"
-                variant="tonal"
-                >{{ getCatalogLabel(effect.id, effect.name) }}
-              </v-alert>
-            </div>
-            <v-list density="compact" :subheader="t('classUi.initialProficiencies')">
-              <v-list-item
-                v-for="group in groupProficiencies(effectiveClassProficiencies)"
-                :key="group.category"
-                :title="getProficiencyCategoryLabel(group.category)"
-                :subtitle="
-                  group.items
-                    .map(formatLocalizedProficiency)
-                    .join(', ')
-                "
-              />
-            </v-list>
-            <v-list density="compact" :subheader="t('classUi.rules')">
-              <v-list-item
-                v-for="rule in selectedCharacterClass.rules"
-                :key="rule.id"
-                :title="t(`classUi.ruleKinds.${rule.kind}`)"
-                :subtitle="
-                  rule.requiresChoice ? t('classUi.ruleChoiceRequired') : t('classUi.ruleGranted')
-                "
-              />
-            </v-list>
+            <v-expansion-panels class="class-reference">
+              <v-expansion-panel :title="t('classUi.whatClassGives')">
+                <v-expansion-panel-text>
+                  <p>{{ t('classUi.baseHitPoints') }}: {{ selectedCharacterClass.baseHitPoints }}</p>
+                  <p v-if="form.classKeyAbility">
+                    {{ t('classUi.keyAbility') }}: {{ getAbilityLabel(form.classKeyAbility) }}
+                  </p>
+                  <v-alert
+                    v-for="benefit in selectedBardMuse?.benefits ?? []"
+                    :key="benefit.id"
+                    type="info"
+                    variant="tonal"
+                  >
+                    {{ t(`classUi.bardMuseBenefitKinds.${benefit.kind}`) }}: {{ benefit.name }}.
+                  </v-alert>
+                  <v-alert
+                    v-for="benefit in selectedWitchPatron?.benefits ?? []"
+                    :key="benefit.id"
+                    type="info"
+                    variant="tonal"
+                  >
+                    {{ t(`classUi.witchPatronBenefitKinds.${benefit.kind}`) }}:
+                    {{ getCatalogLabel(benefit.id, benefit.name) }}
+                  </v-alert>
+                  <v-list v-if="selectedArcaneSchool" density="compact">
+                    <v-list-item
+                      v-for="group in arcaneSchoolCurriculum"
+                      :key="`curriculum-${group.rank}`"
+                      :title="t('classUi.curriculumRank', { rank: group.rank })"
+                      :subtitle="
+                        group.spells
+                          .map((spell) => getCatalogLabel(spell.id, spell.name))
+                          .join(', ')
+                      "
+                    />
+                  </v-list>
+                  <v-alert
+                    v-for="benefit in selectedArcaneSchool?.benefits ?? []"
+                    :key="benefit.id"
+                    type="info"
+                    variant="tonal"
+                  >
+                    {{ t(`classUi.arcaneSchoolBenefitKinds.${benefit.kind}`) }}:
+                    {{ getCatalogLabel(benefit.id, benefit.name) }}
+                  </v-alert>
+                  <v-alert
+                    v-for="effect in selectedArcaneThesis?.effects ?? []"
+                    :key="effect.id"
+                    type="info"
+                    variant="tonal"
+                  >
+                    {{ t(`classUi.arcaneThesisEffectKinds.${effect.kind}`) }}
+                    {{
+                      t('classUi.arcaneThesisMilestones', {
+                        levels: formatArcaneThesisMilestones(effect.milestoneLevels),
+                      })
+                    }}
+                  </v-alert>
+                  <v-alert
+                    v-for="benefit in selectedDruidicOrder?.benefits ?? []"
+                    :key="benefit.id"
+                    type="info"
+                    variant="tonal"
+                  >
+                    {{ t(`classUi.druidicOrderBenefitKinds.${benefit.kind}`) }}:
+                    {{ benefit.name }}.
+                  </v-alert>
+                  <v-alert
+                    v-for="effect in selectedHuntersEdge?.effects ?? []"
+                    :key="effect.id"
+                    type="info"
+                    variant="tonal"
+                  >
+                    {{ effect.name }}: {{ effect.summary }}
+                  </v-alert>
+                  <v-alert
+                    v-for="effect in selectedRogueRacket?.effects ?? []"
+                    :key="effect.id"
+                    type="info"
+                    variant="tonal"
+                  >
+                    {{ effect.name }}: {{ effect.summary }}
+                  </v-alert>
+                  <v-alert
+                    v-for="effect in selectedClericDoctrine?.effects ?? []"
+                    :key="effect.id"
+                    type="info"
+                    variant="tonal"
+                  >
+                    {{ getCatalogLabel(effect.id, effect.name) }}
+                  </v-alert>
+                  <v-alert v-if="selectedClericDomain" type="info" variant="tonal">
+                    {{ t('classUi.initialDomainSpell') }}:
+                    {{
+                      getCatalogLabel(
+                        selectedClericDomain.initialFocusPool.focusSpell.id,
+                        selectedClericDomain.initialFocusPool.focusSpell.name,
+                      )
+                    }}.
+                    {{ t('classUi.focusPoints') }}:
+                    {{ selectedClericDomain.initialFocusPool.maximumFocusPoints }}.
+                  </v-alert>
+                  <v-alert v-if="selectedDeity" type="info" variant="tonal">
+                    {{ t('classUi.divineSkill') }}: {{ getSkillName(selectedDeity.divineSkillId) }}.
+                    {{ t('classUi.favoredWeapon') }}:
+                    {{
+                      selectedDeity.favoredWeapons
+                        .map((weapon) => getCatalogLabel(weapon.id, weapon.name))
+                        .join(', ')
+                    }}.
+                    {{ t('classUi.grantedSpells') }}:
+                    {{
+                      selectedDeity.grantedSpells
+                        .map((spell) => `${spell.rank}: ${getCatalogLabel(spell.id, spell.name)}`)
+                        .join(', ')
+                    }}.
+                  </v-alert>
+                  <v-list density="compact" :subheader="t('classUi.initialProficiencies')">
+                    <v-list-item
+                      v-for="group in groupProficiencies(effectiveClassProficiencies)"
+                      :key="group.category"
+                      :title="getProficiencyCategoryLabel(group.category)"
+                      :subtitle="group.items.map(formatLocalizedProficiency).join(', ')"
+                    />
+                  </v-list>
+                  <v-list density="compact" :subheader="t('classUi.rules')">
+                    <v-list-item
+                      v-for="rule in selectedCharacterClass.rules"
+                      :key="rule.id"
+                      :title="t(`classUi.ruleKinds.${rule.kind}`)"
+                      :subtitle="
+                        rule.requiresChoice
+                          ? t('classUi.ruleChoiceRequired')
+                          : t('classUi.ruleGranted')
+                      "
+                    />
+                  </v-list>
+                </v-expansion-panel-text>
+              </v-expansion-panel>
+            </v-expansion-panels>
           </template>
         </section>
         <section v-else-if="step === 7">
@@ -3196,6 +3199,13 @@ h1 {
 .hint,
 .radio-detail {
   color: #52606d;
+}
+.class-choices-title {
+  margin: 24px 0 12px;
+  color: rgb(var(--v-theme-primary));
+}
+.class-reference {
+  margin-top: 24px;
 }
 .ability-preview {
   display: grid;
