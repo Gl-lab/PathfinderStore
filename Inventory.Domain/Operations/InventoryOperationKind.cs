@@ -12,4 +12,6 @@ public enum InventoryOperationKind
     ConsumeCharges = 7,
     RecoverCharges = 8,
     ConsumeItem = 9,
+    DamageItem = 10,
+    RepairItem = 11,
 }

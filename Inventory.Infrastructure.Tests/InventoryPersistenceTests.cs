@@ -156,6 +156,55 @@ public sealed class InventoryPersistenceTests
         }
     }
 
+    [Fact]
+    public async Task ContextPersistsDurabilityState()
+    {
+        DbContextOptions<InventoryDbContext> options =
+            new DbContextOptionsBuilder<InventoryDbContext>()
+                .UseInMemoryDatabase( Guid.NewGuid().ToString() )
+                .Options;
+        Guid instanceKey = Guid.NewGuid();
+        await using ( InventoryDbContext writeContext = new InventoryDbContext( options ) )
+        {
+            InventoryContainer container = CreateContainer( 31 );
+            ItemInstance instance = ItemInstance.CreateDurable(
+                instanceKey,
+                17,
+                23,
+                5,
+                20,
+                10,
+                container,
+                null,
+                _createdAtUtc );
+            writeContext.Containers.Add( container );
+            writeContext.ItemInstances.Add( instance );
+            await writeContext.SaveChangesAsync();
+
+            instance.ApplyDamage(
+                15,
+                0,
+                Guid.NewGuid(),
+                _createdAtUtc.AddMinutes( 1 ) );
+            await writeContext.SaveChangesAsync();
+        }
+
+        await using ( InventoryDbContext readContext = new InventoryDbContext( options ) )
+        {
+            ItemInstance instance = await readContext.ItemInstances
+                .Include( item => item.Operations )
+                .SingleAsync( item => item.InstanceKey == instanceKey );
+
+            Assert.Equal( 5, instance.Hardness );
+            Assert.Equal( 20, instance.MaximumHitPoints );
+            Assert.Equal( 10, instance.CurrentHitPoints );
+            Assert.Equal( 10, instance.BrokenThreshold );
+            Assert.True( instance.IsBroken );
+            InventoryOperation operation = Assert.Single( instance.Operations );
+            Assert.Equal( InventoryOperationKind.DamageItem, operation.Kind );
+        }
+    }
+
     private static InventoryContainer CreateContainer( int ownerId )
     {
         return InventoryContainer.CreateRoot(

@@ -74,6 +74,17 @@ public sealed class InventoryDbContext : DbContext
                     "((\"IsStackable\" AND \"ConsumptionMode\" IN (2, 3)) OR " +
                     "(NOT \"IsStackable\" AND \"ConsumptionMode\" = 1 AND " +
                     "\"ConsumptionQuantity\" = 1)))" );
+                tableBuilder.HasCheckConstraint(
+                    "CK_ItemInstance_Durability",
+                    "(\"Hardness\" IS NULL AND \"MaximumHitPoints\" IS NULL AND " +
+                    "\"CurrentHitPoints\" IS NULL AND \"BrokenThreshold\" IS NULL) OR " +
+                    "(NOT \"IsStackable\" AND \"Hardness\" >= 0 AND " +
+                    "\"MaximumHitPoints\" > 0 AND \"CurrentHitPoints\" >= 0 AND " +
+                    "\"CurrentHitPoints\" <= \"MaximumHitPoints\" AND " +
+                    "\"BrokenThreshold\" > 0 AND " +
+                    "\"BrokenThreshold\" <= \"MaximumHitPoints\" AND " +
+                    "((\"CurrentHitPoints\" = 0 AND \"Quantity\" = 0) OR " +
+                    "(\"CurrentHitPoints\" > 0 AND \"Quantity\" = 1)))" );
             } );
             builder.Property( instance => instance.CustomName )
                 .HasMaxLength( ItemInstance.CustomNameMaxLength );

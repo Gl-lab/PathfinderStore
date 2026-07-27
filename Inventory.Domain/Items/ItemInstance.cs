@@ -36,6 +36,14 @@ public sealed class ItemInstance : Entity, IAggregateRoot
     public ItemChargeRecoveryRule? ChargeRecoveryRule { get; private set; }
     public ItemConsumptionMode? ConsumptionMode { get; private set; }
     public int? ConsumptionQuantity { get; private set; }
+    public int? Hardness { get; private set; }
+    public int? MaximumHitPoints { get; private set; }
+    public int? CurrentHitPoints { get; private set; }
+    public int? BrokenThreshold { get; private set; }
+    public bool IsBroken =>
+        CurrentHitPoints > 0 && CurrentHitPoints <= BrokenThreshold;
+    public bool IsDestroyed =>
+        CurrentHitPoints is not null && CurrentHitPoints == 0;
     public DateTimeOffset CreatedAtUtc { get; private set; }
     public IReadOnlyList<InventoryMovement> Movements { get => _movements.AsReadOnly(); }
     public IReadOnlyList<InventoryOperation> Operations { get => _operations.AsReadOnly(); }
@@ -163,6 +171,34 @@ public sealed class ItemInstance : Entity, IAggregateRoot
         instance.CurrentCharges = maximumCharges;
         instance.DefaultActivationCost = defaultActivationCost;
         instance.ChargeRecoveryRule = recoveryRule;
+        return instance;
+    }
+
+    public static ItemInstance CreateDurable(
+        Guid instanceKey,
+        int campaignId,
+        int itemConfigurationId,
+        int hardness,
+        int maximumHitPoints,
+        int brokenThreshold,
+        InventoryContainer initialContainer,
+        string? customName,
+        DateTimeOffset createdAtUtc )
+    {
+        EnsureDurabilityProfile( hardness, maximumHitPoints, brokenThreshold );
+        ItemInstance instance = CreateCore(
+            instanceKey,
+            campaignId,
+            itemConfigurationId,
+            initialContainer,
+            customName,
+            false,
+            1,
+            createdAtUtc );
+        instance.Hardness = hardness;
+        instance.MaximumHitPoints = maximumHitPoints;
+        instance.CurrentHitPoints = maximumHitPoints;
+        instance.BrokenThreshold = brokenThreshold;
         return instance;
     }
 
@@ -323,6 +359,104 @@ public sealed class ItemInstance : Entity, IAggregateRoot
             consumedQuantity,
             Version,
             consumedAtUtc ) );
+        return true;
+    }
+
+    public bool ApplyDamage(
+        int damage,
+        int expectedVersion,
+        Guid operationId,
+        DateTimeOffset damagedAtUtc )
+    {
+        EnsureOperationId( operationId );
+        InventoryOperation? replay = FindOperation( operationId );
+        if ( replay is not null )
+        {
+            replay.EnsureMatches(
+                InventoryOperationKind.DamageItem,
+                InstanceKey,
+                damage );
+            return false;
+        }
+
+        EnsureExpectedVersion( expectedVersion );
+        EnsureOperationTimestamp( damagedAtUtc );
+        EnsureNotReserved();
+        EnsureDurable();
+        if ( damage <= 0 )
+        {
+            throw new InventoryException( "Item damage must be greater than zero." );
+        }
+
+        if ( IsDestroyed )
+        {
+            throw new InventoryException( "A destroyed item instance cannot take damage." );
+        }
+
+        int appliedDamage = Math.Max( 0, damage - Hardness!.Value );
+        CurrentHitPoints = Math.Max( 0, CurrentHitPoints!.Value - appliedDamage );
+        if ( CurrentHitPoints == 0 )
+        {
+            Quantity = 0;
+        }
+
+        Version++;
+        _operations.Add( InventoryOperation.Create(
+            operationId,
+            InventoryOperationKind.DamageItem,
+            InstanceKey,
+            damage,
+            Version,
+            damagedAtUtc ) );
+        return true;
+    }
+
+    public bool Repair(
+        int hitPoints,
+        int expectedVersion,
+        Guid operationId,
+        DateTimeOffset repairedAtUtc )
+    {
+        EnsureOperationId( operationId );
+        InventoryOperation? replay = FindOperation( operationId );
+        if ( replay is not null )
+        {
+            replay.EnsureMatches(
+                InventoryOperationKind.RepairItem,
+                InstanceKey,
+                hitPoints );
+            return false;
+        }
+
+        EnsureExpectedVersion( expectedVersion );
+        EnsureOperationTimestamp( repairedAtUtc );
+        EnsureNotReserved();
+        EnsureDurable();
+        if ( hitPoints <= 0 )
+        {
+            throw new InventoryException( "Repaired Hit Points must be greater than zero." );
+        }
+
+        if ( IsDestroyed )
+        {
+            throw new InventoryException( "A destroyed item instance cannot be repaired." );
+        }
+
+        if ( hitPoints > MaximumHitPoints!.Value - CurrentHitPoints!.Value )
+        {
+            throw new InventoryException(
+                "Repair cannot exceed the item instance maximum Hit Points." );
+        }
+
+        CurrentHitPoints += hitPoints;
+        Version++;
+        _operations.Add( InventoryOperation.Create(
+            operationId,
+            InventoryOperationKind.RepairItem,
+            InstanceKey,
+            hitPoints,
+            Version,
+            repairedAtUtc ) );
         return true;
     }
 
@@ -932,6 +1066,29 @@ public sealed class ItemInstance : Entity, IAggregateRoot
         }
     }
 
+    private static void EnsureDurabilityProfile(
+        int hardness,
+        int maximumHitPoints,
+        int brokenThreshold )
+    {
+        if ( hardness < 0 )
+        {
+            throw new InventoryException( "Item Hardness cannot be negative." );
+        }
+
+        if ( maximumHitPoints <= 0 )
+        {
+            throw new InventoryException(
+                "Maximum item Hit Points must be greater than zero." );
+        }
+
+        if ( brokenThreshold <= 0 || brokenThreshold > maximumHitPoints )
+        {
+            throw new InventoryException(
+                "Broken threshold must be positive and cannot exceed maximum Hit Points." );
+        }
+    }
+
     private void EnsureExpectedVersion( int expectedVersion )
     {
         if ( expectedVersion != Version )
@@ -1062,6 +1219,17 @@ public sealed class ItemInstance : Entity, IAggregateRoot
         if ( ConsumptionMode is null || ConsumptionQuantity is null )
         {
             throw new InventoryException( "Item instance is not consumable." );
+        }
+    }
+
+    private void EnsureDurable()
+    {
+        if ( Hardness is null ||
+             MaximumHitPoints is null ||
+             CurrentHitPoints is null ||
+             BrokenThreshold is null )
+        {
+            throw new InventoryException( "Item instance does not have durability." );
         }
     }
 
