@@ -206,6 +206,92 @@ public sealed class InventoryOperationsProjectionService
                 .ToArray() );
     }
 
+    public async Task<ExchangeInventoryProjectionDto> GetExchangeInventoryAsync(
+        int campaignId,
+        int participantCharacterId,
+        int ownerCharacterId,
+        int actingUserId,
+        CancellationToken cancellationToken )
+    {
+        CharacterCampaignAccess access = await _characterAccessPolicy.GetAccessAsync(
+            campaignId,
+            actingUserId,
+            participantCharacterId,
+            cancellationToken );
+        if ( !access.CanAct )
+        {
+            throw new InventoryOperationsAccessDeniedException();
+        }
+
+        Campaign campaign = await _campaignDbContext.Campaigns
+            .AsNoTracking()
+            .Include( item => item.Parties )
+                .ThenInclude( party => party.Characters )
+            .SingleOrDefaultAsync(
+                item =>
+                    item.Id == campaignId &&
+                    item.Status == CampaignStatus.Active,
+                cancellationToken )
+            ?? throw new InventoryOperationsAccessDeniedException();
+        bool belongsToSameActiveParty = campaign.Parties.Any( party =>
+            party.Status == CampaignPartyStatus.Active &&
+            party.Characters.Any( character =>
+                character.CharacterId == participantCharacterId ) &&
+            party.Characters.Any( character =>
+                character.CharacterId == ownerCharacterId ) );
+        if ( !belongsToSameActiveParty )
+        {
+            throw new InventoryOperationsAccessDeniedException();
+        }
+
+        Guid[] containerKeys = await _inventoryDbContext.Containers
+            .AsNoTracking()
+            .Where(
+                item =>
+                    item.CampaignId == campaignId &&
+                    item.OwnerKind == InventoryContainerOwnerKind.Character &&
+                    item.OwnerId == ownerCharacterId )
+            .Select( item => item.ContainerKey )
+            .ToArrayAsync( cancellationToken );
+        DraftCharacter character = await _characterDbContext.Character
+            .AsNoTracking()
+            .SingleOrDefaultAsync(
+                item => item.Id == ownerCharacterId,
+                cancellationToken )
+            ?? throw new InventoryOperationsNotFoundException();
+        if ( containerKeys.Length == 0 )
+        {
+            throw new InventoryOperationsNotFoundException();
+        }
+
+        HashSet<Guid> equippedItemKeys = character.RuntimeEquipmentItems
+            .Where( item => item.IsEquipped )
+            .Select( item => item.ItemInstanceKey )
+            .ToHashSet();
+        ItemInstance[] instances = await _inventoryDbContext.ItemInstances
+            .AsNoTracking()
+            .Where( item =>
+                item.CampaignId == campaignId &&
+                containerKeys.Contains( item.CurrentContainerKey ) &&
+                item.Quantity > 0 &&
+                item.ReservationKey == null &&
+                !equippedItemKeys.Contains( item.InstanceKey ) )
+            .OrderBy( item => item.CreatedAtUtc )
+            .ThenBy( item => item.InstanceKey )
+            .ToArrayAsync( cancellationToken );
+        Dictionary<Guid, InventoryOperationItemDto> items = await ReadItemsAsync(
+            campaignId,
+            instances,
+            cancellationToken );
+        return new ExchangeInventoryProjectionDto(
+            new InventoryCharacterReferenceDto(
+                character.Id,
+                character.Name ),
+            instances
+                .Select( item => items[ item.InstanceKey ] )
+                .ToArray() );
+    }
+
     public async Task<PartyStorageProjectionDto> GetPartyStorageAsync(
         int campaignId,
         int actingUserId,
@@ -598,6 +684,10 @@ public sealed record PartyExchangeProjectionDto(
     InventoryCharacterReferenceDto InitiatorCharacter,
     InventoryCharacterReferenceDto CounterpartyCharacter,
     IReadOnlyCollection<PartyExchangeItemProjectionDto> Items );
+
+public sealed record ExchangeInventoryProjectionDto(
+    InventoryCharacterReferenceDto Character,
+    IReadOnlyCollection<InventoryOperationItemDto> Items );
 
 public sealed record PartyStorageProjectionDto(
     int PartyId,

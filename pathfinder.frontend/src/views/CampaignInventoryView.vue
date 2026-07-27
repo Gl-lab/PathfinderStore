@@ -2,7 +2,7 @@
 import axios from 'axios'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { getApiErrorMessages } from '@/api/errors'
 import BulkMeter from '@/components/BulkMeter.vue'
 import CountdownChip from '@/components/CountdownChip.vue'
@@ -18,11 +18,13 @@ import {
   getPartyGifts,
   type CharacterInventory,
   type CharacterInventoryItem,
+  type InventoryOperationItem,
   type ItemCategory,
   type PartyGift,
 } from '@/features/inventory/api'
 import { formatBulk } from '@/features/inventory/bulk'
 import GiftDialog from '@/features/inventory/GiftDialog.vue'
+import ExchangeDialog from '@/features/inventory/ExchangeDialog.vue'
 import type { GiftRecipient } from '@/features/inventory/gift'
 import { usePendingOperations } from '@/features/inventory/usePendingOperations'
 import { getCampaignCharacter, type Character } from '@/features/characters/api'
@@ -33,6 +35,7 @@ interface ItemCategoryGroup {
 }
 
 const route = useRoute()
+const router = useRouter()
 const { d, t, te } = useI18n()
 const snackbar = useSnackbar()
 const campaignId = Number(route.params.campaignId)
@@ -59,6 +62,7 @@ const inventoryNotMigrated = ref(false)
 const walletDialog = ref(false)
 const incomingExpanded = ref(false)
 const giftDialog = ref(false)
+const exchangeDialog = ref(false)
 const acceptingGiftKey = ref<string | null>(null)
 const acceptanceOperationIds = new Map<string, string>()
 const incomingGifts = pendingOperations.gifts
@@ -82,6 +86,27 @@ const backpackGroups = computed(() =>
 const incomingCount = computed(() => incomingGifts.value.length + pendingExchanges.value.length)
 const outgoingGiftItemKeys = computed(
   () => new Set(outgoingGifts.value.map((gift) => gift.item.itemInstanceKey)),
+)
+const pendingExchangeItemKeys = computed(
+  () =>
+    new Set(
+      pendingExchanges.value.flatMap((exchange) =>
+        exchange.items
+          .filter((line) => line.fromCharacterId === characterId)
+          .map((line) => line.item.itemInstanceKey),
+      ),
+    ),
+)
+const blockedTradeItemKeys = computed(
+  () => new Set([...outgoingGiftItemKeys.value, ...pendingExchangeItemKeys.value]),
+)
+const exchangeSourceItems = computed<InventoryOperationItem[]>(() =>
+  (inventory.value?.items ?? [])
+    .filter((item) => !item.isEquipped && !blockedTradeItemKeys.value.has(item.itemInstanceKey))
+    .map(toOperationItem),
+)
+const selectedOperationItem = computed(() =>
+  selectedItem.value ? toOperationItem(selectedItem.value) : null,
 )
 const characterSubtitle = computed(() => {
   const parts = [
@@ -224,6 +249,30 @@ function openGift(item: CharacterInventoryItem): void {
   giftDialog.value = true
 }
 
+function openExchange(item: CharacterInventoryItem): void {
+  selectedItemKey.value = item.itemInstanceKey
+  exchangeDialog.value = true
+}
+
+function toOperationItem(item: CharacterInventoryItem): InventoryOperationItem {
+  return {
+    itemInstanceKey: item.itemInstanceKey,
+    version: item.version,
+    quantity: item.quantity,
+    name: item.revision.name,
+    primaryCategory: item.revision.primaryCategory,
+    bulkTenths: item.revision.bulkTenths,
+  }
+}
+
+async function handleExchangeSent(exchangeKey: string): Promise<void> {
+  snackbar.success(t('tradeUi.exchange.sent'))
+  await router.push({
+    name: 'campaign-exchange',
+    params: { campaignId, exchangeKey },
+  })
+}
+
 async function handleGiftSent(recipient: GiftRecipient): Promise<void> {
   snackbar.success(t('tradeUi.gift.sent', { name: recipient.name }))
   await Promise.all([loadInventory(), loadPending()])
@@ -360,6 +409,16 @@ onMounted(() => {
               :expires-at-utc="exchange.exchange.expiresAtUtc"
               @expired="loadPending"
             />
+            <v-btn
+              size="small"
+              :to="{
+                name: 'campaign-exchange',
+                params: { campaignId, exchangeKey: exchange.exchange.exchangeKey },
+              }"
+              variant="tonal"
+            >
+              {{ t('common.open') }}
+            </v-btn>
           </div>
           <template v-if="outgoingGifts.length">
             <h3>{{ t('tradeUi.gift.outgoing') }}</h3>
@@ -462,12 +521,16 @@ onMounted(() => {
                   >
                     <template #append>
                       <v-chip
-                        v-if="outgoingGiftItemKeys.has(item.itemInstanceKey)"
+                        v-if="blockedTradeItemKeys.has(item.itemInstanceKey)"
                         color="secondary"
                         size="small"
                         variant="tonal"
                       >
-                        {{ t('tradeUi.gift.inGift') }}
+                        {{
+                          pendingExchangeItemKeys.has(item.itemInstanceKey)
+                            ? t('tradeUi.exchange.inExchange')
+                            : t('tradeUi.gift.inGift')
+                        }}
                       </v-chip>
                       <v-menu v-else-if="!inventory.isReadOnly">
                         <template #activator="{ props: menuProps }">
@@ -484,6 +547,12 @@ onMounted(() => {
                             prepend-icon="mdi-gift-outline"
                             :title="t('tradeUi.gift.action')"
                             @click="openGift(item)"
+                          />
+                          <v-list-item
+                            :disabled="item.isEquipped"
+                            prepend-icon="mdi-swap-horizontal"
+                            :title="t('tradeUi.exchange.action')"
+                            @click="openExchange(item)"
                           />
                         </v-list>
                       </v-menu>
@@ -509,12 +578,16 @@ onMounted(() => {
                   >
                     <template #append>
                       <v-chip
-                        v-if="outgoingGiftItemKeys.has(item.itemInstanceKey)"
+                        v-if="blockedTradeItemKeys.has(item.itemInstanceKey)"
                         color="secondary"
                         size="small"
                         variant="tonal"
                       >
-                        {{ t('tradeUi.gift.inGift') }}
+                        {{
+                          pendingExchangeItemKeys.has(item.itemInstanceKey)
+                            ? t('tradeUi.exchange.inExchange')
+                            : t('tradeUi.gift.inGift')
+                        }}
                       </v-chip>
                       <v-menu v-else-if="!inventory.isReadOnly">
                         <template #activator="{ props: menuProps }">
@@ -531,6 +604,11 @@ onMounted(() => {
                             prepend-icon="mdi-gift-outline"
                             :title="t('tradeUi.gift.action')"
                             @click="openGift(item)"
+                          />
+                          <v-list-item
+                            prepend-icon="mdi-swap-horizontal"
+                            :title="t('tradeUi.exchange.action')"
+                            @click="openExchange(item)"
                           />
                         </v-list>
                       </v-menu>
@@ -597,6 +675,17 @@ onMounted(() => {
       :source-character-id="characterId"
       @sent="handleGiftSent"
       @version-conflict="handleGiftVersionConflict"
+    />
+
+    <ExchangeDialog
+      v-model="exchangeDialog"
+      :campaign-id="campaignId"
+      :initial-item="selectedOperationItem"
+      :recipients="giftRecipients"
+      :source-character-id="characterId"
+      :source-character-name="character?.name ?? `#${characterId}`"
+      :source-items="exchangeSourceItems"
+      @sent="handleExchangeSent"
     />
 
     <v-dialog v-model="walletDialog" max-width="720">

@@ -115,6 +115,34 @@ public sealed class PartyInventoryController : AuthorizedController
         }
     }
 
+    [HttpGet( "exchange-inventories/{ownerCharacterId:int}" )]
+    public async Task<ActionResult<ExchangeInventoryProjectionDto>> GetExchangeInventory(
+        int campaignId,
+        int ownerCharacterId,
+        [FromQuery] int participantCharacterId,
+        CancellationToken cancellationToken )
+    {
+        try
+        {
+            ExchangeInventoryProjectionDto inventory =
+                await _operationsProjectionService.GetExchangeInventoryAsync(
+                    campaignId,
+                    participantCharacterId,
+                    ownerCharacterId,
+                    CurrentUserId(),
+                    cancellationToken );
+            return Ok( inventory );
+        }
+        catch ( InventoryOperationsAccessDeniedException )
+        {
+            return Forbid();
+        }
+        catch ( InventoryOperationsNotFoundException )
+        {
+            return NotFound();
+        }
+    }
+
     [HttpGet( "party-storage" )]
     public async Task<ActionResult<PartyStorageProjectionDto>> GetPartyStorage(
         int campaignId,

@@ -326,6 +326,95 @@ public sealed class InventoryOperationsProjectionServiceTests
                 CancellationToken.None ) );
     }
 
+    [Fact]
+    public async Task ExchangeInventoryReturnsAvailableItemsForSamePartyMember()
+    {
+        await using CampaignManagementDbContext campaignDbContext = CreateCampaignContext();
+        await using CharacterManagementDbContext characterDbContext =
+            TestCharacterManagementDbContextFactory.Create();
+        await using InventoryDbContext inventoryDbContext = CreateInventoryContext();
+        await using ItemCatalogDbContext catalogDbContext = CreateCatalogContext();
+        DraftCharacter initiator = DraftCharacter.Create( 7, "Valeros", AncestryType.Human );
+        DraftCharacter counterparty = DraftCharacter.Create( 8, "Ezren", AncestryType.Human );
+        characterDbContext.Character.AddRange( initiator, counterparty );
+        await characterDbContext.SaveChangesAsync();
+        Campaign campaign = Campaign.Create( "Abomination Vaults", 42, _now );
+        CampaignInvitation firstInvitation = campaign.Invite(
+            42,
+            70,
+            _now.AddSeconds( 1 ) );
+        campaign.AcceptInvitation( firstInvitation.Id, 70, _now.AddSeconds( 2 ) );
+        CampaignInvitation secondInvitation = campaign.Invite(
+            42,
+            80,
+            _now.AddSeconds( 3 ) );
+        campaign.AcceptInvitation( secondInvitation.Id, 80, _now.AddSeconds( 4 ) );
+        campaign.CreateParty( 42, "Heroes", _now.AddSeconds( 5 ) );
+        campaign.AssignCharacterToActiveParty(
+            42,
+            initiator.Id,
+            70,
+            _now.AddSeconds( 6 ) );
+        campaign.AssignCharacterToActiveParty(
+            42,
+            counterparty.Id,
+            80,
+            _now.AddSeconds( 7 ) );
+        campaignDbContext.Campaigns.Add( campaign );
+        await campaignDbContext.SaveChangesAsync();
+        ItemConfiguration configuration = await AddCatalogItemAsync(
+            catalogDbContext,
+            campaign.Id );
+        InventoryContainer container = InventoryContainer.CreateRoot(
+            Guid.NewGuid(),
+            campaign.Id,
+            InventoryContainerOwnerKind.Character,
+            counterparty.Id,
+            _now );
+        ItemInstance item = ItemInstance.Create(
+            Guid.NewGuid(),
+            campaign.Id,
+            configuration.Id,
+            container,
+            "Ezren's blade",
+            _now );
+        inventoryDbContext.AddRange( container, item );
+        await inventoryDbContext.SaveChangesAsync();
+        InventoryOperationsProjectionService service = CreateService(
+            campaignDbContext,
+            characterDbContext,
+            inventoryDbContext,
+            catalogDbContext,
+            new CharacterCampaignAccess( true, true ) );
+
+        ExchangeInventoryProjectionDto result = await service.GetExchangeInventoryAsync(
+            campaign.Id,
+            initiator.Id,
+            counterparty.Id,
+            70,
+            CancellationToken.None );
+
+        Assert.Equal( counterparty.Id, result.Character.CharacterId );
+        Assert.Equal( "Ezren", result.Character.Name );
+        InventoryOperationItemDto projectedItem = Assert.Single( result.Items );
+        Assert.Equal( item.InstanceKey, projectedItem.ItemInstanceKey );
+        Assert.Equal( "Ezren's blade", projectedItem.Name );
+
+        InventoryOperationsProjectionService readOnlyService = CreateService(
+            campaignDbContext,
+            characterDbContext,
+            inventoryDbContext,
+            catalogDbContext,
+            new CharacterCampaignAccess( true, false ) );
+        await Assert.ThrowsAsync<InventoryOperationsAccessDeniedException>(
+            () => readOnlyService.GetExchangeInventoryAsync(
+                campaign.Id,
+                initiator.Id,
+                counterparty.Id,
+                42,
+                CancellationToken.None ) );
+    }
+
     private static InventoryOperationsProjectionService CreateService(
         CampaignManagementDbContext campaignDbContext,
         CharacterManagementDbContext characterDbContext,

@@ -109,6 +109,11 @@ export interface PartyExchange {
   }[]
 }
 
+export interface ExchangeInventory {
+  character: InventoryCharacterReference
+  items: InventoryOperationItem[]
+}
+
 export type PartyStorageAccessPolicy = 'Unconfigured' | 'FreeForMembers' | 'GameMasterOnly'
 
 export interface PartyStorage {
@@ -173,6 +178,80 @@ export async function getPartyExchanges(
       params: { participantCharacterId: characterId, status: 'Pending' },
     })
   ).data
+}
+
+export async function getPartyExchange(
+  campaignId: number,
+  exchangeKey: string,
+): Promise<PartyExchange> {
+  return (
+    await http.get<PartyExchange>(`/api/campaigns/${campaignId}/inventory/exchanges/${exchangeKey}`)
+  ).data
+}
+
+export async function getExchangeInventory(
+  campaignId: number,
+  participantCharacterId: number,
+  ownerCharacterId: number,
+): Promise<ExchangeInventory> {
+  return (
+    await http.get<ExchangeInventory>(
+      `/api/campaigns/${campaignId}/inventory/exchange-inventories/${ownerCharacterId}`,
+      { params: { participantCharacterId } },
+    )
+  ).data
+}
+
+export async function createPartyExchange(
+  campaignId: number,
+  request: {
+    exchangeKey: string
+    initiatorCharacterId: number
+    counterpartyCharacterId: number
+    lines: {
+      fromCharacterId: number
+      itemInstanceKey: string
+      expectedItemVersion: number
+      reservationOperationId: string
+    }[]
+  },
+): Promise<PartyExchange['exchange']> {
+  return (
+    await http.post<PartyExchange['exchange']>(
+      `/api/campaigns/${campaignId}/inventory/exchanges`,
+      request,
+    )
+  ).data
+}
+
+async function finalizePartyExchange(
+  campaignId: number,
+  exchangeKey: string,
+  action: 'complete' | 'cancel',
+  operationId: string,
+): Promise<PartyExchange['exchange']> {
+  return (
+    await http.post<PartyExchange['exchange']>(
+      `/api/campaigns/${campaignId}/inventory/exchanges/${exchangeKey}/${action}`,
+      { operationId },
+    )
+  ).data
+}
+
+export async function completePartyExchange(
+  campaignId: number,
+  exchangeKey: string,
+  operationId: string,
+): Promise<PartyExchange['exchange']> {
+  return finalizePartyExchange(campaignId, exchangeKey, 'complete', operationId)
+}
+
+export async function cancelPartyExchange(
+  campaignId: number,
+  exchangeKey: string,
+  operationId: string,
+): Promise<PartyExchange['exchange']> {
+  return finalizePartyExchange(campaignId, exchangeKey, 'cancel', operationId)
 }
 
 export async function getPartyStorage(campaignId: number): Promise<PartyStorage> {
