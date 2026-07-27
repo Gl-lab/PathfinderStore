@@ -4,6 +4,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { getApiErrorMessages } from '@/api/errors'
+import { getShopOfferKindLabel } from '@/i18n/domain'
 import MoneyInput from '@/components/MoneyInput.vue'
 import MoneyText from '@/components/MoneyText.vue'
 import OperationStatusChip from '@/components/OperationStatusChip.vue'
@@ -39,6 +40,7 @@ import {
   type Wallet,
 } from '@/features/commerce/api'
 import type { InventoryOperationItem } from '@/features/inventory/api'
+import { isItemVersionConflict } from '@/features/inventory/versionConflict'
 
 type AdminTab = 'settlements' | 'shop' | 'wallets' | 'tools'
 
@@ -215,6 +217,12 @@ function selectShop(shopId: number): void {
 
 function isForbidden(error: unknown): boolean {
   return axios.isAxiosError(error) && error.response?.status === 403
+}
+
+function isBusinessRejection(error: unknown): boolean {
+  return (
+    axios.isAxiosError(error) && Boolean(error.response) && (error.response?.status ?? 500) < 500
+  )
 }
 
 async function redirectFromAdmin(): Promise<void> {
@@ -469,6 +477,9 @@ async function saveAdjustment(): Promise<void> {
     wallets.value = await getAdminWallets(campaignId)
   } catch (error) {
     actionErrors.value = getApiErrorMessages(error)
+    if (isBusinessRejection(error)) {
+      adjustmentOperationId.value = globalThis.crypto.randomUUID()
+    }
   } finally {
     isSaving.value = false
   }
@@ -522,7 +533,20 @@ async function saveForceMove(): Promise<void> {
     snackbar.success(t('commerceAdmin.tools.moved'))
     await refreshContainers()
   } catch (error) {
-    actionErrors.value = getApiErrorMessages(error)
+    const messages = getApiErrorMessages(error)
+    if (isBusinessRejection(error)) {
+      forceOperationId.value = globalThis.crypto.randomUUID()
+    }
+    if (isItemVersionConflict(error)) {
+      try {
+        await refreshContainers()
+      } catch {
+        // Preserve the original conflict as the actionable error.
+      }
+      actionErrors.value = [t('tradeUi.gift.versionConflict'), ...messages]
+    } else {
+      actionErrors.value = messages
+    }
   } finally {
     isSaving.value = false
   }
@@ -683,7 +707,7 @@ onMounted(() => {
                     <div>
                       <strong>{{ offer.itemName }}</strong>
                       <p>
-                        {{ t(`commerceAdmin.shop.offerKinds.${offer.kind}`) }} ·
+                        {{ getShopOfferKindLabel(offer.kind) }} ·
                         {{ t('commerceAdmin.shop.quantity', { count: offer.availableQuantity }) }}
                       </p>
                     </div>

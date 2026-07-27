@@ -1,5 +1,6 @@
 import { i18n } from '@/i18n'
 import type { AbilityCode, AncestryCode } from '@/features/characters/api'
+import type { ShopOfferKind } from '@/features/commerce/api'
 
 export function getAncestryLabel(code: AncestryCode): string {
   return i18n.global.t(`domain.ancestry.${code}`)
@@ -41,4 +42,8 @@ export function getLanguageLabel(id: string): string {
 
 export function getOperationStatusLabel(status: string): string {
   return i18n.global.t(`inventoryUi.operationStatuses.${status}`)
+}
+
+export function getShopOfferKindLabel(kind: ShopOfferKind): string {
+  return i18n.global.t(`commerceUi.shop.offerKinds.${kind}`)
 }

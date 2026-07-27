@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import axios from 'axios'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { getApiErrorMessages } from '@/api/errors'
+import { getShopOfferKindLabel } from '@/i18n/domain'
 import CountdownChip from '@/components/CountdownChip.vue'
 import ItemListRow from '@/components/ItemListRow.vue'
 import MoneyText from '@/components/MoneyText.vue'
@@ -42,6 +44,7 @@ import {
   type CharacterInventoryItem,
   type OperationStatus,
 } from '@/features/inventory/api'
+import { isItemVersionConflict } from '@/features/inventory/versionConflict'
 
 type ShopTab = 'offers' | 'sell' | 'reservations'
 
@@ -71,6 +74,7 @@ const errors = ref<string[]>([])
 const actionErrors = ref<string[]>([])
 const isLoading = ref(true)
 const actionKey = ref<string | null>(null)
+let pollTimer: ReturnType<typeof globalThis.setInterval> | null = null
 const activeTab = computed<ShopTab>({
   get: () => {
     const requested = String(route.query.tab ?? 'offers') as ShopTab
@@ -106,10 +110,7 @@ function setQuantity(offerKey: string, value: unknown): void {
   quantities.value[offerKey] = Math.max(1, Number(value) || 1)
 }
 
-function operationId(
-  store: { value: Record<string, string> },
-  key: string,
-): string {
+function operationId(store: { value: Record<string, string> }, key: string): string {
   const existing = store.value[key]
   if (existing) return existing
 
@@ -120,6 +121,12 @@ function operationId(
 
 function reservationStatus(status: PurchaseReservation['status']): OperationStatus {
   return status === 'Active' ? 'Reserved' : status
+}
+
+function isBusinessRejection(error: unknown): boolean {
+  return (
+    axios.isAxiosError(error) && Boolean(error.response) && (error.response?.status ?? 500) < 500
+  )
 }
 
 async function loadBase(): Promise<void> {
@@ -134,10 +141,10 @@ async function loadBase(): Promise<void> {
     campaign.value = campaignItems.find((item) => item.id === campaignId.value) ?? null
     characters.value = characterItems
     settlement.value =
-      settlementItems.find((item) => item.shops.some((candidate) => candidate.id === shopId.value)) ??
-      null
-    shop.value =
-      settlement.value?.shops.find((candidate) => candidate.id === shopId.value) ?? null
+      settlementItems.find((item) =>
+        item.shops.some((candidate) => candidate.id === shopId.value),
+      ) ?? null
+    shop.value = settlement.value?.shops.find((candidate) => candidate.id === shopId.value) ?? null
     if (!campaign.value || !shop.value) {
       await router.replace({
         name: 'campaign-details',
@@ -205,6 +212,15 @@ async function refreshAfterPurchase(): Promise<void> {
   inventory.value = inventoryItem
 }
 
+async function poll(): Promise<void> {
+  if (actionKey.value || isLoading.value || !campaign.value || !shop.value) return
+  try {
+    await refreshAfterPurchase()
+  } catch (error) {
+    actionErrors.value = getApiErrorMessages(error)
+  }
+}
+
 async function selectCharacter(characterId: number | null): Promise<void> {
   selectedCharacterId.value = characterId
   quotes.value = {}
@@ -220,7 +236,7 @@ async function selectCharacter(characterId: number | null): Promise<void> {
 }
 
 async function reserve(offer: ShopOffer): Promise<void> {
-  if (!selectedCharacterId.value) return
+  if (!selectedCharacterId.value || actionKey.value) return
   actionKey.value = `reserve:${offer.offerKey}`
   actionErrors.value = []
   try {
@@ -235,6 +251,9 @@ async function reserve(offer: ShopOffer): Promise<void> {
     snackbar.success(t('commerceUi.shop.reserved', { item: offer.itemName }))
   } catch (error) {
     actionErrors.value = getApiErrorMessages(error)
+    if (isBusinessRejection(error)) {
+      delete reservationOperationIds.value[offer.offerKey]
+    }
     await refreshAfterPurchase()
   } finally {
     actionKey.value = null
@@ -251,6 +270,7 @@ async function repeatReservation(reservation: PurchaseReservation): Promise<void
 }
 
 async function complete(reservation: PurchaseReservation): Promise<void> {
+  if (actionKey.value) return
   actionKey.value = `complete:${reservation.reservationKey}`
   actionErrors.value = []
   try {
@@ -264,6 +284,9 @@ async function complete(reservation: PurchaseReservation): Promise<void> {
     snackbar.success(t('commerceUi.shop.purchased', { item: reservation.itemName }))
   } catch (error) {
     actionErrors.value = getApiErrorMessages(error)
+    if (isBusinessRejection(error)) {
+      delete finalOperationIds.value[`complete:${reservation.reservationKey}`]
+    }
     await refreshAfterPurchase()
   } finally {
     actionKey.value = null
@@ -271,6 +294,7 @@ async function complete(reservation: PurchaseReservation): Promise<void> {
 }
 
 async function cancel(reservation: PurchaseReservation): Promise<void> {
+  if (actionKey.value) return
   actionKey.value = `cancel:${reservation.reservationKey}`
   actionErrors.value = []
   try {
@@ -284,6 +308,9 @@ async function cancel(reservation: PurchaseReservation): Promise<void> {
     snackbar.info(t('commerceUi.shop.cancelled'))
   } catch (error) {
     actionErrors.value = getApiErrorMessages(error)
+    if (isBusinessRejection(error)) {
+      delete finalOperationIds.value[`cancel:${reservation.reservationKey}`]
+    }
     await refreshAfterPurchase()
   } finally {
     actionKey.value = null
@@ -291,7 +318,7 @@ async function cancel(reservation: PurchaseReservation): Promise<void> {
 }
 
 async function quote(item: CharacterInventoryItem): Promise<void> {
-  if (!selectedCharacterId.value) return
+  if (!selectedCharacterId.value || actionKey.value) return
   actionKey.value = `quote:${item.itemInstanceKey}`
   quoteErrors.value[item.itemInstanceKey] = []
   try {
@@ -311,7 +338,7 @@ async function quote(item: CharacterInventoryItem): Promise<void> {
 async function confirmSale(): Promise<void> {
   const item = sellCandidate.value
   const characterId = selectedCharacterId.value
-  if (!item || !characterId) return
+  if (!item || !characterId || actionKey.value) return
 
   actionKey.value = `sell:${item.itemInstanceKey}`
   actionErrors.value = []
@@ -326,7 +353,20 @@ async function confirmSale(): Promise<void> {
     await refreshAfterPurchase()
     snackbar.success(t('commerceUi.shop.sold'))
   } catch (error) {
-    actionErrors.value = getApiErrorMessages(error)
+    const messages = getApiErrorMessages(error)
+    if (isBusinessRejection(error)) {
+      delete finalOperationIds.value[`sell:${item.itemInstanceKey}`]
+    }
+    if (isItemVersionConflict(error)) {
+      await refreshAfterPurchase()
+      sellCandidate.value =
+        inventory.value?.items.find(
+          (candidate) => candidate.itemInstanceKey === item.itemInstanceKey,
+        ) ?? null
+      actionErrors.value = [t('tradeUi.gift.versionConflict'), ...messages]
+    } else {
+      actionErrors.value = messages
+    }
   } finally {
     actionKey.value = null
   }
@@ -334,6 +374,12 @@ async function confirmSale(): Promise<void> {
 
 watch([campaignId, shopId], loadBase)
 onMounted(loadBase)
+onMounted(() => {
+  pollTimer = globalThis.setInterval(() => void poll(), 45_000)
+})
+onUnmounted(() => {
+  if (pollTimer) globalThis.clearInterval(pollTimer)
+})
 </script>
 
 <template>
@@ -426,7 +472,7 @@ onMounted(loadBase)
                   <v-list-item-title>{{ offer.itemName }}</v-list-item-title>
                   <v-list-item-subtitle>
                     {{ t('commerceUi.shop.level', { level: offer.itemLevel }) }} ·
-                    {{ t(`commerceUi.shop.offerKinds.${offer.kind}`) }} ·
+                    {{ getShopOfferKindLabel(offer.kind) }} ·
                     {{
                       t('commerceUi.shop.available', {
                         count: availableOfferQuantity(offer),
@@ -466,9 +512,7 @@ onMounted(loadBase)
                     variant="tonal"
                   >
                     {{ t('commerceUi.shop.shortfall') }}
-                    <MoneyText
-                      :copper="purchaseShortfall(offer, quantityFor(offer), wallet)"
-                    />
+                    <MoneyText :copper="purchaseShortfall(offer, quantityFor(offer), wallet)" />
                     · {{ t('commerceUi.shop.availableMoney') }}
                     <MoneyText :copper="wallet?.availableCopper ?? 0" />
                     · {{ t('commerceUi.shop.reservedMoney') }}
@@ -529,12 +573,7 @@ onMounted(loadBase)
             </v-window-item>
 
             <v-window-item value="reservations">
-              <v-alert
-                v-if="!reservations.length"
-                class="tab-content"
-                type="info"
-                variant="tonal"
-              >
+              <v-alert v-if="!reservations.length" class="tab-content" type="info" variant="tonal">
                 {{ t('commerceUi.shop.emptyReservations') }}
               </v-alert>
               <v-list v-else class="tab-content" bg-color="transparent">
@@ -641,7 +680,11 @@ onMounted(loadBase)
       </div>
     </template>
 
-    <v-dialog :model-value="Boolean(sellCandidate)" max-width="480" @update:model-value="sellCandidate = null">
+    <v-dialog
+      :model-value="Boolean(sellCandidate)"
+      max-width="480"
+      @update:model-value="sellCandidate = null"
+    >
       <v-card v-if="sellCandidate">
         <v-card-title>{{ t('commerceUi.shop.sellConfirmTitle') }}</v-card-title>
         <v-card-text class="summary-stack">

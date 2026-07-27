@@ -67,6 +67,14 @@ function createLine(fromCharacterId: number, item: InventoryOperationItem): Exch
   }
 }
 
+function resetDraftKeys(): void {
+  exchangeKey.value = globalThis.crypto.randomUUID()
+  lines.value = lines.value.map((line) => ({
+    ...line,
+    reservationOperationId: globalThis.crypto.randomUUID(),
+  }))
+}
+
 function isSelected(fromCharacterId: number, itemKey: string): boolean {
   return lines.value.some(
     (line) => line.fromCharacterId === fromCharacterId && line.item.itemInstanceKey === itemKey,
@@ -143,11 +151,11 @@ async function send(): Promise<void> {
         errors.value = getApiErrorMessages(error)
       }
     }
+    if (axios.isAxiosError(error) && error.response && error.response.status < 500) {
+      resetDraftKeys()
+    }
     if (removedNames.value.length === 0) {
       errors.value = getApiErrorMessages(error)
-      if (axios.isAxiosError(error) && error.response && error.response.status < 500) {
-        exchangeKey.value = globalThis.crypto.randomUUID()
-      }
     }
   } finally {
     isSending.value = false

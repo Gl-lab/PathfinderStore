@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import axios from 'axios'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { getApiErrorMessages } from '@/api/errors'
@@ -30,6 +31,7 @@ const isLoading = ref(true)
 const isFinalizing = ref(false)
 const confirmAction = ref<FinalAction | null>(null)
 const operationIds = new Map<FinalAction, string>()
+let pollTimer: ReturnType<typeof globalThis.setInterval> | null = null
 
 const viewerCharacterId = computed(() => {
   if (!campaign.value || !exchange.value) return null
@@ -75,8 +77,8 @@ function characterNameFor(viewerId: number | null, giving: boolean): string {
   return giving ? exchange.value.initiatorCharacter.name : exchange.value.counterpartyCharacter.name
 }
 
-async function load(): Promise<void> {
-  isLoading.value = true
+async function load(silent = false): Promise<void> {
+  if (!silent) isLoading.value = true
   errors.value = []
   try {
     const [campaigns, detail] = await Promise.all([
@@ -88,7 +90,7 @@ async function load(): Promise<void> {
   } catch (error) {
     errors.value = getApiErrorMessages(error)
   } finally {
-    isLoading.value = false
+    if (!silent) isLoading.value = false
   }
 }
 
@@ -118,6 +120,9 @@ async function finalize(): Promise<void> {
     await load()
   } catch (error) {
     const messages = getApiErrorMessages(error)
+    if (axios.isAxiosError(error) && error.response && error.response.status < 500) {
+      operationIds.delete(action)
+    }
     await load()
     errors.value = messages
   } finally {
@@ -127,6 +132,12 @@ async function finalize(): Promise<void> {
 
 onMounted(() => {
   void load()
+  pollTimer = globalThis.setInterval(() => {
+    if (!isFinalizing.value) void load(true)
+  }, 45_000)
+})
+onUnmounted(() => {
+  if (pollTimer) globalThis.clearInterval(pollTimer)
 })
 </script>
 
@@ -144,7 +155,7 @@ onMounted(() => {
     <v-alert v-for="message in errors" :key="message" type="error" variant="tonal">
       {{ message }}
       <template #append>
-        <v-btn variant="text" @click="load">{{ t('common.retry') }}</v-btn>
+        <v-btn variant="text" @click="load()">{{ t('common.retry') }}</v-btn>
       </template>
     </v-alert>
 
@@ -164,7 +175,7 @@ onMounted(() => {
           <CountdownChip
             v-if="isPending"
             :expires-at-utc="exchange.exchange.expiresAtUtc"
-            @expired="load"
+            @expired="load()"
           />
         </div>
       </header>

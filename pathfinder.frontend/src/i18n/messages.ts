@@ -69,6 +69,13 @@ export const messages = {
       request: 'Не удалось выполнить запрос. Повторите попытку позже.',
       invalidCredentials: 'Неверный логин или пароль.',
       passwordsMismatch: 'Пароли не совпадают.',
+      business: {
+        insufficientFunds: 'Недостаточно доступных средств.',
+        itemChanged: 'Предмет изменился. Данные обновлены.',
+        unavailable: 'Предмет или предложение больше недоступны.',
+        accessDenied: 'Действие недоступно для текущего пользователя.',
+        notFound: 'Запрошенные данные не найдены в этой кампании.',
+      },
     },
     equipment: {
       title: 'Стартовое снаряжение',
@@ -963,6 +970,13 @@ export const messages = {
       request: 'Unable to complete the request. Please try again later.',
       invalidCredentials: 'Invalid username or password.',
       passwordsMismatch: 'Passwords do not match.',
+      business: {
+        insufficientFunds: 'There are not enough available funds.',
+        itemChanged: 'The item changed. The data was refreshed.',
+        unavailable: 'The item or offer is no longer available.',
+        accessDenied: 'This action is unavailable to the current user.',
+        notFound: 'The requested data was not found in this campaign.',
+      },
     },
     equipment: {
       title: 'Starting equipment',
