@@ -23,6 +23,7 @@ public sealed class ItemRevision : Entity
     public int PriceInCopperPieces { get; private set; }
     public decimal Bulk { get; private set; }
     public ItemCategory PrimaryCategory { get; private set; }
+    public ItemRarity Rarity { get; private set; }
     public ItemRevisionStatus Status { get; private set; }
     public DateTimeOffset CreatedAtUtc { get; private set; }
     public DateTimeOffset? PublishedAtUtc { get; private set; }
@@ -82,6 +83,7 @@ public sealed class ItemRevision : Entity
             PriceInCopperPieces = priceInCopperPieces,
             Bulk = bulk,
             PrimaryCategory = rules.PrimaryCategory,
+            Rarity = rules.Rarity,
             Status = ItemRevisionStatus.Draft,
             CreatedAtUtc = createdAtUtc,
             Armor = rules.Armor,

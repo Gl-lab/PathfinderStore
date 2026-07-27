@@ -74,6 +74,9 @@ public sealed class ItemCatalogDbContext : DbContext
             builder.Property( revision => revision.PrimaryCategory )
                 .HasConversion<int>()
                 .HasDefaultValue( ItemCategory.OtherEquipment );
+            builder.Property( revision => revision.Rarity )
+                .HasConversion<int>()
+                .HasDefaultValue( ItemRarity.Common );
             builder.Property( revision => revision.Status )
                 .HasConversion<int>()
                 .HasDefaultValue( ItemRevisionStatus.Draft );

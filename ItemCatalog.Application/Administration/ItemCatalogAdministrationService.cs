@@ -193,6 +193,7 @@ public sealed class ItemCatalogAdministrationService
             revision.PriceInCopperPieces,
             revision.Bulk,
             revision.PrimaryCategory,
+            revision.Rarity,
             revision.Status,
             revision.CreatedAtUtc,
             revision.PublishedAtUtc,

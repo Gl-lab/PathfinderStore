@@ -9,6 +9,7 @@ public sealed class ItemRevisionRules
 
     private ItemRevisionRules(
         ItemCategory primaryCategory,
+        ItemRarity rarity,
         IReadOnlyCollection<AttackComponent> attacks,
         ArmorComponent? armor,
         ShieldComponent? shield,
@@ -18,6 +19,7 @@ public sealed class ItemRevisionRules
         DurabilityComponent? durability )
     {
         PrimaryCategory = primaryCategory;
+        Rarity = rarity;
         _attacks = attacks.ToList();
         Armor = armor;
         Shield = shield;
@@ -28,6 +30,7 @@ public sealed class ItemRevisionRules
     }
 
     public ItemCategory PrimaryCategory { get; }
+    public ItemRarity Rarity { get; }
     public IReadOnlyList<AttackComponent> Attacks { get => _attacks.AsReadOnly(); }
     public ArmorComponent? Armor { get; }
     public ShieldComponent? Shield { get; }
@@ -44,11 +47,17 @@ public sealed class ItemRevisionRules
         EquipmentComponent? equipment = null,
         ConsumptionComponent? consumption = null,
         ChargeComponent? charges = null,
-        DurabilityComponent? durability = null )
+        DurabilityComponent? durability = null,
+        ItemRarity rarity = ItemRarity.Common )
     {
         if ( !Enum.IsDefined( primaryCategory ) )
         {
             throw new ItemCatalogException( "Primary item category is invalid." );
+        }
+
+        if ( !Enum.IsDefined( rarity ) )
+        {
+            throw new ItemCatalogException( "Item rarity is invalid." );
         }
 
         IReadOnlyCollection<AttackComponent> normalizedAttacks = attacks ?? [];
@@ -74,6 +83,7 @@ public sealed class ItemRevisionRules
 
         return new ItemRevisionRules(
             primaryCategory,
+            rarity,
             normalizedAttacks,
             armor,
             shield,

@@ -34,12 +34,12 @@ public sealed class RestockGenerationServiceTests
             7,
             shop.Id,
             "Weekly",
-            2,
+            1,
             new RestockPolicyConstraints(
                 0,
                 20,
                 1000,
-                RestockItemRarity.All,
+                RestockItemRarity.Uncommon,
                 RestockItemAccess.All,
                 RestockItemCategory.All ),
             new RestockSelectionWeights( 1, 1, 1 ),
@@ -74,7 +74,8 @@ public sealed class RestockGenerationServiceTests
         Assert.Equal( first.RunKey, second.RunKey );
         Assert.Equal( first.Lines, second.Lines );
         Assert.Single( dbContext.RestockRuns );
-        Assert.Equal( 2, dbContext.RestockRunLines.Count() );
+        Assert.Single( dbContext.RestockRunLines );
+        Assert.Equal( 20, first.Lines.Single().ItemConfigurationId );
     }
 
     private sealed class StubAccessPolicy : ICommerceCampaignAccessPolicy
@@ -97,9 +98,9 @@ public sealed class RestockGenerationServiceTests
             CancellationToken cancellationToken ) =>
             Task.FromResult<IReadOnlyCollection<CommerceCatalogCandidate>>(
             [
-                new CommerceCatalogCandidate( 10, 1, 200, 4, false ),
-                new CommerceCatalogCandidate( 20, 2, 300, 1, false ),
-                new CommerceCatalogCandidate( 30, 3, 400, 9, true ),
+                new CommerceCatalogCandidate( 10, 1, 200, 4, 1, false ),
+                new CommerceCatalogCandidate( 20, 2, 300, 1, 2, false ),
+                new CommerceCatalogCandidate( 30, 3, 400, 9, 4, true ),
             ] );
     }
 

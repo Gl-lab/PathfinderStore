@@ -144,7 +144,8 @@ public sealed record ItemRevisionRulesApiRequest(
     EquipmentComponentApiRequest? Equipment,
     ConsumptionComponentApiRequest? Consumption,
     ChargeComponentApiRequest? Charges,
-    DurabilityComponentApiRequest? Durability )
+    DurabilityComponentApiRequest? Durability,
+    ItemRarity? Rarity )
 {
     public ItemRevisionRules ToDomain() => ItemRevisionRules.Create(
         PrimaryCategory,
@@ -154,7 +155,8 @@ public sealed record ItemRevisionRulesApiRequest(
         Equipment?.ToDomain(),
         Consumption?.ToDomain(),
         Charges?.ToDomain(),
-        Durability?.ToDomain() );
+        Durability?.ToDomain(),
+        Rarity ?? ItemRarity.Common );
 }
 
 public sealed record AttackComponentApiRequest(

@@ -72,6 +72,7 @@ public sealed class CommerceCatalogReader : ICommerceCatalogReader
                 revision.Level,
                 revision.PriceInCopperPieces,
                 ( int )revision.PrimaryCategory,
+                ( int )revision.Rarity,
                 definition.Scope == ItemCatalogScope.Campaign ) )
             .ToListAsync( cancellationToken );
         return candidates;

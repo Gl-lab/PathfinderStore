@@ -15,6 +15,7 @@ public sealed record ItemRevisionDto(
     int PriceInCopperPieces,
     decimal Bulk,
     ItemCategory PrimaryCategory,
+    ItemRarity Rarity,
     ItemRevisionStatus Status,
     DateTimeOffset CreatedAtUtc,
     DateTimeOffset? PublishedAtUtc,

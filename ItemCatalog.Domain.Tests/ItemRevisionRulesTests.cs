@@ -59,6 +59,17 @@ public sealed class ItemRevisionRulesTests
     }
 
     [Fact]
+    public void RulesPreserveExplicitRarity()
+    {
+        ItemRevisionRules rules = ItemRevisionRules.Create(
+            ItemCategory.OtherEquipment,
+            equipment: EquipmentComponent.Create( EquipmentUsage.Held, 1 ),
+            rarity: ItemRarity.Rare );
+
+        Assert.Equal( ItemRarity.Rare, rules.Rarity );
+    }
+
+    [Fact]
     public void RulesRejectDescriptionWithoutBehaviorComponent()
     {
         Assert.Throws<ItemCatalogException>( () =>

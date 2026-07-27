@@ -5,6 +5,7 @@ public sealed record CommerceCatalogCandidate(
     int Level,
     long BasePriceCopper,
     int PrimaryCategory,
+    int Rarity,
     bool IsCampaignScoped );
 
 public interface ICommerceCatalogReader

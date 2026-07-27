@@ -123,9 +123,10 @@ public sealed class RestockGenerationService
         CommerceCatalogCandidate candidate )
     {
         RestockItemCategory category = ToCategory( candidate.PrimaryCategory );
+        RestockItemRarity rarity = ToRarity( candidate.Rarity );
         bool isConsumable = category is RestockItemCategory.Consumable or
             RestockItemCategory.Ammunition;
-        RestockItemKind kind = candidate.IsCampaignScoped
+        RestockItemKind kind = rarity == RestockItemRarity.Unique
             ? RestockItemKind.Unique
             : isConsumable
                 ? RestockItemKind.Consumable
@@ -134,7 +135,7 @@ public sealed class RestockGenerationService
             candidate.ItemConfigurationId,
             candidate.Level,
             shop.CalculateCatalogPrice( candidate.BasePriceCopper ),
-            candidate.IsCampaignScoped ? RestockItemRarity.Unique : RestockItemRarity.Common,
+            rarity,
             candidate.IsCampaignScoped ? RestockItemAccess.Campaign : RestockItemAccess.Global,
             category,
             kind );
@@ -151,6 +152,15 @@ public sealed class RestockGenerationService
         7 => RestockItemCategory.Tool,
         8 => RestockItemCategory.Container,
         9 => RestockItemCategory.OtherEquipment,
+        _ => 0,
+    };
+
+    private static RestockItemRarity ToRarity( int value ) => value switch
+    {
+        1 => RestockItemRarity.Common,
+        2 => RestockItemRarity.Uncommon,
+        3 => RestockItemRarity.Rare,
+        4 => RestockItemRarity.Unique,
         _ => 0,
     };
 
