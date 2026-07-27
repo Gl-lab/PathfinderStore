@@ -64,7 +64,7 @@ public sealed class RestockGenerationService
             cancellationToken );
         if ( existing is not null )
         {
-            return ToDto( existing );
+            return existing.ToDto();
         }
 
         IReadOnlyCollection<CommerceCatalogCandidate> catalogCandidates =
@@ -87,7 +87,7 @@ public sealed class RestockGenerationService
             selected );
         _runRepository.Add( run );
         await _runRepository.SaveChangesAsync( cancellationToken );
-        return ToDto( run );
+        return run.ToDto();
     }
 
     private async Task<Shop> GetAuthorizedShopAsync(
@@ -154,22 +154,4 @@ public sealed class RestockGenerationService
         _ => 0,
     };
 
-    private static RestockRunDto ToDto( RestockRun run ) => new RestockRunDto(
-        run.RunKey,
-        run.CampaignId,
-        run.ShopId,
-        run.RestockPolicyId,
-        run.PolicyVersion,
-        run.Seed,
-        run.Status,
-        run.TotalPriceCopper,
-        run.Lines
-            .OrderBy( line => line.Sequence )
-            .Select( line => new RestockRunLineDto(
-                line.Sequence,
-                line.ItemConfigurationId,
-                line.Quantity,
-                line.UnitPriceCopper,
-                line.Kind ) )
-            .ToArray() );
 }

@@ -15,6 +15,8 @@ public sealed class RestockRunLine : Entity
     public int Quantity { get; private set; }
     public long UnitPriceCopper { get; private set; }
     public RestockItemKind Kind { get; private set; }
+    public Guid? PublishedOfferKey { get; private set; }
+    public Guid? PublishedItemInstanceKey { get; private set; }
 
     internal static RestockRunLine Create(
         int sequence,
@@ -37,5 +39,39 @@ public sealed class RestockRunLine : Entity
             UnitPriceCopper = candidate.UnitPriceCopper,
             Kind = candidate.Kind,
         };
+    }
+
+    public void Publish( Guid offerKey, Guid? itemInstanceKey )
+    {
+        if ( PublishedOfferKey is not null )
+        {
+            if ( PublishedOfferKey != offerKey ||
+                 PublishedItemInstanceKey != itemInstanceKey )
+            {
+                throw new CommerceException(
+                    "Restock run line was already published with different identities." );
+            }
+
+            return;
+        }
+
+        if ( offerKey == Guid.Empty )
+        {
+            throw new CommerceException( "Published restock offer key cannot be empty." );
+        }
+
+        if ( Kind == RestockItemKind.Unique && itemInstanceKey is null )
+        {
+            throw new CommerceException( "A unique restock line requires an item instance." );
+        }
+
+        if ( Kind != RestockItemKind.Unique && itemInstanceKey is not null )
+        {
+            throw new CommerceException(
+                "Only a unique restock line can publish an item instance." );
+        }
+
+        PublishedOfferKey = offerKey;
+        PublishedItemInstanceKey = itemInstanceKey;
     }
 }

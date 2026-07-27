@@ -19,6 +19,7 @@ public static class DependencyInjection
         services.AddScoped<RestockPolicyAdministrationService>();
         services.AddScoped<RestockGenerationService>();
         services.AddSingleton<DeterministicRestockSelector>();
+        services.AddScoped<RestockRunLifecycleService>();
         services.AddSingleton( TimeProvider.System );
     }
 }

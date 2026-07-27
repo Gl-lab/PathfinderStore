@@ -20,19 +20,87 @@ public sealed class CommerceAdminController : AuthorizedController
     private readonly WalletAdministrationService _walletService;
     private readonly RestockPolicyAdministrationService _restockPolicyService;
     private readonly RestockGenerationService _restockGenerationService;
+    private readonly RestockRunLifecycleService _restockRunLifecycleService;
 
     public CommerceAdminController(
         ShopAdministrationService service,
         ShopOfferAdministrationService offerService,
         WalletAdministrationService walletService,
         RestockPolicyAdministrationService restockPolicyService,
-        RestockGenerationService restockGenerationService )
+        RestockGenerationService restockGenerationService,
+        RestockRunLifecycleService restockRunLifecycleService )
     {
         _service = service;
         _offerService = offerService;
         _walletService = walletService;
         _restockPolicyService = restockPolicyService;
         _restockGenerationService = restockGenerationService;
+        _restockRunLifecycleService = restockRunLifecycleService;
+    }
+
+    [HttpGet( "shops/{shopId:int}/restock-runs/{runKey:guid}" )]
+    public async Task<ActionResult<RestockRunDto>> GetRestockRun(
+        int campaignId,
+        int shopId,
+        Guid runKey,
+        CancellationToken cancellationToken )
+    {
+        return await ExecuteRestockRunAction(
+            () => _restockRunLifecycleService.GetAsync(
+                campaignId,
+                shopId,
+                runKey,
+                CurrentUserId(),
+                cancellationToken ) );
+    }
+
+    [HttpPost( "shops/{shopId:int}/restock-runs/{runKey:guid}/confirm" )]
+    public async Task<ActionResult<RestockRunDto>> ConfirmRestockRun(
+        int campaignId,
+        int shopId,
+        Guid runKey,
+        CancellationToken cancellationToken )
+    {
+        return await ExecuteRestockRunAction(
+            () => _restockRunLifecycleService.ConfirmAsync(
+                campaignId,
+                shopId,
+                runKey,
+                CurrentUserId(),
+                cancellationToken ) );
+    }
+
+    [HttpPost( "shops/{shopId:int}/restock-runs/{runKey:guid}/reject" )]
+    public async Task<ActionResult<RestockRunDto>> RejectRestockRun(
+        int campaignId,
+        int shopId,
+        Guid runKey,
+        CancellationToken cancellationToken )
+    {
+        return await ExecuteRestockRunAction(
+            () => _restockRunLifecycleService.RejectAsync(
+                campaignId,
+                shopId,
+                runKey,
+                CurrentUserId(),
+                cancellationToken ) );
+    }
+
+    private static async Task<ActionResult<RestockRunDto>> ExecuteRestockRunAction(
+        Func<Task<RestockRunDto>> action )
+    {
+        try
+        {
+            return new OkObjectResult( await action() );
+        }
+        catch ( UnauthorizedAccessException )
+        {
+            return new ForbidResult();
+        }
+        catch ( CommerceException exception )
+        {
+            return new BadRequestObjectResult( MapError( exception.Message ) );
+        }
     }
 
     [HttpPost( "shops/{shopId:int}/restock-runs" )]

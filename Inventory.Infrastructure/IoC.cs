@@ -4,6 +4,7 @@ using Pathfinder.Inventory.Infrastructure.Transfers;
 using Pathfinder.Commerce.Application.Offers;
 using Pathfinder.Commerce.Application.Transactions;
 using Pathfinder.Inventory.Infrastructure.Commerce;
+using Pathfinder.Commerce.Application.Restocking;
 
 namespace Pathfinder.Inventory.Infrastructure;
 
@@ -14,5 +15,6 @@ public static class DependencyInjection
         services.AddScoped<IInventoryTransferRepository, InventoryTransferRepository>();
         services.AddScoped<ICommerceInventoryReader, CommerceInventoryReader>();
         services.AddScoped<ICommerceInventoryTradePort, CommerceInventoryTradePort>();
+        services.AddScoped<ICommerceRestockInventoryPort, CommerceRestockInventoryPort>();
     }
 }

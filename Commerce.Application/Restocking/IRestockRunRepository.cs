@@ -4,6 +4,9 @@ namespace Pathfinder.Commerce.Application.Restocking;
 
 public interface IRestockRunRepository
 {
+    Task<RestockRun?> GetByKeyAsync(
+        Guid runKey,
+        CancellationToken cancellationToken );
     Task<RestockRun?> GetByIdentityAsync(
         int shopId,
         int restockPolicyId,

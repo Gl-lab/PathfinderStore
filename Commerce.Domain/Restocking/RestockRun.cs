@@ -20,6 +20,8 @@ public sealed class RestockRun : Entity, IAggregateRoot
     public RestockRunStatus Status { get; private set; }
     public int CreatedByUserId { get; private set; }
     public DateTimeOffset CreatedAtUtc { get; private set; }
+    public int? CompletedByUserId { get; private set; }
+    public DateTimeOffset? CompletedAtUtc { get; private set; }
     public IReadOnlyCollection<RestockRunLine> Lines { get => _lines; }
     public long TotalPriceCopper { get => _lines.Sum(
         line => checked( line.UnitPriceCopper * line.Quantity ) ); }
@@ -69,5 +71,56 @@ public sealed class RestockRun : Entity, IAggregateRoot
         }
 
         return run;
+    }
+
+    public void Confirm( int actingUserId, DateTimeOffset confirmedAtUtc )
+    {
+        if ( Status == RestockRunStatus.Confirmed )
+        {
+            return;
+        }
+
+        EnsureCanComplete( actingUserId, confirmedAtUtc );
+        if ( _lines.Any( line => line.PublishedOfferKey is null ) )
+        {
+            throw new CommerceException(
+                "Every restock run line must be published before confirmation." );
+        }
+
+        Status = RestockRunStatus.Confirmed;
+        CompletedByUserId = actingUserId;
+        CompletedAtUtc = confirmedAtUtc;
+    }
+
+    public void Reject( int actingUserId, DateTimeOffset rejectedAtUtc )
+    {
+        if ( Status == RestockRunStatus.Rejected )
+        {
+            return;
+        }
+
+        EnsureCanComplete( actingUserId, rejectedAtUtc );
+        Status = RestockRunStatus.Rejected;
+        CompletedByUserId = actingUserId;
+        CompletedAtUtc = rejectedAtUtc;
+    }
+
+    private void EnsureCanComplete( int actingUserId, DateTimeOffset completedAtUtc )
+    {
+        if ( Status != RestockRunStatus.Preview )
+        {
+            throw new CommerceException( "Only a restock preview can be completed." );
+        }
+
+        if ( actingUserId <= 0 )
+        {
+            throw new CommerceException( "Restock run completer must be greater than zero." );
+        }
+
+        if ( completedAtUtc.Offset != TimeSpan.Zero || completedAtUtc < CreatedAtUtc )
+        {
+            throw new CommerceException(
+                "Restock run completion timestamp must use UTC and follow creation." );
+        }
     }
 }

@@ -29,6 +29,12 @@ public sealed class RestockRunRepository : IRestockRunRepository
                 run.Seed == seed,
             cancellationToken );
 
+    public Task<RestockRun?> GetByKeyAsync(
+        Guid runKey,
+        CancellationToken cancellationToken ) => _dbContext.RestockRuns
+        .Include( run => run.Lines )
+        .SingleOrDefaultAsync( run => run.RunKey == runKey, cancellationToken );
+
     public void Add( RestockRun run )
     {
         _dbContext.RestockRuns.Add( run );

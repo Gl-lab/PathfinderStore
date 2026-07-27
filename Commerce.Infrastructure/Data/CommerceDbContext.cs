@@ -289,9 +289,14 @@ public sealed class CommerceDbContext : DbContext
                     "CK_RestockRun_Identity",
                     "\"CampaignId\" > 0 AND \"ShopId\" > 0 AND \"RestockPolicyId\" > 0 AND " +
                     "\"PolicyVersion\" > 0 AND \"CreatedByUserId\" > 0" );
+                tableBuilder.HasCheckConstraint(
+                    "CK_RestockRun_Lifecycle",
+                    "(\"Status\" = 1 AND \"CompletedByUserId\" IS NULL AND \"CompletedAtUtc\" IS NULL) OR " +
+                    "(\"Status\" IN (2, 3) AND \"CompletedByUserId\" > 0 AND \"CompletedAtUtc\" IS NOT NULL)" );
             } );
             builder.Property( run => run.Status )
-                .HasConversion<int>();
+                .HasConversion<int>()
+                .IsConcurrencyToken();
             builder.HasIndex( run => run.RunKey )
                 .IsUnique();
             builder.HasIndex( run => new
@@ -323,6 +328,12 @@ public sealed class CommerceDbContext : DbContext
                     "CK_RestockRunLine_Values",
                     "\"Sequence\" > 0 AND \"ItemConfigurationId\" > 0 AND \"Quantity\" > 0 AND " +
                     "\"UnitPriceCopper\" >= 0" );
+                tableBuilder.HasCheckConstraint(
+                    "CK_RestockRunLine_Publication",
+                    "(\"PublishedOfferKey\" IS NULL AND \"PublishedItemInstanceKey\" IS NULL) OR " +
+                    "(\"PublishedOfferKey\" IS NOT NULL AND " +
+                    "((\"Kind\" = 3 AND \"PublishedItemInstanceKey\" IS NOT NULL) OR " +
+                    "(\"Kind\" <> 3 AND \"PublishedItemInstanceKey\" IS NULL)))" );
             } );
             builder.Property( line => line.Kind )
                 .HasConversion<int>();
