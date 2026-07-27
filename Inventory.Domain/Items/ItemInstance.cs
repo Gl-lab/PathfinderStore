@@ -829,6 +829,7 @@ public sealed class ItemInstance : Entity, IAggregateRoot
         }
 
         EnsureNotReserved();
+        EnsureNotAttached();
         EnsureTransferAllowed();
 
         if ( destination.CampaignId != CampaignId )
@@ -902,6 +903,7 @@ public sealed class ItemInstance : Entity, IAggregateRoot
         }
 
         EnsureTransferAllowed();
+        EnsureNotAttached();
 
         if ( ReservationKey is not null )
         {
@@ -1032,6 +1034,7 @@ public sealed class ItemInstance : Entity, IAggregateRoot
         }
 
         EnsureExpectedVersion( expectedVersion );
+        EnsureNotAttached();
         if ( IsDepleted || destination.CampaignId != CampaignId ||
              destination.ContainerKey == CurrentContainerKey )
         {
@@ -1367,6 +1370,15 @@ public sealed class ItemInstance : Entity, IAggregateRoot
         if ( IsTransferRestricted )
         {
             throw new InventoryException( "Item instance is prohibited from transfer." );
+        }
+    }
+
+    private void EnsureNotAttached()
+    {
+        if ( AttachedToInstanceKey is not null )
+        {
+            throw new InventoryException(
+                "An attached rune cannot be moved or reserved independently." );
         }
     }
 

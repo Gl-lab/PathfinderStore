@@ -84,6 +84,38 @@ public sealed class ItemRuneTests
         Assert.Equal( source.InstanceKey, rune.AttachedToInstanceKey );
     }
 
+    [Fact]
+    public void AttachedRuneCannotMoveOrReserveIndependently()
+    {
+        ItemInstance rune = CreateRune( ItemRuneTargetKind.Weapon );
+        ItemInstance target = CreateTarget( ItemRuneTargetKind.Weapon );
+        rune.AttachRuneTo(
+            target,
+            0,
+            0,
+            Guid.NewGuid(),
+            _createdAtUtc.AddMinutes( 1 ) );
+        InventoryContainer destination = InventoryContainer.CreateRoot(
+            Guid.NewGuid(),
+            17,
+            InventoryContainerOwnerKind.Character,
+            32,
+            _createdAtUtc );
+
+        Assert.Throws<InventoryException>( () => rune.MoveTo(
+            destination,
+            "move",
+            1,
+            Guid.NewGuid(),
+            "user:31",
+            _createdAtUtc.AddMinutes( 2 ) ) );
+        Assert.Throws<InventoryException>( () => rune.Reserve(
+            Guid.NewGuid(),
+            1,
+            Guid.NewGuid(),
+            _createdAtUtc.AddMinutes( 2 ) ) );
+    }
+
     private static ItemInstance CreateRune( ItemRuneTargetKind targetKind )
     {
         return ItemInstance.CreateAttachableRune(

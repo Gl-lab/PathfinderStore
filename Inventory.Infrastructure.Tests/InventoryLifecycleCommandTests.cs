@@ -128,6 +128,67 @@ public sealed class InventoryLifecycleCommandTests
         Assert.Empty( target.Operations );
     }
 
+    [Fact]
+    public async Task AttachedRuneAuthorizationUsesCurrentTargetOwner()
+    {
+        await using InventoryDbContext dbContext = CreateContext();
+        InventoryContainer oldRuneContainer = CreateContainer( 31 );
+        InventoryContainer targetContainer = CreateContainer( 32 );
+        ItemInstance rune = ItemInstance.CreateAttachableRune(
+            Guid.NewGuid(),
+            17,
+            23,
+            "rune.potency",
+            ItemRuneTargetKind.Weapon,
+            oldRuneContainer,
+            null,
+            _createdAtUtc );
+        ItemInstance source = ItemInstance.CreateRuneCompatible(
+            Guid.NewGuid(),
+            17,
+            24,
+            ItemRuneTargetKind.Weapon,
+            targetContainer,
+            null,
+            _createdAtUtc );
+        ItemInstance destination = ItemInstance.CreateRuneCompatible(
+            Guid.NewGuid(),
+            17,
+            25,
+            ItemRuneTargetKind.Weapon,
+            targetContainer,
+            null,
+            _createdAtUtc );
+        dbContext.Containers.AddRange( oldRuneContainer, targetContainer );
+        dbContext.ItemInstances.AddRange( rune, source, destination );
+        rune.AttachRuneTo(
+            source,
+            0,
+            0,
+            Guid.NewGuid(),
+            _createdAtUtc.AddMinutes( 1 ) );
+        await dbContext.SaveChangesAsync();
+        InventoryLifecycleCommandHandler handler = new InventoryLifecycleCommandHandler(
+            new InventoryTransferRepository( dbContext ),
+            new OwnerAccessPolicy( 32 ),
+            new StubTimeProvider() );
+
+        ItemLifecycleDto result = await handler.Handle(
+            new TransferInventoryRuneCommand(
+                102,
+                17,
+                rune.InstanceKey,
+                source.InstanceKey,
+                destination.InstanceKey,
+                1,
+                1,
+                0,
+                Guid.NewGuid() ),
+            CancellationToken.None );
+
+        Assert.Equal( destination.InstanceKey, result.AttachedToInstanceKey );
+    }
+
     private static InventoryLifecycleCommandHandler CreateHandler(
         InventoryDbContext dbContext,
         bool canMutate )

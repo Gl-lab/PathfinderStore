@@ -181,9 +181,23 @@ public sealed class InventoryLifecycleCommandHandler :
             throw new InventoryException( "Inventory item does not belong to the campaign." );
         }
 
+        ItemInstance authorizationItem = item;
+        if ( item.AttachedToInstanceKey is not null )
+        {
+            authorizationItem = await _repository.GetItemAsync(
+                item.AttachedToInstanceKey.Value,
+                cancellationToken ) ?? throw new InventoryException(
+                "Attached rune target was not found." );
+            if ( authorizationItem.CampaignId != campaignId )
+            {
+                throw new InventoryException(
+                    "Attached rune target does not belong to the campaign." );
+            }
+        }
+
         InventoryContainer container = await _repository.GetContainerByKeyAsync(
             campaignId,
-            item.CurrentContainerKey,
+            authorizationItem.CurrentContainerKey,
             cancellationToken ) ?? throw new InventoryException( "Inventory container was not found." );
         bool canMutate = await _accessPolicy.CanMutateAsync(
             campaignId,
