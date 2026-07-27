@@ -27,6 +27,7 @@ public sealed class RestockPolicy : Entity, IAggregateRoot
         int shopId,
         string name,
         int targetOfferCount,
+        RestockPolicyConstraints constraints,
         int createdByUserId,
         DateTimeOffset createdAtUtc )
     {
@@ -55,13 +56,14 @@ public sealed class RestockPolicy : Entity, IAggregateRoot
             CurrentVersion = 0,
             CreatedAtUtc = createdAtUtc,
         };
-        policy.AddRevision( targetOfferCount, createdByUserId, createdAtUtc );
+        policy.AddRevision( targetOfferCount, constraints, createdByUserId, createdAtUtc );
         return policy;
     }
 
     public RestockPolicyRevision Revise(
         int expectedVersion,
         int targetOfferCount,
+        RestockPolicyConstraints constraints,
         int createdByUserId,
         DateTimeOffset createdAtUtc )
     {
@@ -70,17 +72,19 @@ public sealed class RestockPolicy : Entity, IAggregateRoot
             throw new CommerceException( "Restock policy version conflict." );
         }
 
-        return AddRevision( targetOfferCount, createdByUserId, createdAtUtc );
+        return AddRevision( targetOfferCount, constraints, createdByUserId, createdAtUtc );
     }
 
     private RestockPolicyRevision AddRevision(
         int targetOfferCount,
+        RestockPolicyConstraints constraints,
         int createdByUserId,
         DateTimeOffset createdAtUtc )
     {
         RestockPolicyRevision revision = RestockPolicyRevision.Create(
             CurrentVersion + 1,
             targetOfferCount,
+            constraints,
             createdByUserId,
             createdAtUtc );
         _revisions.Add( revision );

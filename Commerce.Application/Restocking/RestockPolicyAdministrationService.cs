@@ -46,6 +46,7 @@ public sealed class RestockPolicyAdministrationService
             request.ShopId,
             request.Name,
             request.TargetOfferCount,
+            request.Constraints,
             request.ActingUserId,
             _timeProvider.GetUtcNow() );
         _repository.Add( policy );
@@ -73,6 +74,7 @@ public sealed class RestockPolicyAdministrationService
         policy.Revise(
             request.ExpectedVersion,
             request.TargetOfferCount,
+            request.Constraints,
             request.ActingUserId,
             _timeProvider.GetUtcNow() );
         await _repository.SaveChangesAsync( cancellationToken );
@@ -116,6 +118,12 @@ public sealed class RestockPolicyAdministrationService
             .Select( revision => new RestockPolicyRevisionDto(
                 revision.Version,
                 revision.TargetOfferCount,
+                revision.MinimumItemLevel,
+                revision.MaximumItemLevel,
+                revision.BudgetCopper,
+                revision.AllowedRarities,
+                revision.AllowedAccess,
+                revision.AllowedCategories,
                 revision.CreatedByUserId,
                 revision.CreatedAtUtc ) )
             .ToArray() );

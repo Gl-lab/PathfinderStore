@@ -1,3 +1,5 @@
+using Pathfinder.Commerce.Domain.Restocking;
+
 namespace Pathfinder.Commerce.Application.Restocking;
 
 public sealed record RestockPolicyDto(
@@ -11,6 +13,12 @@ public sealed record RestockPolicyDto(
 public sealed record RestockPolicyRevisionDto(
     int Version,
     int TargetOfferCount,
+    int MinimumItemLevel,
+    int MaximumItemLevel,
+    long BudgetCopper,
+    RestockItemRarity AllowedRarities,
+    RestockItemAccess AllowedAccess,
+    RestockItemCategory AllowedCategories,
     int CreatedByUserId,
     DateTimeOffset CreatedAtUtc );
 
@@ -19,6 +27,7 @@ public sealed record CreateRestockPolicyRequest(
     int ShopId,
     string Name,
     int TargetOfferCount,
+    RestockPolicyConstraints Constraints,
     int ActingUserId );
 
 public sealed record ReviseRestockPolicyRequest(
@@ -26,4 +35,5 @@ public sealed record ReviseRestockPolicyRequest(
     int ShopId,
     int ExpectedVersion,
     int TargetOfferCount,
+    RestockPolicyConstraints Constraints,
     int ActingUserId );

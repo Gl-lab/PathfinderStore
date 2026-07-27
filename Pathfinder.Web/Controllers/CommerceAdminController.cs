@@ -7,6 +7,7 @@ using Pathfinder.Commerce.Domain.Exceptions;
 using Pathfinder.Commerce.Application.Offers;
 using Pathfinder.Commerce.Application.Money;
 using Pathfinder.Commerce.Application.Restocking;
+using Pathfinder.Commerce.Domain.Restocking;
 using Pathfinder.Web.Controllers.Base;
 
 namespace Pathfinder.Web.Controllers;
@@ -46,6 +47,7 @@ public sealed class CommerceAdminController : AuthorizedController
                     shopId,
                     request.Name,
                     request.TargetOfferCount,
+                    request.ToConstraints(),
                     CurrentUserId() ),
                 cancellationToken );
             return Created(
@@ -77,6 +79,7 @@ public sealed class CommerceAdminController : AuthorizedController
                     shopId,
                     request.ExpectedVersion,
                     request.TargetOfferCount,
+                    request.ToConstraints(),
                     CurrentUserId() ),
                 cancellationToken );
             return Ok( result );
@@ -303,8 +306,38 @@ public sealed record AdjustWalletApiRequest(
 
 public sealed record CreateRestockPolicyApiRequest(
     string Name,
-    int TargetOfferCount );
+    int TargetOfferCount,
+    int MinimumItemLevel,
+    int MaximumItemLevel,
+    long BudgetCopper,
+    RestockItemRarity AllowedRarities,
+    RestockItemAccess AllowedAccess,
+    RestockItemCategory AllowedCategories )
+{
+    public RestockPolicyConstraints ToConstraints() => new RestockPolicyConstraints(
+        MinimumItemLevel,
+        MaximumItemLevel,
+        BudgetCopper,
+        AllowedRarities,
+        AllowedAccess,
+        AllowedCategories );
+}
 
 public sealed record ReviseRestockPolicyApiRequest(
     int ExpectedVersion,
-    int TargetOfferCount );
+    int TargetOfferCount,
+    int MinimumItemLevel,
+    int MaximumItemLevel,
+    long BudgetCopper,
+    RestockItemRarity AllowedRarities,
+    RestockItemAccess AllowedAccess,
+    RestockItemCategory AllowedCategories )
+{
+    public RestockPolicyConstraints ToConstraints() => new RestockPolicyConstraints(
+        MinimumItemLevel,
+        MaximumItemLevel,
+        BudgetCopper,
+        AllowedRarities,
+        AllowedAccess,
+        AllowedCategories );
+}

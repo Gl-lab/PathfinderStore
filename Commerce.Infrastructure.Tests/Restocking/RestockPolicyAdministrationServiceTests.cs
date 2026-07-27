@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Pathfinder.Commerce.Application.Restocking;
 using Pathfinder.Commerce.Application.Shops;
 using Pathfinder.Commerce.Domain.Shops;
+using Pathfinder.Commerce.Domain.Restocking;
 using Pathfinder.Commerce.Infrastructure.Data;
 using Pathfinder.Commerce.Infrastructure.Restocking;
 using Pathfinder.Commerce.Infrastructure.Shops;
@@ -31,10 +32,22 @@ public sealed class RestockPolicyAdministrationServiceTests
         RestockPolicyAdministrationService service = CreateService( dbContext, true );
 
         RestockPolicyDto created = await service.CreateAsync(
-            new CreateRestockPolicyRequest( 7, shop.Id, "Weekly", 8, 11 ),
+            new CreateRestockPolicyRequest(
+                7,
+                shop.Id,
+                "Weekly",
+                8,
+                DefaultConstraints(),
+                11 ),
             CancellationToken.None );
         RestockPolicyDto revised = await service.ReviseAsync(
-            new ReviseRestockPolicyRequest( 7, shop.Id, created.CurrentVersion, 12, 11 ),
+            new ReviseRestockPolicyRequest(
+                7,
+                shop.Id,
+                created.CurrentVersion,
+                12,
+                DefaultConstraints(),
+                11 ),
             CancellationToken.None );
 
         Assert.Equal( 2, revised.CurrentVersion );
@@ -55,7 +68,13 @@ public sealed class RestockPolicyAdministrationServiceTests
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(
             () => service.CreateAsync(
-                new CreateRestockPolicyRequest( 7, 11, "Weekly", 8, 12 ),
+                new CreateRestockPolicyRequest(
+                    7,
+                    11,
+                    "Weekly",
+                    8,
+                    DefaultConstraints(),
+                    12 ),
                 CancellationToken.None ) );
     }
 
@@ -66,6 +85,15 @@ public sealed class RestockPolicyAdministrationServiceTests
         new SettlementRepository( dbContext ),
         new StubAccessPolicy( isGameMaster ),
         new FixedTimeProvider() );
+
+    private static RestockPolicyConstraints DefaultConstraints() =>
+        new RestockPolicyConstraints(
+            0,
+            20,
+            10000,
+            RestockItemRarity.All,
+            RestockItemAccess.All,
+            RestockItemCategory.All );
 
     private sealed class StubAccessPolicy : ICommerceCampaignAccessPolicy
     {
