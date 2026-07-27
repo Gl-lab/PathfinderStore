@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { getApiErrorMessages } from '@/api/errors'
 import { register } from '@/features/auth/api'
+import { hasRequiredValue, passwordsMatch } from '@/features/auth/validation'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -17,11 +18,16 @@ const form = ref({
 })
 const errorMessages = ref<string[]>([])
 const isSubmitting = ref(false)
+const authForm = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null)
+const requiredRule = (value: unknown): boolean | string =>
+  hasRequiredValue(value) || t('auth.required')
+const passwordsMatchRule = (value: string): boolean | string =>
+  passwordsMatch(form.value.password, value) || t('errors.passwordsMismatch')
 
 async function submit(): Promise<void> {
   errorMessages.value = []
-  if (form.value.password !== form.value.passwordRepeat) {
-    errorMessages.value = [t('errors.passwordsMismatch')]
+  const validation = await authForm.value?.validate()
+  if (!validation?.valid) {
     return
   }
   isSubmitting.value = true
@@ -57,15 +63,19 @@ async function submit(): Promise<void> {
           variant="tonal"
           class="mb-3"
           >{{ message }}</v-alert
-        ><v-form @submit.prevent="submit"
+        ><v-form ref="authForm" validate-on="blur lazy" @submit.prevent="submit"
           ><v-text-field
             v-model="form.userName"
             :label="t('common.requiredField', { field: t('auth.userName') })"
+            autocomplete="username"
+            :rules="[requiredRule]"
             required
           /><v-text-field
             v-model="form.email"
             :label="t('common.requiredField', { field: t('auth.email') })"
             type="email"
+            autocomplete="email"
+            :rules="[requiredRule]"
             required
           /><v-row
             ><v-col
@@ -80,11 +90,15 @@ async function submit(): Promise<void> {
             v-model="form.password"
             :label="t('common.requiredField', { field: t('auth.password') })"
             type="password"
+            autocomplete="new-password"
+            :rules="[requiredRule]"
             required
           /><v-text-field
             v-model="form.passwordRepeat"
             :label="t('common.requiredField', { field: t('auth.passwordRepeat') })"
             type="password"
+            autocomplete="new-password"
+            :rules="[requiredRule, passwordsMatchRule]"
             required
           /><v-btn type="submit" color="primary" block size="large" :loading="isSubmitting"
             >{{ t('auth.register') }}</v-btn

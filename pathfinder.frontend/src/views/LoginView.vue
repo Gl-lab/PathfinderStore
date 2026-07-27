@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { getApiErrorMessages } from '@/api/errors'
 import { useAuthStore } from '@/features/auth/store'
+import { hasRequiredValue } from '@/features/auth/validation'
 
 const auth = useAuthStore()
 const { t } = useI18n()
@@ -13,9 +14,16 @@ const userNameOrEmail = ref('')
 const password = ref('')
 const errorMessages = ref<string[]>([])
 const isSubmitting = ref(false)
+const authForm = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null)
+const requiredRule = (value: unknown): boolean | string =>
+  hasRequiredValue(value) || t('auth.required')
 
 async function submit(): Promise<void> {
   errorMessages.value = []
+  const validation = await authForm.value?.validate()
+  if (!validation?.valid) {
+    return
+  }
   isSubmitting.value = true
 
   try {
@@ -47,11 +55,12 @@ async function submit(): Promise<void> {
           class="mb-3"
           >{{ message }}</v-alert
         >
-        <v-form @submit.prevent="submit">
+        <v-form ref="authForm" validate-on="blur lazy" @submit.prevent="submit">
           <v-text-field
             v-model="userNameOrEmail"
             :label="t('common.requiredField', { field: t('auth.userNameOrEmail') })"
             autocomplete="username"
+            :rules="[requiredRule]"
             required
           />
           <v-text-field
@@ -59,6 +68,7 @@ async function submit(): Promise<void> {
             :label="t('common.requiredField', { field: t('auth.password') })"
             type="password"
             autocomplete="current-password"
+            :rules="[requiredRule]"
             required
           />
           <v-btn type="submit" color="primary" block size="large" :loading="isSubmitting"
