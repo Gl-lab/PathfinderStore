@@ -22,6 +22,10 @@ public sealed class RestockPolicy : Entity, IAggregateRoot
     public RestockPolicyRevision CurrentRevision { get => _revisions.Single(
         revision => revision.Version == CurrentVersion ); }
 
+    public RestockPolicyRevision GetRevision( int version ) => _revisions.SingleOrDefault(
+        revision => revision.Version == version ) ?? throw new CommerceException(
+        "Restock policy revision was not found." );
+
     public static RestockPolicy Create(
         int campaignId,
         int shopId,

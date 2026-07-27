@@ -49,4 +49,31 @@ public sealed class CommerceCatalogReader : ICommerceCatalogReader
             .SingleOrDefaultAsync( cancellationToken );
         return price;
     }
+
+    public async Task<IReadOnlyCollection<CommerceCatalogCandidate>> GetRestockCandidatesAsync(
+        int campaignId,
+        CancellationToken cancellationToken )
+    {
+        List<CommerceCatalogCandidate> candidates = await (
+            from configuration in _dbContext.ItemConfigurations
+            join revision in _dbContext.ItemRevisions
+                on configuration.ItemRevisionId equals revision.Id
+            join definition in _dbContext.ItemDefinitions
+                on revision.ItemDefinitionId equals definition.Id
+            where
+                revision.Status == ItemRevisionStatus.Published &&
+                ( definition.Scope == ItemCatalogScope.Global ||
+                  definition.CampaignId == campaignId ) &&
+                ( configuration.CampaignId == null ||
+                  configuration.CampaignId == campaignId )
+            orderby configuration.Id
+            select new CommerceCatalogCandidate(
+                configuration.Id,
+                revision.Level,
+                revision.PriceInCopperPieces,
+                ( int )revision.PrimaryCategory,
+                definition.Scope == ItemCatalogScope.Campaign ) )
+            .ToListAsync( cancellationToken );
+        return candidates;
+    }
 }

@@ -21,5 +21,6 @@ public static class DependencyInjection
         services.AddScoped<IWalletRepository, WalletRepository>();
         services.AddScoped<IPurchaseReservationRepository, PurchaseReservationRepository>();
         services.AddScoped<IRestockPolicyRepository, RestockPolicyRepository>();
+        services.AddScoped<IRestockRunRepository, RestockRunRepository>();
     }
 }

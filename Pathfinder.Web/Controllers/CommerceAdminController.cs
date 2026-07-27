@@ -19,17 +19,48 @@ public sealed class CommerceAdminController : AuthorizedController
     private readonly ShopOfferAdministrationService _offerService;
     private readonly WalletAdministrationService _walletService;
     private readonly RestockPolicyAdministrationService _restockPolicyService;
+    private readonly RestockGenerationService _restockGenerationService;
 
     public CommerceAdminController(
         ShopAdministrationService service,
         ShopOfferAdministrationService offerService,
         WalletAdministrationService walletService,
-        RestockPolicyAdministrationService restockPolicyService )
+        RestockPolicyAdministrationService restockPolicyService,
+        RestockGenerationService restockGenerationService )
     {
         _service = service;
         _offerService = offerService;
         _walletService = walletService;
         _restockPolicyService = restockPolicyService;
+        _restockGenerationService = restockGenerationService;
+    }
+
+    [HttpPost( "shops/{shopId:int}/restock-runs" )]
+    public async Task<ActionResult<RestockRunDto>> GenerateRestockRun(
+        int campaignId,
+        int shopId,
+        [FromBody] GenerateRestockRunApiRequest request,
+        CancellationToken cancellationToken )
+    {
+        try
+        {
+            RestockRunDto result = await _restockGenerationService.GenerateAsync(
+                campaignId,
+                shopId,
+                request.PolicyVersion,
+                request.Seed,
+                CurrentUserId(),
+                cancellationToken );
+            return Ok( result );
+        }
+        catch ( UnauthorizedAccessException )
+        {
+            return Forbid();
+        }
+        catch ( CommerceException exception )
+        {
+            return BadRequest( MapError( exception.Message ) );
+        }
     }
 
     [HttpPost( "shops/{shopId:int}/restock-policy" )]
@@ -359,3 +390,7 @@ public sealed record ReviseRestockPolicyApiRequest(
         PermanentWeight,
         UniqueWeight );
 }
+
+public sealed record GenerateRestockRunApiRequest(
+    int PolicyVersion,
+    long Seed );

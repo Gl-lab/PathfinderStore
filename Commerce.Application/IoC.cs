@@ -4,6 +4,7 @@ using Pathfinder.Commerce.Application.Offers;
 using Pathfinder.Commerce.Application.Money;
 using Pathfinder.Commerce.Application.Transactions;
 using Pathfinder.Commerce.Application.Restocking;
+using Pathfinder.Commerce.Domain.Restocking;
 
 namespace Pathfinder.Commerce.Application;
 
@@ -16,6 +17,8 @@ public static class DependencyInjection
         services.AddScoped<WalletAdministrationService>();
         services.AddScoped<PurchaseReservationService>();
         services.AddScoped<RestockPolicyAdministrationService>();
+        services.AddScoped<RestockGenerationService>();
+        services.AddSingleton<DeterministicRestockSelector>();
         services.AddSingleton( TimeProvider.System );
     }
 }

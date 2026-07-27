@@ -23,6 +23,8 @@ public sealed class CommerceDbContext : DbContext
     public DbSet<ShopSale> ShopSales => Set<ShopSale>();
     public DbSet<RestockPolicy> RestockPolicies => Set<RestockPolicy>();
     public DbSet<RestockPolicyRevision> RestockPolicyRevisions => Set<RestockPolicyRevision>();
+    public DbSet<RestockRun> RestockRuns => Set<RestockRun>();
+    public DbSet<RestockRunLine> RestockRunLines => Set<RestockRunLine>();
 
     protected override void OnModelCreating( ModelBuilder modelBuilder )
     {
@@ -278,6 +280,64 @@ public sealed class CommerceDbContext : DbContext
                 .HasConversion<int>();
             builder.Property( revision => revision.AllowedCategories )
                 .HasConversion<int>();
+        } );
+        modelBuilder.Entity<RestockRun>( builder =>
+        {
+            builder.ToTable( "RestockRun", tableBuilder =>
+            {
+                tableBuilder.HasCheckConstraint(
+                    "CK_RestockRun_Identity",
+                    "\"CampaignId\" > 0 AND \"ShopId\" > 0 AND \"RestockPolicyId\" > 0 AND " +
+                    "\"PolicyVersion\" > 0 AND \"CreatedByUserId\" > 0" );
+            } );
+            builder.Property( run => run.Status )
+                .HasConversion<int>();
+            builder.HasIndex( run => run.RunKey )
+                .IsUnique();
+            builder.HasIndex( run => new
+            {
+                run.ShopId,
+                run.RestockPolicyId,
+                run.PolicyVersion,
+                run.Seed,
+            } )
+                .IsUnique();
+            builder.HasOne<Shop>()
+                .WithMany()
+                .HasForeignKey( run => run.ShopId )
+                .OnDelete( DeleteBehavior.Cascade );
+            builder.HasOne<RestockPolicy>()
+                .WithMany()
+                .HasForeignKey( run => run.RestockPolicyId )
+                .OnDelete( DeleteBehavior.Restrict );
+            builder.HasMany( run => run.Lines )
+                .WithOne()
+                .HasForeignKey( line => line.RestockRunId )
+                .OnDelete( DeleteBehavior.Cascade );
+        } );
+        modelBuilder.Entity<RestockRunLine>( builder =>
+        {
+            builder.ToTable( "RestockRunLine", tableBuilder =>
+            {
+                tableBuilder.HasCheckConstraint(
+                    "CK_RestockRunLine_Values",
+                    "\"Sequence\" > 0 AND \"ItemConfigurationId\" > 0 AND \"Quantity\" > 0 AND " +
+                    "\"UnitPriceCopper\" >= 0" );
+            } );
+            builder.Property( line => line.Kind )
+                .HasConversion<int>();
+            builder.HasIndex( line => new
+            {
+                line.RestockRunId,
+                line.Sequence,
+            } )
+                .IsUnique();
+            builder.HasIndex( line => new
+            {
+                line.RestockRunId,
+                line.ItemConfigurationId,
+            } )
+                .IsUnique();
         } );
     }
 }
