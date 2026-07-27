@@ -17,6 +17,7 @@ import {
 } from '@/features/campaigns/api'
 import { isCampaignUserNameValid } from '@/features/campaigns/validation'
 import PartyStorageTab from '@/features/inventory/PartyStorageTab.vue'
+import CommerceCampaignTab from '@/features/commerce/CommerceCampaignTab.vue'
 import { usePendingOperations } from '@/features/inventory/usePendingOperations'
 
 type CampaignTab = 'overview' | 'members' | 'party' | 'storage' | 'commerce'
@@ -381,7 +382,7 @@ onMounted(load)
           <PartyStorageTab :campaign="campaign" :characters="characters" />
         </v-window-item>
         <v-window-item value="commerce">
-          <v-alert type="info" variant="tonal">{{ t('campaigns.commercePlaceholder') }}</v-alert>
+          <CommerceCampaignTab :campaign-id="campaignId" :is-game-master="isGameMaster" />
         </v-window-item>
       </v-window>
     </template>
