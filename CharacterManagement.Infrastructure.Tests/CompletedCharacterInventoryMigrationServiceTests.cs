@@ -8,6 +8,7 @@ using Pathfinder.CharacterManagement.Infrastructure.Repositories;
 using Pathfinder.Inventory.Domain.Containers;
 using Pathfinder.Inventory.Domain.Items;
 using Pathfinder.Inventory.Infrastructure.Data;
+using Pathfinder.ItemCatalog.Domain.Configurations;
 using Pathfinder.ItemCatalog.Domain.Items;
 using Pathfinder.ItemCatalog.Domain.Rules;
 using Pathfinder.ItemCatalog.Infrastructure.Data;
@@ -99,6 +100,213 @@ public sealed class CompletedCharacterInventoryMigrationServiceTests
             CancellationToken.None );
         Assert.Equal( "AlreadyMigrated", replay.Status );
         Assert.Equal( 2, await inventoryContext.ItemInstances.CountAsync() );
+    }
+
+    [Fact]
+    public async Task MigrationCreatesOwnConfigurationInsteadOfReusingForeignCampaignShape()
+    {
+        DbContextOptions<CharacterManagementDbContext> characterOptions =
+            new DbContextOptionsBuilder<CharacterManagementDbContext>()
+                .UseInMemoryDatabase( Guid.NewGuid().ToString() )
+                .Options;
+        DbContextOptions<CampaignManagementDbContext> campaignOptions =
+            new DbContextOptionsBuilder<CampaignManagementDbContext>()
+                .UseInMemoryDatabase( Guid.NewGuid().ToString() )
+                .Options;
+        DbContextOptions<ItemCatalogDbContext> catalogOptions =
+            new DbContextOptionsBuilder<ItemCatalogDbContext>()
+                .UseInMemoryDatabase( Guid.NewGuid().ToString() )
+                .Options;
+        DbContextOptions<InventoryDbContext> inventoryOptions =
+            new DbContextOptionsBuilder<InventoryDbContext>()
+                .UseInMemoryDatabase( Guid.NewGuid().ToString() )
+                .Options;
+        await using CharacterManagementDbContext characterContext =
+            new CharacterManagementDbContext( characterOptions );
+        await using CampaignManagementDbContext campaignContext =
+            new CampaignManagementDbContext( campaignOptions );
+        await using ItemCatalogDbContext catalogContext =
+            new ItemCatalogDbContext( catalogOptions );
+        await using InventoryDbContext inventoryContext =
+            new InventoryDbContext( inventoryOptions );
+        DraftCharacter character = CreateCompletedCharacter();
+        characterContext.Character.Add( character );
+        await characterContext.SaveChangesAsync();
+        Campaign campaign = Campaign.Create( "Abomination Vaults", 11, _createdAtUtc );
+        campaign.AssignRole( 11, 11, CampaignMembershipRole.Player, _createdAtUtc );
+        campaign.CreateParty( 11, "Heroes", _createdAtUtc );
+        campaign.AssignCharacterToActiveParty(
+            11,
+            character.Id,
+            11,
+            _createdAtUtc );
+        campaignContext.Campaigns.Add( campaign );
+        await campaignContext.SaveChangesAsync();
+        ItemDefinition definition = ItemDefinition.CreateGlobal(
+            "equipment.dagger",
+            _createdAtUtc );
+        ItemRevision revision = definition.CreateRevision(
+            "Dagger",
+            "Dagger description.",
+            0,
+            20,
+            0.1m,
+            ItemRevisionRules.Create(
+                ItemCategory.Weapon,
+                attacks:
+                [
+                    AttackComponent.Create(
+                        "Blade",
+                        1,
+                        DamageDieSize.D4,
+                        ItemDamageType.Piercing,
+                        1 ),
+                ],
+                equipment: EquipmentComponent.Create( EquipmentUsage.Held, 1 ),
+                durability: DurabilityComponent.Create( 5, 20, 10 ) ),
+            _createdAtUtc );
+        definition.PublishRevision( 1, _createdAtUtc );
+        catalogContext.ItemDefinitions.Add( definition );
+        await catalogContext.SaveChangesAsync();
+        ItemConfiguration foreignConfiguration = ItemConfiguration.Create(
+            campaign.Id + 100,
+            revision.Id,
+            ItemSize.Medium,
+            ItemMaterialType.Standard,
+            ItemMaterialGrade.Standard,
+            [],
+            _createdAtUtc );
+        catalogContext.ItemConfigurations.Add( foreignConfiguration );
+        await catalogContext.SaveChangesAsync();
+        CompletedCharacterInventoryMigrationService service = new CompletedCharacterInventoryMigrationService(
+            characterContext,
+            campaignContext,
+            catalogContext,
+            inventoryContext,
+            new EquipmentRepository() );
+
+        CompletedCharacterInventoryMigrationResult result = await service.MigrateAsync(
+            character.Id,
+            _createdAtUtc.AddMinutes( 2 ),
+            CancellationToken.None );
+
+        Assert.Equal( "Migrated", result.Status );
+        ItemInstance[] instances = await inventoryContext.ItemInstances.ToArrayAsync();
+        Assert.All(
+            instances,
+            item => Assert.NotEqual( foreignConfiguration.Id, item.ItemConfigurationId ) );
+        Assert.Equal( 2, await catalogContext.ItemConfigurations.CountAsync() );
+        ItemConfiguration ownConfiguration = await catalogContext.ItemConfigurations
+            .SingleAsync( item => item.Id != foreignConfiguration.Id );
+        Assert.Equal( campaign.Id, ownConfiguration.CampaignId );
+    }
+
+    [Fact]
+    public async Task MigrationPrefersCampaignConfigurationOverLegacyShape()
+    {
+        DbContextOptions<CharacterManagementDbContext> characterOptions =
+            new DbContextOptionsBuilder<CharacterManagementDbContext>()
+                .UseInMemoryDatabase( Guid.NewGuid().ToString() )
+                .Options;
+        DbContextOptions<CampaignManagementDbContext> campaignOptions =
+            new DbContextOptionsBuilder<CampaignManagementDbContext>()
+                .UseInMemoryDatabase( Guid.NewGuid().ToString() )
+                .Options;
+        DbContextOptions<ItemCatalogDbContext> catalogOptions =
+            new DbContextOptionsBuilder<ItemCatalogDbContext>()
+                .UseInMemoryDatabase( Guid.NewGuid().ToString() )
+                .Options;
+        DbContextOptions<InventoryDbContext> inventoryOptions =
+            new DbContextOptionsBuilder<InventoryDbContext>()
+                .UseInMemoryDatabase( Guid.NewGuid().ToString() )
+                .Options;
+        await using CharacterManagementDbContext characterContext =
+            new CharacterManagementDbContext( characterOptions );
+        await using CampaignManagementDbContext campaignContext =
+            new CampaignManagementDbContext( campaignOptions );
+        await using ItemCatalogDbContext catalogContext =
+            new ItemCatalogDbContext( catalogOptions );
+        await using InventoryDbContext inventoryContext =
+            new InventoryDbContext( inventoryOptions );
+        DraftCharacter character = CreateCompletedCharacter();
+        characterContext.Character.Add( character );
+        await characterContext.SaveChangesAsync();
+        Campaign campaign = Campaign.Create( "Abomination Vaults", 11, _createdAtUtc );
+        campaign.AssignRole( 11, 11, CampaignMembershipRole.Player, _createdAtUtc );
+        campaign.CreateParty( 11, "Heroes", _createdAtUtc );
+        campaign.AssignCharacterToActiveParty(
+            11,
+            character.Id,
+            11,
+            _createdAtUtc );
+        campaignContext.Campaigns.Add( campaign );
+        await campaignContext.SaveChangesAsync();
+        ItemDefinition definition = ItemDefinition.CreateGlobal(
+            "equipment.dagger",
+            _createdAtUtc );
+        ItemRevision revision = definition.CreateRevision(
+            "Dagger",
+            "Dagger description.",
+            0,
+            20,
+            0.1m,
+            ItemRevisionRules.Create(
+                ItemCategory.Weapon,
+                attacks:
+                [
+                    AttackComponent.Create(
+                        "Blade",
+                        1,
+                        DamageDieSize.D4,
+                        ItemDamageType.Piercing,
+                        1 ),
+                ],
+                equipment: EquipmentComponent.Create( EquipmentUsage.Held, 1 ),
+                durability: DurabilityComponent.Create( 5, 20, 10 ) ),
+            _createdAtUtc );
+        definition.PublishRevision( 1, _createdAtUtc );
+        catalogContext.ItemDefinitions.Add( definition );
+        await catalogContext.SaveChangesAsync();
+        ItemConfiguration legacyConfiguration = ItemConfiguration.Create(
+            campaign.Id + 100,
+            revision.Id,
+            ItemSize.Medium,
+            ItemMaterialType.Standard,
+            ItemMaterialGrade.Standard,
+            [],
+            _createdAtUtc );
+        ItemConfiguration campaignConfiguration = ItemConfiguration.Create(
+            campaign.Id,
+            revision.Id,
+            ItemSize.Medium,
+            ItemMaterialType.Standard,
+            ItemMaterialGrade.Standard,
+            [],
+            _createdAtUtc );
+        catalogContext.ItemConfigurations.AddRange( legacyConfiguration, campaignConfiguration );
+        await catalogContext.SaveChangesAsync();
+        catalogContext.Entry( legacyConfiguration )
+            .Property( item => item.CampaignId )
+            .CurrentValue = null;
+        await catalogContext.SaveChangesAsync();
+        CompletedCharacterInventoryMigrationService service = new CompletedCharacterInventoryMigrationService(
+            characterContext,
+            campaignContext,
+            catalogContext,
+            inventoryContext,
+            new EquipmentRepository() );
+
+        CompletedCharacterInventoryMigrationResult result = await service.MigrateAsync(
+            character.Id,
+            _createdAtUtc.AddMinutes( 2 ),
+            CancellationToken.None );
+
+        Assert.Equal( "Migrated", result.Status );
+        ItemInstance[] instances = await inventoryContext.ItemInstances.ToArrayAsync();
+        Assert.All(
+            instances,
+            item => Assert.Equal( campaignConfiguration.Id, item.ItemConfigurationId ) );
+        Assert.Equal( 2, await catalogContext.ItemConfigurations.CountAsync() );
     }
 
     private static DraftCharacter CreateCompletedCharacter()

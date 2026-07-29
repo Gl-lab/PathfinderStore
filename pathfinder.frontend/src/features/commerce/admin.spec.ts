@@ -29,6 +29,26 @@ describe('commerce administration helpers', () => {
     ])
   })
 
+  it('renders configuration options through the injected formatter', () => {
+    const revisions = [
+      {
+        name: 'Healing Potion',
+        configurations: [
+          {
+            itemConfigurationId: 12,
+            size: 'Medium',
+            materialType: 'ColdIron',
+            materialGrade: 'Standard',
+          },
+        ],
+      },
+    ] as PublishedItemRevision[]
+
+    expect(
+      catalogConfigurationOptions(revisions, (configuration) => `<${configuration.size}>`),
+    ).toEqual([{ value: 12, title: 'Healing Potion · <Medium>' }])
+  })
+
   it('normalizes the adjustment sign', () => {
     expect(signedAdjustment(250, 'credit')).toBe(250)
     expect(signedAdjustment(250, 'debit')).toBe(-250)

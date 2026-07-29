@@ -248,7 +248,8 @@ public sealed class CommerceAdministrationProjectionService
         ItemConfiguration[] configurations = await _itemCatalogDbContext.ItemConfigurations
             .AsNoTracking()
             .Where( configuration =>
-                configuration.CampaignId == campaignId &&
+                ( configuration.CampaignId == null ||
+                  configuration.CampaignId == campaignId ) &&
                 revisionIds.Contains( configuration.ItemRevisionId ) )
             .OrderBy( configuration => configuration.Id )
             .ToArrayAsync( cancellationToken );

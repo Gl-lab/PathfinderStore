@@ -63,6 +63,27 @@ public sealed class ItemCatalogAdministrationService
         return ToDto( definition, revision );
     }
 
+    public async Task<ItemRevisionDto> CreateDraftForDefinitionAsync(
+        CreateItemRevisionDraftRequest request,
+        CancellationToken cancellationToken )
+    {
+        ItemDefinition definition = await GetAuthorizedDefinitionAsync(
+            request.ItemDefinitionId,
+            request.ActingUserId,
+            request.ActingUserName,
+            cancellationToken );
+        ItemRevision revision = definition.CreateRevision(
+            request.Name,
+            request.Description,
+            request.Level,
+            request.PriceInCopperPieces,
+            request.Bulk,
+            request.Rules,
+            _timeProvider.GetUtcNow() );
+        await _unitOfWork.Commit();
+        return ToDto( definition, revision );
+    }
+
     public async Task<ItemRevisionDto> PublishAsync(
         int itemDefinitionId,
         int revisionNumber,

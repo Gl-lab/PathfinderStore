@@ -30,3 +30,19 @@ export async function login(request: LoginRequest): Promise<string> {
 export async function register(request: RegisterRequest): Promise<void> {
   await http.post('/api/Register', request)
 }
+
+export interface ItemCatalogCapabilities {
+  canManageGlobalCatalog: boolean
+  campaignId: number | null
+  canManageCampaignCatalog: boolean
+}
+
+export async function getItemCatalogCapabilities(
+  campaignId?: number,
+): Promise<ItemCatalogCapabilities> {
+  return (
+    await http.get<ItemCatalogCapabilities>('/api/item-catalog-admin/capabilities', {
+      params: campaignId ? { campaignId } : {},
+    })
+  ).data
+}

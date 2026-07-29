@@ -40,6 +40,29 @@ public sealed class ItemConfigurationTests
     }
 
     [Fact]
+    public void ConfigurationKeyDiffersAcrossCampaignsForSameShape()
+    {
+        ItemConfiguration first = ItemConfiguration.Create(
+            42,
+            17,
+            ItemSize.Medium,
+            ItemMaterialType.Standard,
+            ItemMaterialGrade.Standard,
+            [],
+            _createdAtUtc );
+        ItemConfiguration second = ItemConfiguration.Create(
+            43,
+            17,
+            ItemSize.Medium,
+            ItemMaterialType.Standard,
+            ItemMaterialGrade.Standard,
+            [],
+            _createdAtUtc );
+
+        Assert.NotEqual( first.ConfigurationKey, second.ConfigurationKey );
+    }
+
+    [Fact]
     public void ConfigurationKeyIsIndependentOfUpgradeInputOrder()
     {
         ItemConfiguration first = ItemConfiguration.Create(

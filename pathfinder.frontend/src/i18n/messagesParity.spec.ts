@@ -10,7 +10,7 @@ function messageKeys(value: unknown, prefix = ''): string[] {
 }
 
 describe('message catalog parity', () => {
-  it.each(['inventoryUi', 'commerceUi', 'commerceAdmin', 'tradeUi'] as const)(
+  it.each(['inventoryUi', 'commerceUi', 'commerceAdmin', 'tradeUi', 'itemCatalogUi'] as const)(
     'keeps Russian and English %s keys aligned',
     (namespace) => {
       expect(messageKeys(messages.ru[namespace]).sort()).toEqual(

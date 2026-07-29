@@ -63,3 +63,39 @@ export function getOperationStatusLabel(status: string): string {
 export function getShopOfferKindLabel(kind: ShopOfferKind): string {
   return i18n.global.t(`commerceUi.shop.offerKinds.${kind}`)
 }
+
+function itemCatalogLabel(group: string, code: string): string {
+  const key = `itemCatalogUi.${group}.${code}`
+
+  return i18n.global.te(key) ? i18n.global.t(key) : code
+}
+
+export function getItemSizeLabel(code: string): string {
+  return itemCatalogLabel('sizes', code)
+}
+
+export function getItemMaterialTypeLabel(code: string): string {
+  return itemCatalogLabel('materials', code)
+}
+
+export function getItemMaterialGradeLabel(code: string): string {
+  return itemCatalogLabel('grades', code)
+}
+
+export function getItemRarityLabel(code: string): string {
+  return itemCatalogLabel('rarities', code)
+}
+
+export function getItemRevisionStatusLabel(code: string): string {
+  return itemCatalogLabel('statuses', code)
+}
+
+export function getItemScopeLabel(code: string): string {
+  return itemCatalogLabel('scopes', code)
+}
+
+export function getItemCategoryLabel(code: string): string {
+  const key = `inventoryUi.categories.${code}`
+
+  return i18n.global.te(key) ? i18n.global.t(key) : code
+}

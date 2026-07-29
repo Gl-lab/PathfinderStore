@@ -20,6 +20,8 @@ public sealed class CommerceCatalogReader : ICommerceCatalogReader
         CancellationToken cancellationToken ) => _dbContext.ItemConfigurations.AnyAsync(
         configuration =>
             configuration.Id == itemConfigurationId &&
+            ( configuration.CampaignId == null ||
+              configuration.CampaignId == campaignId ) &&
             _dbContext.ItemRevisions.Any( revision =>
                 revision.Id == configuration.ItemRevisionId &&
                 revision.Status == ItemRevisionStatus.Published &&
@@ -42,6 +44,8 @@ public sealed class CommerceCatalogReader : ICommerceCatalogReader
                 on revision.ItemDefinitionId equals definition.Id
             where
                 configuration.Id == itemConfigurationId &&
+                ( configuration.CampaignId == null ||
+                  configuration.CampaignId == campaignId ) &&
                 revision.Status == ItemRevisionStatus.Published &&
                 ( definition.Scope == ItemCatalogScope.Global ||
                   definition.CampaignId == campaignId )

@@ -87,15 +87,24 @@ onMounted(load)
       </v-card-text>
     </v-card>
 
-    <v-btn
-      v-if="isGameMaster"
-      color="secondary"
-      prepend-icon="mdi-store-cog"
-      :to="{ name: 'commerce-admin', params: { campaignId } }"
-      variant="tonal"
-    >
-      {{ t('commerceUi.campaign.openAdmin') }}
-    </v-btn>
+    <div v-if="isGameMaster" class="admin-links">
+      <v-btn
+        color="secondary"
+        prepend-icon="mdi-store-cog"
+        :to="{ name: 'commerce-admin', params: { campaignId } }"
+        variant="tonal"
+      >
+        {{ t('commerceUi.campaign.openAdmin') }}
+      </v-btn>
+      <v-btn
+        color="secondary"
+        prepend-icon="mdi-book-cog-outline"
+        :to="{ name: 'campaign-item-catalog', params: { campaignId } }"
+        variant="tonal"
+      >
+        {{ t('commerceUi.campaign.openItemCatalog') }}
+      </v-btn>
+    </div>
   </section>
 </template>
 
@@ -137,5 +146,11 @@ onMounted(load)
 
 .shops {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.admin-links {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 </style>

@@ -1,0 +1,624 @@
+<title>Эскизы · Каталог предметов</title>
+<style>
+  :root {
+    --page-bg: #efe9dc;
+    --page-ink: #2b2620;
+    --page-muted: #6d6459;
+    --page-card: #faf6ee;
+    --page-line: #d9cfbe;
+    --acc: #b66b22;
+    /* App theme (characterLedger) — фиксированный светлый, как в приложении */
+    --ap-bg: #f6f1e8;
+    --ap-surface: #fffdf8;
+    --ap-variant: #eae1d4;
+    --ap-primary: #162b42;
+    --ap-secondary: #236b68;
+    --ap-accent: #b66b22;
+    --ap-error: #a3342b;
+    --ap-warning: #9a6515;
+    --ap-success: #2d6a4f;
+    --ap-info: #365f8b;
+    --ap-ink: #26221c;
+    --ap-muted: #7a7060;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page-bg: #211d18;
+      --page-ink: #ece5d8;
+      --page-muted: #a89c8b;
+      --page-card: #2a251f;
+      --page-line: #3d362d;
+    }
+  }
+  :root[data-theme="light"] {
+    --page-bg: #efe9dc; --page-ink: #2b2620; --page-muted: #6d6459;
+    --page-card: #faf6ee; --page-line: #d9cfbe;
+  }
+  :root[data-theme="dark"] {
+    --page-bg: #211d18; --page-ink: #ece5d8; --page-muted: #a89c8b;
+    --page-card: #2a251f; --page-line: #3d362d;
+  }
+
+  body {
+    background: var(--page-bg);
+    color: var(--page-ink);
+    font: 15px/1.55 "Segoe UI", system-ui, sans-serif;
+    margin: 0;
+    padding: 40px 20px 80px;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; }
+  h1, h2, .ap-h1 { font-family: Georgia, "Times New Roman", serif; text-wrap: balance; }
+  h1 { font-size: 34px; margin: 0 0 6px; font-weight: 600; }
+  h2 { font-size: 23px; margin: 0 0 4px; font-weight: 600; }
+  .lead { color: var(--page-muted); max-width: 68ch; margin: 0 0 8px; }
+  .eyebrow-page {
+    text-transform: uppercase; letter-spacing: .14em; font-size: 11.5px;
+    color: var(--acc); font-weight: 600; margin-bottom: 10px;
+  }
+  section.sk { margin-top: 56px; }
+  .sk-head { display: flex; flex-direction: column; gap: 2px; margin-bottom: 14px; }
+  .route {
+    font-family: Consolas, monospace; font-size: 12.5px; color: var(--page-muted);
+    background: var(--page-card); border: 1px solid var(--page-line);
+    border-radius: 6px; padding: 2px 8px; width: fit-content;
+  }
+  .notes { margin: 14px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+  .notes li { display: flex; gap: 10px; color: var(--page-muted); font-size: 13.5px; max-width: 78ch; }
+  .marker {
+    flex: 0 0 auto; width: 20px; height: 20px; border-radius: 50%;
+    background: var(--acc); color: #fff; font-size: 11.5px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center; margin-top: 1px;
+  }
+  .m-inline {
+    display: inline-flex; width: 18px; height: 18px; border-radius: 50%;
+    background: var(--acc); color: #fff; font-size: 10.5px; font-weight: 700;
+    align-items: center; justify-content: center; vertical-align: -3px;
+    box-shadow: 0 0 0 2px rgba(255,255,255,.75);
+  }
+
+  /* ===== App mockup frame (always light, как само приложение) ===== */
+  .frame {
+    background: var(--ap-bg); color: var(--ap-ink);
+    border: 1px solid var(--page-line); border-radius: 14px;
+    overflow: hidden; box-shadow: 0 8px 28px rgba(30, 22, 10, .12);
+  }
+  .frame * { box-sizing: border-box; }
+  .appbar {
+    background: var(--ap-primary); color: #f3ede2;
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 18px; font-size: 14px;
+  }
+  .appbar .burger { font-size: 16px; opacity: .85; }
+  .appbar .title { font-family: Georgia, serif; letter-spacing: .02em; }
+  .page { padding: 22px 26px 26px; }
+  .ap-eyebrow {
+    text-transform: uppercase; letter-spacing: .14em; font-size: 10.5px;
+    color: var(--ap-accent); font-weight: 700;
+  }
+  .ap-h1 { font-size: 26px; margin: 2px 0 0; color: var(--ap-primary); }
+  .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+
+  .vcard {
+    background: var(--ap-surface); border: 1px solid var(--ap-variant);
+    border-radius: 16px; padding: 16px 18px; margin-top: 14px;
+  }
+  .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .grow { flex: 1 1 auto; }
+
+  .tfield {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--ap-surface); border: 1px solid #c9bda9;
+    border-radius: 10px; padding: 8px 12px; font-size: 13.5px; color: var(--ap-muted);
+    min-width: 200px;
+  }
+  .tfield .lbl { font-size: 10.5px; color: var(--ap-muted); position: absolute; }
+  .toggle { display: inline-flex; border: 1px solid #c9bda9; border-radius: 10px; overflow: hidden; }
+  .toggle span { padding: 7px 14px; font-size: 13px; color: var(--ap-muted); background: var(--ap-surface); }
+  .toggle span + span { border-left: 1px solid #d8cdb9; }
+  .toggle .on { background: var(--ap-primary); color: #f3ede2; }
+
+  .chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    border-radius: 999px; padding: 3px 11px; font-size: 12px; font-weight: 600;
+    border: 1px solid transparent; white-space: nowrap;
+  }
+  .chip.filter { background: var(--ap-surface); border-color: #c9bda9; color: var(--ap-muted); font-weight: 500; }
+  .chip.filter.on { background: var(--ap-primary); color: #f3ede2; border-color: var(--ap-primary); }
+  .chip.scope-g { background: transparent; border-color: var(--ap-info); color: var(--ap-info); }
+  .chip.scope-c { background: var(--ap-secondary); color: #f0faf8; }
+  .chip.st-draft { background: #e4ecea; color: var(--ap-secondary); }
+  .chip.st-pub { background: #e2ede7; color: var(--ap-success); }
+  .chip.st-ret { background: var(--ap-variant); color: var(--ap-muted); }
+  .chip.cfg { background: var(--ap-variant); color: var(--ap-ink); font-weight: 500; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    border-radius: 10px; padding: 7px 15px; font-size: 13px; font-weight: 600;
+    border: none; white-space: nowrap;
+  }
+  .btn.primary { background: var(--ap-primary); color: #f3ede2; }
+  .btn.secondary { background: var(--ap-secondary); color: #eefaf8; }
+  .btn.warn { background: var(--ap-warning); color: #fff8ea; }
+  .btn.err { background: var(--ap-error); color: #fdeeec; }
+  .btn.text { background: transparent; color: var(--ap-primary); }
+  .btn.text.muted { color: var(--ap-muted); font-weight: 500; }
+  .btn.outline { background: transparent; border: 1px solid #c9bda9; color: var(--ap-primary); }
+  .btn.disabled { opacity: .45; }
+  .icon-btn { background: transparent; border: 1px solid #c9bda9; border-radius: 10px; padding: 6px 10px; font-size: 14px; color: var(--ap-muted); }
+
+  .def-title { font-family: Georgia, serif; font-size: 17.5px; color: var(--ap-primary); font-weight: 600; }
+  .key { font-family: Consolas, monospace; font-size: 12px; color: var(--ap-muted); }
+  .rev-row {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 10px 2px; border-top: 1px dashed var(--ap-variant); font-size: 13.5px;
+  }
+  .rev-row:first-of-type { border-top: none; }
+  .rev-no { font-weight: 700; color: var(--ap-primary); min-width: 30px; }
+  .money { color: var(--ap-accent); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .dim { color: var(--ap-muted); font-size: 12.5px; }
+  .hint { color: var(--ap-muted); font-size: 12px; font-style: italic; }
+
+  .expansion {
+    background: var(--ap-bg); border: 1px solid var(--ap-variant); border-radius: 12px;
+    padding: 12px 14px; margin: 8px 0 4px; font-size: 13px;
+  }
+  .expansion .sub { text-transform: uppercase; letter-spacing: .1em; font-size: 10px; color: var(--ap-muted); font-weight: 700; margin-bottom: 6px; }
+
+  .alert { border-radius: 10px; padding: 10px 14px; font-size: 13px; margin-top: 10px; display: flex; gap: 8px; }
+  .alert.info { background: #e8eef5; color: var(--ap-info); }
+  .alert.warning { background: #f5ecd9; color: var(--ap-warning); }
+  .alert.error { background: #f6e4e2; color: var(--ap-error); }
+
+  /* dialogs */
+  .scrim {
+    background: rgba(22, 27, 34, .45); padding: 26px;
+    display: flex; justify-content: center; align-items: flex-start;
+  }
+  .dialog {
+    background: var(--ap-surface); border-radius: 16px; width: 100%;
+    box-shadow: 0 18px 50px rgba(10, 8, 4, .35); padding: 18px 20px;
+  }
+  .dialog h3 { font-family: Georgia, serif; margin: 0 0 4px; font-size: 18px; color: var(--ap-primary); }
+  .dialog .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+  .f-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--ap-muted); font-weight: 700; margin: 12px 0 4px; }
+  .f-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .f-row .tfield { flex: 1 1 140px; min-width: 120px; }
+  .select { justify-content: space-between; color: var(--ap-ink); }
+  .select::after { content: "▾"; color: var(--ap-muted); font-size: 11px; }
+  .sect {
+    border: 1px solid var(--ap-variant); border-radius: 12px;
+    padding: 12px 14px; margin-top: 12px; background: var(--ap-bg);
+  }
+  .sect .sect-title { font-weight: 700; font-size: 13px; color: var(--ap-primary); display: flex; justify-content: space-between; align-items: center; }
+
+  .empty {
+    text-align: center; padding: 30px 20px; color: var(--ap-muted);
+  }
+  .empty .ico { font-size: 30px; opacity: .55; }
+  .empty .t { font-family: Georgia, serif; font-size: 16.5px; color: var(--ap-primary); margin-top: 6px; font-weight: 600; }
+  .empty .x { font-size: 13px; max-width: 46ch; margin: 6px auto 12px; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 760px) { .two-col { grid-template-columns: 1fr; } }
+  .frame-note {
+    font-size: 12px; color: var(--page-muted); margin-top: 8px;
+  }
+  .divider { border: none; border-top: 1px solid var(--page-line); margin: 48px 0 0; }
+  .pos { position: relative; }
+  .pos .m-abs { position: absolute; }
+</style>
+
+<div class="wrap">
+  <div class="eyebrow-page">Pathfinder Store · UI-эскизы к плану</div>
+  <h1>Каталог предметов — административный интерфейс</h1>
+  <p class="lead">Эскизы новых экранов ItemCatalog и точек интеграции с Commerce. Рамки повторяют светлую тему приложения «characterLedger» (Vuetify): плоские карточки с рамкой <code>surface-variant</code>, засечки в заголовках, оранжевый акцент цен. Нумерованные маркеры <span class="m-inline">n</span> привязаны к пояснениям под каждым эскизом.</p>
+
+  <!-- ============ 1. Основной экран, режим кампании ============ -->
+  <section class="sk">
+    <div class="sk-head">
+      <h2>1 · Экран каталога — режим кампании (GameMaster)</h2>
+      <span class="route">/campaigns/42/item-catalog · ItemCatalogAdminView.vue</span>
+    </div>
+    <div class="frame">
+      <div class="appbar"><span class="burger">☰</span><span class="title">Каталог предметов</span></div>
+      <div class="page">
+        <div class="page-head">
+          <div>
+            <div class="ap-eyebrow">Кампания · Abomination Vaults</div>
+            <div class="ap-h1">Каталог предметов</div>
+          </div>
+          <div class="row">
+            <button class="btn primary">+ Создать определение <span class="m-inline">1</span></button>
+            <button class="icon-btn">⟳</button>
+          </div>
+        </div>
+
+        <div class="vcard">
+          <div class="row">
+            <div class="tfield grow">🔍 Поиск по ключу или названию…</div>
+            <div class="toggle"><span class="on">Все</span><span>Глобальные</span><span>Кампания</span></div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <span class="dim">Статус:</span>
+            <span class="chip filter on">Все</span>
+            <span class="chip filter">Черновик</span>
+            <span class="chip filter">Опубликована</span>
+            <span class="chip filter">Отозвана</span>
+            <span class="m-inline">2</span>
+          </div>
+        </div>
+
+        <!-- Кампанийное определение -->
+        <div class="vcard">
+          <div class="row">
+            <div class="grow">
+              <div class="def-title">Клинок гробницы Арисс</div>
+              <div class="key">campaign.ariss-tomb-blade</div>
+            </div>
+            <span class="chip scope-c">Кампания</span>
+            <button class="btn outline disabled">+ Новая ревизия</button>
+            <span class="hint" id="draft-hint">уже есть черновик №2 <span class="m-inline">3</span></span>
+          </div>
+          <div style="margin-top:10px">
+            <div class="rev-row">
+              <span class="rev-no">№2</span><span class="grow">Клинок гробницы Арисс</span>
+              <span class="dim">Ур. 4</span><span class="money">6 зм</span>
+              <span class="chip st-draft">Черновик</span>
+              <button class="btn warn">Опубликовать</button>
+              <span class="m-inline">4</span>
+            </div>
+            <div class="rev-row">
+              <span class="rev-no">№1</span><span class="grow">Клинок гробницы</span>
+              <span class="dim">Ур. 3</span><span class="money">4 зм</span>
+              <span class="chip st-pub">Опубликована</span>
+              <button class="btn err">Отозвать</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Глобальное определение, раскрытая ревизия -->
+        <div class="vcard">
+          <div class="row">
+            <div class="grow">
+              <div class="def-title">Длинный меч</div>
+              <div class="key">equipment.longsword</div>
+            </div>
+            <span class="chip scope-g">Глобальный</span>
+            <span class="hint">только чтение — глобальный каталог ведёт администратор <span class="m-inline">5</span></span>
+          </div>
+          <div class="rev-row">
+            <span class="rev-no">№1</span><span class="grow">Длинный меч</span>
+            <span class="dim">Ур. 0 · Оружие · Обычная</span><span class="money">1 зм</span>
+            <span class="chip st-pub">Опубликована</span>
+            <span class="dim">▴ раскрыто</span>
+          </div>
+          <div class="expansion">
+            <div class="sub">Описание</div>
+            Универсальный клинок; урон 1d8 рубящий, одна рука. Масса 1.
+            <div class="sub" style="margin-top:10px">Конфигурации кампании <span class="m-inline">6</span></div>
+            <div class="row">
+              <span class="chip cfg">Средний · Обычная сталь · Стандарт</span>
+              <span class="chip cfg">Средний · Хладное железо · Стандарт · руна ударности</span>
+              <button class="btn secondary">+ Добавить конфигурацию</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <ul class="notes">
+      <li><span class="marker">1</span>Главное действие экрана. В режиме кампании создаёт определение со scope «Кампания»; ключ и правила — в диалоге (эскиз 3).</li>
+      <li><span class="marker">2</span>Поиск и scope уходят на сервер (<code>GET /api/item-catalog-admin/definitions</code>), статусные чипы уточняют список на клиенте (filters.ts).</li>
+      <li><span class="marker">3</span>Правило «disabled + пояснение»: кнопка неактивна с <code>aria-describedby</code>-подсказкой, а не спрятана.</li>
+      <li><span class="marker">4</span>Публикация — необратимое действие, открывает диалог подтверждения (эскиз 5): №2 заменит №1, та будет автоматически отозвана.</li>
+      <li><span class="marker">5</span>GM видит глобальные Published/Retired (черновики администратора скрыты), управлять ими не может.</li>
+      <li><span class="marker">6</span>Блок конфигураций — только у опубликованных ревизий в режиме кампании. Конфигурация — «билет» товара в форму «Добавить из каталога».</li>
+    </ul>
+  </section>
+
+  <!-- ============ 2. Global режим ============ -->
+  <section class="sk">
+    <div class="sk-head">
+      <h2>2 · Экран каталога — глобальный режим (системный администратор)</h2>
+      <span class="route">/item-catalog · тот же ItemCatalogAdminView.vue, режим по маршруту</span>
+    </div>
+    <div class="frame">
+      <div class="page">
+        <div class="page-head">
+          <div>
+            <div class="ap-eyebrow">Глобальный каталог <span class="m-inline">1</span></div>
+            <div class="ap-h1">Каталог предметов</div>
+          </div>
+          <button class="btn primary">+ Создать определение</button>
+        </div>
+        <div class="vcard">
+          <div class="row">
+            <div class="tfield grow">🔍 Поиск…</div>
+            <span class="chip filter on">Все</span>
+            <span class="chip filter">Черновик</span>
+            <span class="chip filter">Опубликована</span>
+            <span class="chip filter">Отозвана</span>
+          </div>
+        </div>
+        <div class="vcard">
+          <div class="row">
+            <div class="grow">
+              <div class="def-title">Зелье лечения</div>
+              <div class="key">item.healing-potion</div>
+            </div>
+            <span class="chip scope-g">Глобальный</span>
+            <button class="btn outline">+ Новая ревизия</button>
+          </div>
+          <div class="rev-row">
+            <span class="rev-no">№2</span><span class="grow">Зелье лечения (улучш.)</span>
+            <span class="dim">Ур. 3</span><span class="money">10 зм</span>
+            <span class="chip st-draft">Черновик</span>
+            <button class="btn warn">Опубликовать</button>
+            <span class="m-inline">2</span>
+          </div>
+          <div class="rev-row">
+            <span class="rev-no">№1</span><span class="grow">Зелье лечения</span>
+            <span class="dim">Ур. 1</span><span class="money">4 зм</span>
+            <span class="chip st-pub">Опубликована</span>
+            <button class="btn err">Отозвать</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <ul class="notes">
+      <li><span class="marker">1</span>Ссылка «Каталог предметов» в главном drawer видна только при <code>canManageGlobalCatalog</code> из нового capabilities-endpoint (в JWT ролей нет). Scope-переключатель скрыт — здесь всё глобальное; блока конфигураций нет (они принадлежат кампаниям).</li>
+      <li><span class="marker">2</span>Администратор видит глобальные черновики — в отличие от GM на эскизе 1.</li>
+    </ul>
+  </section>
+
+  <!-- ============ 3. Диалог создания определения ============ -->
+  <section class="sk">
+    <div class="sk-head">
+      <h2>3 · Диалог «Создать определение / новую ревизию»</h2>
+      <span class="route">DraftEditorDialog.vue · POST /api/item-catalog-admin/drafts | definitions/{id}/revisions</span>
+    </div>
+    <div class="frame">
+      <div class="scrim">
+        <div class="dialog" style="max-width:720px">
+          <h3>Новое определение предмета</h3>
+          <div class="dim">Кампания · Abomination Vaults — scope задаётся режимом экрана</div>
+          <div class="f-label">Ключ</div>
+          <div class="f-row">
+            <div class="tfield" style="flex:2">campaign.ariss-tomb-blade <span class="m-inline">1</span></div>
+          </div>
+          <div class="f-row">
+            <div style="flex:2"><div class="f-label">Название</div><div class="tfield">Клинок гробницы Арисс</div></div>
+            <div style="flex:1"><div class="f-label">Уровень</div><div class="tfield">4</div></div>
+            <div style="flex:1"><div class="f-label">Цена (зм)</div><div class="tfield">6</div></div>
+            <div style="flex:1"><div class="f-label">Масса</div><div class="tfield">1</div></div>
+          </div>
+          <div class="f-label">Описание</div>
+          <div class="tfield" style="height:52px; align-items:flex-start">Старинный клинок из гробницы…</div>
+          <div class="f-row">
+            <div style="flex:1"><div class="f-label">Категория</div><div class="tfield select">Оружие</div></div>
+            <div style="flex:1"><div class="f-label">Редкость</div><div class="tfield select">Необычная</div></div>
+          </div>
+
+          <div class="sect">
+            <div class="sect-title">Атаки <span class="m-inline">2</span><button class="btn text">+ Добавить атаку</button></div>
+            <div class="f-row" style="margin-top:8px">
+              <div class="tfield">Клинок</div>
+              <div class="tfield select" style="max-width:90px">1 × d8</div>
+              <div class="tfield select" style="max-width:120px">Рубящий</div>
+              <div class="tfield select" style="max-width:90px">1 рука</div>
+              <button class="icon-btn">✕</button>
+            </div>
+          </div>
+          <div class="sect">
+            <div class="sect-title">Снаряжение</div>
+            <div class="f-row" style="margin-top:8px">
+              <div class="tfield select">Держится в руках</div>
+              <div class="tfield" style="max-width:110px">Рук: 1</div>
+            </div>
+          </div>
+          <div class="sect">
+            <div class="sect-title" style="color:var(--ap-muted)">▸ Дополнительно: заряды, прочность <span class="m-inline">3</span></div>
+          </div>
+
+          <div class="actions">
+            <button class="btn text muted">Отмена</button>
+            <button class="btn primary">Создать черновик</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <ul class="notes">
+      <li><span class="marker">1</span>В режиме «новая ревизия» ключ заблокирован и форма предзаполнена последней ревизией; в режиме «новое определение» — пустая.</li>
+      <li><span class="marker">2</span>Прогрессивное раскрытие: видимые секции зависят от категории (карта в draftForm.ts). «Оружие» → атаки + снаряжение; «Броня» → поля брони; «Расходник» → способ употребления и т.д. Все 9 категорий покрыты.</li>
+      <li><span class="marker">3</span>Заряды и прочность — свёрнутый блок «Дополнительно», доступен любой категории.</li>
+    </ul>
+  </section>
+
+  <!-- ============ 4. Диалог конфигурации ============ -->
+  <section class="sk">
+    <div class="sk-head">
+      <h2>4 · Диалог «Добавить конфигурацию»</h2>
+      <span class="route">ConfigurationDialog.vue · POST /api/item-catalog-admin/campaigns/42/configurations</span>
+    </div>
+    <div class="frame">
+      <div class="scrim">
+        <div class="dialog" style="max-width:560px">
+          <h3>Конфигурация предмета</h3>
+          <div class="dim">Длинный меч · ревизия №1 (опубликована)</div>
+          <div class="f-row">
+            <div style="flex:1"><div class="f-label">Размер</div><div class="tfield select">Средний</div></div>
+            <div style="flex:1"><div class="f-label">Материал</div><div class="tfield select">Хладное железо</div></div>
+            <div style="flex:1"><div class="f-label">Категория материала</div><div class="tfield select">Стандарт</div></div>
+          </div>
+          <div class="sect">
+            <div class="sect-title">Постоянные улучшения <span class="m-inline">1</span><button class="btn text">+ Добавить</button></div>
+            <div class="f-row" style="margin-top:8px">
+              <div class="tfield" style="flex:1.4">rune.striking</div>
+              <div class="tfield select">Руна ударности</div>
+              <div class="tfield" style="max-width:80px">Ранг 1</div>
+              <div class="tfield select" style="max-width:110px">Публичное</div>
+              <button class="icon-btn">✕</button>
+            </div>
+          </div>
+          <div class="alert warning">⚠ Такая конфигурация уже существует в кампании — она будет использована повторно, дубликат не создаётся. <span class="m-inline">2</span></div>
+          <div class="actions">
+            <button class="btn text muted">Отмена</button>
+            <button class="btn secondary">Создать конфигурацию</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <ul class="notes">
+      <li><span class="marker">1</span>До 16 улучшений, коды уникальны; видимость «Скрытое» — для тайных свойств (руны, эффекты). Валидация в options.ts до отправки.</li>
+      <li><span class="marker">2</span>Дедупликация по <code>ConfigurationKey</code>: совпадение подсвечивается заранее; при ответе сервера <code>wasCreated=false</code> — info-снекбар «уже существует» вместо «создана». Повтор команды никогда не плодит дубликаты.</li>
+    </ul>
+  </section>
+
+  <!-- ============ 5. Подтверждения ============ -->
+  <section class="sk">
+    <div class="sk-head">
+      <h2>5 · Подтверждение необратимых действий</h2>
+      <span class="route">инлайн в ItemCatalogAdminView.vue · паттерн bf54312</span>
+    </div>
+    <div class="two-col">
+      <div class="frame">
+        <div class="scrim">
+          <div class="dialog" style="max-width:430px">
+            <h3>Опубликовать ревизию №2?</h3>
+            <p style="font-size:13.5px; margin:8px 0 0">Ревизия №2 станет публичной: её можно будет выставлять в магазинах и создавать конфигурации.</p>
+            <div class="alert warning">⚠ Текущая опубликованная ревизия №1 будет автоматически отозвана. Вернуть её в оборот будет нельзя. <span class="m-inline">1</span></div>
+            <div class="actions">
+              <button class="btn text muted">Отмена</button>
+              <button class="btn warn">Опубликовать</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="frame">
+        <div class="scrim">
+          <div class="dialog" style="max-width:430px">
+            <h3>Отозвать ревизию №1?</h3>
+            <p style="font-size:13.5px; margin:8px 0 0">Предмет исчезнет из каталога для новых предложений магазинов.</p>
+            <div class="alert error">⛔ Действие безвозвратно. Существующие конфигурации и уже выданные предметы не удаляются. <span class="m-inline">2</span></div>
+            <div class="actions">
+              <button class="btn text muted">Отмена</button>
+              <button class="btn err">Отозвать</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <ul class="notes">
+      <li><span class="marker">1</span>Формулировка про авто-отзыв обязательна — это скрытое последствие доменного правила «максимум одна опубликованная ревизия». Если опубликованной ревизии нет, показывается короткий вариант без блока.</li>
+      <li><span class="marker">2</span>Отзыв — терминальное состояние; текст явно отделяет каталог («новые предложения») от уже существующих предметов игроков.</li>
+    </ul>
+  </section>
+
+  <!-- ============ 6. Empty states + Commerce ============ -->
+  <section class="sk">
+    <div class="sk-head">
+      <h2>6 · Пустые состояния и связка с Commerce</h2>
+      <span class="route">CampaignCommerceAdminView.vue · диалог «Добавить из каталога»</span>
+    </div>
+    <div class="two-col">
+      <div>
+        <div class="frame">
+          <div class="scrim">
+            <div class="dialog" style="max-width:470px">
+              <h3>Добавить из каталога</h3>
+              <div class="tfield" style="margin-top:10px">🔍 Поиск по каталогу…</div>
+              <div class="empty">
+                <div class="ico">📕</div>
+                <div class="t">В каталоге нет опубликованных предметов</div>
+                <div class="x">Создайте определение предмета и опубликуйте ревизию — после этого товар можно будет выставить в магазине.</div>
+                <button class="btn primary">Перейти в каталог кампании <span class="m-inline">1</span></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="frame-note">Причина «noPublishedRevisions»: поиск не вернул ни одной ревизии.</div>
+      </div>
+      <div>
+        <div class="frame">
+          <div class="scrim">
+            <div class="dialog" style="max-width:470px">
+              <h3>Добавить из каталога</h3>
+              <div class="tfield" style="margin-top:10px">🔍 длинный меч</div>
+              <div class="empty">
+                <div class="ico">⚙️</div>
+                <div class="t">У найденных предметов нет конфигураций</div>
+                <div class="x">Ревизия «Длинный меч» опубликована, но в этой кампании для неё не создано ни одной конфигурации.</div>
+                <button class="btn secondary">Создать конфигурацию <span class="m-inline">2</span></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="frame-note">Причина «noConfigurations»: ревизии есть, options-список пуст.</div>
+      </div>
+    </div>
+
+    <div class="frame" style="margin-top:18px">
+      <div class="scrim">
+        <div class="dialog" style="max-width:520px">
+          <h3>Добавить из каталога</h3>
+          <div class="tfield" style="margin-top:10px">🔍 длинный меч</div>
+          <div class="f-label">Товар</div>
+          <div class="tfield select">Длинный меч · Средний · Хладное железо · руна ударности <span class="m-inline">3</span></div>
+          <div class="f-row">
+            <div style="flex:1"><div class="f-label">Количество</div><div class="tfield">3</div></div>
+          </div>
+          <div class="alert info">ℹ Цена по каталогу: <b>&nbsp;1 зм 5 см&nbsp;</b> за штуку (наценка лавки 150%).</div>
+          <div class="actions">
+            <button class="btn text muted">Отмена</button>
+            <button class="btn primary">Создать предложение</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <ul class="notes">
+      <li><span class="marker">1</span>CTA ведёт на <code>/campaigns/42/item-catalog?action=create-draft</code> — экран открывается сразу с диалогом создания.</li>
+      <li><span class="marker">2</span>CTA ведёт на <code>/campaigns/42/item-catalog?action=configure&status=Published</code> — чип «Опубликована» уже выбран. Создание конфигурации внутрь Commerce-диалога не встраивается.</li>
+      <li><span class="marker">3</span>Happy path после создания конфигурации: она сразу появляется в списке (включая legacy-конфигурации после согласования правил видимости), метки локализованы вместо сырых кодов «ColdIron».</li>
+    </ul>
+  </section>
+
+  <!-- ============ 7. Превью пополнения ============ -->
+  <section class="sk">
+    <div class="sk-head">
+      <h2>7 · Превью генерации ассортимента — пустой пул кандидатов</h2>
+      <span class="route">будущий UI поверх API Priority 16 · POST /api/commerce-admin/…/restock-runs</span>
+    </div>
+    <div class="frame">
+      <div class="scrim">
+        <div class="dialog" style="max-width:640px">
+          <h3>Пополнение «Лавка Врин» — предварительный просмотр</h3>
+          <div class="row" style="margin-top:6px">
+            <span class="chip cfg">Правило v3</span>
+            <span class="chip cfg">Seed 8215</span>
+            <span class="chip cfg">Бюджет 40 зм</span>
+            <span class="chip cfg">Ур. ≤ 4 · Обычные и необычные</span>
+          </div>
+          <div class="empty">
+            <div class="ico">🎲</div>
+            <div class="t">Генератору не из чего выбирать</div>
+            <div class="x">В кампании нет ни одной конфигурации опубликованных предметов, подходящей под ограничения правила. Создайте конфигурации в каталоге — они автоматически станут кандидатами пополнения. <span class="m-inline">1</span></div>
+            <button class="btn secondary">Открыть каталог кампании <span class="m-inline">2</span></button>
+          </div>
+          <div class="actions">
+            <button class="btn text muted">Отклонить прогон</button>
+            <button class="btn primary disabled">Подтвердить</button>
+            <span class="hint" style="align-self:center">нечего публиковать <span class="m-inline">3</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <ul class="notes">
+      <li><span class="marker">1</span>Различаем причины: «нет кандидатов вообще» (пустой каталог/нет конфигураций — этот эскиз) и «кандидаты есть, но правило всё отфильтровало» (другой текст: «смягчите ограничения по уровню/редкости/бюджету»). Причину отдаёт reason-машина, как в emptyState.ts.</li>
+      <li><span class="marker">2</span>Тот же deep-link, что и в эскизе 6: <code>/campaigns/42/item-catalog?action=configure&status=Published</code>. Пул кандидатов генератора и список формы «Добавить из каталога» после согласования правил видимости — один и тот же набор.</li>
+      <li><span class="marker">3</span>«Подтвердить» неактивна с пояснением — по общему правилу «disabled + причина». Пустой прогон можно только отклонить.</li>
+    </ul>
+    <p class="frame-note" style="max-width:78ch">Примечание: интерфейс пополнения ещё не реализован (Priority 16 поставил только backend: правила, прогоны с seed, превью/подтверждение через API). Эскиз фиксирует требование к его будущему пустому состоянию, чтобы связка «каталог → генерация» не потерялась при реализации restock-UI.</p>
+  </section>
+
+  <hr class="divider">
+  <p class="lead" style="margin-top:16px; font-size:13px">Соответствие плану: экраны 1–2 — read API и capabilities (§4–5 backend), диалог 3 — drafts/revisions (§3), диалог 4 — команда конфигурации (§2), блоки 6–7 — интеграция с Commerce, генерацией ассортимента и согласование правил видимости (§1). Рамки эскизов намеренно остаются светлыми в обеих темах страницы — приложение односхемное.</p>
+</div>

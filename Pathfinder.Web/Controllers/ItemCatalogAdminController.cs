@@ -10,6 +10,7 @@ using Pathfinder.ItemCatalog.Domain.Exceptions;
 using Pathfinder.ItemCatalog.Domain.Items;
 using Pathfinder.ItemCatalog.Domain.Rules;
 using Pathfinder.Web.Controllers.Base;
+using Pathfinder.Web.Integration;
 
 namespace Pathfinder.Web.Controllers;
 
@@ -17,10 +18,74 @@ namespace Pathfinder.Web.Controllers;
 public sealed class ItemCatalogAdminController : AuthorizedController
 {
     private readonly ItemCatalogAdministrationService _administrationService;
+    private readonly ItemCatalogAdministrationProjectionService _projectionService;
+    private readonly IItemCatalogAdministrativeAccess _administrativeAccess;
 
-    public ItemCatalogAdminController( ItemCatalogAdministrationService administrationService )
+    public ItemCatalogAdminController(
+        ItemCatalogAdministrationService administrationService,
+        ItemCatalogAdministrationProjectionService projectionService,
+        IItemCatalogAdministrativeAccess administrativeAccess )
     {
         _administrationService = administrationService;
+        _projectionService = projectionService;
+        _administrativeAccess = administrativeAccess;
+    }
+
+    [HttpGet( "definitions" )]
+    public async Task<ActionResult<ItemDefinitionAdministrationListDto>> SearchDefinitions(
+        [FromQuery] ItemCatalogScopeFilter scope,
+        [FromQuery] int? campaignId,
+        [FromQuery] ItemRevisionStatus? status,
+        [FromQuery] string? search,
+        [FromQuery] int skip,
+        [FromQuery] int take,
+        CancellationToken cancellationToken )
+    {
+        try
+        {
+            ItemDefinitionAdministrationListDto result = await _projectionService.SearchDefinitionsAsync(
+                new ItemCatalogAdministrationSearchRequest(
+                    scope,
+                    campaignId,
+                    status,
+                    search,
+                    skip,
+                    take,
+                    CurrentUserId(),
+                    CurrentUserName() ),
+                cancellationToken );
+            return Ok( result );
+        }
+        catch ( ItemCatalogAccessDeniedException )
+        {
+            return Forbid();
+        }
+        catch ( Exception exception ) when (
+            exception is ItemCatalogException ||
+            exception is ItemCatalogApplicationException )
+        {
+            return BadRequest( MapError( exception.Message ) );
+        }
+    }
+
+    [HttpGet( "capabilities" )]
+    public async Task<ActionResult<ItemCatalogCapabilitiesDto>> GetCapabilities(
+        [FromQuery] int? campaignId,
+        CancellationToken cancellationToken )
+    {
+        bool canManageGlobal = await _administrativeAccess.CanManageGlobalCatalogAsync(
+            CurrentUserName(),
+            cancellationToken );
+        bool canManageCampaign = ( campaignId is int requestedCampaignId ) &&
+            ( requestedCampaignId > 0 ) &&
+            await _administrativeAccess.CanManageCampaignCatalogAsync(
+                CurrentUserId(),
+                requestedCampaignId,
+                cancellationToken );
+        return Ok( new ItemCatalogCapabilitiesDto(
+            canManageGlobal,
+            campaignId,
+            canManageCampaign ) );
     }
 
     [HttpPost( "drafts" )]
@@ -44,6 +109,42 @@ public sealed class ItemCatalogAdminController : AuthorizedController
                 CurrentUserId(),
                 CurrentUserName() );
             ItemRevisionDto result = await _administrationService.CreateDraftAsync(
+                command,
+                cancellationToken );
+            return Ok( result );
+        }
+        catch ( ItemCatalogAccessDeniedException )
+        {
+            return Forbid();
+        }
+        catch ( Exception exception ) when (
+            exception is ItemCatalogException ||
+            exception is ItemCatalogApplicationException )
+        {
+            return BadRequest( MapError( exception.Message ) );
+        }
+    }
+
+    [HttpPost( "definitions/{itemDefinitionId:int}/revisions" )]
+    public async Task<ActionResult<ItemRevisionDto>> CreateRevisionDraft(
+        int itemDefinitionId,
+        [FromBody] CreateItemRevisionDraftApiRequest request,
+        CancellationToken cancellationToken )
+    {
+        try
+        {
+            ItemRevisionRules rules = request.Rules.ToDomain();
+            CreateItemRevisionDraftRequest command = new CreateItemRevisionDraftRequest(
+                itemDefinitionId,
+                request.Name,
+                request.Description,
+                request.Level,
+                request.PriceInCopperPieces,
+                request.Bulk,
+                rules,
+                CurrentUserId(),
+                CurrentUserName() );
+            ItemRevisionDto result = await _administrationService.CreateDraftForDefinitionAsync(
                 command,
                 cancellationToken );
             return Ok( result );
@@ -124,6 +225,19 @@ public sealed class ItemCatalogAdminController : AuthorizedController
     private string CurrentUserName() => User.Identity?.Name
         ?? throw new InvalidOperationException( "Current user name claim is missing." );
 }
+
+public sealed record ItemCatalogCapabilitiesDto(
+    bool CanManageGlobalCatalog,
+    int? CampaignId,
+    bool CanManageCampaignCatalog );
+
+public sealed record CreateItemRevisionDraftApiRequest(
+    string Name,
+    string Description,
+    int Level,
+    int PriceInCopperPieces,
+    decimal Bulk,
+    ItemRevisionRulesApiRequest Rules );
 
 public sealed record CreateItemDraftApiRequest(
     ItemCatalogScope Scope,

@@ -258,14 +258,17 @@ public sealed class CompletedCharacterInventoryMigrationService
         }
 
         ItemConfiguration? configuration = await _itemCatalogDbContext.ItemConfigurations
-            .SingleOrDefaultAsync(
-                item =>
-                    item.ItemRevisionId == revision.Id &&
-                    item.Size == ItemSize.Medium &&
-                    item.MaterialType == ItemMaterialType.Standard &&
-                    item.MaterialGrade == ItemMaterialGrade.Standard &&
-                    !item.PermanentUpgrades.Any(),
-                cancellationToken );
+            .Where( item =>
+                item.ItemRevisionId == revision.Id &&
+                ( item.CampaignId == null ||
+                  item.CampaignId == campaignId ) &&
+                item.Size == ItemSize.Medium &&
+                item.MaterialType == ItemMaterialType.Standard &&
+                item.MaterialGrade == ItemMaterialGrade.Standard &&
+                !item.PermanentUpgrades.Any() )
+            .OrderByDescending( item => item.CampaignId != null )
+            .ThenBy( item => item.Id )
+            .FirstOrDefaultAsync( cancellationToken );
         if ( configuration is not null )
         {
             return configuration.Id;

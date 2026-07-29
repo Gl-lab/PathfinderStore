@@ -79,6 +79,18 @@ const routes: RouteRecordRaw[] = [
     meta: { title: 'routes.commerceAdmin', requiresAuth: true },
   },
   {
+    path: '/campaigns/:campaignId(\\d+)/item-catalog',
+    name: 'campaign-item-catalog',
+    component: () => import('@/views/ItemCatalogAdminView.vue'),
+    meta: { title: 'routes.itemCatalog', requiresAuth: true },
+  },
+  {
+    path: '/item-catalog',
+    name: 'global-item-catalog',
+    component: () => import('@/views/ItemCatalogAdminView.vue'),
+    meta: { title: 'routes.itemCatalogGlobal', requiresAuth: true },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
     component: NotFoundView,

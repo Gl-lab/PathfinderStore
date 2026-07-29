@@ -182,6 +182,101 @@ public sealed class ItemCatalogAdministrationServiceTests
         Assert.Single( dbContext.ItemDefinitions );
     }
 
+    [Fact]
+    public async Task CreateDraftForDefinitionAppendsNextRevisionNumber()
+    {
+        await using ItemCatalogDbContext dbContext = CreateContext();
+        FakeAdministrativeAccess access = new FakeAdministrativeAccess
+        {
+            CanManageGlobal = true
+        };
+        ItemCatalogAdministrationService service = CreateService( dbContext, access );
+        ItemRevisionDto first = await service.CreateDraftAsync(
+            CreateRequest( ItemCatalogScope.Global, null, 7, "admin" ),
+            CancellationToken.None );
+
+        ItemRevisionDto second = await service.CreateDraftForDefinitionAsync(
+            CreateRevisionRequest( first.ItemDefinitionId, 7, "admin" ),
+            CancellationToken.None );
+
+        Assert.Equal( first.ItemDefinitionId, second.ItemDefinitionId );
+        Assert.Equal( 2, second.RevisionNumber );
+        Assert.Equal( ItemRevisionStatus.Draft, second.Status );
+        Assert.Equal( "Test kit v2", second.Name );
+        Assert.Equal(
+            2,
+            Assert.Single( dbContext.ItemDefinitions ).Revisions.Count );
+    }
+
+    [Fact]
+    public async Task CreateDraftForDefinitionDeniedForForeignCampaignGameMaster()
+    {
+        await using ItemCatalogDbContext dbContext = CreateContext();
+        FakeAdministrativeAccess ownerAccess = new FakeAdministrativeAccess
+        {
+            AllowedCampaignId = 42,
+            AllowedUserId = 7
+        };
+        ItemRevisionDto draft = await CreateService( dbContext, ownerAccess )
+            .CreateDraftAsync(
+                CreateRequest( ItemCatalogScope.Campaign, 42, 7, "owner-gm" ),
+                CancellationToken.None );
+        FakeAdministrativeAccess otherAccess = new FakeAdministrativeAccess
+        {
+            AllowedCampaignId = 43,
+            AllowedUserId = 8
+        };
+
+        await Assert.ThrowsAsync<ItemCatalogAccessDeniedException>( () =>
+            CreateService( dbContext, otherAccess )
+                .CreateDraftForDefinitionAsync(
+                    CreateRevisionRequest( draft.ItemDefinitionId, 8, "other-gm" ),
+                    CancellationToken.None ) );
+
+        Assert.Single(
+            Assert.Single( dbContext.ItemDefinitions ).Revisions );
+    }
+
+    [Fact]
+    public async Task CreateDraftForDefinitionFailsWhenDefinitionMissing()
+    {
+        await using ItemCatalogDbContext dbContext = CreateContext();
+        ItemCatalogAdministrationService service = CreateService(
+            dbContext,
+            new FakeAdministrativeAccess
+            {
+                CanManageGlobal = true
+            } );
+
+        ItemCatalogApplicationException exception =
+            await Assert.ThrowsAsync<ItemCatalogApplicationException>( () =>
+                service.CreateDraftForDefinitionAsync(
+                    CreateRevisionRequest( 999, 7, "admin" ),
+                    CancellationToken.None ) );
+
+        Assert.Contains( "was not found", exception.Message );
+    }
+
+    private static CreateItemRevisionDraftRequest CreateRevisionRequest(
+        int itemDefinitionId,
+        int actingUserId,
+        string actingUserName )
+    {
+        ItemRevisionRules rules = ItemRevisionRules.Create(
+            ItemCategory.OtherEquipment,
+            equipment: EquipmentComponent.Create( EquipmentUsage.Held, 1 ) );
+        return new CreateItemRevisionDraftRequest(
+            itemDefinitionId,
+            "Test kit v2",
+            "Improved typed test equipment.",
+            2,
+            20,
+            1,
+            rules,
+            actingUserId,
+            actingUserName );
+    }
+
     private static ItemCatalogAdministrationService CreateService(
         ItemCatalogDbContext dbContext,
         FakeAdministrativeAccess access )

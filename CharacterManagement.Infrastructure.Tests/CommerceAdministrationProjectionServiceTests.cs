@@ -181,6 +181,74 @@ public sealed class CommerceAdministrationProjectionServiceTests
     }
 
     [Fact]
+    public async Task SearchPublishedRevisionsIncludesLegacyAndExcludesForeignConfigurations()
+    {
+        await using CampaignManagementDbContext campaignDbContext = CreateCampaignContext();
+        await using CharacterManagementDbContext characterDbContext =
+            TestCharacterManagementDbContextFactory.Create();
+        await using CommerceDbContext commerceDbContext = CreateCommerceContext();
+        await using InventoryDbContext inventoryDbContext = CreateInventoryContext();
+        await using ItemCatalogDbContext catalogDbContext = CreateCatalogContext();
+        Campaign campaign = Campaign.Create( "Abomination Vaults", 42, _now );
+        campaignDbContext.Campaigns.Add( campaign );
+        await campaignDbContext.SaveChangesAsync();
+        ItemConfiguration ownConfiguration = await AddPublishedItemAsync(
+            catalogDbContext,
+            campaign.Id,
+            true,
+            "item.healing-potion",
+            "Healing Potion" );
+        ItemConfiguration foreignConfiguration = ItemConfiguration.Create(
+            campaign.Id + 1,
+            ownConfiguration.ItemRevisionId,
+            ItemSize.Large,
+            ItemMaterialType.Standard,
+            ItemMaterialGrade.Standard,
+            [],
+            _now );
+        ItemConfiguration legacyConfiguration = ItemConfiguration.Create(
+            campaign.Id + 2,
+            ownConfiguration.ItemRevisionId,
+            ItemSize.Small,
+            ItemMaterialType.Standard,
+            ItemMaterialGrade.Standard,
+            [],
+            _now );
+        catalogDbContext.ItemConfigurations.AddRange(
+            foreignConfiguration,
+            legacyConfiguration );
+        await catalogDbContext.SaveChangesAsync();
+        catalogDbContext.Entry( legacyConfiguration )
+            .Property( item => item.CampaignId )
+            .CurrentValue = null;
+        await catalogDbContext.SaveChangesAsync();
+        CommerceAdministrationProjectionService service = CreateService(
+            campaignDbContext,
+            characterDbContext,
+            commerceDbContext,
+            inventoryDbContext,
+            catalogDbContext,
+            true );
+
+        IReadOnlyCollection<PublishedItemRevisionAdministrationDto> revisions =
+            await service.SearchPublishedRevisionsAsync(
+                campaign.Id,
+                null,
+                ItemCatalogScopeFilter.All,
+                42,
+                CancellationToken.None );
+
+        PublishedItemRevisionAdministrationDto revision = Assert.Single( revisions );
+        int[] configurationIds = revision.Configurations
+            .Select( configuration => configuration.ItemConfigurationId )
+            .OrderBy( id => id )
+            .ToArray();
+        Assert.Contains( ownConfiguration.Id, configurationIds );
+        Assert.Contains( legacyConfiguration.Id, configurationIds );
+        Assert.DoesNotContain( foreignConfiguration.Id, configurationIds );
+    }
+
+    [Fact]
     public async Task AdministrationProjectionsRejectNonGameMaster()
     {
         await using CampaignManagementDbContext campaignDbContext = CreateCampaignContext();

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/features/auth/store'
 import { setLocale, type SupportedLocale } from '@/i18n'
@@ -12,6 +12,18 @@ const pageTitle = computed(() => t((route.meta.title as string) ?? 'app.productN
 const auth = useAuthStore()
 const { locale, t } = useI18n()
 const locales: SupportedLocale[] = ['ru', 'en']
+
+watch(
+  () => auth.isAuthenticated,
+  (isAuthenticated) => {
+    if (isAuthenticated) {
+      auth.loadCapabilities().catch(() => {
+        /* пункт меню каталога просто не появится; экран каталога покажет ошибку с retry */
+      })
+    }
+  },
+  { immediate: true },
+)
 
 function changeLocale(value: SupportedLocale): void {
   setLocale(value)
@@ -49,6 +61,12 @@ function changeLocale(value: SupportedLocale): void {
           to="/campaigns"
           prepend-icon="mdi-map-marker-path"
           :title="t('app.navigation.campaigns')"
+        />
+        <v-list-item
+          v-if="auth.isAuthenticated && auth.capabilities?.canManageGlobalCatalog"
+          to="/item-catalog"
+          prepend-icon="mdi-book-cog-outline"
+          :title="t('app.navigation.itemCatalog')"
         />
       </v-list>
 

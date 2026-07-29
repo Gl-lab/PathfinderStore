@@ -32,6 +32,8 @@ import {
   containerTitle,
   signedAdjustment,
 } from '@/features/commerce/admin'
+import { commerceCatalogEmptyReason } from '@/features/item-catalog/emptyState'
+import { configurationSummary } from '@/features/item-catalog/options'
 import {
   getSettlements,
   getShopOffers,
@@ -128,7 +130,16 @@ const shopSelectItems = computed(() =>
     title: `${shop.name} · ${settlementNameFor(shop.settlementId)}`,
   })),
 )
-const configurationOptions = computed(() => catalogConfigurationOptions(revisions.value))
+const configurationOptions = computed(() =>
+  catalogConfigurationOptions(revisions.value, (configuration) =>
+    configurationSummary(configuration, (group, code) => t(`itemCatalogUi.${group}.${code}`)),
+  ),
+)
+const catalogEmptyReason = computed(() =>
+  isCatalogSearching.value || configurationOptions.value.length > 0
+    ? null
+    : commerceCatalogEmptyReason(revisions.value, catalogSearch.value),
+)
 const selectedRevision = computed(() =>
   revisions.value.find((revision) =>
     revision.configurations.some(
@@ -928,22 +939,68 @@ onMounted(() => {
             @click:append-inner="searchCatalog"
             @keyup.enter="searchCatalog"
           />
-          <v-select
-            v-model="catalogConfigurationId"
-            item-title="title"
-            item-value="value"
-            :items="configurationOptions"
-            :label="t('commerceAdmin.shop.catalogItem')"
+          <v-empty-state
+            v-if="catalogEmptyReason === 'noPublishedRevisions'"
+            icon="mdi-book-off-outline"
+            :text="t('commerceAdmin.shop.catalogNoRevisionsText')"
+            :title="t('commerceAdmin.shop.catalogNoRevisionsTitle')"
+          >
+            <template #actions>
+              <v-btn
+                color="primary"
+                :to="{
+                  name: 'campaign-item-catalog',
+                  params: { campaignId },
+                  query: { action: 'create-draft' },
+                }"
+              >
+                {{ t('commerceAdmin.shop.catalogNoRevisionsCta') }}
+              </v-btn>
+            </template>
+          </v-empty-state>
+          <v-empty-state
+            v-else-if="catalogEmptyReason === 'noMatches'"
+            icon="mdi-magnify-close"
+            :text="t('commerceAdmin.shop.catalogNoMatchesText')"
+            :title="t('commerceAdmin.shop.catalogNoMatchesTitle')"
           />
-          <v-number-input
-            v-model="catalogQuantity"
-            :label="t('commerceAdmin.shop.offerQuantity')"
-            :min="1"
-          />
-          <v-alert v-if="selectedRevision" type="info" variant="tonal">
-            {{ t('commerceAdmin.shop.resultingPrice') }}
-            <MoneyText :copper="selectedCatalogPrice" />
-          </v-alert>
+          <v-empty-state
+            v-else-if="catalogEmptyReason === 'noConfigurations'"
+            icon="mdi-tune-variant"
+            :text="t('commerceAdmin.shop.catalogNoConfigurationsText')"
+            :title="t('commerceAdmin.shop.catalogNoConfigurationsTitle')"
+          >
+            <template #actions>
+              <v-btn
+                color="secondary"
+                :to="{
+                  name: 'campaign-item-catalog',
+                  params: { campaignId },
+                  query: { action: 'configure', status: 'Published' },
+                }"
+              >
+                {{ t('commerceAdmin.shop.catalogNoConfigurationsCta') }}
+              </v-btn>
+            </template>
+          </v-empty-state>
+          <template v-else>
+            <v-select
+              v-model="catalogConfigurationId"
+              item-title="title"
+              item-value="value"
+              :items="configurationOptions"
+              :label="t('commerceAdmin.shop.catalogItem')"
+            />
+            <v-number-input
+              v-model="catalogQuantity"
+              :label="t('commerceAdmin.shop.offerQuantity')"
+              :min="1"
+            />
+            <v-alert v-if="selectedRevision" type="info" variant="tonal">
+              {{ t('commerceAdmin.shop.resultingPrice') }}
+              <MoneyText :copper="selectedCatalogPrice" />
+            </v-alert>
+          </template>
         </v-card-text>
         <v-card-actions>
           <v-spacer />

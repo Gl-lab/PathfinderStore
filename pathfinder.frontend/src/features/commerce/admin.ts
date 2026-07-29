@@ -5,13 +5,21 @@ export interface CatalogConfigurationOption {
   title: string
 }
 
+export type CatalogConfigurationFormatter = (
+  configuration: PublishedItemRevision['configurations'][number],
+) => string
+
+const defaultConfigurationFormatter: CatalogConfigurationFormatter = (configuration) =>
+  `${configuration.size} · ${configuration.materialType}`
+
 export function catalogConfigurationOptions(
   revisions: PublishedItemRevision[],
+  format: CatalogConfigurationFormatter = defaultConfigurationFormatter,
 ): CatalogConfigurationOption[] {
   return revisions.flatMap((revision) =>
     revision.configurations.map((configuration) => ({
       value: configuration.itemConfigurationId,
-      title: `${revision.name} · ${configuration.size} · ${configuration.materialType}`,
+      title: `${revision.name} · ${format(configuration)}`,
     })),
   )
 }
