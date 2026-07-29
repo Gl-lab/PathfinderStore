@@ -247,6 +247,7 @@ public sealed class CommerceAdministrationProjectionService
             .ToArray();
         ItemConfiguration[] configurations = await _itemCatalogDbContext.ItemConfigurations
             .AsNoTracking()
+            .Include( configuration => configuration.PermanentUpgrades )
             .Where( configuration =>
                 ( configuration.CampaignId == null ||
                   configuration.CampaignId == campaignId ) &&
@@ -278,9 +279,18 @@ public sealed class CommerceAdministrationProjectionService
                             .Select( configuration =>
                                 new ItemConfigurationAdministrationDto(
                                     configuration.Id,
+                                    configuration.CampaignId,
                                     configuration.Size,
                                     configuration.MaterialType,
-                                    configuration.MaterialGrade ) )
+                                    configuration.MaterialGrade,
+                                    configuration.PermanentUpgrades
+                                        .Select( upgrade =>
+                                            new PermanentUpgradeAdministrationDto(
+                                                upgrade.Code,
+                                                upgrade.Kind,
+                                                upgrade.Rank,
+                                                upgrade.Visibility ) )
+                                        .ToArray() ) )
                             .ToArray() ) ) )
             .OrderBy( revision => revision.Name )
             .ThenBy( revision => revision.Key )
@@ -437,9 +447,17 @@ public sealed record PublishedItemRevisionAdministrationDto(
 
 public sealed record ItemConfigurationAdministrationDto(
     int ItemConfigurationId,
+    int? CampaignId,
     ItemSize Size,
     ItemMaterialType MaterialType,
-    ItemMaterialGrade MaterialGrade );
+    ItemMaterialGrade MaterialGrade,
+    IReadOnlyCollection<PermanentUpgradeAdministrationDto> PermanentUpgrades );
+
+public sealed record PermanentUpgradeAdministrationDto(
+    string Code,
+    PermanentUpgradeKind Kind,
+    int Rank,
+    PermanentUpgradeVisibility Visibility );
 
 public sealed class CommerceAdministrationProjectionNotFoundException : Exception
 {

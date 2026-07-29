@@ -36,9 +36,16 @@ export interface PublishedItemRevision {
   rarity: string
   configurations: {
     itemConfigurationId: number
+    campaignId: number | null
     size: string
     materialType: string
     materialGrade: string
+    permanentUpgrades: {
+      code: string
+      kind: string
+      rank: number
+      visibility: string
+    }[]
   }[]
 }
 

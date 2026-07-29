@@ -42,9 +42,14 @@ const shape = computed<ConfigurationShape>(() => ({
 }))
 const validationKeys = computed(() => upgradeValidationErrors(upgrades.value))
 const isDuplicate = computed(() =>
-  isDuplicateConfiguration(props.existingConfigurations, shape.value),
+  isDuplicateConfiguration(
+    props.existingConfigurations.filter((configuration) => configuration.campaignId !== null),
+    shape.value,
+  ),
 )
-const canSubmit = computed(() => validationKeys.value.length === 0 && !props.isSaving)
+const canSubmit = computed(
+  () => validationKeys.value.length === 0 && !isDuplicate.value && !props.isSaving,
+)
 
 const sizeOptions = computed(() =>
   enumOptions(['Tiny', 'Small', 'Medium', 'Large', 'Huge', 'Gargantuan'] as const, (value) =>
@@ -178,7 +183,12 @@ function submit(): void {
             <li v-for="key in validationKeys" :key="key">{{ t(key) }}</li>
           </ul>
         </v-alert>
-        <v-alert v-if="isDuplicate" type="info" variant="tonal">
+        <v-alert
+          v-if="isDuplicate"
+          id="configuration-duplicate-hint"
+          type="warning"
+          variant="tonal"
+        >
           {{ t('itemCatalogUi.configuration.duplicateHint') }}
         </v-alert>
       </v-card-text>
@@ -187,7 +197,13 @@ function submit(): void {
         <v-btn :disabled="isSaving" variant="text" @click="open = false">
           {{ t('common.cancel') }}
         </v-btn>
-        <v-btn color="secondary" :disabled="!canSubmit" :loading="isSaving" @click="submit">
+        <v-btn
+          :aria-describedby="isDuplicate ? 'configuration-duplicate-hint' : undefined"
+          color="secondary"
+          :disabled="!canSubmit"
+          :loading="isSaving"
+          @click="submit"
+        >
           {{ t('common.create') }}
         </v-btn>
       </v-card-actions>

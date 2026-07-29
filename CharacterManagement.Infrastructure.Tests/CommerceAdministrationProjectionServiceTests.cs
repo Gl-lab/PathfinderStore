@@ -214,9 +214,24 @@ public sealed class CommerceAdministrationProjectionServiceTests
             ItemMaterialGrade.Standard,
             [],
             _now );
+        ItemConfiguration upgradedConfiguration = ItemConfiguration.Create(
+            campaign.Id,
+            ownConfiguration.ItemRevisionId,
+            ItemSize.Medium,
+            ItemMaterialType.Standard,
+            ItemMaterialGrade.Standard,
+            [
+                PermanentUpgrade.Create(
+                    "rune.striking",
+                    PermanentUpgradeKind.StrikingRune,
+                    1,
+                    PermanentUpgradeVisibility.Hidden ),
+            ],
+            _now );
         catalogDbContext.ItemConfigurations.AddRange(
             foreignConfiguration,
-            legacyConfiguration );
+            legacyConfiguration,
+            upgradedConfiguration );
         await catalogDbContext.SaveChangesAsync();
         catalogDbContext.Entry( legacyConfiguration )
             .Property( item => item.CampaignId )
@@ -245,7 +260,19 @@ public sealed class CommerceAdministrationProjectionServiceTests
             .ToArray();
         Assert.Contains( ownConfiguration.Id, configurationIds );
         Assert.Contains( legacyConfiguration.Id, configurationIds );
+        Assert.Contains( upgradedConfiguration.Id, configurationIds );
         Assert.DoesNotContain( foreignConfiguration.Id, configurationIds );
+        ItemConfigurationAdministrationDto legacyDto = revision.Configurations
+            .Single( configuration =>
+                configuration.ItemConfigurationId == legacyConfiguration.Id );
+        Assert.Null( legacyDto.CampaignId );
+        ItemConfigurationAdministrationDto upgradedDto = revision.Configurations
+            .Single( configuration =>
+                configuration.ItemConfigurationId == upgradedConfiguration.Id );
+        Assert.Equal( campaign.Id, upgradedDto.CampaignId );
+        PermanentUpgradeAdministrationDto upgrade = Assert.Single( upgradedDto.PermanentUpgrades );
+        Assert.Equal( "rune.striking", upgrade.Code );
+        Assert.Equal( PermanentUpgradeVisibility.Hidden, upgrade.Visibility );
     }
 
     [Fact]

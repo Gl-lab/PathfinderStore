@@ -12,11 +12,19 @@ export function enumOptions<T extends string>(
   return values.map((value) => ({ value, title: format(value) }))
 }
 
+export interface ConfigurationUpgradeInput {
+  code: string
+  kind: string
+  rank: number
+  visibility: string
+}
+
 export interface ConfigurationSummaryInput {
   size: string
   materialType: string
   materialGrade: string
-  permanentUpgrades?: { code: string }[]
+  campaignId?: number | null
+  permanentUpgrades?: ConfigurationUpgradeInput[]
 }
 
 export function configurationSummary(
@@ -42,7 +50,7 @@ export interface ConfigurationShape {
   permanentUpgrades: PermanentUpgradeRequest[]
 }
 
-function upgradesKey(upgrades: PermanentUpgradeRequest[]): string {
+function upgradesKey(upgrades: ConfigurationUpgradeInput[]): string {
   return [...upgrades]
     .sort((left, right) => left.code.localeCompare(right.code))
     .map((upgrade) => `${upgrade.code}:${upgrade.kind}:${upgrade.rank}:${upgrade.visibility}`)
@@ -58,11 +66,8 @@ export function isDuplicateConfiguration(
       configuration.size === candidate.size &&
       configuration.materialType === candidate.materialType &&
       configuration.materialGrade === candidate.materialGrade &&
-      upgradesKey(
-        (configuration.permanentUpgrades ?? []).map(
-          (upgrade) => upgrade as PermanentUpgradeRequest,
-        ),
-      ) === upgradesKey(candidate.permanentUpgrades),
+      upgradesKey(configuration.permanentUpgrades ?? []) ===
+        upgradesKey(candidate.permanentUpgrades),
   )
 }
 

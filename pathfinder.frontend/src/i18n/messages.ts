@@ -643,7 +643,8 @@ export const messages = {
         upgradeKind: 'Вид',
         upgradeRank: 'Ранг',
         upgradeVisibility: 'Видимость',
-        duplicateHint: 'Такая конфигурация уже существует — она будет использована повторно.',
+        duplicateHint:
+          'Такая конфигурация уже есть в кампании — создавать дубликат не нужно, используйте существующую.',
         created: 'Конфигурация создана.',
         alreadyExists: 'Такая конфигурация уже существует — использована существующая.',
         validation: {
@@ -2001,7 +2002,8 @@ export const messages = {
         upgradeKind: 'Kind',
         upgradeRank: 'Rank',
         upgradeVisibility: 'Visibility',
-        duplicateHint: 'This configuration already exists — it will be reused.',
+        duplicateHint:
+          'This configuration already exists in the campaign — no duplicate is needed, use the existing one.',
         created: 'Configuration created.',
         alreadyExists: 'This configuration already exists — the existing one was used.',
         validation: {
